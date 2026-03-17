@@ -1,0 +1,10 @@
+# CLAUD
+/.claude
+
+# Logs
+logs
+*.log
+
+# temp directory
+.temp
+.tmp

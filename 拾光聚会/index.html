@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>拾光聚会 - 北京交通广播103.9</title>
+
+    <!-- 引入资源 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 使用 jsdelivr 引用 UMD 版本 -->
+    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+
+    <!-- 强制隐藏滚动条样式 -->
+    <style>
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.2.4",
+    "lucide-react": "https://esm.sh/lucide-react@^0.574.0",
+    "react/": "https://esm.sh/react@^19.2.4/"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body class="bg-gray-50 text-gray-900 antialiased selection:bg-brand-orange selection:text-white pb-20">
+
+    <!-- 浮动装饰元素 -->
+    <div class="floating-shapes">
+        <div class="floating-shape"></div>
+        <div class="floating-shape"></div>
+        <div class="floating-shape"></div>
+        <div class="floating-shape"></div>
+    </div>
+
+    <!-- 应用挂载点 -->
+    <div id="app" class="min-h-screen"></div>
+
+    <!-- 引入逻辑 -->
+    <script src="data.js?v=4"></script>
+    <script src="common.js?v=2"></script>
+
+    <script>
+        // Data Fallback: Ensure GlobalData exists even if data.js fails to load
+        if (!window.GlobalData) {
+            console.warn('data.js failed to load, using inline fallback data.');
+            window.GlobalData = {
+                user: {
+                    id: 'u1',
+                    name: '车友小明',
+                    avatarUrl: 'https://picsum.photos/100/100',
+                    following: 42,
+                    followers: 108,
+                    activities: 5
+                },
+                bannerImages: [
+                    "https://tingtingfm.vbegin.com.cn/upload/2026/0213/20bd5e9111a64c1aba3ac649691e4bff.png",
+                    "https://tingtingfm.vbegin.com.cn/upload/2026/0213/361e30f4fbb04a669befd8f6aed93639.png",
+                    "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+                    "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                ],
+                categories: [
+                    { id: 'c1', label: '车展活动', icon: 'car', color: 'bg-orange-100 text-orange-600' },
+                    { id: 'c2', label: '生活节', icon: 'music', color: 'bg-green-100 text-green-600' },
+                    { id: 'c3', label: '购车优惠', icon: 'tag', color: 'bg-yellow-100 text-yellow-600' },
+                    { id: 'c7', label: '广播收听', icon: 'radio', color: 'bg-indigo-100 text-indigo-600' },
+                    { id: 'c4', label: '互动社区', icon: 'message-square', color: 'bg-purple-100 text-purple-600' },
+                    { id: 'c8', label: '商家展示', icon: 'store', color: 'bg-cyan-100 text-cyan-600' },
+                    { id: 'c5', label: '交通资讯', icon: 'newspaper', color: 'bg-pink-100 text-pink-600' },
+                    { id: 'c9', label: '车主服务', icon: 'wrench', color: 'bg-emerald-100 text-emerald-600' },
+                    { id: 'c10', label: '自驾游', icon: 'map-pin', color: 'bg-rose-100 text-rose-600' }
+                ],
+                partners: [
+                    {
+                        id: 'p1',
+                        name: '奥迪4S店',
+                        avatarUrl: 'https://picsum.photos/100/100?random=20',
+                        tags: ['豪华车', '购车优惠', '试驾'],
+                        intro: '奥迪全系车型优惠，最高直降10万！',
+                        distance: '1.2km'
+                    },
+                    {
+                        id: 'p2',
+                        name: '宝马体验中心',
+                        avatarUrl: 'https://picsum.photos/100/100?random=21',
+                        tags: ['新能源', '科技体验'],
+                        intro: '宝马i系列试驾体验，预约即送礼品。',
+                        distance: '0.5km'
+                    },
+                    {
+                        id: 'p3',
+                        name: '特斯拉服务中心',
+                        avatarUrl: 'https://picsum.photos/100/100?random=22',
+                        tags: ['电动车', '充电服务'],
+                        intro: '特斯拉超充站免费体验一周。',
+                        distance: '3.0km'
+                    },
+                    {
+                        id: 'p4',
+                        name: '奔驰旗舰店',
+                        avatarUrl: 'https://picsum.photos/100/100?random=23',
+                        tags: ['商务车', '金融方案'],
+                        intro: '奔驰E级专属金融方案，首付低至15%。',
+                        distance: '5.2km'
+                    }
+                ],
+                activities: [
+                    {
+                        id: 'a1',
+                        title: '汽车生活节',
+                        description: '北京交通广播103.9拾光聚会专场，特邀听众参与，现场有抽奖、优惠购车、明星主播见面会等活动。',
+                        category: '生活节',
+                        imageUrl: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                        location: '冰丝带体育馆',
+                        district: '朝阳区',
+                        date: '2026年4月20日',
+                        price: 0,
+                        status: 'RECRUITING',
+                        currentParticipants: 120,
+                        tags: ['免费', '抽奖', '主播见面']
+                    },
+                    {
+                        id: 'a2',
+                        title: '103.9生活节·汽车文化市集',
+                        description: '集结汽车文化、美食、音乐、手作，打造周末休闲好去处。现场有乐队演出、美食摊位、儿童游乐区。',
+                        category: '生活节',
+                        imageUrl: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                        location: '798艺术区',
+                        district: '朝阳区',
+                        date: '本周日 10:00-20:00',
+                        price: 0,
+                        organizer: { id: 'u3', name: '拾光聚会组委会', avatarUrl: 'https://picsum.photos/50/50?random=4', intro: '拾光聚会活动主办方' },
+                        status: 'RECRUITING',
+                        currentParticipants: 80,
+                        maxParticipants: 300,
+                        tags: ['市集', '音乐', '亲子']
+                    },
+                    {
+                        id: 'a3',
+                        title: '新能源汽车试驾体验会',
+                        description: '特斯拉、蔚来、小鹏等主流新能源车型集中试驾，专业讲解员陪同，现场订车享专属优惠。',
+                        category: '购车优惠',
+                        imageUrl: 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                        location: '奥林匹克公园',
+                        district: '朝阳区',
+                        date: '下周六 09:00-17:00',
+                        price: 0,
+                        organizer: { id: 'u4', name: '新能源汽车联盟', avatarUrl: 'https://picsum.photos/50/50?random=6', intro: '新能源汽车推广平台' },
+                        status: 'FULL',
+                        currentParticipants: 50,
+                        maxParticipants: 50,
+                        tags: ['试驾', '新能源', '优惠']
+                    },
+                    {
+                        id: 'a4',
+                        title: '老司机自驾游·坝上草原',
+                        description: '北京交通广播老司机俱乐部组织的坝上草原自驾游，两天一夜，包含住宿、餐饮、篝火晚会。',
+                        category: '自驾游',
+                        imageUrl: 'https://images.unsplash.com/photo-1500462918059-b1a0cb512f1d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                        location: '丰宁坝上草原',
+                        district: '河北省',
+                        date: '下周末 两天一夜',
+                        price: 680,
+                        organizer: { id: 'u5', name: '老司机俱乐部', avatarUrl: 'https://picsum.photos/50/50?random=8', intro: '北京交通广播官方自驾游俱乐部' },
+                        status: 'RECRUITING',
+                        currentParticipants: 15,
+                        maxParticipants: 30,
+                        tags: ['自驾', '草原', '住宿']
+                    }
+                ],
+                moments: [
+                    {
+                        id: 'mo1',
+                        userId: 'u1',
+                        content: '今天去4S店看了新款奥迪A6L，优惠力度真大！有没有一起团购的车友？#奥迪 #购车优惠',
+                        images: ['https://images.unsplash.com/photo-1549399542-7e3f8b79c341?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'],
+                        likes: 45,
+                        comments: 12,
+                        time: '10分钟前',
+                        location: '奥迪4S店'
+                    },
+                    {
+                        id: 'mo2',
+                        userId: 'p1',
+                        content: '本周六我们店有专场优惠活动，奥迪Q5L直降8万，还有礼品赠送！欢迎车友到店咨询。#奥迪 #优惠',
+                        images: [
+                            'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                            'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+                        ],
+                        likes: 128,
+                        comments: 34,
+                        time: '1小时前',
+                        location: '奥迪4S店'
+                    }
+                ]
+            };
+        }
+
+        const View = {
+            filterType: 'latest', // 'latest' or 'nearest'
+            isRadioPlaying: false, // 广播播放状态
+
+            header() {
+                return '';
+            },
+
+            banner() {
+                const bannerImages = window.GlobalData?.bannerImages || [];
+                // 去掉前两张，只显示后面的图片
+                const displayImages = bannerImages.slice(2);
+                if (displayImages.length === 0) return '';
+
+                const imagesHtml = displayImages.map((src, index) => `
+                    <img src="${src}" alt="Banner ${index}" class="w-full h-auto object-cover object-center flex-shrink-0 snap-center min-w-full" style="aspect-ratio: 21/9;"/>
+                `).join('');
+                const dotsHtml = displayImages.map((_, index) => `
+                    <div class="w-1.5 h-1.5 rounded-full transition-all ${index === 0 ? 'bg-white w-3' : 'bg-white/50'}"></div>
+                `).join('');
+
+                return `
+                <div class="px-4 py-3">
+                  <div class="relative w-full rounded-2xl overflow-hidden shadow-sm bg-gray-100 group">
+                    <div id="banner-container" class="flex overflow-x-auto snap-x snap-mandatory no-scrollbar w-full scroll-smooth" style="scrollbar-width: none; -ms-overflow-style: none;">
+                        ${imagesHtml}
+                    </div>
+                    <div class="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 p-1 bg-black/10 rounded-full backdrop-blur-[2px]">
+                        ${dotsHtml}
+                    </div>
+                  </div>
+                </div>
+                `;
+            },
+
+            categoryGrid() {
+                const categories = window.GlobalData?.categories || [];
+                if (categories.length === 0) return '';
+
+                // 链接到 category.html
+                const displayCats = categories.slice(0, 9);
+                const catsHtml = displayCats.map(cat => `
+                    <div class="flex flex-col items-center gap-1.5 cursor-pointer group" onclick="window.location.href='category.html?view=activity&cat=${cat.id}'">
+                        <div class="w-11 h-11 ${cat.color} rounded-xl flex items-center justify-center shadow-sm group-active:scale-95 transition-transform">
+                          <i data-lucide="${cat.icon}" class="w-5 h-5"></i>
+                        </div>
+                        <span class="text-[11px] text-gray-600 font-medium tracking-tight">${cat.label}</span>
+                    </div>
+                `).join('');
+
+                const moreBtnHtml = `
+                    <div class="flex flex-col items-center gap-1.5 cursor-pointer group" onclick="window.location.href='category.html?view=activity'">
+                        <div class="w-11 h-11 bg-gray-100 text-gray-500 rounded-xl flex items-center justify-center shadow-sm group-active:scale-95 transition-transform">
+                          <i data-lucide="layout-grid" class="w-5 h-5"></i>
+                        </div>
+                        <span class="text-[11px] text-gray-600 font-medium tracking-tight">全部</span>
+                    </div>
+                `;
+                return `<div class="px-4 py-2"><div class="grid grid-cols-5 gap-y-4 gap-x-2">${catsHtml}${moreBtnHtml}</div></div>`;
+            },
+
+            radioSection() {
+                const programs = window.GlobalData?.radioPrograms || [];
+                if (programs.length === 0) return '';
+
+                // 获取当前直播节目或第一个节目
+                const currentProgram = programs.find(p => p.live) || programs[0];
+                if (!currentProgram) return '';
+
+                return `
+                <div class="px-4 py-3">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-1.5">
+                            <div class="p-1 bg-brand-orange/20 rounded-md">
+                                <i data-lucide="radio" class="w-4 h-4 text-brand-orange"></i>
+                            </div>
+                            <h2 class="text-lg font-black text-gray-900">广播收听</h2>
+                        </div>
+                        <button onclick="window.location.href='radio.html'" class="text-xs text-gray-400 flex items-center">
+                            更多 <span class="ml-1">&gt;</span>
+                        </button>
+                    </div>
+                    <div class="bg-gradient-to-r from-brand-orange to-brand-yellow rounded-2xl p-4 text-white">
+                        <div class="flex items-center justify-between mb-3">
+                            <div>
+                                <div class="text-xs opacity-80">今日直播</div>
+                                <h3 class="text-lg font-bold">${currentProgram.title}</h3>
+                            </div>
+                            <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                                <i data-lucide="radio" class="w-6 h-6"></i>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="text-xs">
+                                ${currentProgram.host} · ${currentProgram.time}
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button onclick="window.View.toggleRadioPlay()" class="p-2 bg-white rounded-full">
+                                    <i data-lucide="${this.isRadioPlaying ? 'pause' : 'play'}" class="w-5 h-5 text-brand-orange"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                `;
+            },
+
+            partnerRail() {
+                const partners = window.GlobalData?.partners || [];
+                if (partners.length === 0) return '';
+
+                const partnersHtml = partners.map(partner => {
+                    // 生成随机评分 4.0-5.0
+                    const rating = (4 + Math.random() * 1).toFixed(1);
+                    // 随机优惠金额
+                    const discount = Math.floor(Math.random() * 10) + 1;
+                    return `
+                  <div class="flex-shrink-0 w-64 bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden group cursor-pointer transition-transform duration-300 hover:shadow-xl hover:-translate-y-1" onclick="window.location.href='merchant-detail.html?id=${partner.id}'">
+                    <div class="relative h-32 overflow-hidden">
+                      <img src="${partner.avatarUrl}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                      <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                      <div class="absolute top-3 left-3">
+                        <span class="bg-brand-orange text-white text-[10px] px-2 py-1 rounded-full font-bold">推荐</span>
+                      </div>
+                      <div class="absolute bottom-3 left-3 text-white">
+                        <h3 class="font-bold text-lg">${partner.name}</h3>
+                        <div class="flex items-center gap-1 text-xs">
+                          <i data-lucide="star" class="w-3 h-3 fill-yellow-400 text-yellow-400"></i>
+                          <span>${rating}</span>
+                          <span class="mx-1">·</span>
+                          <i data-lucide="map-pin" class="w-3 h-3"></i>
+                          <span>${partner.distance}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="p-4">
+                      <div class="flex flex-wrap gap-1 mb-3">
+                        ${partner.tags.slice(0, 3).map(tag => `<span class="text-[10px] px-2 py-1 bg-gray-50 text-gray-600 rounded-md border border-gray-200">${tag}</span>`).join('')}
+                      </div>
+                      <p class="text-sm text-gray-600 mb-4 line-clamp-2">${partner.intro}</p>
+                      <div class="mb-4 p-3 bg-gradient-to-r from-brand-orange/10 to-brand-yellow/10 rounded-lg border border-brand-orange/20">
+                        <div class="text-xs text-gray-500 mb-1">专属优惠</div>
+                        <div class="font-bold text-brand-orange text-lg">最高立减${discount}万</div>
+                        <div class="text-xs text-gray-400">限时活动，先到先得</div>
+                      </div>
+                      <div class="flex items-center gap-2">
+                        <button class="flex-1 py-2.5 bg-gradient-to-r from-gray-900 to-gray-700 text-white text-sm font-bold rounded-full shadow-lg flex items-center justify-center gap-2" onclick="event.stopPropagation(); window.location.href='chat.html?uid=${partner.id}&name=${encodeURIComponent(partner.name)}'">
+                          <i data-lucide="message-circle" class="w-4 h-4"></i>
+                          <span>立即咨询</span>
+                        </button>
+                        <button class="flex-1 py-2.5 border border-gray-300 text-gray-700 text-sm font-medium rounded-full flex items-center justify-center gap-2" onclick="event.stopPropagation(); window.location.href='profile.html?id=${partner.id}'">
+                          <i data-lucide="store" class="w-4 h-4"></i>
+                          <span>查看门店</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                `;
+                }).join('');
+                return `
+                <div class="pt-4 pb-2">
+                  <div class="px-4 flex items-center justify-between mb-3">
+                    <div class="flex items-center gap-1.5">
+                      <div class="p-1 bg-brand-yellow/20 rounded-md">
+                        <i data-lucide="sparkles" class="w-4 h-4 text-brand-orange fill-brand-orange"></i>
+                      </div>
+                      <h2 class="text-lg font-black text-gray-900">推荐商家</h2>
+                    </div>
+                    <button onclick="window.location.href='discover.html?tab=merchants'" class="text-xs text-gray-400 flex items-center">
+                      查看更多 <span class="ml-1">&gt;</span>
+                    </button>
+                  </div>
+                  <div class="flex overflow-x-auto px-4 gap-4 no-scrollbar pb-4" style="scrollbar-width: none; -ms-overflow-style: none;">
+                    ${partnersHtml}
+                  </div>
+                </div>
+                `;
+            },
+
+            activityFeed() {
+                let activities = window.GlobalData?.activities || [];
+                if (activities.length === 0) return '<div class="p-4 text-center text-gray-400">暂无活动</div>';
+
+                // 直接查找ID为'a1'的活动（汽车生活节）
+                const activity = activities.find(a => a.id === 'a1') || activities[0];
+                const isEnded = activity.status === 'FULL';
+                const statusBadge = activity.status === 'RECRUITING'
+                    ? '<span class="bg-brand-orange text-white px-2 py-1 text-xs font-bold rounded-full backdrop-blur-md">进行中</span>'
+                    : '<span class="bg-gray-500 text-white px-2 py-1 text-xs font-bold rounded-full backdrop-blur-md">已结束</span>';
+                const btnClass = isEnded
+                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    : 'bg-gradient-to-r from-brand-orange to-brand-yellow text-white shadow-brand-orange/30 shadow-lg';
+
+                return `
+                <div class="px-4 pb-2 pt-4">
+                  <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-1.5">
+                      <div class="p-1 bg-brand-orange/20 rounded-md">
+                        <i data-lucide="calendar" class="w-4 h-4 text-brand-orange"></i>
+                      </div>
+                      <h2 class="text-lg font-black text-gray-900">最新活动</h2>
+                    </div>
+                    <button onclick="window.location.href='discover.html?tab=activities'" class="text-xs text-gray-400 flex items-center">
+                      全部 <span class="ml-1">&gt;</span>
+                    </button>
+                  </div>
+                  <div onclick="window.location.href='activity-detail.html?id=${activity.id}'" class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-300 mb-4 group cursor-pointer relative fade-in">
+                    <div class="relative h-48 w-full overflow-hidden">
+                      <img src="${activity.imageUrl}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                      <div class="absolute top-3 right-3">${statusBadge}</div>
+                      <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3 pt-10">
+                         <div class="flex gap-2">${activity.tags.map(tag => `<span class="text-[10px] bg-white/20 backdrop-blur-sm text-white px-2 py-0.5 rounded-md border border-white/30">#${tag}</span>`).join('')}</div>
+                      </div>
+                    </div>
+                    <div class="p-4">
+                      <h3 class="text-lg font-bold text-gray-800 mb-2 line-clamp-1">${activity.title}</h3>
+                      <div class="space-y-2 text-sm text-gray-500">
+                        <div class="flex items-center gap-2"><i data-lucide="calendar" class="w-3.5 h-3.5 text-brand-blue"></i><span>${activity.date}</span></div>
+                        <div class="flex items-center gap-2"><i data-lucide="map-pin" class="w-3.5 h-3.5 text-brand-blue"></i><span class="line-clamp-1">${activity.district} · ${activity.location}</span></div>
+                      </div>
+                      <div class="mt-4 flex items-center justify-between">
+                        <div class="flex items-center text-xs text-gray-400">
+                          <i data-lucide="users" class="w-3.5 h-3.5 mr-1"></i>
+                          <span>${activity.currentParticipants}人已报名</span>
+                        </div>
+                      </div>
+                      <div class="mt-4 flex items-center gap-2">
+                        <button class="flex-1 py-2.5 ${btnClass} rounded-full text-sm font-bold transition-colors flex items-center justify-center gap-2" ${isEnded ? 'disabled' : ''} onclick="event.stopPropagation(); window.Common.processActivityRegistration('${activity.id}', '${activity.title.replace(/'/g, "\\'")}', ${activity.price})">
+                          <i data-lucide="calendar-check" class="w-4 h-4"></i>
+                          <span>${isEnded ? '已结束' : '马上报名'}</span>
+                        </button>
+                        <button class="flex-1 py-2.5 bg-gradient-to-r from-brand-blue to-brand-teal text-white rounded-full text-sm font-bold shadow-brand-blue/30 shadow-lg flex items-center justify-center gap-2" onclick="event.stopPropagation(); window.location.href='activity-detail.html?id=${activity.id}&tab=discount'">
+                          <i data-lucide="tag" class="w-4 h-4"></i>
+                          <span>优惠领取</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                `;
+            },
+
+            toggleRadioPlay() {
+                this.isRadioPlaying = !this.isRadioPlaying;
+                this.render();
+            },
+
+            setFilterType(type) {
+                this.filterType = type;
+                this.render();
+            },
+
+            render() {
+                const app = document.getElementById('app');
+                app.innerHTML = `
+                    ${this.header()}
+                    <main>
+                        ${this.banner()}
+                        ${this.radioSection()}
+                        ${this.activityFeed()}
+                        ${this.partnerRail()}
+                    </main>
+                    ${window.Common ? window.Common.renderBottomNav('home') : ''}
+                `;
+                if (window.Common) window.Common.initIcons();
+
+                // Banner 轮播简易逻辑
+                const container = document.getElementById('banner-container');
+                if (container && container.children.length > 0) {
+                    let index = 0;
+                    const imageCount = container.children.length;
+                    setInterval(() => {
+                         const width = container.offsetWidth;
+                         if (container.scrollLeft + width >= container.scrollWidth - 10) {
+                             container.scrollTo({ left: 0, behavior: 'smooth' });
+                             index = 0;
+                         } else {
+                             container.scrollBy({ left: width, behavior: 'smooth' });
+                             index++;
+                         }
+                         // 更新点
+                         const dotsContainer = container.nextElementSibling;
+                         if (dotsContainer) {
+                             const dots = dotsContainer.children;
+                             for(let i=0; i<dots.length; i++) dots[i].className = `w-1.5 h-1.5 rounded-full transition-all ${i===index%imageCount ? 'bg-white w-3' : 'bg-white/50'}`;
+                         }
+                     }, 4000);
+                }
+            }
+        };
+
+        window.View = View;
+
+        // 搜索处理函数
+        function handleSearch() {
+            const searchInput = document.getElementById('search-input');
+            const query = searchInput?.value?.trim();
+            if (query) {
+                // 跳转到搜索页面，传递搜索关键词
+                window.location.href = `search.html?q=${encodeURIComponent(query)}`;
+            } else {
+                // 如果没有输入关键词，跳转到搜索页面但不带关键词
+                window.location.href = 'search.html';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => View.render());
+    </script>
+<script type="module" src="/index.tsx"></script>
+</body>
+</html>

@@ -1,0 +1,29 @@
+# 排除浏览器内核（这是你爆仓的最大嫌疑犯！）
+.browsers/
+chrome-win64/
+
+# 排除依赖库
+node_modules/
+venv/
+.venv/
+__pycache__/
+
+# 排除日志和临时文件
+*.log
+openclaw.log
+pm2.log
+temp/
+tmp/
+
+# 排除二进制和图片（Claude看不懂，白占空间）
+*.exe
+*.dll
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.zip
+*.tar.gz
+
+# 排除 Git 历史
+.git/

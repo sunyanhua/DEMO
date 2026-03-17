@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>我的 - 搭子计划</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gray-50 text-gray-900 pb-20">
+
+    <div id="app"></div>
+
+    <script src="data.js?v=2"></script>
+    <script src="common.js?v=2"></script>
+    <script>
+        function render() {
+            const user = window.GlobalData.user;
+
+            const menuItems = [
+                { icon: 'user', label: '我的资料', hint: '' },
+                { icon: 'shield', label: '我的认证', hint: '' },
+                { icon: 'calendar-check', label: '我的活动', hint: '' },
+                { icon: 'users', label: '我的搭子', hint: '' },
+                { icon: 'star', label: '我的收藏', hint: '3' },
+                { icon: 'history', label: '浏览历史', hint: '' },
+                { icon: 'shopping-bag', label: '我的订单', hint: '' },
+                { icon: 'help-circle', label: '帮助与反馈', hint: '' }
+            ];
+
+            document.getElementById('app').innerHTML = `
+                <!-- 头部背景 -->
+                <div class="relative h-44 bg-cover bg-left-top overflow-hidden" style="background-image: url('https://ttfm-h5.liteweb.cn/v5/2025/cheng/partner/style/userbg06.png')">
+                </div>
+
+                <!-- 个人信息卡片 -->
+                <div class="px-4 -mt-16 relative z-10">
+                    <div class="bg-white rounded-2xl p-4 shadow-sm">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="flex items-center gap-3">
+                                <img src="${user.avatarUrl}" class="w-16 h-16 rounded-full border-4 border-white shadow-md -mt-10" />
+                                <div class="pt-1">
+                                    <h1 class="text-xl font-black text-gray-900 flex items-center gap-1">${user.name} <i data-lucide="edit-3" class="w-3.5 h-3.5 text-gray-400 cursor-pointer" onclick="window.location.href='edit-profile.html'"></i></h1>
+                                    <p class="text-xs text-gray-400 mt-0.5 flex items-center gap-1">ID: ${user.id} <i data-lucide="home" class="w-3 h-3 ml-1 cursor-pointer" onclick="window.location.href='profile.html?id=${user.id}'" title="我的主页"></i></p>
+                                </div>
+                            </div>
+                            <div class="px-3 py-1 bg-gray-100 rounded-full text-xs font-bold text-gray-600 flex items-center gap-1">
+                                <i data-lucide="medal" class="w-3 h-3 text-brand-orange"></i> LV.3
+                            </div>
+                        </div>
+
+                        <!-- 简介 -->
+                        <p class="text-sm text-gray-600 mb-4 px-1">${user.intro || '这个人很懒，什么都没写'}</p>
+
+                        <!-- 数据统计 -->
+                        <div class="flex justify-around py-2 border-t border-gray-50">
+                            <div class="flex flex-col items-center cursor-pointer" onclick="window.location.href='profile.html?id=${user.id}&tab=activities'">
+                                <span class="font-black text-lg text-gray-900">${user.activities}</span>
+                                <span class="text-xs text-gray-400">活动</span>
+                            </div>
+                            <div class="flex flex-col items-center cursor-pointer" onclick="window.location.href='user-list.html?tab=following'">
+                                <span class="font-black text-lg text-gray-900">${user.following}</span>
+                                <span class="text-xs text-gray-400">关注</span>
+                            </div>
+                            <div class="flex flex-col items-center cursor-pointer" onclick="window.location.href='user-list.html?tab=followers'">
+                                <span class="font-black text-lg text-gray-900">${user.followers}</span>
+                                <span class="text-xs text-gray-400">粉丝</span>
+                            </div>
+                            <div class="flex flex-col items-center cursor-pointer" onclick="window.location.href='message.html?tab=notification'">
+                                <span class="font-black text-lg text-gray-900">${user.likes}</span>
+                                <span class="text-xs text-gray-400">获赞</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 积分钱包重点模块 -->
+                <div class="px-4 mt-4">
+                    <div class="bg-gradient-to-r from-brand-orange to-brand-yellow rounded-2xl p-4 shadow-lg">
+                        <div class="flex items-center justify-between">
+                            <!-- 积分 -->
+                            <div class="flex-1 text-center cursor-pointer" onclick="window.location.href='points.html'">
+                                <div class="flex flex-col items-center">
+                                    <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mb-2">
+                                        <i data-lucide="coffee" class="w-6 h-6 text-white"></i>
+                                    </div>
+                                    <div class="text-2xl font-black text-white">${user.points}</div>
+                                    <div class="text-sm text-white/90">积分</div>
+                                    <div class="text-xs text-white/70 mt-1">LV.${user.level}</div>
+                                </div>
+                            </div>
+
+                            <!-- 分隔线 -->
+                            <div class="w-px h-16 bg-white/30"></div>
+
+                            <!-- 钱包 -->
+                            <div class="flex-1 text-center cursor-pointer" onclick="window.location.href='wallet.html'">
+                                <div class="flex flex-col items-center">
+                                    <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mb-2">
+                                        <i data-lucide="wallet" class="w-6 h-6 text-white"></i>
+                                    </div>
+                                    <div class="text-2xl font-black text-white">¥${user.wallet.toFixed(2)}</div>
+                                    <div class="text-sm text-white/90">钱包余额</div>
+                                    <div class="text-xs text-white/70 mt-1">可提现</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 等级说明链接 -->
+                        <div class="mt-4 pt-3 border-t border-white/20">
+                            <div onclick="window.location.href='levels.html'" class="text-center cursor-pointer">
+                                <div class="text-xs text-white/90 flex items-center justify-center gap-1 hover:text-white transition-colors">
+                                    <i data-lucide="star" class="w-3 h-3"></i>
+                                    查看等级特权说明
+                                    <i data-lucide="chevron-right" class="w-3 h-3"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 会员Banner -->
+                <div class="px-4 mt-4">
+                     <div class="bg-gray-900 rounded-xl p-3 flex items-center justify-between text-amber-200">
+                        <div class="flex items-center gap-2">
+                             <i data-lucide="crown" class="w-5 h-5"></i>
+                             <div>
+                                 <div class="text-sm font-bold">搭子黑卡会员</div>
+                                 <div class="text-[10px] opacity-70">开通享优先报名特权</div>
+                             </div>
+                        </div>
+                        <button class="bg-gradient-to-r from-amber-200 to-amber-400 text-gray-900 text-xs font-bold px-3 py-1.5 rounded-full">立即开通</button>
+                     </div>
+                </div>
+
+                <!-- 菜单列表 -->
+                <div class="px-4 mt-4 space-y-3 pb-8">
+                    <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                        ${menuItems.map(item => `
+                            <div class="flex items-center justify-between p-4 active:bg-gray-50 cursor-pointer border-b border-gray-50 last:border-none" onclick="${item.label === '我的资料' ? 'window.location.href=\'edit-profile.html\'' : item.label === '我的认证' ? 'window.location.href=\'verification.html\'' : item.label === '我的活动' ? 'window.location.href=\'profile.html?id=' + user.id + '&tab=activities\'' : item.label === '我的搭子' ? 'window.location.href=\'user-list.html\'' : item.label === '我的收藏' ? 'window.location.href=\'favorites.html\'' : item.label === '浏览历史' ? 'window.location.href=\'history.html\'' : item.label === '我的订单' ? 'window.location.href=\'orders.html\'' : `window.Common.showToast('进入${item.label}')`}">
+                                <div class="flex items-center gap-3">
+                                    <i data-lucide="${item.icon}" class="w-5 h-5 text-gray-600"></i>
+                                    <span class="text-sm text-gray-800 font-medium">${item.label}</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    ${item.hint ? `<span class="text-xs text-gray-400">${item.hint}</span>` : ''}
+                                    <i data-lucide="chevron-right" class="w-4 h-4 text-gray-300"></i>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    <button class="w-full py-3 text-sm text-red-500 font-bold bg-white rounded-xl shadow-sm">退出登录</button>
+                </div>
+
+                ${window.Common.renderBottomNav('me')}
+            `;
+            window.Common.initIcons();
+        }
+
+        document.addEventListener('DOMContentLoaded', render);
+    </script>
+</body>
+</html>

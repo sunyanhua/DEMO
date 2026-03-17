@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>我的 - 拾光聚会</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900 antialiased selection:bg-brand-orange selection:text-white pb-20">
+    <!-- 浮动装饰元素 -->
+    <div class="floating-shapes">
+        <div class="floating-shape"></div>
+        <div class="floating-shape"></div>
+        <div class="floating-shape"></div>
+        <div class="floating-shape"></div>
+    </div>
+
+    <div id="app" class="min-h-screen"></div>
+
+    <script src="data.js?v=4"></script>
+    <script src="common.js?v=2"></script>
+
+    <script>
+        const MeView = {
+            header() {
+                return `
+                <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md px-4 py-3 shadow-sm border-b border-gray-200 header-glow">
+                  <div class="flex items-center gap-3">
+                    <button onclick="window.location.href='index.html'" class="p-1.5 rounded-full hover:bg-gray-100 transition-colors">
+                      <i data-lucide="arrow-left" class="w-5 h-5 text-color-orange"></i>
+                    </button>
+                    <div class="flex-1">
+                      <h1 class="text-2xl font-bold text-gradient-orange">我的</h1>
+                    </div>
+                    <button class="relative p-1.5 rounded-full hover:bg-gray-100 transition-colors">
+                      <i data-lucide="settings" class="w-5 h-5 text-color-orange"></i>
+                    </button>
+                  </div>
+                </header>
+                `;
+            },
+
+            userProfile() {
+                const user = window.GlobalData.user;
+                return `
+                <div class="px-4 py-3">
+                    <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+                        <div class="flex items-start gap-3">
+                            <div class="relative">
+                                <img src="${user.avatarUrl}" class="w-16 h-16 rounded-full border-2 border-brand-orange" />
+                                ${user.verified ? '<div class="absolute bottom-0 right-0 bg-brand-orange text-white text-[8px] px-1.5 py-0.5 rounded-full border border-white">V</div>' : ''}
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex items-center justify-between mb-1">
+                                    <h2 class="text-xl font-bold text-gray-800">${user.name}</h2>
+                                    <button class="text-xs text-brand-orange font-medium">编辑资料</button>
+                                </div>
+                                <p class="text-sm text-gray-500 mb-3">${user.intro}</p>
+                                <div class="flex items-center gap-4">
+                                    <div class="text-center">
+                                        <div class="font-bold text-gray-800">${user.following}</div>
+                                        <div class="text-xs text-gray-400">关注</div>
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="font-bold text-gray-800">${user.followers}</div>
+                                        <div class="text-xs text-gray-400">粉丝</div>
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="font-bold text-gray-800">${user.activities}</div>
+                                        <div class="text-xs text-gray-400">活动</div>
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="font-bold text-gray-800">${user.moments}</div>
+                                        <div class="text-xs text-gray-400">动态</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                `;
+            },
+
+            levelCard() {
+                const user = window.GlobalData.user;
+                const progress = Math.min(100, (user.points / user.nextLevelPoints) * 100);
+                return `
+                <div class="px-4 py-3">
+                    <div class="bg-gradient-to-r from-brand-orange to-brand-yellow rounded-2xl p-4 text-white">
+                        <div class="flex items-center justify-between mb-3">
+                            <div>
+                                <div class="text-xs opacity-80">当前等级</div>
+                                <h3 class="text-2xl font-black">Lv.${user.level}</h3>
+                            </div>
+                            <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                                <i data-lucide="trophy" class="w-6 h-6"></i>
+                            </div>
+                        </div>
+                        <div class="mb-2">
+                            <div class="flex items-center justify-between text-xs mb-1">
+                                <span>${user.points} 积分</span>
+                                <span>${user.nextLevelPoints} 积分升级</span>
+                            </div>
+                            <div class="h-2 bg-white/30 rounded-full overflow-hidden">
+                                <div class="h-full bg-white rounded-full" style="width: ${progress}%"></div>
+                            </div>
+                        </div>
+                        <div class="text-xs opacity-80">再获得 ${user.nextLevelPoints - user.points} 积分升级到 Lv.${user.level + 1}</div>
+                    </div>
+                </div>
+                `;
+            },
+
+            quickActions() {
+                const actions = [
+                    { label: '我的订单', icon: 'shopping-bag', href: 'orders.html' },
+                    { label: '我的钱包', icon: 'wallet', href: 'wallet.html' },
+                    { label: '我的积分', icon: 'award', href: 'points.html' },
+                    { label: '我的收藏', icon: 'heart', href: 'favorites.html' },
+                    { label: '我的活动', icon: 'calendar', href: 'activity-manage.html' },
+                    { label: '我的消息', icon: 'message-square', href: 'message.html' },
+                    { label: '我的认证', icon: 'badge-check', href: 'verification.html' },
+                    { label: '我的设置', icon: 'settings', href: 'settings.html' }
+                ];
+
+                const gridHtml = actions.map(action => `
+                    <a href="${action.href}" class="flex flex-col items-center justify-center p-3 rounded-xl hover:bg-gray-50 transition-colors no-underline">
+                        <div class="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center mb-2">
+                            <i data-lucide="${action.icon}" class="w-5 h-5 text-gray-600"></i>
+                        </div>
+                        <span class="text-xs text-gray-600">${action.label}</span>
+                    </a>
+                `).join('');
+
+                return `
+                <div class="px-4 py-3">
+                    <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+                        <h3 class="font-bold text-gray-800 mb-3">我的服务</h3>
+                        <div class="grid grid-cols-4 gap-3">
+                            ${gridHtml}
+                        </div>
+                    </div>
+                </div>
+                `;
+            },
+
+            render() {
+                const app = document.getElementById('app');
+                app.innerHTML = `
+                    ${this.header()}
+                    <main>
+                        ${this.userProfile()}
+                        ${this.levelCard()}
+                        ${this.quickActions()}
+                    </main>
+                    ${window.Common ? window.Common.renderBottomNav('me') : ''}
+                `;
+                if (window.Common) window.Common.initIcons();
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => MeView.render());
+    </script>
+</body>
+</html>

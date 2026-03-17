@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>商家详情 - 拾光聚会</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .detail-header-image {
+            height: 300px;
+            object-fit: cover;
+            width: 100%;
+        }
+        .info-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .info-item:last-child {
+            border-bottom: none;
+        }
+        .image-gallery {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-top: 16px;
+        }
+        .gallery-image {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900 antialiased selection:bg-brand-orange selection:text-white pb-20">
+    <!-- 浮动装饰元素 -->
+    <div class="floating-shapes">
+        <div class="floating-shape"></div>
+        <div class="floating-shape"></div>
+        <div class="floating-shape"></div>
+        <div class="floating-shape"></div>
+    </div>
+
+    <div id="app" class="min-h-screen"></div>
+
+    <script src="data.js?v=4"></script>
+    <script src="common.js?v=2"></script>
+
+    <script>
+        const MerchantDetailView = {
+            // 从URL获取商家ID
+            getMerchantId() {
+                const urlParams = new URLSearchParams(window.location.search);
+                return urlParams.get('id');
+            },
+
+            // 根据ID获取商家数据
+            getMerchantData() {
+                const merchantId = this.getMerchantId();
+                const partners = window.GlobalData?.partners || [];
+                return partners.find(p => p.id === merchantId) || null;
+            },
+
+            header(merchant) {
+                if (!merchant) return '';
+                return `
+                <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md px-4 py-3 shadow-sm">
+                  <div class="flex items-center gap-3">
+                    <button onclick="window.history.back()" class="p-1.5 rounded-full hover:bg-gray-100 transition-colors">
+                      <i data-lucide="arrow-left" class="w-5 h-5 text-gray-800"></i>
+                    </button>
+                    <div class="flex-1">
+                      <h1 class="text-lg font-bold text-gray-900">商家详情</h1>
+                    </div>
+                    <div class="relative p-1.5 rounded-full hover:bg-gray-100 transition-colors">
+                      <i data-lucide="share-2" class="w-5 h-5 text-gray-800"></i>
+                    </div>
+                  </div>
+                </header>
+                `;
+            },
+
+            // 商家头部信息
+            merchantHeader(merchant) {
+                if (!merchant) return '';
+                return `
+                <div class="bg-white rounded-b-3xl shadow-sm pb-6">
+                    <img src="${merchant.images?.[0] || merchant.avatarUrl}" class="detail-header-image rounded-b-3xl" />
+                    <div class="px-4 pt-6">
+                        <div class="flex items-start justify-between">
+                            <div>
+                                <div class="flex items-center gap-2 mb-2">
+                                    <h2 class="text-2xl font-black text-gray-800">${merchant.name}</h2>
+                                    ${merchant.verified ? '<span class="bg-brand-orange text-white text-xs px-2 py-0.5 rounded-full">认证商家</span>' : ''}
+                                </div>
+                                <div class="flex flex-wrap gap-1 mb-3">
+                                    ${merchant.tags.map(tag => `<span class="text-xs px-2 py-1 bg-gray-50 text-gray-600 rounded-md border border-gray-200">${tag}</span>`).join('')}
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="flex items-center text-lg font-bold text-yellow-500">
+                                    <i data-lucide="star" class="w-5 h-5 mr-1 fill-yellow-400"></i>
+                                    <span>${merchant.rating || '4.8'}</span>
+                                </div>
+                                <div class="text-xs text-gray-400 mt-1">${merchant.followers || '0'} 关注</div>
+                            </div>
+                        </div>
+                        <p class="text-gray-600 mt-3">${merchant.intro}</p>
+                    </div>
+                </div>
+                `;
+            },
+
+            // 商家详细信息
+            merchantInfo(merchant) {
+                if (!merchant) return '';
+                return `
+                <div class="bg-white rounded-2xl shadow-sm p-4 mt-4 mx-4">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">商家信息</h3>
+                    <div class="space-y-3">
+                        <div class="info-item">
+                            <i data-lucide="map-pin" class="w-5 h-5 text-gray-400 mr-3"></i>
+                            <div class="flex-1">
+                                <div class="text-sm text-gray-500">地址</div>
+                                <div class="text-gray-800">${merchant.address || '暂无地址'}</div>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <i data-lucide="phone" class="w-5 h-5 text-gray-400 mr-3"></i>
+                            <div class="flex-1">
+                                <div class="text-sm text-gray-500">电话</div>
+                                <div class="text-gray-800">${merchant.phone || '暂无电话'}</div>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <i data-lucide="clock" class="w-5 h-5 text-gray-400 mr-3"></i>
+                            <div class="flex-1">
+                                <div class="text-sm text-gray-500">营业时间</div>
+                                <div class="text-gray-800">${merchant.businessHours || '暂无营业时间'}</div>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <i data-lucide="navigation" class="w-5 h-5 text-gray-400 mr-3"></i>
+                            <div class="flex-1">
+                                <div class="text-sm text-gray-500">距离</div>
+                                <div class="text-gray-800">${merchant.distance || '未知距离'}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                `;
+            },
+
+            // 商家描述
+            merchantDescription(merchant) {
+                if (!merchant || !merchant.description) return '';
+                return `
+                <div class="bg-white rounded-2xl shadow-sm p-4 mt-4 mx-4">
+                    <h3 class="text-lg font-bold text-gray-800 mb-3">商家介绍</h3>
+                    <p class="text-gray-600 leading-relaxed">${merchant.description}</p>
+                </div>
+                `;
+            },
+
+            // 图片画廊
+            imageGallery(merchant) {
+                if (!merchant || !merchant.images || merchant.images.length === 0) return '';
+                const images = merchant.images.slice(0, 6); // 最多显示6张
+                return `
+                <div class="bg-white rounded-2xl shadow-sm p-4 mt-4 mx-4">
+                    <h3 class="text-lg font-bold text-gray-800 mb-3">商家相册</h3>
+                    <div class="image-gallery">
+                        ${images.map(img => `<img src="${img}" class="gallery-image" alt="商家图片" />`).join('')}
+                    </div>
+                </div>
+                `;
+            },
+
+            // 行动按钮
+            actionButtons(merchant) {
+                if (!merchant) return '';
+                return `
+                <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 pb-safe z-40">
+                    <div class="flex items-center gap-3">
+                        <button class="flex-1 py-3 bg-gray-100 text-gray-800 font-bold rounded-xl flex items-center justify-center gap-2" onclick="event.stopPropagation()">
+                            <i data-lucide="heart" class="w-5 h-5"></i>
+                            关注
+                        </button>
+                        <button class="flex-1 py-3 bg-gradient-to-r from-brand-orange to-brand-yellow text-white font-bold rounded-xl flex items-center justify-center gap-2" onclick="event.stopPropagation()">
+                            <i data-lucide="phone" class="w-5 h-5"></i>
+                            咨询
+                        </button>
+                        <button class="flex-1 py-3 bg-gradient-to-r from-brand-blue to-brand-teal text-white font-bold rounded-xl flex items-center justify-center gap-2" onclick="event.stopPropagation()">
+                            <i data-lucide="navigation" class="w-5 h-5"></i>
+                            导航
+                        </button>
+                    </div>
+                </div>
+                `;
+            },
+
+            // 渲染页面
+            render() {
+                const app = document.getElementById('app');
+                const merchant = this.getMerchantData();
+
+                if (!merchant) {
+                    app.innerHTML = `
+                        ${this.header()}
+                        <div class="flex flex-col items-center justify-center h-64">
+                            <i data-lucide="store" class="w-16 h-16 text-gray-300 mb-4"></i>
+                            <p class="text-gray-500">商家不存在或已下线</p>
+                            <button onclick="window.history.back()" class="mt-4 px-4 py-2 bg-brand-orange text-white rounded-lg">返回商家列表</button>
+                        </div>
+                    `;
+                    if (window.Common) window.Common.initIcons();
+                    return;
+                }
+
+                app.innerHTML = `
+                    ${this.header(merchant)}
+                    <main>
+                        ${this.merchantHeader(merchant)}
+                        ${this.merchantInfo(merchant)}
+                        ${this.merchantDescription(merchant)}
+                        ${this.imageGallery(merchant)}
+                    </main>
+                    ${this.actionButtons(merchant)}
+                    ${window.Common ? window.Common.renderBottomNav('') : ''}
+                `;
+                if (window.Common) window.Common.initIcons();
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => MerchantDetailView.render());
+    </script>
+</body>
+</html>

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>广播收听 - 拾光聚会</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900 antialiased selection:bg-orange-500 selection:text-white pb-20">
+    <!-- 浮动装饰元素 -->
+    <div class="floating-shapes floating-shapes-poster">
+        <div class="floating-shape"></div>
+        <div class="floating-shape"></div>
+        <div class="floating-shape"></div>
+        <div class="floating-shape"></div>
+    </div>
+
+    <div id="app" class="min-h-screen"></div>
+
+    <script src="data.js?v=4"></script>
+    <script src="common.js?v=2"></script>
+
+    <script>
+        const RadioView = {
+            header() {
+                return `
+                <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md px-4 py-3 shadow-sm border-b border-gray-200 header-glow">
+                  <div class="flex items-center gap-3">
+                    <button onclick="window.location.href='index.html'" class="p-1.5 rounded-full hover:bg-gray-100 transition-colors">
+                      <i data-lucide="arrow-left" class="w-5 h-5 text-color-orange"></i>
+                    </button>
+                    <div class="flex-1">
+                      <h1 class="text-2xl font-bold text-gradient-orange">拾光聚会 · 广播</h1>
+                      <div class="text-xs text-color-orange">#追光者#</div>
+                    </div>
+                    <button class="relative p-1.5 rounded-full hover:bg-gray-100 transition-colors">
+                      <i data-lucide="headphones" class="w-5 h-5 text-color-orange"></i>
+                    </button>
+                  </div>
+                </header>
+                `;
+            },
+
+            radioList() {
+                const programs = window.GlobalData?.radioPrograms || [];
+                if (programs.length === 0) return '<div class="p-4 text-center text-color-dark">暂无广播节目</div>';
+
+                // 过滤掉直播节目（直播节目已经在currentPlaying中显示）
+                const nonLivePrograms = programs.filter(p => !p.live);
+                if (nonLivePrograms.length === 0) return '<div class="p-4 text-center text-color-dark">暂无往期节目</div>';
+
+                // 按日期分组显示
+                let listHtml = '';
+                let lastDate = '';
+
+                nonLivePrograms.forEach(program => {
+                    const currentDate = program.time.split(' ')[0]; // 取时间字符串的第一个词作为日期（如"昨天"、"前天"、"周三"等）
+                    if (currentDate !== lastDate) {
+                        // 添加日期标题
+                        listHtml += `
+                            <div class="px-4 py-3">
+                                <h3 class="text-lg font-bold text-color-dark mb-2">${currentDate}节目</h3>
+                            </div>
+                        `;
+                        lastDate = currentDate;
+                    }
+
+                    listHtml += `
+                        <div class="px-4 py-2">
+                            <div class="card-poster rounded-2xl p-4 shadow-sm hover-glow-orange card-hover-lift">
+                                <div class="flex items-start gap-3">
+                                    <div class="relative">
+                                        <img src="${program.coverUrl}" class="w-16 h-16 rounded-xl object-cover" />
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="flex items-center justify-between mb-1">
+                                            <h3 class="font-bold text-color-dark">${program.title}</h3>
+                                            <span class="text-xs text-gray-500">${program.time}</span>
+                                        </div>
+                                        <p class="text-sm text-gray-600 mb-2 line-clamp-2">${program.description}</p>
+                                        <div class="flex items-center text-xs text-gray-500">
+                                            <i data-lucide="user" class="w-3 h-3 mr-1 text-color-orange"></i>
+                                            <span>${program.host}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mt-4 pt-4 border-t border-gray-200">
+                                    <div class="flex items-center justify-between">
+                                        <button class="flex-1 py-2.5 btn-poster font-bold rounded-full flex items-center justify-center gap-2">
+                                            <i data-lucide="play" class="w-4 h-4"></i>
+                                            <span>播放节目</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                return `<div class="pb-4">${listHtml}</div>`;
+            },
+
+            currentPlaying() {
+                const programs = window.GlobalData?.radioPrograms || [];
+                const liveProgram = programs.find(p => p.live) || programs[0];
+
+                if (!liveProgram) return '';
+
+                return `
+                <div class="px-4 py-3">
+                    <div class="btn-gradient-primary rounded-2xl p-4 text-white beam-effect">
+                        <div class="flex items-center justify-between mb-3">
+                            <div>
+                                <div class="text-xs opacity-80">正在播放</div>
+                                <h3 class="text-lg font-bold">${liveProgram.title}</h3>
+                            </div>
+                            <div class="w-12 h-12 bg-white/30 rounded-full flex items-center justify-center">
+                                <i data-lucide="radio" class="w-6 h-6 text-color-orange"></i>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="text-xs">${liveProgram.host} · ${liveProgram.time}</div>
+                            <div class="flex items-center gap-2">
+                                <button class="p-2 bg-white/30 rounded-full">
+                                    <i data-lucide="skip-back" class="w-4 h-4 text-color-orange"></i>
+                                </button>
+                                <button class="p-2 bg-white rounded-full">
+                                    <i data-lucide="pause" class="w-5 h-5 text-color-orange"></i>
+                                </button>
+                                <button class="p-2 bg-white/30 rounded-full">
+                                    <i data-lucide="skip-forward" class="w-4 h-4 text-color-orange"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                `;
+            },
+
+            render() {
+                const app = document.getElementById('app');
+                app.innerHTML = `
+                    ${this.header()}
+                    <main>
+                        ${this.currentPlaying()}
+                        <div class="px-4 py-2">
+                            <h2 class="text-xl font-black text-color-dark mb-3">广播节目</h2>
+                        </div>
+                        ${this.radioList()}
+                    </main>
+                    ${window.Common ? window.Common.renderBottomNav('radio') : ''}
+                `;
+                if (window.Common) window.Common.initIcons();
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => RadioView.render());
+    </script>
+</body>
+</html>

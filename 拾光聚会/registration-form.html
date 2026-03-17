@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>补贴信息登记 - 拾光聚会</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* 表单样式 */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+        .form-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            font-size: 14px;
+            color: #374151;
+            transition: border-color 0.2s;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: #e8a87c;
+            box-shadow: 0 0 0 3px rgba(232, 168, 124, 0.1);
+        }
+        .form-button {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background-color: #e8a87c;
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .form-button:hover {
+            background-color: #d6946a;
+        }
+        .form-button:disabled {
+            background-color: #9ca3af;
+            cursor: not-allowed;
+        }
+        .file-upload {
+            border: 2px dashed #d1d5db;
+            border-radius: 0.5rem;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+        .file-upload:hover {
+            border-color: #e8a87c;
+        }
+        .file-upload input {
+            display: none;
+        }
+        .progress-container {
+            margin-bottom: 1.5rem;
+        }
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+        .progress-bar {
+            height: 8px;
+            background-color: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(to right, #42A5F5, #00A99D);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+        .info-card {
+            background-color: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        .info-label {
+            font-size: 14px;
+            color: #6b7280;
+        }
+        .info-value {
+            font-size: 14px;
+            font-weight: 500;
+            color: #1f2937;
+        }
+        .header-glow {
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900 antialiased selection:bg-orange-500 selection:text-white pb-20">
+    <!-- 浮动装饰元素 -->
+    <div class="floating-shapes floating-shapes-poster">
+        <div class="floating-shape"></div>
+        <div class="floating-shape"></div>
+        <div class="floating-shape"></div>
+        <div class="floating-shape"></div>
+    </div>
+
+    <div id="app" class="min-h-screen"></div>
+
+    <script src="data.js?v=4"></script>
+    <script src="common.js?v=2"></script>
+
+    <script>
+        const RegistrationFormView = {
+            // 表单数据
+            formData: {
+                dealershipName: '', // 4S店名称
+                name: '',
+                phone: '',
+                idCard: '',
+                carModel: '',
+                carPrice: '',
+                subsidyAmount: '',
+                depositReceipt: null, // 定金凭证文件
+                subsidyAgreement: null // 补贴协议文件
+            },
+
+            // 补贴进度数据
+            subsidyProgress: {
+                totalAmount: 50000, // 总金额5万元
+                claimedAmount: 17500, // 已发放35% = 17500元
+                percentage: 35 // 进度百分比
+            },
+
+            // 活动信息
+            activityId: '',
+            activityInfo: null,
+
+            getActivityId() {
+                const urlParams = new URLSearchParams(window.location.search);
+                return urlParams.get('activityId') || '';
+            },
+
+            getActivityInfo() {
+                if (!this.activityId) return null;
+                const activities = window.GlobalData?.activities || [];
+                return activities.find(a => a.id === this.activityId) || null;
+            },
+
+            header() {
+                const activityInfo = this.getActivityInfo();
+                const title = activityInfo ? `补贴信息登记 - ${activityInfo.title}` : '补贴信息登记';
+                return `
+                <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md px-4 py-3 shadow-sm border-b border-gray-200 header-glow">
+                  <div class="flex items-center gap-3">
+                    <button onclick="window.history.back()" class="p-1.5 rounded-full hover:bg-gray-100 transition-colors">
+                      <i data-lucide="arrow-left" class="w-5 h-5 text-color-orange"></i>
+                    </button>
+                    <div class="flex-1">
+                      <h1 class="text-lg font-bold text-color-dark">${title}</h1>
+                    </div>
+                  </div>
+                </header>
+                `;
+            },
+
+            renderProgress() {
+                const p = this.subsidyProgress;
+                return `
+                <div class="progress-container">
+                  <div class="progress-header">
+                    <div class="text-sm font-medium text-color-dark">补贴发放进度</div>
+                    <div class="text-sm font-bold text-brand-orange">${p.percentage}%</div>
+                  </div>
+                  <div class="progress-bar">
+                    <div class="progress-fill" style="width: ${p.percentage}%"></div>
+                  </div>
+                  <div class="grid grid-cols-2 gap-4 mt-4">
+                    <div class="bg-gray-50 rounded-xl p-3 text-center">
+                      <div class="text-lg font-bold text-color-dark">${p.totalAmount.toLocaleString()}元</div>
+                      <div class="text-xs text-gray-600 mt-1">总补贴金额</div>
+                    </div>
+                    <div class="bg-gray-50 rounded-xl p-3 text-center">
+                      <div class="text-lg font-bold text-color-dark">${p.claimedAmount.toLocaleString()}元</div>
+                      <div class="text-xs text-gray-600 mt-1">已发放金额</div>
+                    </div>
+                  </div>
+                </div>
+                `;
+            },
+
+            renderForm() {
+                const data = this.formData;
+                return `
+                <form id="registration-form" class="space-y-4">
+                  <!-- 4S店名称 -->
+                  <div class="form-group">
+                    <label class="form-label">4S店名称</label>
+                    <input type="text" class="form-input" placeholder="请输入购车4S店名称"
+                           value="${data.dealershipName}"
+                           oninput="RegistrationFormView.handleInput('dealershipName', event.target.value)" />
+                  </div>
+
+                  <!-- 个人信息 -->
+                  <div class="form-group">
+                    <label class="form-label">姓名</label>
+                    <input type="text" class="form-input" placeholder="请输入您的姓名"
+                           value="${data.name}"
+                           oninput="RegistrationFormView.handleInput('name', event.target.value)" />
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label">手机号码</label>
+                    <input type="tel" class="form-input" placeholder="请输入您的手机号码"
+                           value="${data.phone}"
+                           oninput="RegistrationFormView.handleInput('phone', event.target.value)" />
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label">身份证号码</label>
+                    <input type="text" class="form-input" placeholder="请输入您的身份证号码"
+                           value="${data.idCard}"
+                           oninput="RegistrationFormView.handleInput('idCard', event.target.value)" />
+                  </div>
+
+                  <!-- 购车信息 -->
+                  <div class="form-group">
+                    <label class="form-label">购车车型</label>
+                    <input type="text" class="form-input" placeholder="例如：特斯拉 Model Y"
+                           value="${data.carModel}"
+                           oninput="RegistrationFormView.handleInput('carModel', event.target.value)" />
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label">购车金额（元）</label>
+                    <input type="number" class="form-input" placeholder="请输入购车金额"
+                           value="${data.carPrice}"
+                           oninput="RegistrationFormView.handleInput('carPrice', event.target.value)" />
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label">补贴金额（元）</label>
+                    <input type="number" class="form-input" placeholder="请输入补贴金额"
+                           value="${data.subsidyAmount}"
+                           oninput="RegistrationFormView.handleInput('subsidyAmount', event.target.value)" />
+                  </div>
+
+                  <!-- 文件上传 -->
+                  <div class="form-group">
+                    <label class="form-label">定金凭证上传</label>
+                    <div class="file-upload" onclick="document.getElementById('deposit-receipt').click()">
+                      <i data-lucide="upload" class="w-8 h-8 text-gray-400 mx-auto mb-2"></i>
+                      <div class="text-sm text-gray-600">点击上传定金凭证</div>
+                      <div class="text-xs text-gray-500 mt-1">支持 JPG, PNG, PDF 格式，大小不超过 10MB</div>
+                      <input type="file" id="deposit-receipt" accept="image/*,.pdf"
+                             onchange="RegistrationFormView.handleFileUpload('depositReceipt', event)" style="display: none;">
+                    </div>
+                    ${data.depositReceipt ? `
+                      <div class="mt-2 text-sm text-green-600 flex items-center gap-2">
+                        <i data-lucide="check-circle" class="w-4 h-4"></i>
+                        <span>已上传：${data.depositReceipt.name}</span>
+                      </div>
+                    ` : ''}
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label">补贴协议扫描件上传</label>
+                    <div class="file-upload" onclick="document.getElementById('subsidy-agreement').click()">
+                      <i data-lucide="upload" class="w-8 h-8 text-gray-400 mx-auto mb-2"></i>
+                      <div class="text-sm text-gray-600">点击上传补贴协议</div>
+                      <div class="text-xs text-gray-500 mt-1">支持 JPG, PNG, PDF 格式，大小不超过 10MB</div>
+                      <input type="file" id="subsidy-agreement" accept="image/*,.pdf"
+                             onchange="RegistrationFormView.handleFileUpload('subsidyAgreement', event)" style="display: none;">
+                    </div>
+                    ${data.subsidyAgreement ? `
+                      <div class="mt-2 text-sm text-green-600 flex items-center gap-2">
+                        <i data-lucide="check-circle" class="w-4 h-4"></i>
+                        <span>已上传：${data.subsidyAgreement.name}</span>
+                      </div>
+                    ` : ''}
+                  </div>
+
+                  <!-- 提交按钮 -->
+                  <button type="button" onclick="RegistrationFormView.submitForm()" class="form-button">
+                    提交登记信息
+                  </button>
+                </form>
+                `;
+            },
+
+            handleInput(field, value) {
+                this.formData[field] = value;
+            },
+
+            handleFileUpload(field, event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                // 检查文件大小 (10MB)
+                if (file.size > 10 * 1024 * 1024) {
+                    this.showToast('文件大小不能超过 10MB', 'error');
+                    return;
+                }
+
+                this.formData[field] = file;
+                this.render();
+                this.showToast(`${field === 'depositReceipt' ? '定金凭证' : '补贴协议'}上传成功`);
+            },
+
+            submitForm() {
+                // 简单验证
+                const required = ['dealershipName', 'name', 'phone', 'idCard', 'carModel', 'carPrice', 'subsidyAmount'];
+                for (const field of required) {
+                    if (!this.formData[field] || this.formData[field].trim() === '') {
+                        this.showToast(`请填写${this.getFieldLabel(field)}`, 'error');
+                        return;
+                    }
+                }
+
+                if (!this.formData.depositReceipt) {
+                    this.showToast('请上传定金凭证', 'error');
+                    return;
+                }
+
+                if (!this.formData.subsidyAgreement) {
+                    this.showToast('请上传补贴协议扫描件', 'error');
+                    return;
+                }
+
+                // 模拟提交成功
+                this.showToast('登记信息提交成功！');
+
+                // 模拟延迟后返回上一页
+                setTimeout(() => {
+                    window.history.back();
+                }, 1500);
+            },
+
+            getFieldLabel(field) {
+                const labels = {
+                    dealershipName: '4S店名称',
+                    name: '姓名',
+                    phone: '手机号码',
+                    idCard: '身份证号码',
+                    carModel: '购车车型',
+                    carPrice: '购车金额',
+                    subsidyAmount: '补贴金额'
+                };
+                return labels[field] || field;
+            },
+
+            showToast(message, type = 'success') {
+                if (window.Common && window.Common.showToast) {
+                    window.Common.showToast(message, type);
+                } else {
+                    // 简单的后备方案
+                    const toast = document.createElement('div');
+                    toast.className = `fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/80 text-white px-4 py-2 rounded-lg shadow-lg z-[100] text-sm`;
+                    toast.innerText = message;
+                    document.body.appendChild(toast);
+                    setTimeout(() => toast.remove(), 3000);
+                }
+            },
+
+            render() {
+                // 设置活动ID
+                this.activityId = this.getActivityId();
+
+                const app = document.getElementById('app');
+                app.innerHTML = `
+                    ${this.header()}
+                    <main class="px-4 py-6">
+                        ${this.renderProgress()}
+                        ${this.renderForm()}
+                    </main>
+                `;
+                if (window.Common) window.Common.initIcons();
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => RegistrationFormView.render());
+    </script>
+</body>
+</html>

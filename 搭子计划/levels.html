@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>积分等级说明 - 搭子计划</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .level-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            font-weight: bold;
+            font-size: 14px;
+            color: white;
+            background: linear-gradient(135deg, #f97316, #fbbf24);
+        }
+        .level-badge.current {
+            box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.3);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900 pb-20">
+    <div id="app"></div>
+
+    <script src="data.js?v=2"></script>
+    <script src="common.js?v=2"></script>
+    <script>
+        function render() {
+            const user = window.GlobalData.user;
+            const levelRules = window.GlobalData.levelRules || [];
+            const currentLevel = user.level;
+
+            document.getElementById('app').innerHTML = `
+                <!-- 顶部导航 -->
+                <div class="sticky top-0 z-40 bg-white/95 backdrop-blur-md px-4 py-3 shadow-sm flex items-center justify-between">
+                    <button onclick="window.history.back()" class="p-1.5 rounded-full hover:bg-gray-100 transition">
+                        <i data-lucide="chevron-left" class="w-6 h-6 text-gray-800"></i>
+                    </button>
+                    <h1 class="text-lg font-bold text-gray-900">积分等级说明</h1>
+                    <div class="w-10"></div> <!-- 占位保持对称 -->
+                </div>
+
+                <div class="px-4 pt-4">
+                    <!-- 当前等级概览 -->
+                    <div class="bg-gradient-to-r from-brand-orange to-brand-yellow rounded-2xl p-5 text-white mb-6 shadow-lg">
+                        <div class="flex justify-between items-center mb-4">
+                            <div>
+                                <div class="text-sm opacity-90">当前等级</div>
+                                <div class="text-4xl font-black mt-1">LV.${currentLevel}</div>
+                            </div>
+                            <div class="bg-white/20 px-4 py-2 rounded-full text-lg font-bold flex items-center gap-2">
+                                <i data-lucide="trophy" class="w-6 h-6"></i>
+                                ${currentLevel < 10 ? '还需 ' + (user.nextLevelPoints - user.points) + ' 积分升级' : '最高等级'}
+                            </div>
+                        </div>
+                        <div class="text-sm opacity-90">
+                            当前积分：<span class="font-bold">${user.points}</span>，下一等级：<span class="font-bold">LV.${currentLevel + 1}</span>
+                        </div>
+                    </div>
+
+                    <!-- 等级规则说明 -->
+                    <div class="bg-white rounded-2xl p-4 shadow-sm mb-6">
+                        <h3 class="font-bold text-gray-900 mb-3 flex items-center gap-2">
+                            <i data-lucide="list" class="w-4 h-4 text-brand-orange"></i>
+                            等级规则总览
+                        </h3>
+                        <div class="space-y-2 text-sm text-gray-600">
+                            <div class="flex items-start gap-2">
+                                <i data-lucide="check-circle" class="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0"></i>
+                                <div>平台共设10个等级，等级越高，享有的特权越多</div>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <i data-lucide="check-circle" class="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0"></i>
+                                <div>通过参与活动、发布动态、邀请好友等方式获取积分</div>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <i data-lucide="check-circle" class="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0"></i>
+                                <div>积分达到对应等级要求后自动升级，无需手动申请</div>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <i data-lucide="check-circle" class="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0"></i>
+                                <div>积分不会过期，请放心积累</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 等级详情表格 -->
+                    <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+                        <div class="p-4 border-b border-gray-50">
+                            <h3 class="font-bold text-gray-900">等级特权详情</h3>
+                            <div class="text-xs text-gray-400 mt-1">共 ${levelRules.length} 个等级</div>
+                        </div>
+
+                        <div class="divide-y divide-gray-50">
+                            ${levelRules.map(rule => {
+                                const isCurrent = rule.level === currentLevel;
+                                const isPast = rule.level < currentLevel;
+                                const isFuture = rule.level > currentLevel;
+
+                                return `
+                                    <div class="p-4 ${isCurrent ? 'bg-orange-50' : ''}">
+                                        <div class="flex items-start gap-3">
+                                            <div class="flex-shrink-0">
+                                                <div class="level-badge ${isCurrent ? 'current' : ''}" style="background: ${isCurrent ? 'linear-gradient(135deg, #f97316, #fbbf24)' : isPast ? 'linear-gradient(135deg, #9ca3af, #6b7280)' : 'linear-gradient(135deg, #d1d5db, #9ca3af)'}">
+                                                    ${rule.level}
+                                                </div>
+                                            </div>
+                                            <div class="flex-1 min-w-0">
+                                                <div class="flex justify-between items-start mb-2">
+                                                    <div>
+                                                        <h4 class="font-bold text-gray-900">LV.${rule.level} ${isCurrent ? '<span class="text-xs text-orange-500 font-medium">(当前等级)</span>' : ''}</h4>
+                                                        <div class="text-xs text-gray-500 mt-0.5">
+                                                            积分要求：${rule.minPoints} - ${rule.maxPoints === 999999 ? '∞' : rule.maxPoints}
+                                                        </div>
+                                                    </div>
+                                                    <div class="flex items-center gap-1">
+                                                        ${isPast ? '<span class="text-xs px-2 py-0.5 bg-green-100 text-green-700 rounded-full">已达成</span>' : ''}
+                                                        ${isCurrent ? '<span class="text-xs px-2 py-0.5 bg-orange-100 text-orange-700 rounded-full">当前等级</span>' : ''}
+                                                        ${isFuture ? '<span class="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full">待升级</span>' : ''}
+                                                    </div>
+                                                </div>
+
+                                                <div class="space-y-1.5">
+                                                    <div class="text-xs font-medium text-gray-700">专属特权：</div>
+                                                    <div class="space-y-1">
+                                                        ${rule.privileges.map(privilege => `
+                                                            <div class="flex items-start gap-1.5">
+                                                                <i data-lucide="star" class="w-3 h-3 text-brand-orange mt-0.5 flex-shrink-0"></i>
+                                                                <div class="text-xs text-gray-600 flex-1">${privilege}</div>
+                                                            </div>
+                                                        `).join('')}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+
+                    <!-- 积分获取方式 -->
+                    <div class="bg-white rounded-2xl p-4 shadow-sm mt-6">
+                        <h3 class="font-bold text-gray-900 mb-3 flex items-center gap-2">
+                            <i data-lucide="zap" class="w-4 h-4 text-brand-orange"></i>
+                            如何获取积分
+                        </h3>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="bg-gradient-to-br from-orange-50 to-yellow-50 rounded-xl p-3">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <i data-lucide="log-in" class="w-5 h-5 text-orange-500"></i>
+                                    <div class="text-xs font-bold text-gray-900">每日登录</div>
+                                </div>
+                                <div class="text-xs text-gray-600">+10 积分/天</div>
+                            </div>
+                            <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-3">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <i data-lucide="calendar" class="w-5 h-5 text-green-500"></i>
+                                    <div class="text-xs font-bold text-gray-900">参与活动</div>
+                                </div>
+                                <div class="text-xs text-gray-600">+50 积分/次</div>
+                            </div>
+                            <div class="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-3">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <i data-lucide="edit-3" class="w-5 h-5 text-blue-500"></i>
+                                    <div class="text-xs font-bold text-gray-900">发布动态</div>
+                                </div>
+                                <div class="text-xs text-gray-600">+20 积分/条</div>
+                            </div>
+                            <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-3">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <i data-lucide="users" class="w-5 h-5 text-purple-500"></i>
+                                    <div class="text-xs font-bold text-gray-900">邀请好友</div>
+                                </div>
+                                <div class="text-xs text-gray-600">+200 积分/人</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                ${window.Common.renderBottomNav('me')}
+            `;
+            window.Common.initIcons();
+        }
+
+        document.addEventListener('DOMContentLoaded', render);
+    </script>
+</body>
+</html>

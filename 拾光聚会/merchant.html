@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>合作商家 - 拾光聚会</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900 antialiased selection:bg-brand-orange selection:text-white pb-20">
+    <!-- 浮动装饰元素 -->
+    <div class="floating-shapes">
+        <div class="floating-shape"></div>
+        <div class="floating-shape"></div>
+        <div class="floating-shape"></div>
+        <div class="floating-shape"></div>
+    </div>
+
+    <div id="app" class="min-h-screen"></div>
+
+    <script src="data.js?v=4"></script>
+    <script src="common.js?v=2"></script>
+
+    <script>
+        const MerchantView = {
+            header() {
+                return `
+                <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md px-4 py-3 shadow-sm">
+                  <div class="flex items-center gap-3">
+                    <button onclick="window.location.href='index.html'" class="p-1.5 rounded-full hover:bg-gray-100 transition-colors">
+                      <i data-lucide="arrow-left" class="w-5 h-5 text-gray-800"></i>
+                    </button>
+                    <div class="flex-1">
+                      <h1 class="text-lg font-bold text-gray-900">合作商家</h1>
+                    </div>
+                    <div class="relative p-1.5 rounded-full hover:bg-gray-100 transition-colors">
+                      <i data-lucide="search" class="w-5 h-5 text-gray-800"></i>
+                    </div>
+                  </div>
+                </header>
+                `;
+            },
+
+            merchantList() {
+                const partners = window.GlobalData?.partners || [];
+                if (partners.length === 0) return '<div class="p-4 text-center text-gray-400">暂无商家</div>';
+
+                const listHtml = partners.map(partner => `
+                    <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 mb-4" onclick="window.location.href='merchant-detail.html?id=${partner.id}'" style="cursor: pointer;">
+                        <div class="flex items-start gap-3">
+                            <div class="relative">
+                                <img src="${partner.avatarUrl}" class="w-16 h-16 rounded-xl object-cover border border-gray-200" />
+                                ${partner.verified ? '<div class="absolute -top-1 -right-1 bg-brand-orange text-white text-[8px] px-1.5 py-0.5 rounded-full">认证</div>' : ''}
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex items-center justify-between mb-1">
+                                    <h3 class="font-bold text-gray-800">${partner.name}</h3>
+                                    <span class="text-xs text-gray-400">${partner.distance}</span>
+                                </div>
+                                <div class="flex flex-wrap gap-1 mb-2">
+                                    ${partner.tags.map(tag => `<span class="text-[10px] px-2 py-0.5 bg-gray-50 text-gray-500 rounded-md border border-gray-100">${tag}</span>`).join('')}
+                                </div>
+                                <p class="text-sm text-gray-500 mb-3">${partner.intro}</p>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center text-xs text-gray-400">
+                                        <i data-lucide="star" class="w-3 h-3 mr-1 text-yellow-400 fill-yellow-400"></i>
+                                        <span>4.8</span>
+                                        <span class="mx-1">·</span>
+                                        <i data-lucide="users" class="w-3 h-3 mr-1"></i>
+                                        <span>500+ 关注</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <button class="px-3 py-1.5 text-xs bg-gray-100 text-gray-700 font-medium rounded-full" onclick="event.stopPropagation()">
+                                            关注
+                                        </button>
+                                        <button class="px-3 py-1.5 text-xs bg-gradient-to-r from-brand-orange to-brand-yellow text-white font-bold rounded-full" onclick="event.stopPropagation()">
+                                            咨询
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+
+                return `<div class="px-4 py-3">${listHtml}</div>`;
+            },
+
+            categoryFilter() {
+                const categories = [
+                    { label: '全部', icon: 'grid' },
+                    { label: '4S店', icon: 'car' },
+                    { label: '新能源', icon: 'battery-charging' },
+                    { label: '维修保养', icon: 'wrench' },
+                    { label: '汽车美容', icon: 'sparkles' }
+                ];
+
+                const catsHtml = categories.map(cat => `
+                    <button class="flex flex-col items-center gap-1.5 px-2 py-1.5 rounded-xl hover:bg-gray-50 transition-colors">
+                        <div class="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
+                            <i data-lucide="${cat.icon}" class="w-5 h-5 text-gray-600"></i>
+                        </div>
+                        <span class="text-[10px] text-gray-600">${cat.label}</span>
+                    </button>
+                `).join('');
+
+                return `
+                <div class="px-4 py-3">
+                    <div class="flex overflow-x-auto gap-3 no-scrollbar pb-2">
+                        ${catsHtml}
+                    </div>
+                </div>
+                `;
+            },
+
+            render() {
+                const app = document.getElementById('app');
+                app.innerHTML = `
+                    ${this.header()}
+                    <main>
+                        ${this.categoryFilter()}
+                        <div class="px-4 py-2">
+                            <h2 class="text-xl font-black text-gray-800 mb-3">推荐商家</h2>
+                        </div>
+                        ${this.merchantList()}
+                    </main>
+                    ${window.Common ? window.Common.renderBottomNav('merchant') : ''}
+                `;
+                if (window.Common) window.Common.initIcons();
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => MerchantView.render());
+    </script>
+</body>
+</html>

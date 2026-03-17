@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>搭子计划 - 首页</title>
+    
+    <!-- 引入资源 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 核心修复：使用 jsdelivr 引用 UMD 版本 -->
+    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- 强制隐藏滚动条样式 -->
+    <style>
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.2.4",
+    "lucide-react": "https://esm.sh/lucide-react@^0.574.0",
+    "react/": "https://esm.sh/react@^19.2.4/"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body class="bg-gray-50 text-gray-900 antialiased selection:bg-brand-orange selection:text-white pb-20">
+
+    <!-- 浮动装饰元素 -->
+    <div class="floating-shapes">
+        <div class="floating-shape"></div>
+        <div class="floating-shape"></div>
+        <div class="floating-shape"></div>
+        <div class="floating-shape"></div>
+    </div>
+
+    <!-- 应用挂载点 -->
+    <div id="app" class="min-h-screen"></div>
+
+    <!-- 引入逻辑 -->
+    <script src="data.js?v=2"></script>
+    <script src="common.js?v=2"></script>
+
+    <script>
+        // Data Fallback: Ensure GlobalData exists even if data.js fails to load
+        if (!window.GlobalData) {
+            console.warn('data.js failed to load, using inline fallback data.');
+            window.GlobalData = {
+                user: {
+                    id: 'u1',
+                    name: 'ActiveExplorer',
+                    avatarUrl: 'https://picsum.photos/100/100',
+                    following: 42,
+                    followers: 108,
+                    activities: 5
+                },
+                bannerImages: [
+                    "https://tingtingfm.vbegin.com.cn/upload/2026/0213/20bd5e9111a64c1aba3ac649691e4bff.png",
+                    "https://tingtingfm.vbegin.com.cn/upload/2026/0213/361e30f4fbb04a669befd8f6aed93639.png",
+                    "https://images.unsplash.com/photo-1566140967404-b8b3932483f5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                ],
+                categories: [
+                    { id: 'c1', label: '运动', icon: 'dribbble', color: 'bg-orange-100 text-orange-600' },
+                    { id: 'c2', label: '户外', icon: 'tent', color: 'bg-green-100 text-green-600' },
+                    { id: 'c3', label: '饭搭子', icon: 'utensils', color: 'bg-yellow-100 text-yellow-600' },
+                    { id: 'c7', label: '游戏', icon: 'gamepad-2', color: 'bg-indigo-100 text-indigo-600' },
+                    { id: 'c4', label: '看展', icon: 'palette', color: 'bg-purple-100 text-purple-600' },
+                    { id: 'c8', label: '旅行', icon: 'tv', color: 'bg-cyan-100 text-cyan-600' },
+                    { id: 'c5', label: '娱乐', icon: 'mic', color: 'bg-pink-100 text-pink-600' },
+                    { id: 'c9', label: '读书', icon: 'book-open', color: 'bg-emerald-100 text-emerald-600' },
+                    { id: 'c10', label: '音乐', icon: 'music', color: 'bg-rose-100 text-rose-600' }
+                ],
+                partners: [
+                    {
+                        id: 'p1',
+                        name: '滑雪大冒险',
+                        avatarUrl: 'https://picsum.photos/100/100?random=20',
+                        tags: ['单板', '自驾', '摄影'],
+                        intro: '崇礼周末往返，缺人拼车！',
+                        distance: '1.2km'
+                    },
+                    {
+                        id: 'p2',
+                        name: 'CoffeeJane',
+                        avatarUrl: 'https://picsum.photos/100/100?random=21',
+                        tags: ['探店', '手冲', '阅读'],
+                        intro: '寻找三里屯附近的咖啡搭子。',
+                        distance: '0.5km'
+                    },
+                    {
+                        id: 'p3',
+                        name: '健身狂魔',
+                        avatarUrl: 'https://picsum.photos/100/100?random=22',
+                        tags: ['举铁', '增肌', '早起'],
+                        intro: '每天早上6点健身房见。',
+                        distance: '3.0km'
+                    },
+                    {
+                        id: 'p4',
+                        name: '剧本杀DM',
+                        avatarUrl: 'https://picsum.photos/100/100?random=23',
+                        tags: ['推理', '演绎'],
+                        intro: '缺1人，硬核本，速来！',
+                        distance: '5.2km'
+                    }
+                ],
+                activities: [
+                    {
+                        id: 'a1',
+                        title: '朝阳公园飞盘新手局',
+                        description: '欢迎萌新！有专业教练指导，并在活动后一起聚餐。不用担心接不到盘，主要是为了快乐流汗！',
+                        category: 'SPORTS',
+                        imageUrl: 'https://images.unsplash.com/photo-1531415074968-036ba1b575da?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                        location: '朝阳公园南门草坪',
+                        district: '朝阳区',
+                        date: '本周六 14:00',
+                        price: 39,
+                        organizer: { id: 'u2', name: '飞盘小队长', avatarUrl: 'https://picsum.photos/50/50?random=2', intro: '拥有3年飞盘经验的快乐修狗' },
+                        status: 'RECRUITING',
+                        currentParticipants: 12,
+                        maxParticipants: 20,
+                        tags: ['萌新友好', '含饮料', '社交']
+                    },
+                    {
+                        id: 'a2',
+                        title: '三里屯Bistro早午餐',
+                        description: '打卡网红Bistro，聊聊最近的工作和生活，寻找志同道合的朋友。餐厅环境很好，适合拍照。',
+                        category: 'DINING',
+                        imageUrl: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                        location: '三里屯太古里北区',
+                        district: '朝阳区',
+                        date: '本周日 11:00',
+                        price: 0,
+                        organizer: { id: 'u3', name: 'FoodieJane', avatarUrl: 'https://picsum.photos/50/50?random=4', intro: '专注于寻找北京好吃的' },
+                        status: 'RECRUITING',
+                        currentParticipants: 3,
+                        maxParticipants: 6,
+                        tags: ['AA制', '拍照', '美食']
+                    },
+                    {
+                        id: 'a3',
+                        title: '奥森公园5km慢跑+拉伸',
+                        description: '不仅是跑步，更是为了呼吸新鲜空气。配速600，不卷。跑完会在草地上带大家做15分钟拉伸。',
+                        category: 'SPORTS',
+                        imageUrl: 'https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                        location: '奥林匹克森林公园南门',
+                        district: '朝阳区',
+                        date: '今晚 19:30',
+                        price: 0,
+                        organizer: { id: 'u4', name: '夜跑达人', avatarUrl: 'https://picsum.photos/50/50?random=6', intro: '自律即自由' },
+                        status: 'FULL',
+                        currentParticipants: 10,
+                        maxParticipants: 10,
+                        tags: ['免费', '健康', '夜跑']
+                    },
+                    {
+                        id: 'a4',
+                        title: '环球影城一日游搭子',
+                        description: '主要想刷霸天虎过山车，有没有一起的？最好有优速通。我性格随和，会拍照。',
+                        category: 'ENTERTAINMENT',
+                        imageUrl: 'https://images.unsplash.com/photo-1513883049090-d0b7439799bf?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                        location: '北京环球度假区',
+                        district: '通州区',
+                        date: '下周五 全天',
+                        price: 0,
+                        organizer: { id: 'u5', name: '魔法师', avatarUrl: 'https://picsum.photos/50/50?random=8', intro: '霍格沃茨在读研究生' },
+                        status: 'RECRUITING',
+                        currentParticipants: 1,
+                        maxParticipants: 3,
+                        tags: ['哈利波特', '过山车']
+                    }
+                ],
+                moments: [
+                    {
+                        id: 'mo1',
+                        userId: 'u1',
+                        content: '今天天气真好，在亮马河边发呆，有没有一起喝咖啡的？☕️ #亮马河 #咖啡',
+                        images: ['https://images.unsplash.com/photo-1497935586351-b67a49e012bf?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'],
+                        likes: 45,
+                        comments: 12,
+                        time: '10分钟前',
+                        location: '亮马河国际风情水岸'
+                    },
+                    {
+                        id: 'mo2',
+                        userId: 'p1',
+                        content: '崇礼万龙开板啦！雪质无敌！这个周末还要来冲！🎿',
+                        images: [
+                            'https://images.unsplash.com/photo-1551698618-1dfe5d97d256?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                            'https://images.unsplash.com/photo-1565992441121-4367c2967103?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+                        ],
+                        likes: 128,
+                        comments: 34,
+                        time: '1小时前',
+                        location: '万龙滑雪场'
+                    }
+                ]
+            };
+        }
+
+        const View = {
+            filterType: 'latest', // 'latest' or 'nearest'
+
+            header() {
+                return `
+                <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md px-4 py-3 shadow-sm">
+                  <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-0.5 cursor-pointer min-w-fit">
+                      <span class="text-gray-900 font-bold text-base">北京</span>
+                      <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-gray-600"></i>
+                    </div>
+                    <div class="flex-1 relative">
+                      <div class="flex items-center bg-gray-100 rounded-full px-3 py-2 cursor-pointer" onclick="handleSearch()">
+                        <i data-lucide="search" class="w-4 h-4 text-gray-400 mr-2"></i>
+                        <input id="search-input" type="text" placeholder="找搭子、找活动..." class="bg-transparent border-none outline-none text-sm w-full placeholder-gray-400 text-gray-800" onkeypress="if(event.key === 'Enter') handleSearch()"/>
+                      </div>
+                    </div>
+                    <button class="relative p-1.5 rounded-full hover:bg-gray-100 transition-colors" onclick="window.location.href='message.html?tab=notification'">
+                      <i data-lucide="bell" class="w-5 h-5 text-gray-800"></i>
+                      <span class="absolute top-1 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
+                    </button>
+                  </div>
+                </header>
+                `;
+            },
+
+            banner() {
+                const bannerImages = window.GlobalData?.bannerImages || [];
+                if (bannerImages.length === 0) return '';
+                
+                // 定义每个 banner 的跳转链接
+                const bannerLinks = [
+                    '#',  // 第一个 banner 无跳转
+                    '#',  // 第二个 banner 无跳转
+                    'tree-growth.html'  // 第三个 banner 跳转到浇个朋友活动
+                ];
+                const imagesHtml = bannerImages.map((src, index) => `
+                    <img src="${src}" alt="Banner ${index}" class="w-full h-auto object-cover object-top flex-shrink-0 snap-center min-w-full cursor-pointer" style="aspect-ratio: 21/9;" onclick="window.location.href='${bannerLinks[index] || '#'}'"/>
+                `).join('');
+                const dotsHtml = bannerImages.map((_, index) => `
+                    <div class="w-1.5 h-1.5 rounded-full transition-all ${index === 0 ? 'bg-white w-3' : 'bg-white/50'}"></div>
+                `).join('');
+
+                return `
+                <div class="px-4 py-3">
+                  <div class="relative w-full rounded-2xl overflow-hidden shadow-sm bg-gray-100 group">
+                    <div id="banner-container" class="flex overflow-x-auto snap-x snap-mandatory no-scrollbar w-full scroll-smooth" style="scrollbar-width: none; -ms-overflow-style: none;">
+                        ${imagesHtml}
+                    </div>
+                    <div class="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 p-1 bg-black/10 rounded-full backdrop-blur-[2px]">
+                        ${dotsHtml}
+                    </div>
+                  </div>
+                </div>
+                `;
+            },
+
+            categoryGrid() {
+                const categories = window.GlobalData?.categories || [];
+                if (categories.length === 0) return '';
+                
+                // 链接到 category.html
+                const displayCats = categories.slice(0, 9);
+                const catsHtml = displayCats.map(cat => `
+                    <div class="flex flex-col items-center gap-1.5 cursor-pointer group" onclick="window.location.href='category.html?view=activity&cat=${cat.id}'">
+                        <div class="w-11 h-11 ${cat.color} rounded-xl flex items-center justify-center shadow-sm group-active:scale-95 transition-transform">
+                          <i data-lucide="${cat.icon}" class="w-5 h-5"></i>
+                        </div>
+                        <span class="text-[11px] text-gray-600 font-medium tracking-tight">${cat.label}</span>
+                    </div>
+                `).join('');
+                
+                const moreBtnHtml = `
+                    <div class="flex flex-col items-center gap-1.5 cursor-pointer group" onclick="window.location.href='category.html?view=activity'">
+                        <div class="w-11 h-11 bg-gray-100 text-gray-500 rounded-xl flex items-center justify-center shadow-sm group-active:scale-95 transition-transform">
+                          <i data-lucide="layout-grid" class="w-5 h-5"></i>
+                        </div>
+                        <span class="text-[11px] text-gray-600 font-medium tracking-tight">全部</span>
+                    </div>
+                `;
+                return `<div class="px-4 py-2"><div class="grid grid-cols-5 gap-y-4 gap-x-2">${catsHtml}${moreBtnHtml}</div></div>`;
+            },
+
+            partnerRail() {
+                const partners = window.GlobalData?.partners || [];
+                if (partners.length === 0) return '';
+                
+                const partnersHtml = partners.map(partner => `
+                  <div onclick="window.location.href='profile.html?id=${partner.id}'" class="flex-shrink-0 w-36 bg-white rounded-xl p-3 shadow-sm border border-gray-100 relative overflow-hidden group cursor-pointer">
+                    <div class="absolute -right-4 -top-4 w-16 h-16 bg-gradient-to-br from-brand-orange/10 to-brand-yellow/10 rounded-full blur-xl"></div>
+                    <div class="flex flex-col items-center relative z-10">
+                      <div class="relative mb-2">
+                        <img src="${partner.avatarUrl}" class="w-14 h-14 rounded-full border-2 border-white shadow-md object-cover"/>
+                        <div class="absolute bottom-0 right-0 bg-brand-blue text-[8px] text-white px-1.5 py-0.5 rounded-full border border-white">${partner.distance}</div>
+                      </div>
+                      <h3 class="font-bold text-gray-900 text-sm mb-1 truncate w-full text-center">${partner.name}</h3>
+                      <div class="flex flex-wrap justify-center gap-1 mb-2 h-5 overflow-hidden">
+                        ${partner.tags.slice(0, 2).map(tag => `<span class="text-[9px] px-1.5 py-0.5 bg-gray-50 text-gray-500 rounded-md border border-gray-100">${tag}</span>`).join('')}
+                      </div>
+                      <p class="text-[10px] text-gray-400 text-center line-clamp-2 h-8 leading-tight w-full mb-2 bg-gray-50/50 rounded p-1">"${partner.intro}"</p>
+                      <button class="w-full py-1 bg-gradient-to-r from-gray-900 to-gray-700 text-white text-[10px] font-bold rounded-full shadow-lg shadow-gray-200 active:scale-95 transition-transform flex items-center justify-center gap-1" onclick="event.stopPropagation(); window.location.href='chat.html?uid=${partner.id}&name=${encodeURIComponent(partner.name)}'">
+                        <i data-lucide="message-circle" class="w-2.5 h-2.5"></i><span>搭讪</span>
+                      </button>
+                    </div>
+                  </div>
+                `).join('');
+                return `
+                <div class="pt-4 pb-2">
+                  <div class="px-4 flex items-center justify-between mb-3">
+                    <div class="flex items-center gap-1.5"><div class="p-1 bg-brand-yellow/20 rounded-md"><i data-lucide="sparkles" class="w-4 h-4 text-brand-orange fill-brand-orange"></i></div><h2 class="text-lg font-black text-gray-900">推荐搭子</h2></div>
+                    <button onclick="window.location.href='category.html?view=partner'" class="text-xs text-gray-400 flex items-center">查看更多 <span class="ml-1">&gt;</span></button>
+                  </div>
+                  <div class="flex overflow-x-auto px-4 gap-3 no-scrollbar pb-2" style="scrollbar-width: none; -ms-overflow-style: none;">${partnersHtml}</div>
+                </div>
+                `;
+            },
+
+            activityFeed() {
+                let activities = window.GlobalData?.activities || [];
+                if (activities.length === 0) return '<div class="p-4 text-center text-gray-400">暂无活动</div>';
+
+                // 根据当前筛选类型排序
+                if (this.filterType === 'latest') {
+                    // 按ID降序排序，假设ID越大越新
+                    activities = [...activities].sort((a, b) => {
+                        const aNum = parseInt(a.id.replace('a', '')) || 0;
+                        const bNum = parseInt(b.id.replace('a', '')) || 0;
+                        return bNum - aNum;
+                    });
+                } else if (this.filterType === 'nearest') {
+                    // 模拟按距离排序：为每个区域分配一个距离值
+                    const districtDistance = {
+                        '朝阳区': 1,
+                        '通州区': 5,
+                        '海淀区': 3,
+                        '东城区': 2,
+                        '西城区': 2,
+                        '丰台区': 4
+                    };
+                    activities = [...activities].sort((a, b) => {
+                        const aDist = districtDistance[a.district] || 10;
+                        const bDist = districtDistance[b.district] || 10;
+                        return aDist - bDist;
+                    });
+                }
+                
+                // 链接到 detail.html
+                const listHtml = activities.map(activity => {
+                    const isFull = activity.status === 'FULL';
+                    const statusBadge = activity.status === 'RECRUITING' 
+                        ? '<span class="bg-brand-orange text-white px-2 py-1 text-xs font-bold rounded-full backdrop-blur-md">招募中</span>' 
+                        : '<span class="bg-gray-500 text-white px-2 py-1 text-xs font-bold rounded-full backdrop-blur-md">已满员</span>';
+                    const btnClass = isFull 
+                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                        : 'bg-gradient-to-r from-brand-orange to-brand-yellow text-white shadow-brand-orange/30 shadow-lg';
+                    
+                    return `
+                    <div onclick="window.location.href='detail.html?id=${activity.id}'" class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-300 mb-4 group cursor-pointer relative fade-in">
+                      <div class="relative h-48 w-full overflow-hidden">
+                        <img src="${activity.imageUrl}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                        <div class="absolute top-3 right-3">${statusBadge}</div>
+                        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3 pt-10">
+                           <div class="flex gap-2">${activity.tags.map(tag => `<span class="text-[10px] bg-white/20 backdrop-blur-sm text-white px-2 py-0.5 rounded-md border border-white/30">#${tag}</span>`).join('')}</div>
+                        </div>
+                      </div>
+                      <div class="p-4">
+                        <h3 class="text-lg font-bold text-gray-800 mb-2 line-clamp-1">${activity.title}</h3>
+                        <div class="space-y-2 text-sm text-gray-500">
+                          <div class="flex items-center gap-2"><i data-lucide="calendar" class="w-3.5 h-3.5 text-brand-blue"></i><span>${activity.date}</span></div>
+                          <div class="flex items-center gap-2"><i data-lucide="map-pin" class="w-3.5 h-3.5 text-brand-blue"></i><span class="line-clamp-1">${activity.district} · ${activity.location}</span></div>
+                        </div>
+                        <div class="mt-4 flex items-center justify-between">
+                          <div class="flex items-center gap-2 z-10" onclick="event.stopPropagation(); window.location.href='profile.html?id=${activity.organizer.id}'">
+                            <img src="${activity.organizer.avatarUrl}" class="w-6 h-6 rounded-full border border-gray-200" />
+                            <span class="text-xs text-gray-500 truncate max-w-[80px]">${activity.organizer.name}</span>
+                          </div>
+                          <div class="flex items-center gap-3">
+                             <div class="flex items-center text-xs text-gray-400"><i data-lucide="users" class="w-3.5 h-3.5 mr-1"></i><span>${activity.currentParticipants}/${activity.maxParticipants}</span></div>
+                             <button class="flex items-center gap-1 px-4 py-1.5 rounded-full text-sm font-bold transition-colors ${btnClass}">${isFull ? '已满' : '去报名'}</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    `;
+                }).join('');
+
+                return `
+                <div class="px-4 pb-2 pt-4">
+                  <div class="flex items-center justify-between mb-4 sticky top-[60px] z-30 bg-gray-50/95 backdrop-blur py-2">
+                    <div class="flex items-center gap-1"><i data-lucide="sparkles" class="w-5 h-5 text-brand-orange fill-brand-orange"></i><h2 class="text-xl font-black text-gray-800 italic">热门活动</h2></div>
+                    <div class="flex bg-white rounded-full p-1 shadow-sm border border-gray-100">
+                       <button onclick="View.setFilterType('latest')" class="px-3 py-1 text-xs rounded-full font-medium transition-all ${this.filterType === 'latest' ? 'bg-gray-900 text-white' : 'text-gray-500 hover:bg-gray-100'}">最新</button>
+                       <button onclick="View.setFilterType('nearest')" class="px-3 py-1 text-xs rounded-full font-medium transition-all ${this.filterType === 'nearest' ? 'bg-gray-900 text-white' : 'text-gray-500 hover:bg-gray-100'}">离我最近</button>
+                    </div>
+                  </div>
+                  <div class="space-y-4">${listHtml}</div>
+                  <div class="mt-6 text-center text-gray-400 text-xs pb-4">已经到底啦 ~</div>
+                </div>
+                `;
+            },
+
+            setFilterType(type) {
+                this.filterType = type;
+                this.render();
+            },
+
+            render() {
+                const app = document.getElementById('app');
+                app.innerHTML = `
+                    ${this.header()}
+                    <main>
+                        ${this.banner()}
+                        ${this.categoryGrid()}
+                        ${this.partnerRail()}
+                        ${this.activityFeed()}
+                    </main>
+                    ${window.Common ? window.Common.renderBottomNav('home') : ''}
+                `;
+                if (window.Common) window.Common.initIcons();
+                
+                // Banner 轮播简易逻辑
+                const container = document.getElementById('banner-container');
+                if (container && window.GlobalData.bannerImages && window.GlobalData.bannerImages.length > 0) {
+                    let currentIndex = 0;
+                    const bannerCount = window.GlobalData.bannerImages.length;
+
+                    // 手动滚动时更新点状指示器
+                    container.addEventListener('scroll', () => {
+                        const width = container.offsetWidth;
+                        const scrollPos = container.scrollLeft;
+                        // 计算当前索引（四舍五入到最近的图片）
+                        const newIndex = Math.round(scrollPos / width);
+                        if (newIndex !== currentIndex && newIndex >= 0 && newIndex < bannerCount) {
+                            currentIndex = newIndex;
+                            updateDots();
+                        }
+                    });
+
+                    // 更新点状指示器函数
+                    function updateDots() {
+                        const dotsContainer = container.nextElementSibling;
+                        if (dotsContainer) {
+                            const dots = dotsContainer.children;
+                            for(let i=0; i<dots.length; i++) {
+                                dots[i].className = `w-1.5 h-1.5 rounded-full transition-all ${i===currentIndex ? 'bg-white w-3' : 'bg-white/50'}`;
+                            }
+                        }
+                    }
+
+                    // 自动轮播
+                    setInterval(() => {
+                         const width = container.offsetWidth;
+                         // 计算下一张图片的位置
+                         currentIndex = (currentIndex + 1) % bannerCount;
+                         // 滚动到对应图片
+                         container.scrollTo({ left: width * currentIndex, behavior: 'smooth' });
+                         updateDots();
+                     }, 4000);
+                }
+            }
+        };
+
+        window.View = View;
+
+        // 搜索处理函数
+        function handleSearch() {
+            const searchInput = document.getElementById('search-input');
+            const query = searchInput?.value?.trim();
+            if (query) {
+                // 跳转到搜索页面，传递搜索关键词
+                window.location.href = `search.html?q=${encodeURIComponent(query)}`;
+            } else {
+                // 如果没有输入关键词，跳转到搜索页面但不带关键词
+                window.location.href = 'search.html';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => View.render());
+    </script>
+<script type="module" src="/index.tsx"></script>
+</body>
+</html>

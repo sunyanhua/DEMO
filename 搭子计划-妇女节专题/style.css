@@ -1,0 +1,848 @@
+/* 基础样式 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Noto Sans SC', sans-serif;
+    background: linear-gradient(135deg, #fff5f5 0%, #fff0f7 100%);
+    color: #333;
+    line-height: 1.6;
+    padding-bottom: 40px;
+}
+
+/* 顶部横幅 */
+.banner {
+    background: linear-gradient(135deg, #FF8C42 0%, #fad0c4 100%);
+    color: white;
+    padding: 30px 20px;
+    text-align: center;
+    border-radius: 0 0 30px 30px;
+    box-shadow: 0 4px 20px rgba(255, 140, 66, 0.2);
+    margin-bottom: 30px;
+}
+
+.banner-content h1 {
+    font-size: 2.2rem;
+    margin-bottom: 10px;
+    font-weight: 700;
+}
+
+.banner-content p.subtitle {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    margin-bottom: 15px;
+    font-weight: 400;
+}
+
+.festival-theme {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 8px 20px;
+    border-radius: 30px;
+    font-size: 1rem;
+    backdrop-filter: blur(10px);
+}
+
+/* 分区标题 */
+.section-header {
+    text-align: center;
+    margin-bottom: 25px;
+    padding: 0 20px;
+}
+
+.section-header h2 {
+    font-size: 1.8rem;
+    color: #FF6B00;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.section-header p {
+    color: #666;
+    font-size: 1rem;
+}
+
+/* 弹幕留言区 */
+.danmu-section {
+    background: linear-gradient(135deg, rgba(255, 248, 248, 0.95) 0%, rgba(255, 240, 247, 0.95) 100%);
+    margin: 0 20px 30px;
+    padding: 25px;
+    border-radius: 20px;
+    box-shadow: 0 8px 25px rgba(255, 107, 0, 0.15);
+    border: 1px solid rgba(255, 107, 0, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.danmu-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: linear-gradient(90deg, #FF6B00, #FF8C42);
+    border-radius: 20px 20px 0 0;
+}
+
+.danmu-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.danmu-display {
+    height: 250px;
+    background: #f8f9fa;
+    border-radius: 15px;
+    border: 2px dashed #FFC8A2;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+.danmu-input {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 10px;
+}
+
+.danmu-input input {
+    flex: 1;
+    padding: 15px;
+    border: 2px solid #FFC8A2;
+    border-radius: 12px;
+    font-size: 1rem;
+    transition: all 0.3s;
+}
+
+.danmu-input input:focus {
+    outline: none;
+    border-color: #FF6B00;
+    box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.2);
+}
+
+.danmu-input button {
+    background: linear-gradient(135deg, #FF6B00, #FFA042);
+    color: white;
+    border: none;
+    padding: 15px 25px;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.danmu-input button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(255, 107, 0, 0.4);
+}
+
+.danmu-hint {
+    text-align: center;
+    color: #888;
+    font-size: 0.9rem;
+}
+
+/* 弹幕项样式 */
+.danmu-item {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 20px;
+    border-radius: 30px;
+    background: rgba(255, 255, 255, 0.98);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    z-index: 10;
+    animation: danmuMove linear forwards;
+    backdrop-filter: blur(10px);
+    max-width: 400px;
+}
+
+.danmu-user {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.danmu-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(255, 255, 255, 0.8);
+}
+
+.danmu-username {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #333;
+    white-space: nowrap;
+}
+
+.danmu-text {
+    font-size: 1rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 250px;
+}
+
+@keyframes danmuMove {
+    from {
+        transform: translateX(100vw);
+    }
+    to {
+        transform: translateX(-100%);
+    }
+}
+
+/* 话题发布区 */
+.topic-section {
+    background: linear-gradient(135deg, rgba(248, 251, 255, 0.95) 0%, rgba(240, 245, 255, 0.95) 100%);
+    margin: 0 20px 30px;
+    padding: 25px;
+    border-radius: 20px;
+    box-shadow: 0 8px 25px rgba(106, 17, 203, 0.15);
+    border: 1px solid rgba(106, 17, 203, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.topic-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: linear-gradient(90deg, #6A11CB, #2575FC);
+    border-radius: 20px 20px 0 0;
+}
+
+.post-button {
+    background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+    border-radius: 20px;
+    padding: 25px;
+    display: flex;
+    align-items: center;
+    gap: 25px;
+    margin-bottom: 30px;
+    cursor: pointer;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.post-button:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(168, 237, 234, 0.4);
+}
+
+.post-icon {
+    background: white;
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    color: #FF6B00;
+}
+
+.post-text h3 {
+    font-size: 1.6rem;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.post-text p {
+    color: #666;
+}
+
+.dynamic-feed {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.dynamic-card {
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 18px;
+    transition: transform 0.3s;
+}
+
+.dynamic-card:hover {
+    transform: translateY(-3px);
+}
+
+.user-avatar img {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.dynamic-content {
+    flex: 1;
+}
+
+.dynamic-content h4 {
+    font-size: 1.2rem;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.time {
+    font-size: 0.9rem;
+    color: #888;
+    font-weight: normal;
+}
+
+.dynamic-content p {
+    margin-bottom: 15px;
+    line-height: 1.5;
+}
+
+.dynamic-image img {
+    width: 100%;
+    max-height: 300px;
+    object-fit: cover;
+    border-radius: 12px;
+    margin-bottom: 15px;
+}
+
+.dynamic-actions {
+    display: flex;
+    gap: 20px;
+}
+
+.dynamic-actions button {
+    background: none;
+    border: none;
+    color: #666;
+    font-size: 0.95rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: color 0.2s;
+}
+
+.dynamic-actions button:hover {
+    color: #FF6B00;
+}
+
+/* 活动推荐区 */
+.activity-section {
+    background: linear-gradient(135deg, rgba(255, 251, 248, 0.95) 0%, rgba(255, 245, 240, 0.95) 100%);
+    margin: 0 20px 30px;
+    padding: 25px;
+    border-radius: 20px;
+    box-shadow: 0 8px 25px rgba(255, 119, 0, 0.15);
+    border: 1px solid rgba(255, 119, 0, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.activity-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: linear-gradient(90deg, #FF7700, #FFAA42);
+    border-radius: 20px 20px 0 0;
+}
+
+/* 活动横向滚动容器 */
+.activity-scroll-container {
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-bottom: 20px;
+    margin-bottom: 15px;
+    scrollbar-width: thin;
+    scrollbar-color: #FF8C42 #f0f0f0;
+}
+
+.activity-scroll-container::-webkit-scrollbar {
+    height: 8px;
+}
+
+.activity-scroll-container::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 10px;
+}
+
+.activity-scroll-container::-webkit-scrollbar-thumb {
+    background: #FF8C42;
+    border-radius: 10px;
+}
+
+.activity-container {
+    display: flex;
+    gap: 25px;
+    width: max-content;
+    padding: 10px 5px;
+}
+
+.scroll-hint {
+    text-align: center;
+    color: #FF7700;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 10px;
+    opacity: 0.8;
+}
+
+.scroll-hint i {
+    font-size: 0.8rem;
+    animation: pulse 2s infinite;
+}
+
+.activity-card {
+    background: white;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+    transition: transform 0.3s, box-shadow 0.3s;
+    width: 300px;
+    flex-shrink: 0;
+}
+
+.activity-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
+}
+
+.activity-image {
+    position: relative;
+    height: 200px;
+    overflow: hidden;
+}
+
+.activity-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s;
+}
+
+.activity-card:hover .activity-image img {
+    transform: scale(1.05);
+}
+
+.activity-tag {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: #FF6B00;
+    color: white;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.activity-content {
+    padding: 20px;
+}
+
+.activity-content h3 {
+    font-size: 1.4rem;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.activity-content p {
+    color: #666;
+    margin-bottom: 15px;
+    line-height: 1.5;
+}
+
+.activity-info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+    color: #888;
+}
+
+.activity-info span {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.activity-btn {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(135deg, #FF8C42, #fad0c4);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.activity-btn:hover {
+    background: linear-gradient(135deg, #ff7b8e, #f8c0c0);
+    box-shadow: 0 5px 15px rgba(255, 140, 66, 0.4);
+}
+
+/* 往期活动回顾 */
+.review-section {
+    background: linear-gradient(135deg, rgba(248, 255, 248, 0.95) 0%, rgba(240, 255, 240, 0.95) 100%);
+    margin: 0 20px 30px;
+    padding: 25px;
+    border-radius: 20px;
+    box-shadow: 0 8px 25px rgba(0, 150, 0, 0.15);
+    border: 1px solid rgba(0, 150, 0, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.review-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: linear-gradient(90deg, #009600, #42D042);
+    border-radius: 20px 20px 0 0;
+}
+
+.review-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 25px;
+}
+
+.review-card {
+    background: white;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+    transition: transform 0.3s;
+}
+
+.review-card:hover {
+    transform: translateY(-5px);
+}
+
+.review-image {
+    position: relative;
+    height: 200px;
+    overflow: hidden;
+}
+
+.review-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.review-tag {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: #888;
+    color: white;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+}
+
+.review-content {
+    padding: 20px;
+}
+
+.review-content h3 {
+    font-size: 1.4rem;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.review-content p {
+    color: #666;
+    margin-bottom: 15px;
+    line-height: 1.5;
+}
+
+.review-info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+    color: #888;
+}
+
+.review-info span {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.review-btn {
+    display: block;
+    text-align: center;
+    padding: 12px;
+    background: linear-gradient(135deg, #a8edea, #fed6e3);
+    color: #333;
+    text-decoration: none;
+    border-radius: 12px;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.review-btn:hover {
+    background: linear-gradient(135deg, #8ce4e0, #fdc5d8);
+    box-shadow: 0 5px 15px rgba(168, 237, 234, 0.4);
+}
+
+/* 模态框 */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background: white;
+    width: 90%;
+    max-width: 500px;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background: linear-gradient(135deg, #FF8C42 0%, #fad0c4 100%);
+    color: white;
+}
+
+.modal-header h3 {
+    font-size: 1.5rem;
+}
+
+.close-modal {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 2rem;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.modal-body {
+    padding: 25px;
+}
+
+.modal-body textarea {
+    width: 100%;
+    height: 120px;
+    padding: 15px;
+    border: 2px solid #FFC8A2;
+    border-radius: 12px;
+    font-size: 1rem;
+    margin-bottom: 20px;
+    resize: none;
+    font-family: inherit;
+}
+
+.upload-area {
+    border: 2px dashed #FFC8A2;
+    border-radius: 12px;
+    padding: 40px;
+    text-align: center;
+    margin-bottom: 25px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.upload-area:hover {
+    background: #f8f9fa;
+    border-color: #FF6B00;
+}
+
+.upload-area i {
+    font-size: 3rem;
+    color: #FF6B00;
+    margin-bottom: 15px;
+}
+
+.upload-area p {
+    color: #666;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+}
+
+.modal-actions button {
+    padding: 12px 30px;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+}
+
+.cancel-btn {
+    background: #f0f0f0;
+    color: #666;
+}
+
+.cancel-btn:hover {
+    background: #e0e0e0;
+}
+
+.submit-btn {
+    background: linear-gradient(135deg, #FF6B00, #FFA042);
+    color: white;
+}
+
+.submit-btn:hover {
+    background: linear-gradient(135deg, #FF6B00, #ff7d8e);
+    box-shadow: 0 5px 15px rgba(255, 107, 0, 0.4);
+}
+
+/* 底部 */
+footer {
+    text-align: center;
+    padding: 40px 20px;
+    color: #666;
+    font-size: 0.95rem;
+    background: linear-gradient(135deg, #fff5f5 0%, #fff0f7 100%);
+    border-radius: 30px 30px 0 0;
+    margin-top: 40px;
+    border-top: 3px solid #FF6B00;
+}
+
+.footer-title {
+    font-size: 2rem;
+    color: #FF6B00;
+    margin-bottom: 10px;
+    font-weight: 700;
+}
+
+.footer-subtitle {
+    font-size: 1rem;
+    color: #888;
+    margin-bottom: 20px;
+}
+
+footer p {
+    margin-bottom: 10px;
+}
+
+.footer-links a {
+    color: #FF6B00;
+    text-decoration: none;
+    margin: 0 10px;
+    transition: color 0.2s;
+}
+
+.footer-links a:hover {
+    color: #ff4a7c;
+    text-decoration: underline;
+}
+
+/* 动画效果 */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.festival-theme {
+    animation: pulse 2s infinite;
+}
+
+.post-icon {
+    animation: float 3s ease-in-out infinite;
+}
+
+.post-icon:hover {
+    animation: rotate 1s ease-in-out;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .banner-content h1 {
+        font-size: 1.8rem;
+    }
+
+    .section-header h2 {
+        font-size: 1.5rem;
+    }
+
+    .danmu-input {
+        flex-direction: column;
+    }
+
+    .activity-container,
+    .review-container {
+        grid-template-columns: 1fr;
+    }
+
+    .post-button {
+        flex-direction: column;
+        text-align: center;
+        gap: 15px;
+    }
+
+    .dynamic-card {
+        flex-direction: column;
+    }
+
+    .user-avatar {
+        align-self: center;
+    }
+}

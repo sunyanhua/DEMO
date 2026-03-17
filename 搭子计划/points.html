@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>我的积分 - 搭子计划</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gray-50 text-gray-900 pb-20">
+    <div id="app"></div>
+
+    <script src="data.js?v=2"></script>
+    <script src="common.js?v=2"></script>
+    <script>
+        function render() {
+            const user = window.GlobalData.user;
+            const pointsRecords = window.GlobalData.pointsRecords || [];
+
+            document.getElementById('app').innerHTML = `
+                <!-- 顶部导航 -->
+                <div class="sticky top-0 z-40 bg-white/95 backdrop-blur-md px-4 py-3 shadow-sm flex items-center justify-between">
+                    <button onclick="window.history.back()" class="p-1.5 rounded-full hover:bg-gray-100 transition">
+                        <i data-lucide="chevron-left" class="w-6 h-6 text-gray-800"></i>
+                    </button>
+                    <h1 class="text-lg font-bold text-gray-900">我的积分</h1>
+                    <div class="w-10"></div> <!-- 占位保持对称 -->
+                </div>
+
+                <div class="px-4 pt-4">
+                    <!-- 积分概览 -->
+                    <div class="bg-gradient-to-r from-brand-orange to-brand-yellow rounded-2xl p-5 text-white mb-6 shadow-lg">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <div class="text-sm opacity-90">当前积分</div>
+                                <div class="text-4xl font-black mt-1">${user.points}</div>
+                            </div>
+                            <div class="bg-white/20 px-3 py-1.5 rounded-full text-sm font-bold">
+                                LV.${user.level}
+                            </div>
+                        </div>
+
+                        <!-- 等级进度条 -->
+                        <div class="mb-1">
+                            <div class="flex justify-between text-xs mb-1">
+                                <span>当前等级: LV.${user.level}</span>
+                                <span>下一等级: LV.${user.level + 1}</span>
+                            </div>
+                            <div class="h-2 bg-white/30 rounded-full overflow-hidden">
+                                <div class="h-full bg-white rounded-full" style="width: ${Math.min(100, (user.points / user.nextLevelPoints) * 100)}%"></div>
+                            </div>
+                            <div class="text-xs mt-1 opacity-80">
+                                还需 ${user.nextLevelPoints - user.points} 积分升级到 LV.${user.level + 1}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 积分说明 -->
+                    <div class="bg-white rounded-2xl p-4 shadow-sm mb-6">
+                        <h3 class="font-bold text-gray-900 mb-3 flex items-center gap-2">
+                            <i data-lucide="info" class="w-4 h-4 text-brand-orange"></i>
+                            积分说明
+                        </h3>
+                        <div class="space-y-2 text-sm text-gray-600">
+                            <div class="flex items-start gap-2">
+                                <i data-lucide="check-circle" class="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0"></i>
+                                <div>积分可用于兑换优惠券、礼品等</div>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <i data-lucide="check-circle" class="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0"></i>
+                                <div>等级越高，在平台享有的特权越多</div>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <i data-lucide="check-circle" class="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0"></i>
+                                <div>积分不会过期，请放心积累</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 积分记录 -->
+                    <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+                        <div class="p-4 border-b border-gray-50">
+                            <h3 class="font-bold text-gray-900">积分记录</h3>
+                        </div>
+
+                        ${pointsRecords.length > 0 ? pointsRecords.map(record => `
+                            <div class="flex items-center justify-between p-4 border-b border-gray-50 last:border-none">
+                                <div>
+                                    <div class="font-medium text-gray-900">${record.description}</div>
+                                    <div class="text-xs text-gray-400 mt-0.5">${record.time}</div>
+                                </div>
+                                <div class="flex items-center gap-1">
+                                    <span class="font-bold ${record.points > 0 ? 'text-green-500' : 'text-red-500'}">
+                                        ${record.points > 0 ? '+' : ''}${record.points}
+                                    </span>
+                                    <i data-lucide="coffee" class="w-4 h-4 text-brand-orange"></i>
+                                </div>
+                            </div>
+                        `).join('') : `
+                            <div class="p-8 text-center text-gray-400">
+                                <i data-lucide="coffee" class="w-12 h-12 mx-auto mb-3 opacity-30"></i>
+                                <div class="text-sm">暂无积分记录</div>
+                            </div>
+                        `}
+                    </div>
+                </div>
+
+                ${window.Common.renderBottomNav('me')}
+            `;
+            window.Common.initIcons();
+        }
+
+        document.addEventListener('DOMContentLoaded', render);
+    </script>
+</body>
+</html>

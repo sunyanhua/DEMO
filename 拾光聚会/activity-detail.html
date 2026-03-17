@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>活动详情 - 拾光聚会</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .detail-header-image {
+            height: 300px;
+            object-fit: cover;
+            width: 100%;
+        }
+        .info-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .info-item:last-child {
+            border-bottom: none;
+        }
+        .tab-container {
+            margin-top: 1rem;
+        }
+        .tab-header {
+            display: flex;
+            border-bottom: 1px solid #e5e7eb;
+            margin-bottom: 1rem;
+        }
+        .tab-button {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            text-align: center;
+            font-weight: 500;
+            color: #6b7280;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .tab-button:hover {
+            color: #374151;
+        }
+        .tab-button.active {
+            color: #e8a87c;
+            border-bottom-color: #e8a87c;
+            font-weight: 600;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+
+        /* 横向步骤样式 */
+        .step-container {
+            margin-bottom: 2rem;
+        }
+        .step-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+        .step-header::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background-color: #e5e7eb;
+            transform: translateY(-50%);
+            z-index: 1;
+        }
+        .step-item {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+            cursor: pointer;
+        }
+        .step-circle {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 0.5rem;
+            transition: all 0.3s ease;
+            background-color: white;
+            border: 2px solid #e5e7eb;
+            color: #6b7280;
+        }
+        .step-item.active .step-circle {
+            background-color: #e8a87c;
+            border-color: #e8a87c;
+            color: white;
+        }
+        .step-item.completed .step-circle {
+            background-color: #10b981;
+            border-color: #10b981;
+            color: white;
+        }
+        .step-label {
+            font-size: 12px;
+            font-weight: 500;
+            color: #6b7280;
+            text-align: center;
+            transition: color 0.3s ease;
+        }
+        .step-item.active .step-label {
+            color: #e8a87c;
+            font-weight: 600;
+        }
+        .step-item.completed .step-label {
+            color: #10b981;
+        }
+        .step-content {
+            display: none;
+            background-color: #f9fafb;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+        }
+        .step-content.active {
+            display: block;
+        }
+        .step-content h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+        .step-content p {
+            color: #6b7280;
+            line-height: 1.5;
+            margin-bottom: 1rem;
+        }
+        .step-action {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        /* 表单样式 */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+        .form-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            font-size: 14px;
+            color: #374151;
+            transition: border-color 0.2s;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: #e8a87c;
+            box-shadow: 0 0 0 3px rgba(232, 168, 124, 0.1);
+        }
+        .form-button {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background-color: #e8a87c;
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .form-button:hover {
+            background-color: #d6946a;
+        }
+        .form-button:disabled {
+            background-color: #9ca3af;
+            cursor: not-allowed;
+        }
+        .info-card {
+            background-color: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        .info-label {
+            font-size: 14px;
+            color: #6b7280;
+        }
+        .info-value {
+            font-size: 14px;
+            font-weight: 500;
+            color: #1f2937;
+        }
+        .file-upload {
+            border: 2px dashed #d1d5db;
+            border-radius: 0.5rem;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+        .file-upload:hover {
+            border-color: #e8a87c;
+        }
+        .file-upload input {
+            display: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900 antialiased selection:bg-orange-500 selection:text-white pb-20">
+    <!-- 浮动装饰元素 -->
+    <div class="floating-shapes floating-shapes-poster">
+        <div class="floating-shape"></div>
+        <div class="floating-shape"></div>
+        <div class="floating-shape"></div>
+        <div class="floating-shape"></div>
+    </div>
+
+    <div id="app" class="min-h-screen"></div>
+
+    <script src="data.js?v=4"></script>
+    <script src="common.js?v=2"></script>
+
+    <script>
+        const ActivityDetailView = {
+            activity: null,
+            // 用户步骤状态管理
+            userSteps: {
+                step1Completed: false,
+                step2Completed: false,
+                step3Completed: false,
+                step4Completed: false
+            },
+            // 用户数据
+            userData: {
+                personalInfo: {
+                    name: '张三',
+                    idCard: '110101199001011234',
+                    phone: '13800138000',
+                    carModel: '特斯拉 Model Y',
+                    carDealer: '奥迪4S店',
+                    subsidyAmount: '1500元'
+                },
+                supplementMaterials: {
+                    invoiceUploaded: false,
+                    invoiceImage: '',
+                    bankInfo: {
+                        accountName: '张三',
+                        bankName: '中国工商银行',
+                        accountNumber: '6222021234567890123'
+                    }
+                }
+            },
+
+            getActivityId() {
+                const urlParams = new URLSearchParams(window.location.search);
+                return urlParams.get('id');
+            },
+
+            getCurrentTab() {
+                const urlParams = new URLSearchParams(window.location.search);
+                return urlParams.get('tab') || 'details';
+            },
+
+            findActivity() {
+                const activityId = this.getActivityId();
+                if (!activityId) return null;
+
+                const activities = window.GlobalData?.activities || [];
+                return activities.find(a => a.id === activityId) || null;
+            },
+
+            getOrganizer() {
+                // 返回北京交通广播 (u2)
+                const users = window.GlobalData?.users || [];
+                return users.find(u => u.id === 'u2') || {
+                    name: '北京交通广播',
+                    intro: '北京交通广播103.9官方账号',
+                    avatarUrl: 'https://picsum.photos/100/100?random=2'
+                };
+            },
+
+            header(tab = 'details') {
+                const isDiscountTab = tab === 'discount';
+                const title = isDiscountTab ? '优惠领取' : '活动详情';
+                const activityId = this.activity ? this.activity.id : '';
+                let backUrl = 'discover.html';
+                if (isDiscountTab) {
+                    backUrl = `activity-detail.html?id=${activityId}`;
+                }
+                return `
+                <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md px-4 py-3 shadow-sm border-b border-gray-200 header-glow">
+                  <div class="flex items-center gap-3">
+                    <button onclick="window.location.href='${backUrl}'" class="p-1.5 rounded-full hover:bg-gray-100 transition-colors">
+                      <i data-lucide="arrow-left" class="w-5 h-5 text-color-orange"></i>
+                    </button>
+                    <div class="flex-1">
+                      <h1 class="text-lg font-bold text-color-dark">${title}</h1>
+                    </div>
+                    <button class="relative p-1.5 rounded-full hover:bg-gray-100 transition-colors">
+                      <i data-lucide="share-2" class="w-5 h-5 text-color-orange"></i>
+                    </button>
+                  </div>
+                </header>
+                `;
+            },
+
+            renderActivity() {
+                if (!this.activity) {
+                    return `
+                    <div class="flex flex-col items-center justify-center min-h-[400px] px-4">
+                      <i data-lucide="alert-circle" class="w-16 h-16 text-gray-300 mb-4"></i>
+                      <h3 class="text-lg font-bold text-color-dark mb-2">活动不存在</h3>
+                      <p class="text-gray-500 text-center mb-6">抱歉，您查找的活动可能已被删除或不存在。</p>
+                      <button onclick="window.location.href='index.html'" class="px-6 py-3 btn-gradient-primary text-white font-bold rounded-full">
+                        返回活动列表
+                      </button>
+                    </div>
+                    `;
+                }
+
+                const activity = this.activity;
+                const isFree = activity.price === 0;
+                const isRecruiting = activity.status === 'RECRUITING';
+                const statusText = isRecruiting ? '进行中' : '已结束';
+                const organizer = this.getOrganizer();
+
+                // 模拟回顾图片和视频数据
+                const reviewImages = [
+                    'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                    'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                    'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+                ];
+                const reviewVideoUrl = 'https://www.youtube.com/embed/dQw4w9WgXcQ'; // 示例视频
+
+                return `
+                <div class="pb-20">
+                  <!-- 活动图片 -->
+                  <div class="relative">
+                    <img src="${activity.imageUrl}" class="detail-header-image" />
+                    <div class="absolute top-4 right-4 bg-white/90 backdrop-blur-sm text-sm px-3 py-1.5 rounded-full font-bold text-color-dark">
+                      ${isFree ? '免费参与' : '¥' + activity.price}
+                    </div>
+                    <div class="absolute bottom-4 left-4">
+                      <span class="text-xs px-3 py-1.5 rounded-full font-medium ${isRecruiting ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-600'}">
+                        ${statusText}
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- 活动基本信息 -->
+                  <div class="px-4 pt-6">
+                    <h1 class="text-2xl font-bold text-color-dark mb-3">${activity.title}</h1>
+
+                    <!-- 标签 -->
+                    <div class="flex flex-wrap gap-2 mb-6">
+                      ${activity.tags.map(tag => `
+                        <span class="text-xs px-3 py-1.5 bg-color-light text-color-dark rounded-full font-medium">${tag}</span>
+                      `).join('')}
+                    </div>
+
+                    <!-- 关键信息卡片 -->
+                    <div class="bg-white rounded-2xl p-4 shadow-sm mb-6">
+                      <div class="grid grid-cols-2 gap-4">
+                        <div class="flex items-center gap-3">
+                          <div class="w-10 h-10 bg-gray-50 rounded-xl flex items-center justify-center">
+                            <i data-lucide="calendar" class="w-5 h-5 text-color-orange"></i>
+                          </div>
+                          <div>
+                            <div class="text-xs text-gray-500">时间</div>
+                            <div class="font-medium text-color-dark">${activity.date}</div>
+                          </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                          <div class="w-10 h-10 bg-gray-50 rounded-xl flex items-center justify-center">
+                            <i data-lucide="map-pin" class="w-5 h-5 text-color-orange"></i>
+                          </div>
+                          <div>
+                            <div class="text-xs text-gray-500">地点</div>
+                            <div class="font-medium text-color-dark">${activity.location}</div>
+                            <div class="text-xs text-gray-500">${activity.district}</div>
+                          </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                          <div class="w-10 h-10 bg-gray-50 rounded-xl flex items-center justify-center">
+                            <i data-lucide="users" class="w-5 h-5 text-color-orange"></i>
+                          </div>
+                          <div>
+                            <div class="text-xs text-gray-500">已报名</div>
+                            <div class="font-medium text-color-dark">${activity.currentParticipants}人</div>
+                          </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                          <div class="w-10 h-10 bg-gray-50 rounded-xl flex items-center justify-center">
+                            <i data-lucide="tag" class="w-5 h-5 text-color-orange"></i>
+                          </div>
+                          <div>
+                            <div class="text-xs text-gray-500">分类</div>
+                            <div class="font-medium text-color-dark">${activity.category}</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- 活动描述 -->
+                    <div class="mb-8">
+                      <h2 class="text-xl font-bold text-color-dark mb-4">活动介绍</h2>
+                      <div class="text-gray-700 leading-relaxed whitespace-pre-line">
+                        ${activity.description}
+                      </div>
+                    </div>
+
+                    <!-- 注意事项 -->
+                    <div class="mb-8">
+                      <h2 class="text-xl font-bold text-color-dark mb-4">注意事项</h2>
+                      <ul class="space-y-3 text-gray-700">
+                        <li class="flex items-start gap-2">
+                          <i data-lucide="check-circle" class="w-4 h-4 text-color-orange mt-0.5 flex-shrink-0"></i>
+                          <span>请提前10分钟到达活动地点签到</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                          <i data-lucide="check-circle" class="w-4 h-4 text-color-orange mt-0.5 flex-shrink-0"></i>
+                          <span>活动期间请遵守现场秩序和安全规定</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                          <i data-lucide="check-circle" class="w-4 h-5 text-color-orange mt-0.5 flex-shrink-0"></i>
+                          <span>如需取消报名，请至少提前24小时联系客服</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                          <i data-lucide="check-circle" class="w-4 h-4 text-color-orange mt-0.5 flex-shrink-0"></i>
+                          <span>活动当天请携带有效身份证件</span>
+                        </li>
+                      </ul>
+                    </div>
+
+                    <!-- 活动主办方 -->
+                    <div class="mb-8">
+                      <h2 class="text-xl font-bold text-color-dark mb-4">活动主办方</h2>
+                      <div class="bg-white rounded-2xl p-4 shadow-sm">
+                        <div class="flex items-center gap-4">
+                          <div class="w-12 h-12 bg-gray-100 rounded-full overflow-hidden flex-shrink-0">
+                            <img src="${organizer.avatarUrl || 'https://picsum.photos/100/100'}" class="w-full h-full object-cover" />
+                          </div>
+                          <div class="flex-1">
+                            <h3 class="font-bold text-color-dark">${organizer.name}</h3>
+                            <p class="text-sm text-gray-600 mt-1">${organizer.intro}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    ${isRecruiting ? '' : `
+                    <!-- 活动回顾 TAB (仅已结束活动显示) -->
+                    <div class="mb-8 tab-container">
+                      <div class="tab-header">
+                        <button class="tab-button active" onclick="ActivityDetailView.switchTab('review', this)">
+                          活动回顾
+                        </button>
+                        <button class="tab-button" onclick="ActivityDetailView.switchTab('images', this)">
+                          活动图片
+                        </button>
+                        <button class="tab-button" onclick="ActivityDetailView.switchTab('video', this)">
+                          活动视频
+                        </button>
+                      </div>
+
+                      <!-- 活动回顾内容 -->
+                      <div id="tab-review" class="tab-content active">
+                        <h2 class="text-xl font-bold text-color-dark mb-4">活动回顾</h2>
+                        <div class="text-gray-700 leading-relaxed">
+                          <p>本次活动于${activity.date}在${activity.location}成功举办，共有${activity.currentParticipants}位参与者。现场气氛热烈，参与者们纷纷表示收获颇丰。</p>
+                          <p class="mt-3">以下是活动现场的精彩瞬间：</p>
+                        </div>
+                      </div>
+
+                      <!-- 活动图片内容 -->
+                      <div id="tab-images" class="tab-content">
+                        <h2 class="text-xl font-bold text-color-dark mb-4">活动图片</h2>
+                        <div class="grid grid-cols-2 gap-3">
+                          ${reviewImages.map(img => `
+                            <div class="rounded-xl overflow-hidden">
+                              <img src="${img}" class="w-full h-32 object-cover" />
+                            </div>
+                          `).join('')}
+                        </div>
+                      </div>
+
+                      <!-- 活动视频内容 -->
+                      <div id="tab-video" class="tab-content">
+                        <h2 class="text-xl font-bold text-color-dark mb-4">活动视频</h2>
+                        <div class="relative w-full pt-[56.25%] rounded-xl overflow-hidden bg-gray-200">
+                          <iframe src="${reviewVideoUrl}" class="absolute top-0 left-0 w-full h-full" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                        </div>
+                      </div>
+                    </div>
+                    `}
+
+                  </div>
+                </div>
+                `;
+            },
+
+            renderDiscountTab() {
+                if (!this.activity) {
+                    return `
+                    <div class="flex flex-col items-center justify-center min-h-[400px] px-4">
+                      <i data-lucide="alert-circle" class="w-16 h-16 text-gray-300 mb-4"></i>
+                      <h3 class="text-lg font-bold text-color-dark mb-2">活动不存在</h3>
+                      <p class="text-gray-500 text-center mb-6">抱歉，您查找的活动可能已被删除或不存在。</p>
+                      <button onclick="window.location.href='index.html'" class="px-6 py-3 btn-gradient-primary text-white font-bold rounded-full">
+                        返回活动列表
+                      </button>
+                    </div>
+                    `;
+                }
+
+                const activity = this.activity;
+                const subsidyTotal = activity.subsidyTotal || 1000000;
+                const subsidyClaimed = activity.subsidyClaimed || 100000;
+                const subsidyRemaining = subsidyTotal - subsidyClaimed;
+                const subsidyPercentage = Math.round((subsidyClaimed / subsidyTotal) * 100);
+                const steps = activity.subsidySteps || [
+                    { id: 1, name: '现场抢券', completed: false, description: '现场扫码领取优惠券' },
+                    { id: 2, name: '补充材料', completed: false, description: '提交个人资料和购车意向' },
+                    { id: 3, name: '资料审核', completed: false, description: '平台审核材料真实性' },
+                    { id: 4, name: '补贴发放', completed: false, description: '审核通过后补贴发放至账户' }
+                ];
+
+                // 用户步骤状态
+                const userSteps = this.userSteps;
+
+                // 简单介绍
+                const intro = `本次活动提供购车补贴，总金额${subsidyTotal.toLocaleString()}元，先到先得。请按照以下步骤完成补贴申请。`;
+
+                return `
+                <div class="pb-20 px-4">
+
+                  <!-- 补贴发放进度 -->
+                  <div class="bg-white rounded-2xl p-5 shadow-sm mb-8">
+                    <h2 class="text-xl font-bold text-color-dark mb-4">补贴发放进度</h2>
+
+                    <!-- 进度条 -->
+                    <div class="mb-6">
+                      <div class="flex justify-between items-center mb-2">
+                        <div class="text-sm font-medium text-color-dark">发放进度</div>
+                        <div class="text-sm font-bold text-brand-orange">${subsidyPercentage}%</div>
+                      </div>
+                      <div class="h-3 bg-gray-200 rounded-full overflow-hidden">
+                        <div class="h-full bg-gradient-to-r from-brand-blue to-brand-teal rounded-full transition-all duration-500" style="width: ${subsidyPercentage}%"></div>
+                      </div>
+                    </div>
+
+                    <!-- 金额统计 -->
+                    <!-- 总金额 -->
+                    <div class="mb-4">
+                      <div class="bg-gradient-to-r from-brand-blue/10 to-brand-teal/10 rounded-xl p-6 text-center border border-brand-blue/20">
+                        <div class="text-3xl font-bold text-color-dark">${subsidyTotal.toLocaleString()}元</div>
+                        <div class="text-sm text-gray-600 mt-2">总补贴金额</div>
+                      </div>
+                    </div>
+
+                    <!-- 发放情况 -->
+                    <div class="grid grid-cols-2 gap-4">
+                      <div class="bg-gray-50 rounded-xl p-4 text-center">
+                        <div class="text-2xl font-bold text-color-dark">${subsidyClaimed.toLocaleString()}元</div>
+                        <div class="text-sm text-gray-600 mt-1">已发放金额</div>
+                      </div>
+                      <div class="bg-gray-50 rounded-xl p-4 text-center">
+                        <div class="text-2xl font-bold text-color-dark">${subsidyRemaining.toLocaleString()}元</div>
+                        <div class="text-sm text-gray-600 mt-1">剩余补贴金额</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 申请步骤 -->
+                  <div class="bg-white rounded-2xl p-5 shadow-sm mb-8">
+                    <h2 class="text-xl font-bold text-color-dark mb-6">补贴申请步骤</h2>
+
+                    <div class="step-container">
+                      <!-- 横向步骤指示器 -->
+                      <div class="step-header">
+                        ${steps.map((step, index) => `
+                          <div class="step-item ${userSteps[`step${index + 1}Completed`] ? 'completed' : ''} ${index === 0 ? 'active' : ''}"
+                               onclick="ActivityDetailView.switchStep(${index}, this)"
+                               data-step-index="${index}">
+                            <div class="step-circle">
+                              ${userSteps[`step${index + 1}Completed`] ?
+                                '<i data-lucide="check" class="w-4 h-4"></i>' :
+                                `<span>${step.id}</span>`
+                              }
+                            </div>
+                            <div class="step-label">${step.name}</div>
+                          </div>
+                        `).join('')}
+                      </div>
+
+                      <!-- 步骤内容区域 -->
+                      ${steps.map((step, index) => `
+                        <div class="step-content ${index === 0 ? 'active' : ''}" id="step-content-${index}">
+                          ${this.getStepContentHTML(step, index)}
+                        </div>
+                      `).join('')}
+                    </div>
+                  </div>
+
+                </div>
+                `;
+            },
+
+            switchTab(tabId, buttonElement) {
+                // 移除所有tab按钮的active类
+                const tabButtons = document.querySelectorAll('.tab-button');
+                tabButtons.forEach(btn => {
+                    btn.classList.remove('active');
+                });
+
+                // 为当前按钮添加active类
+                if (buttonElement) {
+                    buttonElement.classList.add('active');
+                }
+
+                // 隐藏所有tab内容
+                const tabContents = document.querySelectorAll('.tab-content');
+                tabContents.forEach(content => {
+                    content.classList.remove('active');
+                });
+
+                // 显示对应的tab内容
+                const targetTab = document.getElementById(`tab-${tabId}`);
+                if (targetTab) {
+                    targetTab.classList.add('active');
+                }
+            },
+
+            switchStep(stepIndex, element) {
+                // 移除所有步骤项的active类
+                const stepItems = document.querySelectorAll('.step-item');
+                stepItems.forEach(item => {
+                    item.classList.remove('active');
+                });
+
+                // 为当前步骤项添加active类
+                if (element) {
+                    element.classList.add('active');
+                } else {
+                    // 如果没有传入element，通过索引查找
+                    const targetItem = document.querySelector(`.step-item[data-step-index="${stepIndex}"]`);
+                    if (targetItem) {
+                        targetItem.classList.add('active');
+                    }
+                }
+
+                // 隐藏所有步骤内容
+                const stepContents = document.querySelectorAll('.step-content');
+                stepContents.forEach(content => {
+                    content.classList.remove('active');
+                });
+
+                // 显示对应的步骤内容
+                const targetContent = document.getElementById(`step-content-${stepIndex}`);
+                if (targetContent) {
+                    targetContent.classList.add('active');
+                }
+            },
+
+            getStepContentHTML(step, index) {
+                const stepCompleted = this.userSteps[`step${index + 1}Completed`];
+
+                switch(index) {
+                    case 0: // 步骤1: 现场抢券
+                        if (!stepCompleted) {
+                            return `
+                            <h3>${step.name}</h3>
+                            <p>您确定购车并支付定金后，与销售人员共同前往现场人工核验台，人工核验指标、订单等信息，并由消费者及店端工作人员共同签署领用消费券规则声明，请销售方为您录入补贴信息。</p>
+
+                            <!-- 二维码图片 -->
+                            <div class="text-center my-6">
+                                <a href="registration-form.html?activityId=${this.activity.id}" class="inline-block">
+                                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(`registration-form.html?activityId=${this.activity.id}`)}"
+                                         alt="信息码二维码"
+                                         class="w-48 h-48 mx-auto border border-gray-300 rounded-lg shadow-sm hover:border-color-orange hover:shadow-md transition-all duration-200 cursor-pointer">
+                                </a>
+                                <p class="text-sm text-gray-600 mt-3">请出示您的信息码进行录入</p>
+                            </div>
+
+                            <div class="step-action">
+                                <button onclick="ActivityDetailView.completeStep(0)" class="form-button">
+                                    信息已录入
+                                </button>
+                            </div>
+                            `;
+                        } else {
+                            const info = this.userData.personalInfo;
+                            // 隐藏身份证和手机号中间部分
+                            const hiddenIdCard = info.idCard.replace(/(\d{6})\d+(\d{4})/, '$1******$2');
+                            const hiddenPhone = info.phone.replace(/(\d{3})\d+(\d{4})/, '$1****$2');
+
+                            return `
+                            <h3>${step.name}</h3>
+                            <p>您的优惠补贴个人信息已录入，具体如下：</p>
+                            <div class="info-card">
+                                <div class="info-row">
+                                    <span class="info-label">姓名</span>
+                                    <span class="info-value">${info.name}</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">身份证号</span>
+                                    <span class="info-value">${hiddenIdCard}</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">手机号</span>
+                                    <span class="info-value">${hiddenPhone}</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">购车车型</span>
+                                    <span class="info-value">${info.carModel}</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">购车商家</span>
+                                    <span class="info-value">${info.carDealer}</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">补贴金额</span>
+                                    <span class="info-value">${info.subsidyAmount}</span>
+                                </div>
+                            </div>
+                            <div class="step-action">
+                                <div class="flex items-center gap-2 text-sm text-color-orange">
+                                    <i data-lucide="alert-circle" class="w-4 h-4"></i>
+                                    <span>请您按照步骤完成补贴领取</span>
+                                </div>
+                            </div>
+                            `;
+                        }
+
+                    case 1: // 步骤2: 补充材料
+                        if (!stepCompleted) {
+                            return `
+                            <h3>${step.name}</h3>
+                            <p>请您在5月20日前提交以下补充资料：</p>
+                            <div class="form-group">
+                                <label class="form-label">购车发票上传</label>
+                                <div class="file-upload" onclick="document.getElementById('invoice-upload').click()">
+                                    <i data-lucide="upload" class="w-8 h-8 text-gray-400 mx-auto mb-2"></i>
+                                    <div class="text-sm text-gray-600">点击上传购车发票图片</div>
+                                    <div class="text-xs text-gray-500 mt-1">支持 JPG, PNG 格式，大小不超过 5MB</div>
+                                    <input type="file" id="invoice-upload" accept="image/*" onchange="ActivityDetailView.handleInvoiceUpload(event)" style="display: none;">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">银行卡户名</label>
+                                <input type="text" class="form-input" value="${this.userData.supplementMaterials.bankInfo.accountName}" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">开户行</label>
+                                <input type="text" class="form-input" value="${this.userData.supplementMaterials.bankInfo.bankName}" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">银行卡号</label>
+                                <input type="text" class="form-input" value="${this.userData.supplementMaterials.bankInfo.accountNumber}" readonly>
+                            </div>
+                            <div class="step-action">
+                                <button onclick="ActivityDetailView.completeStep(1)" class="form-button" id="submit-materials-btn" disabled>
+                                    提交补充材料
+                                </button>
+                                <div class="text-xs text-gray-500 mt-2 text-center">请先上传购车发票</div>
+                            </div>
+                            `;
+                        } else {
+                            const materials = this.userData.supplementMaterials;
+                            const hiddenAccountNumber = materials.bankInfo.accountNumber.replace(/(\d{4})\d+(\d{4})/, '$1******$2');
+
+                            return `
+                            <h3>${step.name}</h3>
+                            <p>您的补充资料已提交，具体如下：</p>
+                            <div class="info-card">
+                                <div class="info-row">
+                                    <span class="info-label">购车发票</span>
+                                    <span class="info-value">${materials.invoiceUploaded ? '已上传' : '未上传'}</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">银行卡户名</span>
+                                    <span class="info-value">${materials.bankInfo.accountName}</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">开户行</span>
+                                    <span class="info-value">${materials.bankInfo.bankName}</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">银行卡号</span>
+                                    <span class="info-value">${hiddenAccountNumber}</span>
+                                </div>
+                            </div>
+                            <div class="step-action">
+                                <div class="flex items-center gap-2 text-sm text-color-orange">
+                                    <i data-lucide="alert-circle" class="w-4 h-4"></i>
+                                    <span>请您等待审核结果</span>
+                                </div>
+                            </div>
+                            `;
+                        }
+
+                    case 2: // 步骤3: 资料审核
+                        return `
+                        <h3>${step.name}</h3>
+                        <p>请等待审核结果，预计将于10个工作日内完成。</p>
+                        <div class="step-action">
+                            <div class="flex items-center gap-2 text-sm text-color-orange">
+                                <i data-lucide="clock" class="w-4 h-4"></i>
+                                <span>审核中，请耐心等待</span>
+                            </div>
+                        </div>
+                        `;
+
+                    case 3: // 步骤4: 补贴发放
+                        return `
+                        <h3>${step.name}</h3>
+                        <p>补贴将于资料审核完成后5个工作日内发放到您的银行卡中，请耐心等待。</p>
+                        <div class="step-action">
+                            <div class="flex items-center gap-2 text-sm text-color-orange">
+                                <i data-lucide="clock" class="w-4 h-4"></i>
+                                <span>等待审核通过后发放</span>
+                            </div>
+                        </div>
+                        `;
+
+                    default:
+                        return `
+                        <h3>${step.name}</h3>
+                        <p>${step.description}</p>
+                        `;
+                }
+            },
+
+            completeStep(stepIndex) {
+                // 更新步骤状态
+                this.userSteps[`step${stepIndex + 1}Completed`] = true;
+
+                // 如果完成的是步骤1，自动启用步骤2的提交按钮（如果发票已上传）
+                if (stepIndex === 0) {
+                    // 步骤1完成，不需要特殊处理
+                }
+
+                // 重新渲染当前步骤内容
+                const stepContentElement = document.getElementById(`step-content-${stepIndex}`);
+                if (stepContentElement) {
+                    const steps = this.activity?.subsidySteps || [
+                        { id: 1, name: '现场抢券', completed: false, description: '现场扫码领取优惠券' },
+                        { id: 2, name: '补充材料', completed: false, description: '提交个人资料和购车意向' },
+                        { id: 3, name: '资料审核', completed: false, description: '平台审核材料真实性' },
+                        { id: 4, name: '补贴发放', completed: false, description: '审核通过后补贴发放至账户' }
+                    ];
+                    const step = steps[stepIndex];
+                    stepContentElement.innerHTML = this.getStepContentHTML(step, stepIndex);
+
+                    // 重新初始化图标
+                    if (window.Common) window.Common.initIcons();
+                }
+
+                // 更新步骤指示器状态
+                const stepItem = document.querySelector(`.step-item[data-step-index="${stepIndex}"]`);
+                if (stepItem) {
+                    stepItem.classList.add('completed');
+                    const stepCircle = stepItem.querySelector('.step-circle');
+                    if (stepCircle) {
+                        stepCircle.innerHTML = '<i data-lucide="check" class="w-4 h-4"></i>';
+                    }
+                }
+
+                // 显示完成提示
+                if (window.Common) {
+                    window.Common.showToast('步骤已完成！');
+                }
+            },
+
+            handleInvoiceUpload(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                // 检查文件类型
+                const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+                if (!validTypes.includes(file.type)) {
+                    if (window.Common) {
+                        window.Common.showToast('请上传 JPG 或 PNG 格式的图片', 'error');
+                    }
+                    return;
+                }
+
+                // 检查文件大小 (5MB)
+                if (file.size > 5 * 1024 * 1024) {
+                    if (window.Common) {
+                        window.Common.showToast('图片大小不能超过 5MB', 'error');
+                    }
+                    return;
+                }
+
+                // 模拟上传成功
+                this.userData.supplementMaterials.invoiceUploaded = true;
+                this.userData.supplementMaterials.invoiceImage = URL.createObjectURL(file);
+
+                // 启用提交按钮
+                const submitButton = document.getElementById('submit-materials-btn');
+                if (submitButton) {
+                    submitButton.disabled = false;
+                    submitButton.textContent = '提交补充材料';
+                }
+
+                // 显示成功提示
+                if (window.Common) {
+                    window.Common.showToast('购车发票上传成功');
+                }
+
+                // 更新文件上传区域的显示
+                const fileUploadDiv = document.querySelector('.file-upload');
+                if (fileUploadDiv) {
+                    fileUploadDiv.innerHTML = `
+                        <i data-lucide="check-circle" class="w-8 h-8 text-green-500 mx-auto mb-2"></i>
+                        <div class="text-sm text-green-600">购车发票已上传</div>
+                        <div class="text-xs text-gray-500 mt-1">${file.name}</div>
+                    `;
+
+                    // 重新初始化图标
+                    if (window.Common) window.Common.initIcons();
+                }
+            },
+
+            registerActivity() {
+                if (!this.activity || this.activity.status !== 'RECRUITING') return;
+
+                if (window.Common) {
+                    window.Common.processActivityRegistration(
+                        this.activity.id,
+                        this.activity.title,
+                        this.activity.price
+                    ).then(success => {
+                        if (success) {
+                            window.Common.showToast('报名成功！');
+                        }
+                    });
+                }
+            },
+
+            bottomActionBar() {
+                if (!this.activity) return '';
+
+                const activity = this.activity;
+                const isFree = activity.price === 0;
+                const isRecruiting = activity.status === 'RECRUITING';
+
+                // 已结束的活动不显示底部操作栏
+                if (!isRecruiting) return '';
+
+                return `
+                <div class="fixed bottom-0 left-0 right-0 bg-white/98 backdrop-blur-lg border-t border-gray-300 p-4 shadow-[0_-8px_16px_-2px_rgba(0,0,0,0.1)] z-50">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <div class="text-sm text-gray-500">活动费用</div>
+                      <div class="text-xl font-bold text-color-dark">${isFree ? '免费' : '¥' + activity.price}</div>
+                    </div>
+                    ${isRecruiting ? `
+                      <div class="flex gap-3">
+                        <button onclick="ActivityDetailView.registerActivity()"
+                          class="px-6 py-3 btn-gradient-primary text-white font-bold rounded-full text-lg">
+                          立即报名
+                        </button>
+                        <button onclick="window.location.href='activity-detail.html?id=${activity.id}&tab=discount'"
+                          class="px-6 py-3 bg-gradient-to-r from-brand-blue to-brand-teal text-white font-bold rounded-full text-lg">
+                          优惠领取
+                        </button>
+                      </div>
+                    ` : ''}
+                  </div>
+                </div>
+                `;
+            },
+
+            render() {
+                this.activity = this.findActivity();
+                const currentTab = this.getCurrentTab();
+                const app = document.getElementById('app');
+                app.innerHTML = `
+                    ${this.header(currentTab)}
+                    <main>
+                        ${currentTab === 'discount' ? this.renderDiscountTab() : this.renderActivity()}
+                    </main>
+                    ${currentTab === 'discount' ? '' : this.bottomActionBar()}
+                `;
+                if (window.Common) window.Common.initIcons();
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => ActivityDetailView.render());
+    </script>
+</body>
+</html>

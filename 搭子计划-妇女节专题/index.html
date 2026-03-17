@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>搭子计划-妇女节专题</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- 顶部横幅 -->
+    <header class="banner">
+        <div class="banner-content">
+            <h1>女性力量·由我定义</h1>
+            <p class="subtitle">搭子计划·妇女节专题 | 寻找你的专属搭子，共度美好时光</p>
+            <div class="festival-theme">🌸 致敬每一位闪光的她 🌸</div>
+        </div>
+    </header>
+
+    <!-- 弹幕留言区 -->
+    <section class="danmu-section">
+        <div class="section-header">
+            <h2><i class="fas fa-comment-dots"></i> 弹幕留言墙</h2>
+            <p>写下你的祝福与感想，让弹幕飞起来</p>
+        </div>
+        <div class="danmu-container">
+            <div class="danmu-display" id="danmuDisplay">
+                <!-- 弹幕将在这里动态生成 -->
+            </div>
+            <div class="danmu-input">
+                <input type="text" id="danmuInput" placeholder="输入你的留言... (最多30字)" maxlength="30">
+                <button id="sendDanmu"><i class="fas fa-paper-plane"></i> 发送弹幕</button>
+            </div>
+            <div class="danmu-hint">
+                <small>提示：弹幕会从右向左滚动，持续30秒后消失</small>
+            </div>
+        </div>
+    </section>
+
+    <!-- 话题发布与动态互动 -->
+    <section class="topic-section">
+        <div class="section-header">
+            <h2><i class="fas fa-pen-fancy"></i> 话题动态</h2>
+            <p>发起话题，分享你的妇女节故事</p>
+        </div>
+        <div class="topic-container">
+            <div class="post-button" id="postButton">
+                <div class="post-icon">
+                    <i class="fas fa-plus-circle"></i>
+                </div>
+                <div class="post-text">
+                    <h3>发布图文动态</h3>
+                    <p>分享你的妇女节时刻</p>
+                </div>
+            </div>
+            <div class="dynamic-feed">
+                <div class="dynamic-card">
+                    <div class="user-avatar">
+                        <img src="https://randomuser.me/api/portraits/women/32.jpg" alt="用户头像">
+                    </div>
+                    <div class="dynamic-content">
+                        <h4>小雅 <span class="time">2小时前</span></h4>
+                        <p>今天和搭子一起参加了插花活动，感受到了春天的气息！妇女节快乐！</p>
+                        <div class="dynamic-image">
+                            <img src="https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" alt="动态图片">
+                        </div>
+                        <div class="dynamic-actions">
+                            <button><i class="far fa-heart"></i> 点赞</button>
+                            <button><i class="far fa-comment"></i> 评论</button>
+                            <button><i class="fas fa-share"></i> 分享</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="dynamic-card">
+                    <div class="user-avatar">
+                        <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="用户头像">
+                    </div>
+                    <div class="dynamic-content">
+                        <h4>慧慧 <span class="time">5小时前</span></h4>
+                        <p>推荐一部女性主题电影《隐藏人物》，和搭子一起看完感触很深！</p>
+                        <div class="dynamic-actions">
+                            <button><i class="far fa-heart"></i> 点赞</button>
+                            <button><i class="far fa-comment"></i> 评论</button>
+                            <button><i class="fas fa-share"></i> 分享</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 吃喝玩乐活动推荐 -->
+    <section class="activity-section">
+        <div class="section-header">
+            <h2><i class="fas fa-utensils"></i> 吃喝玩乐推荐</h2>
+            <p>精选妇女节特别活动，和搭子一起体验</p>
+        </div>
+        <div class="activity-scroll-container">
+            <div class="activity-container">
+                <div class="activity-card">
+                    <div class="activity-image">
+                        <img src="https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" alt="下午茶">
+                        <div class="activity-tag">美食</div>
+                    </div>
+                    <div class="activity-content">
+                        <h3>女神专属下午茶</h3>
+                        <p>精选三层点心塔，搭配特色花茶，享受悠闲午后时光</p>
+                        <div class="activity-info">
+                            <span><i class="fas fa-map-marker-alt"></i> 市中心·茶语时光</span>
+                            <span><i class="fas fa-tag"></i> ￥128/人</span>
+                        </div>
+                        <button class="activity-btn">立即预约</button>
+                    </div>
+                </div>
+                <div class="activity-card">
+                    <div class="activity-image">
+                        <img src="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" alt="瑜伽">
+                        <div class="activity-tag">健康</div>
+                    </div>
+                    <div class="activity-content">
+                        <h3>女性力量瑜伽课</h3>
+                        <p>专业导师带领，释放压力，提升身心平衡</p>
+                        <div class="activity-info">
+                            <span><i class="fas fa-map-marker-alt"></i> 瑜伽生活馆</span>
+                            <span><i class="fas fa-tag"></i> ￥88/节</span>
+                        </div>
+                        <button class="activity-btn">立即预约</button>
+                    </div>
+                </div>
+                <div class="activity-card">
+                    <div class="activity-image">
+                        <img src="https://images.unsplash.com/photo-1536922246289-88c42f957773?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" alt="手作">
+                        <div class="activity-tag">手工</div>
+                    </div>
+                    <div class="activity-content">
+                        <h3>香薰蜡烛手作</h3>
+                        <p>亲手制作独特香薰蜡烛，带走专属香气回忆</p>
+                        <div class="activity-info">
+                            <span><i class="fas fa-map-marker-alt"></i> 创意工坊</span>
+                            <span><i class="fas fa-tag"></i> ￥158/人</span>
+                        </div>
+                        <button class="activity-btn">立即预约</button>
+                    </div>
+                </div>
+                <div class="activity-card">
+                    <div class="activity-image">
+                        <img src="https://images.unsplash.com/photo-1518837695005-2083093ee35b?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" alt="SPA">
+                        <div class="activity-tag">放松</div>
+                    </div>
+                    <div class="activity-content">
+                        <h3>芳香精油SPA</h3>
+                        <p>专业理疗师手法，放松身心，焕发肌肤活力</p>
+                        <div class="activity-info">
+                            <span><i class="fas fa-map-marker-alt"></i> 悦榕SPA中心</span>
+                            <span><i class="fas fa-tag"></i> ￥298/90分钟</span>
+                        </div>
+                        <button class="activity-btn">立即预约</button>
+                    </div>
+                </div>
+                <div class="activity-card">
+                    <div class="activity-image">
+                        <img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" alt="烘焙">
+                        <div class="activity-tag">美食</div>
+                    </div>
+                    <div class="activity-content">
+                        <h3>法式烘焙体验课</h3>
+                        <p>学习制作精致马卡龙，体验法式甜点魅力</p>
+                        <div class="activity-info">
+                            <span><i class="fas fa-map-marker-alt"></i> 烘焙工作室</span>
+                            <span><i class="fas fa-tag"></i> ￥198/人</span>
+                        </div>
+                        <button class="activity-btn">立即预约</button>
+                    </div>
+                </div>
+                <div class="activity-card">
+                    <div class="activity-image">
+                        <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" alt="健身">
+                        <div class="activity-tag">健康</div>
+                    </div>
+                    <div class="activity-content">
+                        <h3>女性塑形私教课</h3>
+                        <p>专业教练一对一指导，打造健康优美体态</p>
+                        <div class="activity-info">
+                            <span><i class="fas fa-map-marker-alt"></i> 健身中心</span>
+                            <span><i class="fas fa-tag"></i> ￥168/节</span>
+                        </div>
+                        <button class="activity-btn">立即预约</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="scroll-hint">
+            <i class="fas fa-chevron-left"></i>
+            <span>左右滑动查看更多活动</span>
+            <i class="fas fa-chevron-right"></i>
+        </div>
+    </section>
+
+    <!-- 往期活动回顾 -->
+    <section class="review-section">
+        <div class="section-header">
+            <h2><i class="fas fa-history"></i> 往期活动回顾</h2>
+            <p>精彩瞬间，美好回忆</p>
+        </div>
+        <div class="review-container">
+            <div class="review-card">
+                <div class="review-image">
+                    <img src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" alt="夸夸会">
+                </div>
+                <div class="review-content">
+                    <h3>夸夸会：看见她的闪光点</h3>
+                    <p>一场充满温暖与赞美的特别聚会，每个人都值得被看见</p>
+                    <div class="review-info">
+                        <span><i class="far fa-calendar"></i> 2025年3月8日</span>
+                        <span><i class="fas fa-users"></i> 120人参与</span>
+                    </div>
+                    <a href="https://ttfm-h5.liteweb.cn/v5/2025/cheng/index.html#/activity/view/10000017" target="_blank" class="review-btn">查看详情</a>
+                </div>
+            </div>
+            <div class="review-card">
+                <div class="review-image">
+                    <img src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" alt="女性播客分享会">
+                </div>
+                <div class="review-content">
+                    <h3>聚光成她：女性播客分享会</h3>
+                    <p>聆听不同领域女性的声音，感受思想碰撞的火花</p>
+                    <div class="review-info">
+                        <span><i class="far fa-calendar"></i> 2025年3月15日</span>
+                        <span><i class="fas fa-users"></i> 85人参与</span>
+                    </div>
+                    <a href="https://ttfm-h5.liteweb.cn/v5/2025/cheng/index.html#/activity/view/10000033" target="_blank" class="review-btn">查看详情</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 发布模态框 (隐藏) -->
+    <div class="modal" id="postModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>发布图文动态</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <textarea placeholder="分享你的妇女节故事..."></textarea>
+                <div class="upload-area">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <p>点击或拖拽上传图片</p>
+                </div>
+                <div class="modal-actions">
+                    <button class="cancel-btn">取消</button>
+                    <button class="submit-btn">发布</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部 -->
+    <footer>
+        <h3 class="footer-title">女性力量·由我定义</h3>
+        <p class="footer-subtitle">搭子计划 &copy; 2026 妇女节专题 | 致敬每一位女性</p>
+        <p class="footer-links">
+            <a href="#"><i class="fab fa-weixin"></i> 微信</a> |
+            <a href="#"><i class="fab fa-weibo"></i> 微博</a> |
+            <a href="#"><i class="fas fa-question-circle"></i> 帮助</a>
+        </p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

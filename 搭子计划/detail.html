@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>活动详情</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-white text-gray-900 pb-24">
+    <div id="app"></div>
+
+    <script src="data.js?v=2"></script>
+    <script src="common.js?v=2"></script>
+    <script>
+        function render() {
+            // 获取 URL 参数
+            const urlParams = new URLSearchParams(window.location.search);
+            const activityId = urlParams.get('id') || 'a1'; 
+            const activity = window.GlobalData.activities.find(a => a.id === activityId) || window.GlobalData.activities[0];
+            const isFull = activity.status === 'FULL';
+            const isOrganizer = activity.organizer.id === window.GlobalData.user.id;
+
+            // 获取组织者完整信息（认证状态、等级等）
+            let organizerInfo = activity.organizer;
+            // 尝试从users或partners中查找完整信息
+            const foundUser = window.GlobalData.users.find(u => u.id === organizerInfo.id);
+            const foundPartner = window.GlobalData.partners.find(p => p.id === organizerInfo.id);
+            if (foundUser) {
+                organizerInfo = { ...organizerInfo, ...foundUser };
+            } else if (foundPartner) {
+                organizerInfo = { ...organizerInfo, ...foundPartner };
+            }
+            // 确保有认证和等级字段
+            organizerInfo.realNameVerified = organizerInfo.realNameVerified || false;
+            organizerInfo.cooperationVerified = organizerInfo.cooperationVerified || false;
+            organizerInfo.level = organizerInfo.level || 1;
+
+            document.getElementById('app').innerHTML = `
+                <!-- 顶部导航 (透明) -->
+                <div class="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-3 bg-transparent bg-gradient-to-b from-black/50 to-transparent text-white">
+                    <button onclick="window.history.back()" class="p-2 bg-black/20 backdrop-blur rounded-full"><i data-lucide="chevron-left" class="w-6 h-6"></i></button>
+                    <div class="flex gap-3">
+                        <button class="p-2 bg-black/20 backdrop-blur rounded-full" onclick="window.Common.showToast('已收藏')"><i data-lucide="star" class="w-5 h-5"></i></button>
+                        <button class="p-2 bg-black/20 backdrop-blur rounded-full" onclick="window.Common.showToast('分享链接已复制')"><i data-lucide="share-2" class="w-5 h-5"></i></button>
+                    </div>
+                </div>
+
+                <!-- 顶部大图 -->
+                <div class="relative h-72 w-full">
+                    <img src="${activity.imageUrl}" class="w-full h-full object-cover" />
+                    <div class="absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-white to-transparent"></div>
+                </div>
+
+                <!-- 内容区域 (上浮圆角卡片) -->
+                <div class="relative -mt-6 bg-white rounded-t-3xl px-5 pt-6 fade-in">
+                    <!-- 标题与标签 -->
+                    <div class="flex flex-wrap gap-2 mb-3">
+                        ${activity.tags.map(t => `<span class="px-2 py-0.5 bg-brand-orange/10 text-brand-orange text-xs rounded-md font-medium">#${t}</span>`).join('')}
+                    </div>
+                    <h1 class="text-2xl font-black text-gray-900 mb-2 leading-tight">${activity.title}</h1>
+                    <div class="flex items-center justify-between text-sm text-gray-500 mb-6">
+                        <span>浏览 1,230 次</span>
+                        <span class="text-brand-orange font-bold text-lg">${activity.price === 0 ? '免费' : '¥' + activity.price}</span>
+                    </div>
+
+                    <hr class="border-gray-100 mb-6" />
+
+                    <!-- 组织者信息 -->
+                    <div class="flex items-center justify-between mb-8 cursor-pointer" onclick="window.location.href='profile.html?id=${organizerInfo.id}'">
+                        <div class="flex items-center gap-3">
+                            <img src="${organizerInfo.avatarUrl}" class="w-12 h-12 rounded-full border border-gray-100" />
+                            <div>
+                                <div class="font-bold text-gray-900 flex items-center gap-1">
+                                    ${organizerInfo.name}
+                                    ${organizerInfo.realNameVerified ? '<i data-lucide="shield-check" class="w-4 h-4 text-orange-500 fill-orange-100" title="实名认证"></i>' : ''}
+                                    ${organizerInfo.cooperationVerified ? '<i data-lucide="badge-check" class="w-4 h-4 text-blue-500 fill-blue-100" title="合作认证"></i>' : ''}
+                                    <span class="px-1.5 py-0.5 bg-gradient-to-r from-brand-orange to-brand-yellow text-white text-xs font-bold rounded-full flex items-center gap-0.5">
+                                        LV.${organizerInfo.level || 1}
+                                    </span>
+                                </div>
+                                <div class="text-xs text-gray-400">发起人 · ${organizerInfo.intro || '这个人很懒'}</div>
+                            </div>
+                        </div>
+                        ${isOrganizer ? '' : `<button class="px-4 py-1.5 border border-brand-orange text-brand-orange text-xs font-bold rounded-full" onclick="event.stopPropagation(); window.Common.showToast('关注成功')">+ 关注</button>`}
+                    </div>
+
+                    <!-- 关键信息块 -->
+                    <div class="bg-gray-50 rounded-xl p-4 space-y-4 mb-8">
+                        <div class="flex items-start gap-3">
+                            <div class="p-2 bg-white rounded-lg shadow-sm text-brand-blue"><i data-lucide="calendar" class="w-5 h-5"></i></div>
+                            <div>
+                                <div class="font-bold text-gray-900 text-sm">活动时间</div>
+                                <div class="text-sm text-gray-600">${activity.date}</div>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <div class="p-2 bg-white rounded-lg shadow-sm text-brand-teal"><i data-lucide="map-pin" class="w-5 h-5"></i></div>
+                            <div class="flex-1">
+                                <div class="font-bold text-gray-900 text-sm">活动地点</div>
+                                <div class="text-sm text-gray-600">${activity.location}</div>
+                            </div>
+                            <i data-lucide="chevron-right" class="w-4 h-4 text-gray-400 self-center"></i>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <div class="p-2 bg-white rounded-lg shadow-sm text-brand-purple"><i data-lucide="users" class="w-5 h-5"></i></div>
+                            <div>
+                                <div class="font-bold text-gray-900 text-sm">人员限制</div>
+                                <div class="text-sm text-gray-600">已报 ${activity.currentParticipants} 人 / 限 ${activity.maxParticipants} 人</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 详情描述 -->
+                    <h3 class="font-bold text-lg mb-3">活动详情</h3>
+                    <div class="text-gray-600 text-sm leading-relaxed mb-6">
+                        ${activity.description}
+                        <br/><br/>
+                        注意事项：<br/>
+                        1. 请提前10分钟到达集合点。<br/>
+                        2. 如有变动请在群内即时沟通。
+                    </div>
+
+                    <!-- 报名列表模拟 -->
+                    <h3 class="font-bold text-lg mb-3 flex items-center justify-between">
+                        <span>已报名搭子</span>
+                        <a href="activity-participants.html?id=${activity.id}" class="text-xs text-gray-400 font-normal no-underline hover:text-brand-orange transition-colors">全部 ></a>
+                    </h3>
+                    <div class="flex gap-2 mb-20 overflow-x-auto no-scrollbar">
+                        ${(() => {
+                            const participantsCount = activity.currentParticipants || 0;
+                            const maxAvatars = 10;
+                            const showCount = Math.min(participantsCount, maxAvatars);
+                            const partners = window.GlobalData.partners || [];
+                            const users = window.GlobalData.users || [];
+                            const availableAvatars = [...partners, ...users].map(p => p.avatarUrl).filter(url => url);
+                            let avatarUrls = [];
+                            if (availableAvatars.length > 0) {
+                                for (let i = 0; i < showCount; i++) {
+                                    avatarUrls.push(availableAvatars[i % availableAvatars.length]);
+                                }
+                            } else {
+                                for (let i = 0; i < showCount; i++) {
+                                    avatarUrls.push(`https://picsum.photos/50/50?random=${i+10}`);
+                                }
+                            }
+                            return avatarUrls.map(url => `
+                                <img src="${url}" class="w-10 h-10 rounded-full border-2 border-white shadow-sm" />
+                            `).join('');
+                        })()}
+                    </div>
+                </div>
+
+                <!-- 底部操作栏 -->
+                <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-6 py-3 safe-area-bottom shadow-[0_-4px_10px_rgba(0,0,0,0.05)] flex items-center gap-4 z-50">
+                    ${isOrganizer ? '' : `
+                    <div class="flex flex-col items-center gap-0.5 text-gray-500 cursor-pointer" onclick="window.location.href='chat.html?uid=${activity.organizer.id}&name=${encodeURIComponent(activity.organizer.name)}'">
+                        <i data-lucide="message-circle" class="w-6 h-6"></i>
+                        <span class="text-[10px]">咨询</span>
+                    </div>
+                    `}
+                    <button
+                        class="flex-1 py-3 rounded-full font-bold text-white shadow-lg flex items-center justify-center gap-2 ${isOrganizer ? 'bg-gradient-to-r from-brand-blue to-brand-teal shadow-brand-blue/30' : (isFull ? 'bg-gray-300' : 'bg-gradient-to-r from-brand-orange to-brand-yellow shadow-brand-orange/30')}"
+                        onclick="${isOrganizer ? `window.location.href='activity-manage.html?id=${activity.id}'` : (isFull ? '' : `window.Common.processActivityRegistration('${activity.id}', '${activity.title.replace(/'/g, "\\'")}', ${activity.price})`)}">
+                        ${isOrganizer ? '管理活动' : (isFull ? '名额已满' : '立即报名')}
+                    </button>
+                </div>
+            `;
+            window.Common.initIcons();
+        }
+
+        document.addEventListener('DOMContentLoaded', render);
+    </script>
+</body>
+</html>

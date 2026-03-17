@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>编辑资料 - 搭子计划</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900 pb-20">
+    <div id="app"></div>
+
+    <script src="data.js?v=2"></script>
+    <script src="common.js?v=2"></script>
+    <script>
+        function render() {
+            const user = window.GlobalData.user;
+
+            document.getElementById('app').innerHTML = `
+                <!-- 顶部导航 -->
+                <div class="sticky top-0 z-40 bg-white/95 backdrop-blur-md px-4 py-3 shadow-sm flex items-center justify-between">
+                    <button onclick="window.history.back()" class="p-1.5 rounded-full hover:bg-gray-100 transition">
+                        <i data-lucide="chevron-left" class="w-6 h-6 text-gray-800"></i>
+                    </button>
+                    <h1 class="text-lg font-bold text-gray-900">编辑资料</h1>
+                    <div class="w-10"></div> <!-- 占位保持对称 -->
+                </div>
+
+                <div class="px-4 pt-4 pb-6">
+                    <!-- 头像上传 -->
+                    <div class="bg-white rounded-2xl p-4 shadow-sm mb-4">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center gap-3">
+                                <div class="relative">
+                                    <img id="avatar-preview" src="${user.avatarUrl}" class="w-16 h-16 rounded-full border-2 border-gray-200 object-cover bg-gray-100">
+                                    <button onclick="changeAvatar()" class="absolute bottom-0 right-0 bg-brand-orange text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">
+                                        <i data-lucide="camera" class="w-3 h-3"></i>
+                                    </button>
+                                </div>
+                                <div>
+                                    <h2 class="font-bold text-gray-900">头像</h2>
+                                    <p class="text-xs text-gray-400">点击右侧按钮更换头像</p>
+                                </div>
+                            </div>
+                            <button onclick="changeAvatar()" class="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">更换</button>
+                        </div>
+                        <input type="file" id="avatar-input" accept="image/*" class="hidden" onchange="handleAvatarUpload(event)">
+                    </div>
+
+                    <!-- 资料表单 -->
+                    <div class="bg-white rounded-2xl p-4 shadow-sm space-y-4">
+                        <!-- 昵称 -->
+                        <div class="space-y-2">
+                            <label class="text-sm font-medium text-gray-700">昵称</label>
+                            <input type="text" id="nickname" value="${user.name}" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-orange/20 focus:border-brand-orange">
+                        </div>
+
+                        <!-- 个人介绍 -->
+                        <div class="space-y-2">
+                            <label class="text-sm font-medium text-gray-700">个人介绍</label>
+                            <textarea id="intro" rows="4" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-orange/20 focus:border-brand-orange resize-none" placeholder="介绍一下自己，让更多人了解你...">${user.intro || ''}</textarea>
+                            <div class="text-xs text-gray-400">在个人主页和"我的"页面中展示</div>
+                        </div>
+
+                        <!-- 手机号 -->
+                        <div class="space-y-2">
+                            <label class="text-sm font-medium text-gray-700">手机号</label>
+                            <input type="tel" id="phone" value="${user.phone || ''}" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-orange/20 focus:border-brand-orange" placeholder="请输入手机号">
+                        </div>
+
+                        <!-- 姓名 -->
+                        <div class="space-y-2">
+                            <label class="text-sm font-medium text-gray-700">姓名</label>
+                            <input type="text" id="realName" value="${user.realName || ''}" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-orange/20 focus:border-brand-orange" placeholder="请输入真实姓名">
+                        </div>
+
+                        <!-- 性别 -->
+                        <div class="space-y-2">
+                            <label class="text-sm font-medium text-gray-700">性别</label>
+                            <div class="flex gap-3">
+                                <label class="flex items-center gap-2">
+                                    <input type="radio" name="gender" value="male" ${user.gender === 'male' ? 'checked' : ''} class="w-4 h-4 text-brand-orange border-gray-300 focus:ring-brand-orange">
+                                    <span class="text-gray-700">男</span>
+                                </label>
+                                <label class="flex items-center gap-2">
+                                    <input type="radio" name="gender" value="female" ${user.gender === 'female' ? 'checked' : ''} class="w-4 h-4 text-brand-orange border-gray-300 focus:ring-brand-orange">
+                                    <span class="text-gray-700">女</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- 出生日期 -->
+                        <div class="space-y-2">
+                            <label class="text-sm font-medium text-gray-700">出生日期</label>
+                            <input type="date" id="birthDate" value="${user.birthDate || ''}" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-orange/20 focus:border-brand-orange">
+                        </div>
+
+                        <!-- 学校 -->
+                        <div class="space-y-2">
+                            <label class="text-sm font-medium text-gray-700">学校 <span class="text-gray-400 text-xs">(非必填)</span></label>
+                            <input type="text" id="school" value="${user.school || ''}" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-orange/20 focus:border-brand-orange" placeholder="请输入学校名称">
+                        </div>
+
+                        <!-- MBTI -->
+                        <div class="space-y-2">
+                            <label class="text-sm font-medium text-gray-700">MBTI人格类型</label>
+                            <select id="mbti" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-orange/20 focus:border-brand-orange">
+                                <option value="">请选择</option>
+                                <option value="ISTJ" ${user.mbti === 'ISTJ' ? 'selected' : ''}>ISTJ - 检查员</option>
+                                <option value="ISFJ" ${user.mbti === 'ISFJ' ? 'selected' : ''}>ISFJ - 保护者</option>
+                                <option value="INFJ" ${user.mbti === 'INFJ' ? 'selected' : ''}>INFJ - 倡导者</option>
+                                <option value="INTJ" ${user.mbti === 'INTJ' ? 'selected' : ''}>INTJ - 战略家</option>
+                                <option value="ISTP" ${user.mbti === 'ISTP' ? 'selected' : ''}>ISTP - 鉴赏家</option>
+                                <option value="ISFP" ${user.mbti === 'ISFP' ? 'selected' : ''}>ISFP - 探险家</option>
+                                <option value="INFP" ${user.mbti === 'INFP' ? 'selected' : ''}>INFP - 调解员</option>
+                                <option value="INTP" ${user.mbti === 'INTP' ? 'selected' : ''}>INTP - 思想家</option>
+                                <option value="ESTP" ${user.mbti === 'ESTP' ? 'selected' : ''}>ESTP - 企业家</option>
+                                <option value="ESFP" ${user.mbti === 'ESFP' ? 'selected' : ''}>ESFP - 表演者</option>
+                                <option value="ENFP" ${user.mbti === 'ENFP' ? 'selected' : ''}>ENFP - 竞选者</option>
+                                <option value="ENTP" ${user.mbti === 'ENTP' ? 'selected' : ''}>ENTP - 辩论家</option>
+                                <option value="ESTJ" ${user.mbti === 'ESTJ' ? 'selected' : ''}>ESTJ - 管理者</option>
+                                <option value="ESFJ" ${user.mbti === 'ESFJ' ? 'selected' : ''}>ESFJ - 领事</option>
+                                <option value="ENFJ" ${user.mbti === 'ENFJ' ? 'selected' : ''}>ENFJ - 主人公</option>
+                                <option value="ENTJ" ${user.mbti === 'ENTJ' ? 'selected' : ''}>ENTJ - 指挥官</option>
+                            </select>
+                        </div>
+
+                        <!-- 我的标签 -->
+                        <div class="space-y-2">
+                            <label class="text-sm font-medium text-gray-700">我的标签</label>
+                            <div class="text-xs text-gray-400 mb-2">点击预制标签添加，或输入自定义标签</div>
+
+                            <!-- 当前标签显示 -->
+                            <div id="tags-container" class="flex flex-wrap gap-2 mb-3 min-h-10 p-2 bg-gray-50 border border-gray-200 rounded-xl">
+                                <!-- 标签将由JavaScript动态生成 -->
+                            </div>
+
+                            <!-- 预制标签 -->
+                            <div class="mb-4">
+                                <div class="text-xs text-gray-500 mb-2">预制标签：</div>
+                                <div id="predefined-tags" class="flex flex-wrap gap-2">
+                                    <button type="button" onclick="addTag('摄影')" class="px-3 py-1.5 bg-gray-100 text-gray-700 text-xs font-medium rounded-full hover:bg-gray-200 transition-colors">摄影</button>
+                                    <button type="button" onclick="addTag('飞盘')" class="px-3 py-1.5 bg-gray-100 text-gray-700 text-xs font-medium rounded-full hover:bg-gray-200 transition-colors">飞盘</button>
+                                    <button type="button" onclick="addTag('探店')" class="px-3 py-1.5 bg-gray-100 text-gray-700 text-xs font-medium rounded-full hover:bg-gray-200 transition-colors">探店</button>
+                                    <button type="button" onclick="addTag('运动')" class="px-3 py-1.5 bg-gray-100 text-gray-700 text-xs font-medium rounded-full hover:bg-gray-200 transition-colors">运动</button>
+                                    <button type="button" onclick="addTag('美食')" class="px-3 py-1.5 bg-gray-100 text-gray-700 text-xs font-medium rounded-full hover:bg-gray-200 transition-colors">美食</button>
+                                    <button type="button" onclick="addTag('读书')" class="px-3 py-1.5 bg-gray-100 text-gray-700 text-xs font-medium rounded-full hover:bg-gray-200 transition-colors">读书</button>
+                                    <button type="button" onclick="addTag('音乐')" class="px-3 py-1.5 bg-gray-100 text-gray-700 text-xs font-medium rounded-full hover:bg-gray-200 transition-colors">音乐</button>
+                                    <button type="button" onclick="addTag('游戏')" class="px-3 py-1.5 bg-gray-100 text-gray-700 text-xs font-medium rounded-full hover:bg-gray-200 transition-colors">游戏</button>
+                                    <button type="button" onclick="addTag('旅行')" class="px-3 py-1.5 bg-gray-100 text-gray-700 text-xs font-medium rounded-full hover:bg-gray-200 transition-colors">旅行</button>
+                                    <button type="button" onclick="addTag('健身')" class="px-3 py-1.5 bg-gray-100 text-gray-700 text-xs font-medium rounded-full hover:bg-gray-200 transition-colors">健身</button>
+                                </div>
+                            </div>
+
+                            <!-- 添加自定义标签 -->
+                            <div class="flex gap-2">
+                                <input type="text" id="new-tag-input" placeholder="输入自定义标签" class="flex-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-orange/20 focus:border-brand-orange">
+                                <button type="button" onclick="addCustomTag()" class="px-4 py-3 bg-gray-800 text-white text-sm font-medium rounded-xl hover:bg-gray-900 transition-colors">添加</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 保存按钮 -->
+                    <div class="mt-6">
+                        <button onclick="saveProfile()" class="w-full py-3.5 bg-gradient-to-r from-brand-orange to-brand-yellow text-white font-bold text-lg rounded-xl shadow-lg shadow-brand-orange/30 active:scale-95 transition-transform">
+                            保存资料
+                        </button>
+                        <button onclick="window.history.back()" class="w-full py-3 text-gray-500 font-medium text-sm mt-3">
+                            取消
+                        </button>
+                    </div>
+                </div>
+            `;
+            window.Common.initIcons();
+        }
+
+        function changeAvatar() {
+            document.getElementById('avatar-input').click();
+        }
+
+        function handleAvatarUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // 简单模拟上传，实际项目中需要上传到服务器
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('avatar-preview').src = e.target.result;
+                window.Common.showToast('头像已更新');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function saveProfile() {
+            // 获取表单值
+            const nickname = document.getElementById('nickname').value;
+            const phone = document.getElementById('phone').value;
+            const realName = document.getElementById('realName').value;
+            const gender = document.querySelector('input[name="gender"]:checked')?.value;
+            const birthDate = document.getElementById('birthDate').value;
+            const school = document.getElementById('school').value;
+            const mbti = document.getElementById('mbti').value;
+            const intro = document.getElementById('intro').value;
+            const avatarUrl = document.getElementById('avatar-preview').src;
+
+            // 验证必填字段
+            if (!nickname.trim()) {
+                window.Common.showToast('昵称不能为空');
+                return;
+            }
+            if (!phone.trim()) {
+                window.Common.showToast('手机号不能为空');
+                return;
+            }
+            if (!realName.trim()) {
+                window.Common.showToast('姓名不能为空');
+                return;
+            }
+            if (!gender) {
+                window.Common.showToast('请选择性别');
+                return;
+            }
+            if (!birthDate) {
+                window.Common.showToast('请选择出生日期');
+                return;
+            }
+
+            // 更新全局数据（实际项目中应发送到服务器）
+            window.GlobalData.user.name = nickname;
+            window.GlobalData.user.avatarUrl = avatarUrl;
+            window.GlobalData.user.phone = phone;
+            window.GlobalData.user.realName = realName;
+            window.GlobalData.user.gender = gender;
+            window.GlobalData.user.birthDate = birthDate;
+            window.GlobalData.user.school = school;
+            window.GlobalData.user.mbti = mbti;
+            window.GlobalData.user.intro = intro;
+            window.GlobalData.user.tags = currentTags;
+
+            window.Common.showToast('资料保存成功！');
+            setTimeout(() => {
+                window.history.back();
+            }, 1500);
+        }
+
+        // 标签管理函数
+        let currentTags = [];
+
+        function updateTagsDisplay() {
+            const container = document.getElementById('tags-container');
+            if (!container) return;
+            container.innerHTML = currentTags.map(tag => `
+                <span class="tag-chip inline-flex items-center gap-1 px-3 py-1.5 bg-brand-orange/10 text-brand-orange text-xs font-medium rounded-full border border-brand-orange/20">
+                    ${tag}
+                    <button type="button" onclick="removeTag('${tag}')" class="ml-1 text-brand-orange hover:text-brand-orange/70">
+                        <i data-lucide="x" class="w-3 h-3"></i>
+                    </button>
+                </span>
+            `).join('');
+            window.Common.initIcons();
+        }
+
+        function addTag(tag) {
+            if (!tag.trim()) return;
+            if (currentTags.includes(tag)) {
+                window.Common.showToast('标签已存在');
+                return;
+            }
+            if (currentTags.length >= 10) {
+                window.Common.showToast('最多添加10个标签');
+                return;
+            }
+            currentTags.push(tag);
+            updateTagsDisplay();
+        }
+
+        function removeTag(tag) {
+            currentTags = currentTags.filter(t => t !== tag);
+            updateTagsDisplay();
+        }
+
+        function addCustomTag() {
+            const input = document.getElementById('new-tag-input');
+            const tag = input.value.trim();
+            if (!tag) {
+                window.Common.showToast('请输入标签内容');
+                return;
+            }
+            addTag(tag);
+            input.value = '';
+        }
+
+        // 在render函数中初始化标签
+        const originalRender = render;
+        render = function() {
+            originalRender();
+            // 初始化标签数据
+            const user = window.GlobalData.user;
+            currentTags = user.tags ? [...user.tags] : [];
+            updateTagsDisplay();
+        };
+
+        document.addEventListener('DOMContentLoaded', render);
+    </script>
+</body>
+</html>

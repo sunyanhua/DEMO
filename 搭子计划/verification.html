@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>我的认证 - 搭子计划</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gray-50 text-gray-900 pb-20">
+    <div id="app"></div>
+
+    <script src="data.js?v=2"></script>
+    <script src="common.js?v=2"></script>
+    <script>
+        function render() {
+            const user = window.GlobalData.user;
+
+            document.getElementById('app').innerHTML = `
+                <!-- 顶部导航 -->
+                <div class="sticky top-0 z-40 bg-white/95 backdrop-blur-md px-4 py-3 shadow-sm flex items-center justify-between">
+                    <button onclick="window.history.back()" class="p-1.5 rounded-full hover:bg-gray-100 transition">
+                        <i data-lucide="chevron-left" class="w-6 h-6 text-gray-800"></i>
+                    </button>
+                    <h1 class="text-lg font-bold text-gray-900">我的认证</h1>
+                    <div class="w-10"></div> <!-- 占位保持对称 -->
+                </div>
+
+                <div class="px-4 pt-4">
+                    <!-- 认证状态概览 -->
+                    <div class="bg-white rounded-2xl p-4 shadow-sm mb-6">
+                        <h3 class="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                            <i data-lucide="shield" class="w-5 h-5 text-brand-orange"></i>
+                            认证状态概览
+                        </h3>
+                        <div class="space-y-4">
+                            <!-- 实名认证状态 -->
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
+                                        <i data-lucide="user-check" class="w-5 h-5 text-orange-600"></i>
+                                    </div>
+                                    <div>
+                                        <div class="font-medium text-gray-900">实名认证</div>
+                                        <div class="text-xs text-gray-400">上传身份证信息进行认证</div>
+                                    </div>
+                                </div>
+                                <div>
+                                    ${user.realNameVerified ?
+                                        '<span class="px-3 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full">已认证</span>' :
+                                        '<span class="px-3 py-1 bg-gray-100 text-gray-600 text-xs font-bold rounded-full">未认证</span>'
+                                    }
+                                </div>
+                            </div>
+
+                            <!-- 合作认证状态 -->
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                                        <i data-lucide="badge-check" class="w-5 h-5 text-blue-600"></i>
+                                    </div>
+                                    <div>
+                                        <div class="font-medium text-gray-900">合作认证</div>
+                                        <div class="text-xs text-gray-400">发布活动必须的商户/主理人认证</div>
+                                    </div>
+                                </div>
+                                <div>
+                                    ${user.cooperationVerified ?
+                                        '<span class="px-3 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full">已认证</span>' :
+                                        '<span class="px-3 py-1 bg-gray-100 text-gray-600 text-xs font-bold rounded-full">未认证</span>'
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 实名认证部分 -->
+                    <div class="bg-white rounded-2xl p-4 shadow-sm mb-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-bold text-gray-900 flex items-center gap-2">
+                                <i data-lucide="id-card" class="w-5 h-5 text-orange-500"></i>
+                                实名认证
+                            </h3>
+                            ${user.realNameVerified ?
+                                '<span class="px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full flex items-center gap-1"><i data-lucide="check-circle" class="w-3 h-3"></i> 已完成</span>' :
+                                '<span class="px-2 py-1 bg-orange-100 text-orange-700 text-xs font-bold rounded-full">待认证</span>'
+                            }
+                        </div>
+
+                        <div class="space-y-4">
+                            <div class="text-sm text-gray-600">
+                                为保障平台用户安全，请完成实名认证。认证后将在个人主页显示橙色认证标识。
+                            </div>
+
+                            ${user.realNameVerified ? `
+                                <div class="space-y-3">
+                                    <div class="p-3 bg-green-50 rounded-xl border border-green-100">
+                                        <div class="flex items-center gap-2 text-green-700 mb-2">
+                                            <i data-lucide="check-circle" class="w-4 h-4"></i>
+                                            <div class="text-sm font-bold">实名认证已完成</div>
+                                        </div>
+                                        <div class="text-xs text-green-600">
+                                            认证姓名：${user.realName || '未填写'}<br/>
+                                            认证时间：2026/2/18 14:30
+                                        </div>
+                                    </div>
+                                    <div class="text-xs text-gray-400 text-center">
+                                        如需更新认证信息，请联系客服
+                                    </div>
+                                </div>
+                            ` : `
+                                <div class="space-y-4">
+                                    <div class="text-sm font-medium text-gray-700">认证材料要求：</div>
+                                    <div class="space-y-2 text-sm text-gray-600">
+                                        <div class="flex items-start gap-2">
+                                            <i data-lucide="check-circle" class="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0"></i>
+                                            <div>需提供本人身份证正反面照片</div>
+                                        </div>
+                                        <div class="flex items-start gap-2">
+                                            <i data-lucide="check-circle" class="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0"></i>
+                                            <div>身份证信息需与注册信息一致</div>
+                                        </div>
+                                        <div class="flex items-start gap-2">
+                                            <i data-lucide="check-circle" class="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0"></i>
+                                            <div>照片需清晰可辨，无遮挡反光</div>
+                                        </div>
+                                        <div class="flex items-start gap-2">
+                                            <i data-lucide="check-circle" class="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0"></i>
+                                            <div>审核通常需要1-3个工作日</div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 上传区域 -->
+                                    <div class="space-y-3">
+                                        <div class="text-sm font-medium text-gray-700">上传身份证照片：</div>
+                                        <div class="grid grid-cols-2 gap-3">
+                                            <div class="aspect-[3/2] bg-gray-50 rounded-xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-gray-400 cursor-pointer hover:bg-gray-100 transition">
+                                                <i data-lucide="camera" class="w-6 h-6 mb-1"></i>
+                                                <span class="text-xs">身份证正面</span>
+                                            </div>
+                                            <div class="aspect-[3/2] bg-gray-50 rounded-xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-gray-400 cursor-pointer hover:bg-gray-100 transition">
+                                                <i data-lucide="camera" class="w-6 h-6 mb-1"></i>
+                                                <span class="text-xs">身份证反面</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <button onclick="submitRealNameVerification()" class="w-full py-3.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold rounded-xl shadow-lg shadow-orange-500/30 active:scale-95 transition-transform">
+                                        提交实名认证
+                                    </button>
+                                </div>
+                            `}
+                        </div>
+                    </div>
+
+                    <!-- 合作认证部分 -->
+                    <div class="bg-white rounded-2xl p-4 shadow-sm mb-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-bold text-gray-900 flex items-center gap-2">
+                                <i data-lucide="building-2" class="w-5 h-5 text-blue-500"></i>
+                                合作认证
+                            </h3>
+                            ${user.cooperationVerified ?
+                                '<span class="px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full flex items-center gap-1"><i data-lucide="check-circle" class="w-3 h-3"></i> 已完成</span>' :
+                                '<span class="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-full">待认证</span>'
+                            }
+                        </div>
+
+                        <div class="space-y-4">
+                            <div class="text-sm text-gray-600">
+                                为发布收费活动或成为平台合作方，请完成合作认证。认证后将在个人主页显示蓝色认证标识，并获得发布活动权限。
+                            </div>
+
+                            ${user.cooperationVerified ? `
+                                <div class="space-y-3">
+                                    <div class="p-3 bg-blue-50 rounded-xl border border-blue-100">
+                                        <div class="flex items-center gap-2 text-blue-700 mb-2">
+                                            <i data-lucide="check-circle" class="w-4 h-4"></i>
+                                            <div class="text-sm font-bold">合作认证已完成</div>
+                                        </div>
+                                        <div class="text-xs text-blue-600">
+                                            认证角色：${user.role === 'merchant' ? '合作商户' : user.role === 'host' ? '主理人' : '普通用户'}<br/>
+                                            认证时间：2026/2/19 10:15
+                                        </div>
+                                    </div>
+                                    <div class="text-xs text-gray-400">
+                                        <div class="flex items-start gap-2 mb-1">
+                                            <i data-lucide="zap" class="w-3 h-3 text-blue-500 mt-0.5"></i>
+                                            <div>您现在可以发布收费活动</div>
+                                        </div>
+                                        <div class="flex items-start gap-2">
+                                            <i data-lucide="zap" class="w-3 h-3 text-blue-500 mt-0.5"></i>
+                                            <div>您的个人主页已显示蓝色认证标识</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ` : `
+                                <div class="space-y-4">
+                                    <div class="text-sm font-medium text-gray-700">认证类型：</div>
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <div onclick="selectCooperationType('merchant')" class="p-3 border-2 ${user.role === 'merchant' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 bg-white'} rounded-xl cursor-pointer hover:bg-gray-50 transition-colors">
+                                            <div class="flex items-center gap-2 mb-2">
+                                                <i data-lucide="store" class="w-5 h-5 text-blue-500"></i>
+                                                <div class="text-sm font-bold text-gray-900">合作商户</div>
+                                            </div>
+                                            <div class="text-xs text-gray-600">实体门店、品牌商家等</div>
+                                        </div>
+                                        <div onclick="selectCooperationType('host')" class="p-3 border-2 ${user.role === 'host' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 bg-white'} rounded-xl cursor-pointer hover:bg-gray-50 transition-colors">
+                                            <div class="flex items-center gap-2 mb-2">
+                                                <i data-lucide="users" class="w-5 h-5 text-blue-500"></i>
+                                                <div class="text-sm font-bold text-gray-900">主理人</div>
+                                            </div>
+                                            <div class="text-xs text-gray-600">活动组织者、社群主理等</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="text-sm font-medium text-gray-700">认证材料要求：</div>
+                                    <div class="space-y-2 text-sm text-gray-600">
+                                        <div class="flex items-start gap-2">
+                                            <i data-lucide="check-circle" class="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0"></i>
+                                            <div>合作商户：需提供营业执照、实体门店照片等资质</div>
+                                        </div>
+                                        <div class="flex items-start gap-2">
+                                            <i data-lucide="check-circle" class="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0"></i>
+                                            <div>主理人：需提供过往活动组织经验、个人简介等</div>
+                                        </div>
+                                        <div class="flex items-start gap-2">
+                                            <i data-lucide="check-circle" class="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0"></i>
+                                            <div>所有材料需真实有效，无遮挡反光</div>
+                                        </div>
+                                        <div class="flex items-start gap-2">
+                                            <i data-lucide="check-circle" class="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0"></i>
+                                            <div>审核通常需要1-3个工作日</div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 上传区域 -->
+                                    <div class="space-y-3">
+                                        <div class="text-sm font-medium text-gray-700">上传认证材料：</div>
+                                        <div class="grid grid-cols-2 gap-3">
+                                            <div class="aspect-square bg-gray-50 rounded-xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-gray-400 cursor-pointer hover:bg-gray-100 transition">
+                                                <i data-lucide="plus" class="w-6 h-6"></i>
+                                                <span class="text-xs mt-1">添加材料</span>
+                                            </div>
+                                            <div class="aspect-square bg-gray-50 rounded-xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-gray-400 cursor-pointer hover:bg-gray-100 transition">
+                                                <i data-lucide="plus" class="w-6 h-6"></i>
+                                                <span class="text-xs mt-1">添加材料</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <button onclick="submitCooperationVerification()" class="w-full py-3.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold rounded-xl shadow-lg shadow-blue-500/30 active:scale-95 transition-transform">
+                                        提交合作认证
+                                    </button>
+                                </div>
+                            `}
+                        </div>
+                    </div>
+
+                    <!-- 认证说明 -->
+                    <div class="bg-white rounded-2xl p-4 shadow-sm">
+                        <h3 class="font-bold text-gray-900 mb-3 flex items-center gap-2">
+                            <i data-lucide="info" class="w-4 h-4 text-gray-500"></i>
+                            认证说明
+                        </h3>
+                        <div class="space-y-2 text-sm text-gray-600">
+                            <div class="flex items-start gap-2">
+                                <i data-lucide="check-circle" class="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0"></i>
+                                <div>实名认证和合作认证相互独立，可根据需求分别完成</div>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <i data-lucide="check-circle" class="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0"></i>
+                                <div>实名认证完成后，个人主页将显示橙色认证标识</div>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <i data-lucide="check-circle" class="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0"></i>
+                                <div>合作认证完成后，个人主页将显示蓝色认证标识</div>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <i data-lucide="check-circle" class="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0"></i>
+                                <div>完成合作认证后，才可发布收费活动</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                ${window.Common.renderBottomNav('me')}
+            `;
+            window.Common.initIcons();
+        }
+
+        function selectCooperationType(type) {
+            const user = window.GlobalData.user;
+            user.role = type;
+            render();
+            window.Common.showToast(`已选择：${type === 'merchant' ? '合作商户' : '主理人'}`);
+        }
+
+        function submitRealNameVerification() {
+            window.Common.showToast('实名认证申请已提交，请等待审核');
+            setTimeout(() => {
+                window.GlobalData.user.realNameVerified = true;
+
+                // 保存实名认证状态到sessionStorage
+                sessionStorage.setItem('user_realNameVerified', 'true');
+
+                render();
+                window.Common.showToast('实名认证成功！');
+            }, 1500);
+        }
+
+        function submitCooperationVerification() {
+            const user = window.GlobalData.user;
+            if (!user.role || user.role === 'user') {
+                window.Common.showToast('请先选择认证类型');
+                return;
+            }
+
+            window.Common.showToast('合作认证申请已提交，请等待审核');
+            setTimeout(() => {
+                window.GlobalData.user.cooperationVerified = true;
+                window.GlobalData.user.verified = true; // 兼容旧字段
+
+                // 保存认证状态到sessionStorage，确保页面跳转后状态保持
+                sessionStorage.setItem('user_cooperationVerified', 'true');
+                sessionStorage.setItem('user_verified', 'true');
+
+                render();
+                window.Common.showToast('合作认证成功！3秒后将返回发布页面');
+
+                // 3秒后自动跳转到发布页面，带上认证成功参数
+                setTimeout(() => {
+                    window.location.href = 'publish.html?type=activity&justVerified=true';
+                }, 3000);
+            }, 1500);
+        }
+
+        document.addEventListener('DOMContentLoaded', render);
+    </script>
+</body>
+</html>
