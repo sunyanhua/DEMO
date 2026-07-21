@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>编辑资料 - 1039发现</title>
+<script src="lib/tailwind.min.js"></script><script src="lib/lucide.min.js"></script><link rel="stylesheet" href="style.css">
+</head>
+<body class="antialiased">
+<div class="bg-decoration"><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div></div>
+<div id="app" class="relative z-[1]"></div>
+<script src="common.js"></script>
+<script>
+var profile = {
+    avatar:'', nickname:'1039车友小明', name:'小明', gender:'男',
+    birthYear:'1990', birthMonth:'5', birthDay:'15',
+    district:'朝阳区'
+};
+var DISTRICTS = ['东城区','西城区','朝阳区','海淀区','丰台区','石景山区','通州区','大兴区','房山区','门头沟区','昌平区','顺义区','平谷区','怀柔区','密云区','延庆区','其他'];
+var MONTHS = ['1','2','3','4','5','6','7','8','9','10','11','12'];
+var DAYS = []; for(var i=1;i<=31;i++) DAYS.push(''+i);
+var YEARS = []; for(var y=2026;y>=1940;y--) YEARS.push(''+y);
+
+function genOptions(arr, sel) { return arr.map(function(v){return '<option'+(v===sel?' selected':'')+'>'+v+'</option>';}).join(''); }
+
+function render() {
+    var p = profile;
+    document.getElementById('app').innerHTML = '\
+        <div class="top-section"><div class="px-4 pt-3 pb-2"><img src="logo.png" alt="1039发现" style="height:28px;"/></div></div>\
+        <div class="content-card">\
+            <div class="px-4 py-4 border-b border-gray-100 flex items-center gap-2">\
+                <i data-lucide="user-circle" class="w-5 h-5 text-brand-gold"></i>\
+                <span class="text-base font-black text-gray-800">编辑资料</span></div>\
+            <div class="px-4 py-4 text-center">\
+                <div class="w-20 h-20 mx-auto rounded-full bg-brand-gold-light flex items-center justify-center border-2 border-brand-gold/30 mb-2">\
+                    <i data-lucide="camera" class="w-8 h-8 text-brand-gold"></i>\
+                </div>\
+                <p class="text-xs text-gray-400">点击更换头像</p>\
+            </div>\
+            <div class="px-4 space-y-3 pb-4">\
+                <div class="flex items-center gap-3"><span class="text-sm text-gray-500 w-16 flex-shrink-0">昵称</span><input type="text" id="p-nickname" value="'+p.nickname+'" class="flex-1 text-sm px-3 py-2.5 rounded-xl bg-gray-50 border border-gray-200 outline-none focus:border-brand-gold"/></div>\
+                <div class="flex items-center gap-3"><span class="text-sm text-gray-500 w-16 flex-shrink-0">姓名</span><input type="text" id="p-name" value="'+p.name+'" class="flex-1 text-sm px-3 py-2.5 rounded-xl bg-gray-50 border border-gray-200 outline-none focus:border-brand-gold"/></div>\
+                <div class="flex items-center gap-3"><span class="text-sm text-gray-500 w-16 flex-shrink-0">性别</span>\
+                    <label class="flex items-center gap-1 mr-4 cursor-pointer"><input type="radio" name="gender" value="男" '+(p.gender==='男'?'checked':'')+' class="accent-brand-gold"/><span class="text-sm text-gray-600">男</span></label>\
+                    <label class="flex items-center gap-1 cursor-pointer"><input type="radio" name="gender" value="女" '+(p.gender==='女'?'checked':'')+' class="accent-brand-gold"/><span class="text-sm text-gray-600">女</span></label>\
+                </div>\
+                <div class="flex items-center gap-3"><span class="text-sm text-gray-500 w-16 flex-shrink-0">生日</span>\
+                    <select id="p-year" class="text-sm px-3 py-2.5 rounded-xl bg-gray-50 border border-gray-200 outline-none">'+genOptions(YEARS, p.birthYear)+'</select><span class="text-xs text-gray-400">年</span>\
+                    <select id="p-month" class="text-sm px-3 py-2.5 rounded-xl bg-gray-50 border border-gray-200 outline-none">'+genOptions(MONTHS, p.birthMonth)+'</select><span class="text-xs text-gray-400">月</span>\
+                    <select id="p-day" class="text-sm px-3 py-2.5 rounded-xl bg-gray-50 border border-gray-200 outline-none">'+genOptions(DAYS, p.birthDay)+'</select><span class="text-xs text-gray-400">日</span>\
+                </div>\
+                <div class="flex items-center gap-3"><span class="text-sm text-gray-500 w-16 flex-shrink-0">区县</span>\
+                    <select id="p-district" class="flex-1 text-sm px-3 py-2.5 rounded-xl bg-gray-50 border border-gray-200 outline-none">'+genOptions(DISTRICTS, p.district)+'</select>\
+                </div>\
+            </div>\
+            <div class="px-4 py-4 border-t border-gray-100 space-y-2">\
+                <span class="block text-center cursor-pointer py-3 rounded-full bg-brand-gold text-white font-bold text-sm card-hover" onclick="Common.showToast(\'保存成功！\')">保存</span>\
+                <a href="me.html" class="block text-center py-3 rounded-full bg-gray-100 text-gray-500 font-bold text-sm card-hover no-underline">返回</a>\
+            </div>\
+        </div>\
+        <div class="pb-6"></div>';
+    Common.initIcons();
+}
+
+document.addEventListener('DOMContentLoaded', render);
+</script>
+</body>
+</html>

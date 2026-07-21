@@ -1,0 +1,131 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/><title>编辑脱单资料 - 他俩能成</title><script src="lib/tailwind.min.js"></script><script src="lib/lucide.min.js"></script><link rel="stylesheet" href="style.css"></head><body class="bg-white text-gray-900 antialiased pb-2">
+<div class="bg-decoration"><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div></div><div id="app" class="relative z-[1]"></div>
+<script src="common.js"></script><script>
+var saved=false;
+var DISTRICTS=['东城区','西城区','朝阳区','海淀区','丰台区','石景山区','通州区','大兴区','房山区','门头沟区','昌平区','顺义区','平谷区','怀柔区','密云区','延庆区','其他'];
+var NATIONS=['汉族','蒙古族','回族','藏族','维吾尔族','苗族','彝族','壮族','满族','朝鲜族','外国民族'];
+var PROVS=['北京市','天津市','上海市','重庆市','河北省','山西省','辽宁省','吉林省','黑龙江省','江苏省','浙江省','安徽省','福建省','江西省','山东省','河南省','湖北省','湖南省','广东省','海南省','四川省','贵州省','云南省','陕西省','甘肃省','青海省','台湾省','内蒙古自治区','广西壮族自治区','西藏自治区','宁夏回族自治区','新疆维吾尔自治区','香港特别行政区','澳门特别行政区','外籍','其他'];
+
+function render(){
+  var distOpts=DISTRICTS.map(function(d){return'<option value="'+d+'"'+(d==='海淀区'?' selected':'')+'>'+d+'</option>'}).join('');
+  var natOpts=NATIONS.map(function(n){return'<option value="'+n+'"'+(n==='汉族'?' selected':'')+'>'+n+'</option>'}).join('');
+  var hjOpts=PROVS.map(function(h){return'<option value="'+h+'"'+(h==='北京市'?' selected':'')+'>'+h+'</option>'}).join('');
+  var hjAll=PROVS.map(function(h){return'<option value="'+h+'">'+h+'</option>'}).join('');
+
+  document.getElementById('app').innerHTML=
+    '<div class="sticky top-0 z-40 bg-white/95 backdrop-blur-md px-4 py-2.5 shadow-sm flex items-center">'+
+      '<i data-lucide="file-text" class="w-3.5 h-3.5 text-brand-pink mr-2"></i>'+
+      '<h1 class="text-sm font-bold text-gray-900">编辑脱单资料</h1>'+
+    '</div>'+
+
+    '<div class="px-4 pt-3 pb-6">'+
+
+      '<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-4">'+
+        '<h3 class="font-bold text-gray-800 mb-3">基本资料</h3>'+
+        '<div class="flex items-center gap-4">'+
+          '<img src="images/photo/female/crop.0.67.1079.1438.0.750.1000.jpg" class="w-16 h-16 rounded-full object-cover border-2 border-brand-pink/20 flex-shrink-0"/>'+
+          '<div class="flex-1 min-w-0">'+
+            '<div class="flex items-center gap-2 mb-1"><span class="text-lg font-black text-gray-800">甜心小鹿</span><span class="text-[10px] px-1.5 py-0.5 rounded-full bg-pink-50 text-brand-pink font-medium inline-flex items-center gap-0.5"><i data-lucide="venus" class="w-2.5 h-2.5"></i>女</span></div>'+
+            '<div class="text-xs text-gray-400">2000-06-15 出生</div>'+
+          '</div>'+
+        '</div>'+
+        '<div class="bg-amber-50 rounded-xl p-3 mt-3 flex items-start gap-2">'+
+          '<i data-lucide="alert-triangle" class="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5"></i>'+
+          '<p class="text-xs text-amber-700 leading-relaxed">基本资料一经填写后，<b>不能修改</b>，若有疑问请与客服联系。</p>'+
+        '</div>'+
+        '<div class="border-t border-gray-100 mt-3 pt-3">'+
+          '<div class="space-y-2"><label class="text-xs font-medium text-gray-500">姓名</label><input type="text" id="realname" value="张雨婷" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:border-brand-pink"></div>'+
+          '<div class="flex items-start gap-2 mt-1"><i data-lucide="eye-off" class="w-3 h-3 text-gray-400 mt-0.5 flex-shrink-0"></i><span class="text-[11px] text-gray-400">隐私信息，不会向平台其他用户展示</span></div>'+
+          '<div class="space-y-2 mt-3"><label class="text-xs font-medium text-gray-500">单位</label><input type="text" id="company" value="字节跳动科技有限公司" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:border-brand-pink"></div>'+
+          '<div class="flex items-start gap-2 mt-1"><i data-lucide="eye-off" class="w-3 h-3 text-gray-400 mt-0.5 flex-shrink-0"></i><span class="text-[11px] text-gray-400">隐私信息，不会向平台其他用户展示</span></div>'+
+        '</div>'+
+      '</div>'+
+
+      '<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-4">'+
+        '<h3 class="font-bold text-gray-800 mb-3">个人照片 <span class="text-xs text-gray-400 font-normal">（最多9张）<span class="text-brand-pink">*</span></span></h3>'+
+        '<div id="photos-grid" class="grid grid-cols-3 gap-2">'+
+          '<div class="relative aspect-[3/4] bg-gray-100 rounded-xl overflow-hidden"><img src="images/photo/female/crop.0.67.1079.1438.0.750.1000.jpg" class="w-full h-full object-cover"/><span onclick="this.parentElement.remove()" class="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/50 text-white flex items-center justify-center cursor-pointer text-xs">✕</span></div>'+
+          '<div class="relative aspect-[3/4] bg-gray-100 rounded-xl overflow-hidden"><img src="images/photo/female/crop.0.61.723.964.0.750.1000.jpg" class="w-full h-full object-cover"/><span onclick="this.parentElement.remove()" class="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/50 text-white flex items-center justify-center cursor-pointer text-xs">✕</span></div>'+
+          '<div class="aspect-[3/4] bg-gray-50 rounded-xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-gray-400 cursor-pointer card-hover"><i data-lucide="plus" class="w-8 h-8 mb-1"></i><span class="text-xs">添加照片</span></div>'+
+        '</div>'+
+      '</div>'+
+
+      '<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 space-y-4 mb-4">'+
+        '<h3 class="font-bold text-gray-800">脱单资料</h3>'+
+        '<div class="space-y-2"><label class="text-sm font-medium text-gray-700">婚姻状态 <span class="text-brand-pink">*</span></label><div class="flex gap-4">'+['未婚','离异','丧偶'].map(function(m){return'<label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="marital" value="'+m+'"'+(m==='未婚'?' checked':'')+' class="w-4 h-4 accent-brand-pink"> <span class="text-gray-700">'+m+'</span></label>'}).join('')+'</div></div>'+
+        '<div class="grid grid-cols-2 gap-3">'+
+          '<div class="space-y-2"><label class="text-sm font-medium text-gray-700">身高 <span class="text-brand-pink">*</span></label><input type="text" id="height" value="156cm" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:border-brand-pink"></div>'+
+          '<div class="space-y-2"><label class="text-sm font-medium text-gray-700">体重 <span class="text-brand-pink">*</span></label><input type="text" id="weight" value="46kg" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:border-brand-pink"></div>'+
+        '</div>'+
+        '<div class="grid grid-cols-2 gap-3">'+
+          '<div class="space-y-2"><label class="text-sm font-medium text-gray-700">属相 <span class="text-brand-pink">*</span></label><select id="zodiac" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:border-brand-pink">'+['鼠','牛','虎','兔','龙','蛇','马','羊','猴','鸡','狗','猪'].map(function(z){return'<option value="'+z+'"'+(z==='鸡'?' selected':'')+'>'+z+'</option>'}).join('')+'</select></div>'+
+          '<div class="space-y-2"><label class="text-sm font-medium text-gray-700">血型 <span class="text-brand-pink">*</span></label><select id="blood" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:border-brand-pink">'+['A型','B型','AB型','O型'].map(function(z){return'<option value="'+z+'"'+(z==='AB型'?' selected':'')+'>'+z+'</option>'}).join('')+'</select></div>'+
+        '</div>'+
+        '<div class="grid grid-cols-2 gap-3">'+
+          '<div class="space-y-2"><label class="text-sm font-medium text-gray-700">学历 <span class="text-brand-pink">*</span></label><select id="edu" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:border-brand-pink">'+['高中及以下','大专','大学本科','硕士','博士'].map(function(z){return'<option value="'+z+'"'+(z==='大学本科'?' selected':'')+'>'+z+'</option>'}).join('')+'</select></div>'+
+          '<div class="space-y-2"><label class="text-sm font-medium text-gray-700">职业 <span class="text-brand-pink">*</span></label><input type="text" id="job" value="销售" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:border-brand-pink"></div>'+
+        '</div>'+
+        '<div class="space-y-2"><label class="text-sm font-medium text-gray-700">所在区县 <span class="text-brand-pink">*</span></label><select id="district" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:border-brand-pink">'+distOpts+'</select></div>'+
+        '<div class="grid grid-cols-2 gap-3">'+
+          '<div class="space-y-2"><label class="text-sm font-medium text-gray-700">民族 <span class="text-brand-pink">*</span></label><select id="nation" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:border-brand-pink">'+natOpts+'</select></div>'+
+          '<div class="space-y-2"><label class="text-sm font-medium text-gray-700">户籍 <span class="text-brand-pink">*</span></label><select id="hukou" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:border-brand-pink">'+hjOpts+'</select></div>'+
+        '</div>'+
+        '<div class="space-y-2"><label class="text-sm font-medium text-gray-700">家乡 <span class="text-brand-pink">*</span></label><select id="hometown" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:border-brand-pink"><option value="">请选择</option>'+hjAll+'</select></div>'+
+      '</div>'+
+
+      '<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 space-y-4 mb-4">'+
+        '<h3 class="font-bold text-gray-800">更多信息 <span class="text-brand-pink">*</span></h3>'+
+        '<div class="space-y-2"><label class="text-sm font-medium text-gray-700">兴趣爱好</label><input type="text" id="hobby" value="旅行、摄影、美食、瑜伽、看电影" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:border-brand-pink"></div>'+
+        '<div class="space-y-2"><label class="text-sm font-medium text-gray-700">才艺特长</label><input type="text" id="talent" value="钢琴八级、烘焙、书法" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:border-brand-pink"></div>'+
+        '<div class="space-y-2"><label class="text-sm font-medium text-gray-700">个人介绍</label><textarea id="intro" rows="3" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:border-brand-pink resize-none">热爱生活的北京姑娘，工作在朝阳，周末喜欢探索城市里有趣的小店。希望能遇到一个阳光开朗的你，一起分享生活的美好。</textarea></div>'+
+        '<div class="space-y-2"><label class="text-sm font-medium text-gray-700">择偶标准</label><textarea id="criteria" rows="3" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:border-brand-pink resize-none">希望你身高175以上，年龄25-32岁，有稳定的工作，性格阳光开朗，热爱生活，最好也喜欢运动和旅行。</textarea></div>'+
+      '</div>'+
+
+      '<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-4">'+
+        '<h3 class="font-bold text-gray-800 mb-3">档案隐藏设置</h3>'+
+        '<div class="space-y-2">'+
+          '<label class="flex items-center gap-3 py-2 px-3 rounded-xl border border-gray-100 cursor-pointer card-hover"><input type="radio" name="visibility" value="all" checked class="w-4 h-4 accent-brand-pink"><div><div class="text-sm font-medium text-gray-700">全平台公开</div><div class="text-[11px] text-gray-400">所有用户均可查看您的脱单档案</div></div></label>'+
+          '<label class="flex items-center gap-3 py-2 px-3 rounded-xl border border-gray-100 cursor-pointer card-hover"><input type="radio" name="visibility" value="zone" class="w-4 h-4 accent-brand-pink"><div><div class="text-sm font-medium text-gray-700">仅对专区展示</div><div class="text-[11px] text-gray-400">仅您加入的专区成员可查看</div></div></label>'+
+          '<label class="flex items-center gap-3 py-2 px-3 rounded-xl border border-gray-100 cursor-pointer card-hover"><input type="radio" name="visibility" value="hidden" class="w-4 h-4 accent-brand-pink"><div><div class="text-sm font-medium text-gray-700">完全隐藏</div><div class="text-[11px] text-gray-400">暂时对所有人隐藏脱单档案</div></div></label>'+
+        '</div>'+
+      '</div>'+
+
+      '<div class="bg-amber-50 rounded-xl p-3 mb-4 flex items-start gap-2 shadow-sm">'+
+        '<i data-lucide="alert-triangle" class="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5"></i>'+
+        '<p class="text-xs text-amber-700 leading-relaxed">编辑后的资料需<b>全部填写</b>方可保存，请仔细核对后再提交。</p>'+
+      '</div>'+
+
+      '<div class="mt-4">'+
+        (saved?
+          '<div class="w-full py-3.5 bg-gray-200 text-gray-400 font-bold text-lg rounded-xl text-center"><i data-lucide="check" class="w-4 h-4 inline mr-1"></i>已保存</div>':
+          '<span onclick="doSave()" class="block text-center w-full py-3.5 bg-gradient-to-tr from-brand-pink to-brand-orange text-white font-bold text-lg rounded-xl shadow-lg shadow-brand-pink/20 card-hover cursor-pointer">保存资料</span>'
+        )+
+        '<span onclick="window.history.back()" class="block text-center w-full py-3 rounded-xl bg-gray-100 text-gray-500 font-bold text-sm mt-3 cursor-pointer card-hover">取消</span>'+
+      '</div>'+
+
+    '</div>';
+  window.Common.initIcons();
+}
+
+var FIELDS=['height','weight','job','realname','company','hobby','talent','intro','criteria'];
+var FIELDS_CN={height:'身高',weight:'体重',job:'职业',realname:'姓名',company:'单位',hobby:'兴趣爱好',talent:'才艺特长',intro:'个人介绍',criteria:'择偶标准'};
+function doSave(){
+  for(var i=0;i<FIELDS.length;i++){
+    var el=document.getElementById(FIELDS[i]);
+    if(!el||!el.value.trim()){window.Common.showToast('请填写'+FIELDS_CN[FIELDS[i]]);return}
+  }
+  if(!document.getElementById('district').value){window.Common.showToast('请选择所在区县');return}
+  if(!document.getElementById('zodiac').value){window.Common.showToast('请选择属相');return}
+  if(!document.getElementById('blood').value){window.Common.showToast('请选择血型');return}
+  if(!document.getElementById('edu').value){window.Common.showToast('请选择学历');return}
+  if(!document.getElementById('nation').value){window.Common.showToast('请选择民族');return}
+  if(!document.getElementById('hukou').value){window.Common.showToast('请选择户籍');return}
+  if(!document.getElementById('hometown').value){window.Common.showToast('请选择家乡');return}
+  saved=true;
+  window.Common.showToast('资料保存成功');
+  setTimeout(function(){window.location.href='me.html'},800);
+  render();
+}
+document.addEventListener('DOMContentLoaded',function(){render()});
+</script>
+</body></html>

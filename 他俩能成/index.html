@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>他俩能成 - 首页</title>
+    <script src="lib/tailwind.min.js"></script>
+    <script src="lib/lucide.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-white text-gray-900 antialiased pb-28">
+
+    <div class="bg-decoration">
+        <div class="bg-blob"></div><div class="bg-blob"></div>
+        <div class="bg-blob"></div><div class="bg-blob"></div>
+        <div class="bg-blob"></div>
+    </div>
+
+    <div id="app" class="relative z-[1]"></div>
+
+    <script src="common.js"></script>
+    <script>
+        // ========== 照片资源表 ==========
+        const FEMALE_PHOTOS = [
+            'images/photo/female/crop.70.444.1537.2050.0.750.1000.jpg',
+            'images/photo/female/crop.0.67.1079.1438.0.750.1000.jpg',
+            'images/photo/female/crop.0.61.723.964.0.750.1000.jpg',
+            'images/photo/female/crop.0.0.4896.6528.0.750.1000.jpg',
+            'images/photo/female/crop.384.0.2304.3072.0.750.1000.jpg',
+            'images/photo/female/crop.0.0.2267.3023.0.750.1000.jpg',
+            'images/photo/female/crop.0.479.2160.2880.0.750.1000.jpg',
+            'images/photo/female/crop.0.181.1064.1418.0.750.1000.jpg',
+            'images/photo/female/crop.882.0.2266.3022.0.750.1000.jpg',
+            'images/photo/female/crop.0.0.3456.4608.0.750.1000.jpg',
+            'images/photo/female/crop.0.37.714.952.0.750.1000.jpg',
+            'images/photo/female/crop.0.0.3023.4031.0.750.1000.jpg',
+            'images/photo/female/crop.1.1.2934.3913.0.750.1000.jpg',
+            'images/photo/female/crop.378.0.2268.3024.0.750.1000.jpg',
+            'images/photo/female/crop.0.0.3023.4031.0.750.1000 (1).jpg',
+            'images/photo/female/crop.23.0.1031.1375.0.750.1000.jpg',
+            'images/photo/female/crop.0.333.2816.3754.0.750.1000.jpg',
+        ];
+        const MALE_PHOTOS = [
+            'images/photo/male/crop.17.0.1224.1632.0.750.1000.jpg',
+            'images/photo/male/crop.194.56.917.1222.0.750.1000.jpg',
+            'images/photo/male/crop.0.0.1078.1438.0.750.1000.jpg',
+            'images/photo/male/crop.0.875.2143.2857.0.750.1000.jpg',
+            'images/photo/male/crop.1033.0.3000.4000.0.750.1000.jpg',
+            'images/photo/male/crop.0.501.960.1280.0.750.1000.jpg',
+            'images/photo/male/crop.0.237.1080.1440.0.750.1000.jpg',
+            'images/photo/male/crop.0.54.942.1256.0.750.1000.jpg',
+            'images/photo/male/crop.1.0.3877.5170.0.750.1000.jpg',
+            'images/photo/male/crop.0.0.1773.2364.0.750.1000.jpg',
+            'images/photo/male/crop.0.90.1079.1439.0.750.1000.jpg',
+            'images/photo/male/crop.0.9.465.620.0.750.1000.jpg',
+            'images/photo/male/crop.0.0.1278.1704.0.750.1000.jpg',
+            'images/photo/male/crop.117.409.502.670.0.750.1000.jpg',
+            'images/photo/male/crop.1210.1.2734.3645.0.750.1000.jpg',
+            'images/photo/male/crop.1.0.2316.3088.0.750.1000.jpg',
+            'images/photo/male/crop.124.0.810.1080.0.750.1000.jpg',
+        ];
+
+        const CONSTELLATIONS = ['白羊座','金牛座','双子座','巨蟹座','狮子座','处女座','天秤座','天蝎座','射手座','摩羯座','水瓶座','双鱼座'];
+        const MALE_NAMES   = ['清风徐来','阳光骑士','北辰','追风少年','海的彼岸','咖啡不加糖','大熊','星河漫步','枫叶飘零','时光旅人'];
+        const FEMALE_NAMES = ['甜心小鹿','奶茶妹妹','浅笑安然','栀子花开','月亮不睡','棉花糖','小兔软糖','咕咚姑娘','雪落无声','薄荷微光'];
+
+        function buildUsers() {
+            const users = [];
+            MALE_NAMES.forEach((name, i) => {
+                users.push({
+                    id: `m${i+1}`, name,
+                    age: 23 + Math.floor(Math.random() * 13),
+                    gender: 'male',
+                    constellation: CONSTELLATIONS[Math.floor(Math.random() * 12)],
+                    photo: MALE_PHOTOS[i % MALE_PHOTOS.length],
+                    verified: Math.random() < 0.3,
+                });
+            });
+            FEMALE_NAMES.forEach((name, i) => {
+                users.push({
+                    id: `f${i+1}`, name,
+                    age: 22 + Math.floor(Math.random() * 11),
+                    gender: 'female',
+                    constellation: CONSTELLATIONS[Math.floor(Math.random() * 12)],
+                    photo: FEMALE_PHOTOS[i % FEMALE_PHOTOS.length],
+                    verified: Math.random() < 0.3,
+                });
+            });
+            return users;
+        }
+
+        window.GlobalData = {
+            bannerImages: ['images/banner1.jpg', 'images/banner2.jpg'],
+            users: buildUsers(),
+            matchStats: {
+                total: 32, success: 32, fail: 0, scoreRate: '90.63',
+                openFate: 11, helpSuccess: 0,
+                bonusBoost: 0, randomMatch: 2, almostBreak: 0, breakCouple: 0,
+            }
+        };
+
+        function pickRandomUsers(n) {
+            const all = [...window.GlobalData.users];
+            for (let i = all.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [all[i], all[j]] = [all[j], all[i]];
+            }
+            return all.slice(0, n);
+        }
+
+        // Fate/match mock data
+        function pickFateUsers(n) {
+            var all = pickRandomUsers(n);
+            return all.map(function(u) {
+                var labels = [
+                    'TA已对你心动',
+                    'TA已关注你',
+                    '"' + all[Math.floor(Math.random()*all.length)].name + '" 向你推荐了TA',
+                    '有 ' + (2+Math.floor(Math.random()*15)) + ' 人认为你俩能成',
+                    'TA被心动 ' + (3+Math.floor(Math.random()*50)) + ' 次',
+                ];
+                return {...u, capsule: labels[Math.floor(Math.random()*labels.length)]};
+            });
+        }
+        function pickMatchUsers(n) {
+            var all = pickRandomUsers(n);
+            return all.map(function(u) {
+                var labels = [
+                    '你和TA已成',
+                    '只待最后助攻',
+                    '你们已经互相关注',
+                ];
+                return {...u, capsule: labels[Math.floor(Math.random()*labels.length)]};
+            });
+        }
+        window.GlobalData.fateUsers = pickFateUsers(8);
+        window.GlobalData.matchUsers = pickMatchUsers(8);
+
+        // ========== View ==========
+        const View = {
+            tab: 'tuodan',
+            users: pickRandomUsers(10),
+
+            banner() {
+                const imgs = window.GlobalData.bannerImages;
+                const imagesHtml = imgs.map((src, i) =>
+                    `<img src="${src}" alt="Banner ${i+1}" class="w-full h-auto object-cover object-top flex-shrink-0 snap-center min-w-full" style="aspect-ratio:21/4.5;" />`
+                ).join('');
+                const dotsHtml = imgs.map((_, i) =>
+                    `<div class="w-1 h-1 rounded-full transition-all duration-300 ${i === 0 ? 'bg-white w-2' : 'bg-white/50'}"></div>`
+                ).join('');
+                return `
+                <div class="px-4 pt-2 pb-1">
+                    <div class="block text-center cursor-pointer relative w-full rounded-2xl overflow-hidden bg-gray-100 border border-black/5">
+                        <div id="banner-container" class="flex overflow-x-auto snap-x snap-mandatory no-scrollbar w-full scroll-smooth">
+                            ${imagesHtml}
+                        </div>
+                        <div id="banner-dots" class="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 p-1.5 bg-black/20 rounded-full backdrop-blur-sm">
+                            ${dotsHtml}
+                        </div>
+                    </div>
+                </div>`;
+            },
+
+            iconButtons() {
+                const btns = [
+                    { icon: 'images/icon_tougao.png',  label: '广播节目', href: 'broadcast.html' },
+                    { icon: 'images/icon_chaoyang.png', label: '朝阳相伴', href: 'chaoyang.html' },
+                    { icon: 'images/icon_qingai.png',   label: '青爱团', href: 'qingai.html' },
+                    { icon: 'images/icon_bangdan.png',  label: '榜单', href: 'ranking.html' },
+                ];
+                const items = btns.map(b => `
+                    <div class="flex flex-col items-center gap-1.5 cursor-pointer card-hover" onclick="window.location.href='${b.href}'">
+                        <div class="w-[68px] h-[68px] rounded-2xl bg-white flex items-center justify-center border border-orange-100/80" style="box-shadow:0 1px 3px rgba(0,0,0,0.04);">
+                            <img src="${b.icon}" alt="${b.label}" class="w-10 h-10 object-contain" />
+                        </div>
+                        <span class="text-xs text-gray-600 font-medium">${b.label}</span>
+                    </div>
+                `).join('');
+                return `<div class="px-6 py-2"><div class="flex justify-between items-start">${items}</div></div>`;
+            },
+
+            tabBar() {
+                const activeCls  = 'text-brand-pink font-bold border-b-[3px] border-brand-pink';
+                const normalCls  = 'text-gray-500 font-medium border-b-[3px] border-transparent';
+                return `
+                <div id="tab-bar" class="sticky top-0 z-30 bg-white px-3 pt-0 pb-0 transition-[padding-top] duration-200">
+                    <div class="flex w-full border-b border-gray-100">
+                        <span onclick="View.switchTab('tuodan')"   class="flex-1 text-center text-base pb-2.5 tab-indicator ${this.tab === 'tuodan' ? activeCls : normalCls}">我要脱单</span>
+                        <span onclick="View.switchTab('qianxian')" class="flex-1 text-center text-base pb-2.5 tab-indicator ${this.tab === 'qianxian' ? activeCls : normalCls}">我要牵线</span>
+                    </div>
+                </div>`;
+            },
+
+            userCard(u) {
+                const genderBadge = u.gender === 'male'
+                    ? '<span class="text-[10px] px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-500 font-medium inline-flex items-center gap-0.5"><i data-lucide="mars" class="w-2.5 h-2.5"></i>男</span>'
+                    : '<span class="text-[10px] px-1.5 py-0.5 rounded-full bg-pink-50 text-brand-pink font-medium inline-flex items-center gap-0.5"><i data-lucide="venus" class="w-2.5 h-2.5"></i>女</span>';
+                const verifiedHtml = u.verified
+                    ? '<span class="text-[9px] px-1.5 py-0.5 rounded-full bg-gradient-to-r from-brand-pink to-brand-orange text-white font-medium flex items-center gap-0.5"><i data-lucide="badge-check" class="w-2.5 h-2.5"></i>已实名</span>'
+                    : '';
+                return `
+                <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 card-hover flex flex-col cursor-pointer" onclick="window.location.href='profile.html'">
+                    <div class="relative w-full photo-3x4 overflow-hidden bg-gray-100 flex-shrink-0">
+                        <img src="${u.photo}" alt="${u.name}" class="w-full h-full object-cover" onerror="this.replaceWith(function(){var d=document.createElement('div');d.className='w-full h-full flex items-center justify-center bg-pink-50';d.innerHTML='<span class=text-brand-pink>暂无照片</span>';return d}())" />
+                        <div class="absolute top-2 right-2 flex flex-col gap-1 items-end">
+                            ${verifiedHtml}
+                        </div>
+                    </div>
+                    <div class="p-2.5 flex flex-col gap-1">
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-sm font-bold text-gray-800 truncate max-w-[72px]">${u.name}</span>
+                            ${genderBadge}
+                        </div>
+                        <div class="flex items-center gap-2 text-xs text-gray-400">
+                            <span>${u.age}岁</span>
+                            <span class="w-px h-2.5 bg-gray-200"></span>
+                            <span>${u.constellation}</span>
+                        </div>
+                    </div>
+                </div>`;
+            },
+
+            smallCard(u) {
+                const genderBadge = u.gender === 'male'
+                    ? '<span class="text-[9px] px-1 py-0.5 rounded-full bg-blue-50 text-blue-500 font-medium inline-flex items-center"><i data-lucide="mars" class="w-2.5 h-2.5"></i></span>'
+                    : '<span class="text-[9px] px-1 py-0.5 rounded-full bg-pink-50 text-brand-pink font-medium inline-flex items-center"><i data-lucide="venus" class="w-2.5 h-2.5"></i></span>';
+                return `
+                <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 card-hover flex flex-col flex-shrink-0 cursor-pointer" style="width:148px;" onclick="window.location.href='profile.html'">
+                    <div class="relative w-full overflow-hidden bg-gray-100 flex-shrink-0" style="height:185px;">
+                        <img src="${u.photo}" alt="${u.name}" class="w-full h-full object-cover" onerror="this.replaceWith(function(){var d=document.createElement('div');d.className='w-full h-full flex items-center justify-center bg-pink-50';d.innerHTML='<span class=text-brand-pink>暂无照片</span>';return d}())" />
+                        ${u.verified ? `<div class="absolute top-2 right-2"><span class="text-[8px] px-1 py-0.5 rounded-full bg-gradient-to-r from-brand-pink to-brand-orange text-white font-medium">已实名</span></div>` : ''}
+                        ${u.capsule ? `<div class="absolute bottom-0 left-0 right-0 pt-8 pb-1.5 px-2" style="background:linear-gradient(to top,rgba(0,0,0,0.65) 0%,rgba(0,0,0,0) 100%)"><span class="text-[10px] text-white font-medium leading-tight inline-block px-2 py-0.5 rounded-full bg-black/30 backdrop-blur-sm">${u.capsule}</span></div>` : ''}
+                    </div>
+                    <div class="p-2.5 flex flex-col gap-0.5">
+                        <div class="flex items-center gap-1">
+                            <span class="text-sm font-bold text-gray-800 truncate max-w-[76px]">${u.name}</span>
+                            ${genderBadge}
+                        </div>
+                        <div class="text-[11px] text-gray-400">${u.age}岁 · ${u.constellation}</div>
+                    </div>
+                </div>`;
+            },
+
+            fateRail() {
+                const users = window.GlobalData.fateUsers;
+                if (!users || users.length === 0) return '';
+                const cards = users.map(u => this.smallCard(u)).join('');
+                return `
+                <div class="pb-1 pt-3 fade-in">
+                    <div class="flex items-center justify-between px-4 mb-2">
+                        <h2 class="text-base font-black text-gray-800 flex items-center gap-1.5">
+                            <span class="text-brand-pink">💞</span>和TA有缘
+                        </h2>
+                        <span class="text-xs text-brand-pink font-medium cursor-pointer" onclick="window.location.href='interact.html'">更多 &gt;</span>
+                    </div>
+                    <div class="flex overflow-x-auto pl-4 gap-3 no-scrollbar pb-2">
+                        ${cards}
+                    </div>
+                </div>`;
+            },
+
+            matchRail() {
+                const users = window.GlobalData.matchUsers;
+                if (!users || users.length === 0) return '';
+                const cards = users.map(u => this.smallCard(u)).join('');
+                return `
+                <div class="pb-1 pt-2 fade-in">
+                    <div class="flex items-center justify-between px-4 mb-2">
+                        <h2 class="text-base font-black text-gray-800 flex items-center gap-1.5">
+                            <span class="text-brand-pink">💘</span>我的匹配
+                        </h2>
+                        <span class="text-xs text-brand-pink font-medium cursor-pointer" onclick="window.location.href='my-1314.html'">更多 &gt;</span>
+                    </div>
+                    <div class="flex overflow-x-auto pl-4 gap-3 no-scrollbar pb-2">
+                        ${cards}
+                    </div>
+                </div>`;
+            },
+
+            tuodanSection() {
+                if (this.users.length === 0) {
+                    return '<div class="p-8 text-center text-gray-400">暂无推荐用户</div>';
+                }
+                const cards = this.users.map(u => this.userCard(u)).join('');
+                return `
+                ${this.fateRail()}
+                ${this.matchRail()}
+                <div class="px-4 pt-2 fade-in">
+                    <div class="flex items-center justify-between mb-3">
+                        <h2 class="text-lg font-black text-gray-800 flex items-center gap-1.5">
+                            <span class="text-brand-pink">❤</span>推荐用户
+                        </h2>
+                        <div class="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center cursor-pointer" onclick="window.location.href='user-list.html'">
+                            <i data-lucide="search" class="w-4 h-4 text-gray-400"></i>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        ${cards}
+                    </div>
+                    <div class="mt-4 mb-2 w-full py-3 rounded-2xl bg-gradient-to-r from-brand-pink-light to-brand-orange-light border border-brand-pink/20 shadow-sm text-center cursor-pointer card-hover" onclick="window.location.href='user-list.html'">
+                        <span class="text-sm font-bold text-brand-pink flex items-center justify-center gap-1">
+                            查看更多推荐 <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                        </span>
+                    </div>
+                </div>`;
+            },
+
+            qianxianSection() {
+                const s = window.GlobalData.matchStats;
+
+                const summaryHtml = `
+                <div class="text-center mb-4">
+                    <div class="inline-flex items-center gap-2 bg-white rounded-full px-5 py-2 shadow-sm border border-pink-100">
+                        <span class="text-2xl">🎯</span>
+                        <span class="text-xs text-gray-500">得分率</span>
+                        <span class="text-2xl font-black text-brand-pink">${s.scoreRate}%</span>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-2">
+                        总计操作 <b class="text-gray-700">${s.total}</b> 次 ·
+                        <span class="text-brand-pink font-bold">能成 ${s.success}</span> 次 ·
+                        <span class="text-gray-400">不成 ${s.fail}</span> 次
+                    </p>
+                </div>`;
+
+                const items = [
+                    { emoji: '🔮', label: '开启缘分', value: s.openFate, unit: '次',  color: 'from-purple-50 to-pink-50 text-purple-600' },
+                    { emoji: '🎉', label: '成功助力', value: s.helpSuccess, unit: '次', color: 'from-green-50 to-emerald-50 text-green-600' },
+                    { emoji: '🌸', label: '锦上添花', value: s.bonusBoost, unit: '次', color: 'from-orange-50 to-amber-50 text-orange-500' },
+                    { emoji: '🎲', label: '乱点鸳鸯谱', value: s.randomMatch, unit: '次', color: 'from-blue-50 to-cyan-50 text-blue-500' },
+                    { emoji: '💔', label: '差点儿拆散', value: s.almostBreak, unit: '次', color: 'from-gray-50 to-slate-50 text-gray-500' },
+                    { emoji: '⚡', label: '棒打鸳鸯', value: s.breakCouple, unit: '次', color: 'from-red-50 to-rose-50 text-red-500' },
+                ];
+                const itemsHtml = items.map(it => `
+                    <div class="bg-gradient-to-br ${it.color} rounded-xl p-3 text-center flex flex-col items-center gap-1 shadow-sm border border-white/60">
+                        <span class="text-xl">${it.emoji}</span>
+                        <span class="text-[11px] text-gray-500">${it.label}</span>
+                        <span class="text-lg font-black">${it.value}<span class="text-[10px] text-gray-400 font-medium ml-0.5">${it.unit}</span></span>
+                    </div>
+                `).join('');
+
+                const statsHtml = `
+                <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 fade-in deco-card">
+                    <div class="text-center mb-3">
+                        <span class="text-sm font-black text-gray-700">📋 嗑学成绩单</span>
+                    </div>
+                    ${summaryHtml}
+                    <div class="grid grid-cols-3 gap-2">
+                        ${itemsHtml}
+                    </div>
+                    <div class="flex gap-3 mt-4">
+                        <span class="flex-1 text-center py-2.5 rounded-xl bg-gradient-to-tr from-brand-pink to-brand-orange text-white text-sm font-bold shadow-lg shadow-brand-pink/20 card-hover cursor-pointer" onclick="window.location.href='matchmaker.html'">💕 继续嗑</span>
+                        <span class="flex-1 text-center py-2.5 rounded-xl bg-brand-pink/10 border border-brand-pink/20 text-brand-pink text-sm font-bold card-hover cursor-pointer" onclick="window.location.href='assist.html'">⚡ 神助攻</span>
+                    </div>
+                </div>`;
+
+                const males   = window.GlobalData.users.filter(u => u.gender === 'male');
+                const females = window.GlobalData.users.filter(u => u.gender === 'female');
+                const cpMale   = males[Math.floor(Math.random() * males.length)];
+                const cpFemale = females[Math.floor(Math.random() * females.length)];
+
+                const cpHtml = cpMale && cpFemale ? `
+                <div class="mt-5 fade-in">
+                    <div class="flex items-center justify-between mb-3 px-1">
+                        <h3 class="text-base font-black text-gray-800 flex items-center gap-1.5">
+                            <span class="text-brand-pink">💕</span>CP推荐
+                        </h3>
+                        <span class="text-xs text-brand-pink font-medium cursor-pointer" onclick="window.location.href='matchmaker.html'">更多 &gt;</span>
+                    </div>
+                    <div class="relative flex items-center cursor-pointer" onclick="window.location.href='matchmaker.html'">
+                        <div class="grid grid-cols-2 gap-3 w-full">
+                            ${this.userCard(cpMale)}
+                            ${this.userCard(cpFemale)}
+                        </div>
+                        <div class="absolute inset-0 flex items-center justify-center z-10 heartbeat">
+                            <img src="images/logo_bg_white.png" alt="logo" class="w-16 h-16 object-contain drop-shadow-xl" />
+                        </div>
+                    </div>
+                </div>` : '';
+
+                return `
+                <div class="px-4 pt-4 fade-in">
+                    ${statsHtml}
+                    ${cpHtml}
+                </div>`;
+            },
+
+            switchTab(key) {
+                if (this.tab === key) return;
+                this.tab = key;
+                if (key === 'tuodan') {
+                    this.users = pickRandomUsers(10);
+                }
+
+                var tabBar = document.getElementById('tab-bar');
+                var contentArea = document.getElementById('content-area');
+                if (!tabBar || !contentArea) { this.render(); return; }
+
+                // Update tab buttons with correct active state
+                var btns = tabBar.querySelectorAll('button');
+                for (var i = 0; i < btns.length; i++) {
+                    var isFirst = (i === 0 && key === 'tuodan') || (i !== 0 && key === 'qianxian');
+                    btns[i].className = 'flex-1 text-center text-base pb-2.5 tab-indicator transition-colors duration-200 ' + (isFirst ? 'text-brand-pink font-bold border-b-[3px] border-brand-pink' : 'text-gray-500 font-medium border-b-[3px] border-transparent');
+                }
+
+                // Only replace content portion
+                contentArea.innerHTML = this.tabBar() + (key === 'tuodan' ? this.tuodanSection() : this.qianxianSection());
+                window.Common.initIcons();
+            },
+
+            render() {
+                const content = this.tab === 'tuodan' ? this.tuodanSection() : this.qianxianSection();
+                document.getElementById('app').innerHTML = `
+                    <div class="top-section">
+                        ${this.banner()}
+                        ${this.iconButtons()}
+                    </div>
+                    <div class="rounded-top"></div>
+                    <div class="content-section" id="content-area">
+                        ${this.tabBar()}
+                        ${content}
+                    </div>
+                    ${window.Common.renderBottomNav('home')}
+                    <!-- 能成报告悬浮入口 -->
+                    <div class="fixed z-[55] cursor-pointer card-hover" style="bottom:84px;right:8px;" onclick="window.location.href='report.html'">
+                        <div class="flex flex-col items-center" style="background:linear-gradient(135deg,rgba(255,255,255,0.88),rgba(255,245,242,0.9));backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-radius:24px;padding:12px 10px 8px;border:1.5px solid rgba(240,192,176,0.5);box-shadow:0 4px 24px rgba(232,93,58,0.15);animation:entryGlow 2.2s ease-in-out infinite;">
+                            <div class="w-[72px] h-[72px] rounded-full flex items-center justify-center relative" style="background:linear-gradient(135deg,#FFF5F3,#FFEDE8);border:2px solid #F0C0B0;">
+                                <img src="images/cheng.png" alt="能成报告" style="width:44px;height:auto;animation:entryBounce 0.8s ease-in-out infinite;" />
+                                <span class="absolute -top-1 -right-1 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full" style="background:linear-gradient(135deg,#E85D3A,#C44569);animation:entryBadgePulse 1.8s ease-in-out infinite;">NEW</span>
+                            </div>
+                            <p class="text-[12px] font-black text-center mt-1.5" style="background:linear-gradient(135deg,#E85D3A,#C44569);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">能成报告</p>
+                        </div>
+                    </div>
+                `;
+                window.Common.initIcons();
+            }
+        };
+
+        // ========== Banner 轮播 ==========
+        function startBannerCarousel() {
+            const container = document.getElementById('banner-container');
+            const dotsContainer = document.getElementById('banner-dots');
+            if (!container || !dotsContainer) return;
+            const count = window.GlobalData.bannerImages.length;
+            if (count < 2) return;
+
+            let current = 0;
+            function updateDots() {
+                const dots = dotsContainer.children;
+                for (let i = 0; i < dots.length; i++) {
+                    dots[i].className = `w-1 h-1 rounded-full transition-all duration-300 ${i === current ? 'bg-white w-2' : 'bg-white/50'}`;
+                }
+            }
+            setInterval(() => {
+                current = (current + 1) % count;
+                container.scrollTo({ left: container.offsetWidth * current, behavior: 'smooth' });
+                updateDots();
+            }, 3500);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // 注入能成报告入口动画
+            var style = document.createElement('style');
+            style.textContent = `
+@keyframes entryGlow { 0%,100%{box-shadow:0 0 8px rgba(232,93,58,0.12);} 50%{box-shadow:0 0 22px rgba(232,93,58,0.28);} }
+@keyframes entryBounce { 0%,100%{transform:translateY(0);} 30%{transform:translateY(-6px);} 60%{transform:translateY(-1px);} }
+@keyframes entryBadgePulse { 0%,100%{transform:scale(1);} 50%{transform:scale(1.15);} }
+@keyframes entrySpark { 0%,100%{opacity:0;transform:scale(0.5) rotate(0deg);} 40%{opacity:1;transform:scale(1.2) rotate(15deg);} 70%{opacity:0.6;transform:scale(0.9) rotate(-10deg);} }
+`; document.head.appendChild(style);
+
+            View.render();
+            startBannerCarousel();
+            window.Common.initStickyTab();
+        });
+
+        const _origRender = View.render.bind(View);
+        View.render = function() {
+            _origRender();
+            setTimeout(() => window.Common.initStickyTab(), 50);
+        };
+    </script>
+</body>
+</html>

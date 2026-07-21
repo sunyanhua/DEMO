@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>他俩能成 - 缘分速配</title>
+<script src="lib/tailwind.min.js"></script>
+<script src="lib/lucide.min.js"></script>
+<link rel="stylesheet" href="style.css">
+<style>
+.card-stack{width:90%;margin:0 auto;padding-bottom:20px;}
+.card-slot{width:100%;overflow:hidden;border-radius:14px;}
+.card-slot.layer-2{z-index:0;position:relative;opacity:0.5;}
+.card-slot.layer-1{z-index:1;position:relative;margin-top:-142%;opacity:0.75;}
+.card-slot.layer-1 .deck-bg,.card-slot.layer-2 .deck-bg{border-radius:14px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.06);border:1px solid #eee;
+  -webkit-transform:translateZ(0);transform:translateZ(0);}
+.card-slot.layer-1 img,.card-slot.layer-2 img{filter:blur(1.5px);}
+.card-slot.current{z-index:3;position:relative;margin-top:-142%;border-radius:14px;overflow:hidden;
+  transition:transform 0.45s cubic-bezier(0.4,0,0.2,1),opacity 0.45s ease;}
+.card-slot.swipe-left{transform:translateX(-120%) rotate(-22deg);opacity:0;}
+.card-slot.swipe-right{transform:translateX(120%) rotate(22deg);opacity:0;}
+.card-slot.enter{animation:cardEnter 0.6s ease-out;}
+@keyframes cardEnter{from{transform:scale(0.92);opacity:0}to{transform:scale(1);opacity:1}}
+.float-toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);z-index:300;
+  pointer-events:none;animation:floatUp 1.5s ease-out forwards;
+  display:flex;align-items:center;gap:8px;padding:10px 20px;border-radius:30px;
+  background:rgba(0,0,0,0.82);color:#fff;font-size:14px;font-weight:600;
+  white-space:nowrap;box-shadow:0 6px 20px rgba(0,0,0,0.3);}
+</style>
+</head>
+<body class="bg-gray-50 text-gray-900 antialiased">
+<div class="bg-decoration"><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div></div>
+<div id="app" class="relative z-[1] min-h-screen"></div>
+
+<div id="help-overlay" class="fixed inset-0 bg-black/40 z-[200] hidden items-center justify-center" onclick="hideHelp(event)"><div class="bg-white rounded-2xl p-5 mx-auto w-80 shadow-xl" onclick="event.stopPropagation()"><div class="flex items-center justify-between mb-4"><span class="text-base font-black text-gray-800">操作指南</span><span class="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center cursor-pointer" onclick="hideHelp()"><i data-lucide="x" class="w-4 h-4 text-gray-500"></i></span></div><div class="space-y-3 text-sm"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center shrink-0"><i data-lucide="x" class="w-5 h-5 text-gray-600"></i></div><p class="text-gray-600">点击这里表示您对TA<b class="text-gray-800">【无感】</b></p></div><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center shrink-0"><i data-lucide="bookmark" class="w-5 h-5 text-blue-500"></i></div><p class="text-gray-600">点击这里表示您想<b class="text-blue-600">【关注】</b>TA</p></div><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-pink-50 flex items-center justify-center shrink-0"><i data-lucide="heart" class="w-5 h-5 text-brand-pink"></i></div><p class="text-gray-600">点击这里表示您对TA<b class="text-brand-pink">【心动】</b>了<br/><span class="text-xs text-gray-400">可以对TA重复心动</span></p></div><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center shrink-0"><i data-lucide="gift" class="w-5 h-5 text-amber-500"></i></div><p class="text-gray-600">您可以给TA<b class="text-amber-600">赠送</b>平台礼物</p></div></div><div class="mt-4 w-full py-2.5 rounded-xl bg-brand-pink text-white font-bold text-sm card-hover text-center cursor-pointer" onclick="hideHelp()">我知道了</div></div></div>
+
+<div id="heart-confirm" class="fixed inset-0 bg-black/40 z-[200] hidden items-center justify-center" onclick="hideHeartCfm(event)"><div class="bg-white rounded-2xl p-5 mx-auto w-80 shadow-xl text-center" onclick="event.stopPropagation()"><div class="text-4xl mb-3">💕</div><p class="text-sm text-gray-700 mb-4">您今天还有<b class="text-brand-pink">3次</b>心动机会，确定使用么？</p><div class="space-y-2"><div class="w-full py-2.5 rounded-xl bg-brand-pink text-white font-bold text-sm card-hover cursor-pointer text-center" onclick="doHeart()">确定心动</div><div class="w-full py-2.5 rounded-xl bg-gray-100 text-gray-500 font-bold text-sm card-hover cursor-pointer text-center" onclick="hideHeartCfm()">我再想想</div></div></div></div>
+
+<div id="gift-offer" class="fixed inset-0 bg-black/40 z-[200] hidden items-center justify-center" onclick="hideGiftOffer(event)"><div class="bg-white rounded-2xl p-5 mx-auto w-80 shadow-xl text-center" onclick="event.stopPropagation()"><div class="text-4xl mb-3">💌</div><p class="text-sm text-gray-700 mb-4">您已对TA心动，是否赠送一份礼物表达更大诚意？</p><div class="space-y-2"><div class="w-full py-2.5 rounded-xl bg-brand-pink text-white font-bold text-sm card-hover cursor-pointer text-center" onclick="window.location.href='profile.html'">确定</div><div class="w-full py-2.5 rounded-xl bg-gray-100 text-gray-500 font-bold text-sm card-hover cursor-pointer text-center" onclick="hideGiftOffer();floatToast('💕 操作成功，TA已加入你的心动名单');nextCard('right')">我再想想</div></div></div></div>
+
+<div id="gift-popup" class="fixed inset-0 bg-black/40 z-[210] hidden items-end justify-center" onclick="hideGift(event)"><div class="bg-white w-full rounded-t-2xl max-h-[70vh] overflow-y-auto animate-slide-up" onclick="event.stopPropagation()"><div class="sticky top-0 bg-white z-10 flex items-center justify-between px-4 py-4 border-b border-gray-100 rounded-t-2xl"><span class="text-lg font-black text-gray-800">赠送礼物</span><span class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center cursor-pointer" onclick="hideGift()"><i data-lucide="x" class="w-5 h-5 text-gray-500"></i></span></div><div id="gift-list" class="p-4 space-y-3"></div></div></div>
+
+<div id="gift-cfm-popup" class="block text-center cursor-pointer fixed inset-0 bg-black/40 z-[220] hidden items-center justify-center" onclick="hideGiftCfm(event)"><div class="bg-white rounded-2xl p-5 mx-auto w-80 shadow-xl text-center" onclick="event.stopPropagation()"><div class="text-4xl mb-3">🎁</div><p id="gift-cfm-msg" class="text-sm text-gray-700 mb-4"></p><div class="space-y-2"><span onclick="confirmGift()" class="block text-center cursor-pointer w-full py-2.5 rounded-xl bg-brand-pink text-white font-bold text-sm card-hover">确定赠送</span><span onclick="hideGiftCfm()" class="block text-center cursor-pointer w-full py-2.5 rounded-xl bg-gray-100 text-gray-500 font-bold text-sm card-hover">我再想想</span></div></div></div>
+
+<script src="common.js"></script>
+<script>
+var idx=0,heartGift=false;
+function el(id){return document.getElementById(id)}
+var gifts=[{icon:'images/gift1.png',name:'菜小宝',score:100,price:100},{icon:'images/gift2.gif',name:'听小北-爱你',score:150,price:200},{icon:'images/gift3.gif',name:'听小北-亲亲',score:200,price:300}];
+var CONS=['白羊座','金牛座','双子座','巨蟹座','狮子座','处女座','天秤座','天蝎座','射手座','摩羯座','水瓶座','双鱼座'];
+var NM=['清风徐来','阳光骑士','北辰','追风少年','海的彼岸','咖啡不加糖','大熊','星河漫步','枫叶飘零','时光旅人'];
+var NF=['甜心小鹿','奶茶妹妹','浅笑安然','栀子花开','月亮不睡','棉花糖','小兔软糖','咕咚姑娘','雪落无声','薄荷微光'];
+var PM=['images/photo/male/crop.17.0.1224.1632.0.750.1000.jpg','images/photo/male/crop.0.0.1078.1438.0.750.1000.jpg','images/photo/male/crop.194.56.917.1222.0.750.1000.jpg','images/photo/male/crop.0.501.960.1280.0.750.1000.jpg','images/photo/male/crop.0.237.1080.1440.0.750.1000.jpg'];
+var PF=['images/photo/female/crop.0.67.1079.1438.0.750.1000.jpg','images/photo/female/crop.0.61.723.964.0.750.1000.jpg','images/photo/female/crop.384.0.2304.3072.0.750.1000.jpg','images/photo/female/crop.0.0.2267.3023.0.750.1000.jpg','images/photo/female/crop.0.0.4896.6528.0.750.1000.jpg'];
+var intros=[
+'我是一个对生活充满热情，性格细腻温和的人。喜欢平静的生活，也喜欢小宠物，没事的时候会把屋子收拾干净，练练瑜伽听听音乐。',
+'热爱运动，喜欢户外探索。周末经常去奥森跑步，希望找到一个能一起早起运动的人~',
+'慢热型，但遇到同频的人会很快熟悉起来。喜欢咖啡、阅读和旅行，期待遇见同样热爱生活的你。',
+'88年天秤座，自律且热爱生活。金融行业，喜欢看书和旅行。成熟稳重但也不失幽默感。',
+'95后狮子座，热爱运动和户外。喜欢有活力的生活，希望能找到志同道合的另一半。',
+'温和内敛，喜欢安静的生活。看书、听音乐、做美食是我的日常，希望找到温柔又坚定的你。'];
+
+function buildPool(){
+  var u=[];
+  for(var i=0;i<15;i++){var male=i%2===0;u.push({name:male?NM[i%10]:NF[i%10],gender:male?'male':'female',age:male?23+Math.floor(Math.random()*13):22+Math.floor(Math.random()*11),cons:CONS[Math.floor(Math.random()*12)],photo:male?PM[i%5]:PF[i%5],verified:Math.random()<0.5,intro:intros[i%intros.length],marital:(['未婚','未婚','未婚','未婚','离异'])[Math.floor(Math.random()*5)]});}
+  for(i=u.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));[u[i],u[j]]=[u[j],u[i]]}
+  return u;
+}
+var pool=buildPool();
+
+
+function hideHelp(e){window.Common.closePopup(e,'help-overlay')}
+function showHelp(){window.Common.showPopup('help-overlay')}
+
+function hideHeartCfm(e){window.Common.closePopup(e,'heart-confirm')}
+function showHeartCfm(){window.Common.showPopup('heart-confirm')}
+
+function hideGiftOffer(e){window.Common.closePopup(e,'gift-offer')}
+function showGiftOffer(){window.Common.showPopup('gift-offer')}
+
+function hideGift(e){window.Common.closePopup(e,'gift-popup')}
+function showGift(isH){
+  heartGift=!!isH;
+  var h='';
+  gifts.forEach(function(g,i){
+    h+='<div class="flex items-center gap-3 p-3 rounded-xl border border-gray-100">'+
+      '<img src="'+g.icon+'" class="object-contain rounded-lg shrink-0" style="width:50px;height:50px"/>'+
+      '<div class="flex-1 min-w-0">'+
+        '<div class="text-sm font-bold text-gray-800">'+g.name+'</div>'+
+        '<div class="flex items-center gap-2 text-xs text-gray-400 mt-0.5">'+
+          '<span>人气值+'+g.score+'</span>'+
+          '<span class="w-px h-2 bg-gray-200"></span>'+
+          '<span>💰'+g.price+'金币</span>'+
+        '</div>'+
+      '</div>'+
+      '<div class="px-4 py-1.5 rounded-full bg-gradient-to-r from-brand-pink to-brand-orange text-white text-xs font-bold card-hover cursor-pointer shrink-0" onclick="showGiftCfm('+i+')">赠送</div>'+
+    '</div>';
+  });
+  el('gift-list').innerHTML=h;window.Common.showPopup('gift-popup');
+  
+}
+
+var pendingGiftIdx=null;
+function showGiftCfm(i){
+  pendingGiftIdx=i;
+  var g=gifts[i];
+  el('gift-cfm-msg').innerHTML='确定使用 <b class="text-brand-pink">'+g.price+'</b> 金币赠送TA <b>【'+g.name+'】</b>？';
+  window.Common.showPopup('gift-cfm-popup');
+  
+}
+function hideGiftCfm(e){window.Common.closePopup(e,'gift-cfm-popup')}
+function confirmGift(){
+  window.Common.hidePopup('gift-cfm-popup');
+  window.Common.hidePopup('gift-popup');
+  floatToast('🎁 操作成功，再送出你的关注或心动吧！');
+  if(heartGift){window.Common.hidePopup('gift-offer');setTimeout(function(){nextCard('right')},300)}
+}
+
+function doHeart(){window.Common.hidePopup('heart-confirm');window.Common.showPopup('gift-offer')}
+function doHeartGift(){showGift(true)}
+
+function floatToast(msg){window.Common.floatToast(msg)}
+
+function nextCard(dir){
+  var e=el('card-current');if(!e)return;
+  e.classList.add(dir==='left'?'swipe-left':'swipe-right');
+  idx=(idx+1)%pool.length;
+  setTimeout(function(){renderCard()},250);
+}
+function doDislike(){floatToast('✕ 操作成功，该资料将不再为您推荐');nextCard('left')}
+function doFollow(){floatToast('🔖 操作成功，TA已加入关注名单');nextCard('right')}
+
+function renderCard(){
+  var u=pool[idx];
+  var gb=u.gender==='male'
+    ?'<span class="text-xs px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-500 font-medium inline-flex items-center gap-0.5"><i data-lucide="mars" class="w-2.5 h-2.5"></i>男</span>'
+    :'<span class="text-xs px-1.5 py-0.5 rounded-full bg-pink-50 text-brand-pink font-medium inline-flex items-center gap-0.5"><i data-lucide="venus" class="w-2.5 h-2.5"></i>女</span>';
+  // Build cert badges
+  var allCerts=['实名认证'];
+  if(Math.random()<0.5)allCerts.push('学历认证');
+  if(Math.random()<0.5)allCerts.push('单位认证');
+  var certsHtml=allCerts.map(function(c){
+    var cls=c==='实名认证'?'bg-green-50 text-green-600':c==='学历认证'?'bg-blue-50 text-blue-600':'bg-purple-50 text-purple-600',
+        icon=c==='实名认证'?'badge-check':c==='学历认证'?'graduation-cap':'building-2';
+    return'<span class="text-[11px] px-2 py-0.5 rounded-full '+cls+' font-medium flex items-center gap-1"><i data-lucide="'+icon+'" class="w-3 h-3"></i>'+c+'</span>';
+  }).join('');
+
+  el('app').innerHTML=
+    '<div class="pt-3 pb-2 px-4 flex items-center justify-between"><h1 class="text-sm font-bold text-gray-400">💞 缘分速配</h1><div class="flex gap-2"><span class="w-8 h-8 rounded-full bg-white shadow-sm border border-gray-100 flex items-center justify-center cursor-pointer" onclick="showHelp()"><i data-lucide="help-circle" class="w-4 h-4 text-gray-500"></i></span><span class="w-8 h-8 rounded-full bg-white shadow-sm border border-gray-100 flex items-center justify-center cursor-pointer" onclick="window.location.href=\'ranking.html\'"><i data-lucide="trophy" class="w-4 h-4 text-gray-500"></i></span><span class="w-8 h-8 rounded-full bg-white shadow-sm border border-gray-100 flex items-center justify-center cursor-pointer" onclick="window.location.href=\x27user-list.html\x27"><i data-lucide="search" class="w-4 h-4 text-gray-500"></i></span></div></div>'+
+    '<div class="card-stack">'+
+      (function(){var ni=(idx+1)%pool.length,n2i=(idx+2)%pool.length,nu=pool[ni],n2u=pool[n2i];return'<div class="card-slot layer-2"><div class="deck-bg bg-white"><img src="'+n2u.photo+'" class="w-full object-cover" style="aspect-ratio:3/4"/><div class="px-3 py-2"><span class="text-sm font-bold text-gray-300 line-clamp-1">'+n2u.name+'</span></div></div></div><div class="card-slot layer-1"><div class="deck-bg bg-white"><img src="'+nu.photo+'" class="w-full object-cover" style="aspect-ratio:3/4"/><div class="px-3 py-2"><span class="text-sm font-bold text-gray-300 line-clamp-1">'+nu.name+'</span></div></div></div>'})()+
+      '<div class="card-slot current enter" id="card-current"><div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100"><div class="relative"><img src="'+u.photo+'" class="w-full object-cover" style="aspect-ratio:3/4" onerror="this.src=\'images/photo/female/crop.0.67.1079.1438.0.750.1000.jpg\'"/><div class="absolute top-3 right-3 z-10 flex items-center gap-1.5 bg-white/75 backdrop-blur-sm rounded-full px-3 py-1.5 shadow-sm"><i data-lucide="flame" class="w-4 h-4 text-brand-pink"></i><span class="text-gray-800 text-sm font-black">'+(Math.floor(100+Math.random()*900))+'</span></div></div><div class="px-4 py-3"><div class="flex items-start justify-between"><div class="flex-1 min-w-0"><div class="flex items-center gap-2"><span class="text-lg font-black text-gray-800">'+u.name+'</span>'+gb+(u.verified?' <span class="text-[9px] px-1.5 py-0.5 rounded-full bg-gradient-to-r from-brand-pink to-brand-orange text-white font-medium">已实名</span>':'')+'</div><div class="flex items-center gap-2 text-xs text-gray-400 mt-1"><span>'+u.age+'岁</span><span class="w-px h-2.5 bg-gray-200"></span><span>'+u.cons+'</span><span class="w-px h-2.5 bg-gray-200"></span><span>'+u.marital+'</span></div></div><span class="px-3 py-1.5 rounded-full bg-brand-pink text-white text-xs font-bold card-hover cursor-pointer flex items-center gap-1 shrink-0 ml-2" onclick="window.location.href=\'profile.html\'">去TA主页 <i data-lucide="arrow-right" class="w-3 h-3"></i></span></div><div class="border-t border-gray-100 mt-2 pt-2 flex flex-wrap gap-1.5">'+certsHtml+'</div></div><div class="border-t border-gray-50"></div><div class="px-4 py-3"><blockquote class="border-l-4 border-brand-pink/30 pl-3 text-sm text-gray-500 leading-relaxed">'+u.intro+'</blockquote></div></div></div>'+
+    '</div>'+
+    '<div class="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-gray-100 px-6 py-3"><div class="flex justify-around items-center"><span class="w-14 h-14 rounded-full bg-white shadow-lg border border-gray-100 flex items-center justify-center card-hover cursor-pointer" onclick="doDislike()"><i data-lucide="x" class="w-7 h-7 text-gray-600"></i></span><span class="w-14 h-14 rounded-full bg-blue-50 shadow-md flex items-center justify-center card-hover cursor-pointer" onclick="doFollow()"><i data-lucide="bookmark" class="w-6 h-6 text-blue-500"></i></span><span class="w-14 h-14 rounded-full bg-pink-50 shadow-md flex items-center justify-center card-hover cursor-pointer" onclick="showHeartCfm()"><i data-lucide="heart" class="w-6 h-6 text-brand-pink"></i></span><span class="w-14 h-14 rounded-full bg-amber-50 shadow-md flex items-center justify-center card-hover cursor-pointer" onclick="showGift(false)"><i data-lucide="gift" class="w-6 h-6 text-amber-500"></i></span></div></div>';
+  window.Common.initIcons();
+}
+document.addEventListener('DOMContentLoaded',function(){renderCard();setTimeout(function(){window.Common.initIcons()},300)});
+</script>
+</body>
+</html>

@@ -1,0 +1,58 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/><title>我的牵线记录 - 他俩能成</title><script src="lib/tailwind.min.js"></script><script src="lib/lucide.min.js"></script><link rel="stylesheet" href="style.css"></head><body class="bg-white text-gray-900 antialiased pb-2">
+<div class="bg-decoration"><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div></div><div id="app" class="relative z-[1]"></div>
+<script src="common.js"></script><script>
+var PHOTOS_M=['images/photo/male/crop.17.0.1224.1632.0.750.1000.jpg','images/photo/male/crop.0.0.1078.1438.0.750.1000.jpg','images/photo/male/crop.194.56.917.1222.0.750.1000.jpg','images/photo/male/crop.0.237.1080.1440.0.750.1000.jpg','images/photo/male/crop.0.501.960.1280.0.750.1000.jpg'];
+var PHOTOS_F=['images/photo/female/crop.0.67.1079.1438.0.750.1000.jpg','images/photo/female/crop.0.61.723.964.0.750.1000.jpg','images/photo/female/crop.384.0.2304.3072.0.750.1000.jpg','images/photo/female/crop.0.0.2267.3023.0.750.1000.jpg','images/photo/female/crop.0.0.4896.6528.0.750.1000.jpg'];
+var NM=['阳光骑士','清风徐来','北辰','追风少年','咖啡不加糖','海的彼岸','星河漫步'];
+var NF=['甜心小鹿','浅笑安然','栀子花开','棉花糖','薄荷微光','雪落无声','小兔软糖'];
+
+var records=[];
+for(var i=0;i<8;i++){
+  records.push({
+    male:{name:NM[i%7],photo:PHOTOS_M[i%5]},
+    female:{name:NF[(i+2)%7],photo:PHOTOS_F[i%5]},
+    verdict:Math.random()>0.3?'能成':'不成',
+    match:Math.floor(Math.random()*1515)-200,
+    time:'7月'+(3+Math.floor(Math.random()*25))+'日',
+  });
+}
+
+function render(){
+  var rows=records.map(function(r){
+    var v=r.verdict==='能成'?'text-brand-pink':'text-gray-500';
+    return'<div class="border-b border-gray-50 cursor-pointer card-hover" onclick="window.location.href=\x27fate-detail.html\x27">'+
+      '<div class="flex items-center justify-between px-4 py-4">'+
+        // Left: male
+        '<div class="flex flex-col items-center gap-1" style="width:70px">'+
+          '<img src="'+r.male.photo+'" class="w-14 h-14 rounded-full object-cover border-2 border-blue-100"/>'+
+          '<span class="text-xs font-bold text-gray-800 truncate max-w-full">'+r.male.name+'</span>'+
+        '</div>'+
+        // Middle: percentage + 匹配度
+        '<div class="flex-1 flex flex-col items-center justify-center gap-0.5">'+
+          '<span class="text-2xl font-black text-brand-pink">'+r.match+'</span>'+
+          '<span class="text-xs text-gray-400">匹配度</span>'+
+        '</div>'+
+        // Right: female
+        '<div class="flex flex-col items-center gap-1" style="width:70px">'+
+          '<img src="'+r.female.photo+'" class="w-14 h-14 rounded-full object-cover border-2 border-pink-100"/>'+
+          '<span class="text-xs font-bold text-gray-800 truncate max-w-full">'+r.female.name+'</span>'+
+        '</div>'+
+      '</div>'+
+      '<div class="flex items-center justify-center gap-2 rounded-lg px-3 py-2 mx-4 mb-3" style="background:rgba(224,77,44,0.12);">'+
+        '<span class="text-[11px] text-gray-500">你于'+r.time+'认为他俩</span>'+
+        '<span class="text-[11px] font-bold '+v+'">'+r.verdict+'</span>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+
+  document.getElementById('app').innerHTML=
+    '<div class="sticky top-0 z-40 bg-white/95 backdrop-blur-md px-4 py-2.5 shadow-sm flex items-center"><i data-lucide="users" class="w-3.5 h-3.5 text-brand-pink mr-2"></i><h1 class="text-sm font-bold text-gray-900">我的牵线记录</h1></div>'+
+    '<div class="px-4 pt-3 pb-20">'+
+      '<div class="bg-white rounded-2xl shadow-sm border border-gray-100">'+rows+'</div>'+
+    '</div>'+
+    '<div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 px-6 py-3 rounded-full bg-gradient-to-tr from-brand-pink to-brand-orange text-white font-bold text-sm shadow-xl shadow-brand-pink/30 card-hover cursor-pointer flex items-center gap-2" onclick="window.location.href=\x27matchmaker.html\x27"><i data-lucide="heart" class="w-4 h-4"></i>继续牵</div>';
+  window.Common.initIcons();
+}
+document.addEventListener('DOMContentLoaded',function(){render()});
+</script>
+</body></html>

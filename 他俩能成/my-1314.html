@@ -1,0 +1,48 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/><title>我的1314 - 他俩能成</title><script src="lib/tailwind.min.js"></script><script src="lib/lucide.min.js"></script><link rel="stylesheet" href="style.css"></head><body class="bg-white text-gray-900 antialiased pb-2">
+<div class="bg-decoration"><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div></div><div id="app" class="relative z-[1]"></div>
+<script src="common.js"></script><script>
+var CONS=['白羊座','金牛座','双子座','巨蟹座','狮子座','处女座','天秤座','天蝎座','射手座','摩羯座','水瓶座','双鱼座'];
+var PHOTOS_M=['images/photo/male/crop.17.0.1224.1632.0.750.1000.jpg','images/photo/male/crop.0.0.1078.1438.0.750.1000.jpg','images/photo/male/crop.194.56.917.1222.0.750.1000.jpg','images/photo/male/crop.0.237.1080.1440.0.750.1000.jpg','images/photo/male/crop.0.501.960.1280.0.750.1000.jpg'];
+var PHOTOS_F=['images/photo/female/crop.0.67.1079.1438.0.750.1000.jpg','images/photo/female/crop.0.61.723.964.0.750.1000.jpg','images/photo/female/crop.384.0.2304.3072.0.750.1000.jpg','images/photo/female/crop.0.0.2267.3023.0.750.1000.jpg','images/photo/female/crop.0.0.4896.6528.0.750.1000.jpg'];
+
+// Mock 1314 matched users
+var matchedUsers=[];
+var NM=['阳光骑士','清风徐来','北辰','追风少年','海的彼岸','咖啡不加糖'];
+var NF=['甜心小鹿','浅笑安然','栀子花开','棉花糖','薄荷微光','雪落无声'];
+for(var i=0;i<8;i++){
+  var male=Math.random()>0.5;
+  var name=male?NM[i%6]:NF[i%6];
+  var photo=male?PHOTOS_M[i%5]:PHOTOS_F[i%5];
+  matchedUsers.push({
+    name:name,gender:male?'male':'female',age:male?23+Math.floor(Math.random()*13):22+Math.floor(Math.random()*11),
+    cons:CONS[Math.floor(Math.random()*12)],photo:photo,
+    matchDays:Math.floor(Math.random()*200)+30,
+  });
+}
+
+function gb(u){return u.gender==='male'?'<span class="text-[10px] px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-500 font-medium inline-flex items-center gap-0.5"><i data-lucide="mars" class="w-2.5 h-2.5"></i>男</span>':'<span class="text-[10px] px-1.5 py-0.5 rounded-full bg-pink-50 text-brand-pink font-medium inline-flex items-center gap-0.5"><i data-lucide="venus" class="w-2.5 h-2.5"></i>女</span>'}
+
+function render(){
+  var rows=matchedUsers.map(function(u){
+    return'<div class="flex items-center gap-3 px-4 py-4 border-b border-gray-50">'+
+      '<img src="'+u.photo+'" class="w-12 h-12 rounded-full object-cover border border-gray-100 flex-shrink-0"/>'+
+      '<div class="flex-1 min-w-0">'+
+        '<div class="flex items-center gap-1.5"><span class="text-sm font-bold text-gray-800 truncate max-w-[80px]">'+u.name+'</span>'+gb(u)+'</div>'+
+        '<div class="flex items-center gap-2 text-[11px] text-gray-400 mt-0.5"><span>'+u.age+'岁</span><span>'+u.cons+'</span></div>'+
+        '<div class="text-[11px] text-brand-pink mt-0.5">🎯 匹配已达1314 · '+u.matchDays+'天</div>'+
+      '</div>'+
+      '<span class="px-4 py-2 rounded-full bg-gradient-to-tr from-brand-pink to-brand-orange text-white text-xs font-bold card-hover cursor-pointer inline-block text-center flex-shrink-0" onclick="window.location.href=\x27chat.html?name='+encodeURIComponent(u.name)+'&avatar='+encodeURIComponent(u.photo)+'\x27">联系TA</span>'+
+    '</div>';
+  }).join('');
+
+  document.getElementById('app').innerHTML=
+    '<div class="sticky top-0 z-40 bg-white/95 backdrop-blur-md px-4 py-2.5 shadow-sm flex items-center"><i data-lucide="sparkles" class="w-3.5 h-3.5 text-brand-pink mr-2"></i><h1 class="text-sm font-bold text-gray-900">我的1314</h1></div>'+
+    '<div class="px-4 pt-3 pb-6">'+
+      '<div class="bg-white rounded-2xl shadow-sm border border-gray-100">'+rows+'</div>'+
+    '</div>';
+  window.Common.initIcons();
+}
+
+document.addEventListener('DOMContentLoaded',function(){render()});
+</script>
+</body></html>

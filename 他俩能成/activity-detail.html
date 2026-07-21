@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>他俩能成 - 活动详情</title>
+<script src="lib/tailwind.min.js"></script>
+<script src="lib/lucide.min.js"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-white text-gray-900 antialiased">
+<div class="bg-decoration"><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div></div>
+
+<div id="app"></div>
+
+<!-- 报名表单弹窗 -->
+<div id="reg-overlay" class="fixed inset-0 bg-black/40 z-[100] hidden items-end justify-center" onclick="hideReg(event)">
+<div class="bg-white w-full rounded-t-2xl max-h-[85vh] overflow-y-auto animate-slide-up" onclick="event.stopPropagation()">
+<div class="sticky top-0 bg-white z-10 flex items-center justify-between px-4 py-4 border-b border-gray-100 rounded-t-2xl">
+<span class="text-lg font-black text-gray-800">活动报名</span>
+<span onclick="hideReg()" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center"><i data-lucide="x" class="w-5 h-5 text-gray-500"></i></span>
+</div>
+<div class="p-4 space-y-4" id="reg-form">
+</div>
+</div></div>
+
+<!-- 支付弹窗 -->
+<div id="pay-overlay" class="fixed inset-0 bg-black/40 z-[110] hidden items-end justify-center" onclick="hidePay(event)">
+<div class="bg-white w-full rounded-t-2xl animate-slide-up" onclick="event.stopPropagation()">
+<div class="sticky top-0 bg-white z-10 flex items-center justify-between px-4 py-4 border-b border-gray-100 rounded-t-2xl">
+<span class="text-lg font-black text-gray-800">确认支付</span>
+<span onclick="hidePay()" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center"><i data-lucide="x" class="w-5 h-5 text-gray-500"></i></span>
+</div>
+<div class="p-4 text-center space-y-4">
+<div class="text-5xl">💳</div>
+<div class="text-sm text-gray-500" id="pay-title"></div>
+<div class="text-2xl font-black text-brand-pink" id="pay-amount"></div>
+<div class="text-xs text-gray-400">请选择支付方式</div>
+<div class="px-4">
+<span class="block text-center cursor-pointer w-full py-4 rounded-xl bg-gradient-to-tr from-green-500 to-green-600 text-white font-bold text-base shadow-lg shadow-green-500/20 card-hover flex items-center justify-center gap-2" onclick="doPay()">
+<i data-lucide="smartphone" class="w-5 h-5"></i>微信支付
+</span>
+</div>
+<span onclick="hidePay()" class="block text-center cursor-pointer w-full py-2.5 rounded-xl bg-gray-100 text-gray-500 font-bold text-sm card-hover">取消</span>
+</div></div></div>
+
+<!-- 安全提醒弹窗 -->
+<div id="safety-overlay" class="fixed inset-0 bg-black/40 z-[120] hidden items-center justify-center" onclick="hideSafety(event)">
+<div class="bg-white rounded-2xl p-5 mx-auto w-80 max-h-[70vh] overflow-y-auto shadow-xl" onclick="event.stopPropagation()">
+<div class="flex items-center justify-between mb-3">
+<span class="text-base font-black text-gray-800">安全提醒</span>
+<span onclick="hideSafety()" class="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center"><i data-lucide="x" class="w-4 h-4 text-gray-500"></i></span>
+</div>
+<div class="text-sm text-gray-600 leading-relaxed space-y-3">
+<p class="font-bold text-gray-800">活动参与安全须知</p>
+<ol class="list-decimal pl-4 space-y-2">
+<li>活动参与过程中请注意个人人身和财产安全，妥善保管随身物品。</li>
+<li>请通过平台官方渠道进行交流，不要轻易透露个人敏感信息（身份证号、银行卡号等）。</li>
+<li>如遇到骚扰、诈骗等不当行为，请立即联系平台客服进行举报。</li>
+<li>活动当天请准时到达集合地点，如有特殊情况请提前与组织者联系。</li>
+<li>报名成功后如无法参加，请在活动开始前24小时通过平台取消报名。</li>
+</ol>
+<p class="text-right text-gray-400">他俩能成 平台</p>
+</div>
+<span onclick="hideSafety()" class="block text-center cursor-pointer mt-4 w-full py-2.5 rounded-xl bg-brand-pink text-white font-bold text-sm card-hover">我已阅读</span>
+</div></div>
+
+<!-- 取消报名确认弹窗 -->
+<div id="cancel-reg-overlay" class="fixed inset-0 bg-black/40 z-[120] hidden items-center justify-center" onclick="hideCancelReg(event)">
+<div class="bg-white rounded-2xl p-5 mx-auto w-80 shadow-xl text-center" onclick="event.stopPropagation()">
+<div class="text-4xl mb-3">📋</div>
+<p class="text-sm text-gray-700 mb-4">确定要<b class="text-amber-600">取消报名</b>吗？取消后如需参加需重新报名。</p>
+<div class="space-y-2">
+<span onclick="confirmCancel()" class="block text-center cursor-pointer w-full py-2.5 rounded-xl bg-amber-500 text-white font-bold text-sm card-hover">确定取消</span>
+<span onclick="hideCancelReg()" class="block text-center cursor-pointer w-full py-2.5 rounded-xl bg-gray-100 text-gray-500 font-bold text-sm card-hover">我再想想</span>
+</div></div></div>
+
+<script src="common.js"></script>
+<script>
+function getParam(name){
+  var m=location.search.match(new RegExp('[?&]'+name+'=([^&]*)'));
+  return m?decodeURIComponent(m[1]):null;
+}
+
+var ALL_ACTS={
+  '1':{title:'春日花语·朝阳青年联谊会',desc:'以花为媒，遇见心动。在花香四溢的午后，与TA一起体验插花艺术，享受轻松愉快的交友时光。无论你是否有插花基础，我们的花艺师都会手把手教学。活动中还将穿插趣味自我介绍和自由交流环节，让你在轻松愉悦的氛围中认识新朋友，找到志同道合的那个TA。\n\n注意事项：\n1. 请提前10分钟到达集合点，活动准时开始。\n2. 所有花材和工具由主办方提供，轻装前来即可。\n3. 如无法参加请提前24小时取消，方便其他小伙伴候补。',image:'https://images.unsplash.com/photo-1563241527-3004b7be0ffd?w=800&q=80',location:'朝阳公园·花艺工坊',date:'7月20日 周日 14:00',price:0,status:'RECRUITING',current:18,max:30,tags:['插花体验','免费','交友互动'],zone:'chaoyang'},
+  '2':{title:'啡常心动·职场精英咖啡沙龙',desc:'一杯手冲，一段缘分。在专业咖啡师的指导下，和志同道合的TA一起品味醇香，畅聊人生。\n\n注意事项：\n1. 每人可亲手制作一杯手冲咖啡。\n2. 现场提供精品咖啡豆及器具。',image:'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=800&q=80',location:'三里屯·精品咖啡馆',date:'7月26日 周六 10:00',price:39,status:'RECRUITING',current:8,max:16,tags:['咖啡品鉴','AA制','精英专场'],zone:'chaoyang'},
+  '3':{title:'律动青春·奥森趣味定向赛',desc:'两人一组，在绿意盎然的奥森公园完成趣味任务。协作闯关中自然拉近彼此距离~\n\n注意事项：\n1. 请穿着运动服装和舒适鞋子。\n2. 每组需自备手机用于打卡拍照。',image:'https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?w=800&q=80',location:'奥林匹克森林公园南园',date:'8月2日 周六 8:30',price:0,status:'RECRUITING',current:22,max:40,tags:['户外运动','免费','双人协作'],zone:''},
+  '4':{title:'光影之约·电影主题交友派对',desc:'一起观影、聊感悟，在电影的世界里发现共鸣。现场还有趣味问答环节等你来挑战！\n\n注意事项：\n1. 请勿迟到，电影准点开始。\n2. 观影后留出30分钟自由交流时间。',image:'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=800&q=80',location:'建外SOHO·私人影院',date:'8月9日 周六 14:30',price:29,status:'FULL',current:20,max:20,tags:['电影沙龙','AA制','已满员'],zone:'chaoyang'},
+  '5':{title:'甜蜜烘焙·七夕联谊专场',desc:'七夕前夕，和TA一起动手制作甜蜜甜点，在烘焙的香气中邂逅属于你的那份甜蜜。\n\n注意事项：\n1. 每人可制作一份甜品并带走。\n2. 所有食材和工具由主办方提供。',image:'https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=800&q=80',location:'望京·烘焙体验馆',date:'8月16日 周六 14:00',price:49,status:'RECRUITING',current:12,max:24,tags:['七夕专场','烘焙DIY','甜蜜互动'],zone:''},
+  '6':{title:'青春志爱团·秋天第一场遇见',desc:'大型青年联谊活动，趣味破冰+桌游互动+才艺展示。\n\n注意事项：\n1. 活动现场有工作人员引导，不用担心冷场。\n2. 请携带身份证件核验入场。',image:'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=800&q=80',location:'奥森公园',date:'8月23日 周六 9:00',price:0,status:'RECRUITING',current:35,max:60,tags:['大型活动','免费','公益联谊'],zone:'qingai'},
+  '7':{title:'周末单身俱乐部·剧本杀专场',desc:'在角色扮演中展现魅力，找到最默契的搭档。\n\n注意事项：\n1. 本局为6人硬核推理本，请确认当天能全程参与。\n2. 无需提前阅读剧本，现场分发角色。',image:'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=800&q=80',location:'朝阳大悦城·推理社',date:'8月30日 周六 14:00',price:88,status:'RECRUITING',current:4,max:8,tags:['剧本杀','精品小局','AA制'],zone:'qingai'},
+  '8':{title:'红娘志愿者·七夕公益联谊',desc:'红娘现场牵线，让缘分不再等待。\n\n注意事项：\n1. 本场为公益活动，免费参与但名额有限。\n2. 请提前到场签到领取号码牌。',image:'https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=800&q=80',location:'北京青少年服务中心',date:'8月17日 周日 14:00',price:0,status:'RECRUITING',current:40,max:80,tags:['七夕','免费','红娘牵线'],zone:''},
+  '9':{title:'秋日漫步·朝阳公园摄影联谊',desc:'带上相机，在秋色中捕捉美好瞬间。专业摄影师带队，一边拍照一边交友，轻松又有趣。\n\n注意事项：\n1. 请自备相机或高像素手机。\n2. 适合摄影初学者和爱好者，无需专业基础。',image:'https://images.unsplash.com/photo-1531415074968-036ba1b575da?w=800&q=80',location:'朝阳公园',date:'9月6日 周六 9:00',price:0,status:'RECRUITING',current:15,max:30,zone:'chaoyang'},
+  '10':{title:'书香交友·CBD读书分享会',desc:'每周精选一本好书，在阅读中发现共鸣、在分享中遇见知己。让书籍成为你们的第一座桥梁。\n\n注意事项：\n1. 本月共读书目为《亲密关系》。\n2. 请提前阅读或准备一个关于本书的话题。',image:'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=800&q=80',location:'CBD·共享书房',date:'9月13日 周六 14:30',price:0,status:'RECRUITING',current:8,max:20,zone:'chaoyang'},
+  '11':{title:'青恋课堂·情感沟通工作坊',desc:'专业心理咨询师带你探索内在情感模式，学会更好的表达与倾听。通过互动环节和案例分享，让你在恋爱中更加自信从容。\n\n注意事项：\n1. 请穿着舒适便装，活动含互动环节。\n2. 欢迎携带纸笔记录学习要点。',image:'https://images.unsplash.com/photo-1573497491208-6b1acb260507?w=800&q=80',location:'北京青少年服务中心',date:'9月20日 周六 14:00',price:0,status:'RECRUITING',current:20,max:40,zone:'qingai'},
+  '12':{title:'红娘志愿者·温馨茶话会',desc:'由经验丰富的红娘志愿者主持，在温馨的茶话会中找到心灵的共鸣。精选茶点配合分组深度交流，每位参与者都有表达和被倾听的机会。\n\n注意事项：\n1. 活动免费但名额有限，请尽早报名。\n2. 请提前准备一段简短自我介绍。',image:'https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?w=800&q=80',location:'北京青少年服务中心',date:'9月27日 周六 15:00',price:0,status:'RECRUITING',current:12,max:24,zone:'qingai'},
+  '99':{title:'"朝阳相伴"广播节目嘉宾招募 | 来《一路畅通·他俩能成》聊聊你的故事',desc:'朝阳区总工会的单身职工朋友们，专属你们的"出圈"机会来了！\n\n你是否想过，有一天能走进北京广播电视台的直播间，在麦克风前和主持人轻松聊天，让全北京的听众都听到你的故事、你的想法、你的生活态度？\n\n这是一次专属于"朝阳相伴"专区职工的免费福利机会，只需要你愿意表达真实的自己。不管你是健谈的社交达人，还是平时话不多但内心丰富的倾听者，这里都有一个属于你的位置。我们相信，每个人的故事都值得被听见。\n\n节目将由北京广播电视台"他俩能成"栏目组专业团队录制，在北京交通广播FM103.9《一路畅通》节目中播出，让你的声音传遍京城。\n\n注意事项：\n1. 报名成功后工作人员将与你联系确认档期。\n2. 录制前会进行简单的沟通和准备。\n3. 请提前准备好你想分享的故事或观点。\n4. 本活动仅面向朝阳区工会会员开放。',image:'https://images.unsplash.com/photo-1529333166437-7750a6dd5a70?w=800&q=80',location:'北京广播电视台直播间',date:'2026年7月25日-12月1日',price:0,status:'RECRUITING',current:8,max:30,zone:'chaoyang',isFeatured:true},
+};
+
+var id=getParam('id')||'1';
+var nid=parseInt(id);
+var a=ALL_ACTS[id]||ALL_ACTS['1'];
+var statusOverride={3:'CLOSED',4:'FULL',8:'CLOSED',11:'FULL'};
+if(statusOverride[nid])a.status=statusOverride[nid];
+var isFull=a.status==='FULL';
+a.genderLimit=a.genderLimit||(nid%3===1?'（男15人·女15人）':nid%3===2?'（男8人·女8人）':'');
+var deadlineMap={1:'7月18日 24:00',2:'7月24日 24:00',3:'7月30日 24:00',4:'8月7日 24:00',5:'8月14日 24:00',6:'8月21日 24:00',7:'8月28日 24:00',8:'8月15日 24:00',9:'9月4日 24:00',10:'9月11日 24:00',11:'9月18日 24:00',12:'9月25日 24:00',99:'7月20日 24:00'};
+a.deadline=a.deadline||deadlineMap[nid]||'';
+var cancelDeadlineMap={1:'7月17日 24:00',2:'7月23日 24:00',3:'7月29日 24:00',4:'8月6日 24:00',5:'8月13日 24:00',6:'8月20日 24:00',7:'8月27日 24:00',8:'8月14日 24:00',9:'9月3日 24:00',10:'9月10日 24:00',11:'9月17日 24:00',12:'9月24日 24:00',99:'7月19日 24:00'};
+a.cancelDeadline=cancelDeadlineMap[nid]||'';
+
+var registered=false; // track signup state
+var isReview=nid===99; // review mode for broadcast activity
+
+// Extra fields config: activities needing additional info
+var EXTRA_FIELDS={
+  '2':{fields:[{id:'program',label:'您想参与的节目',type:'select',options:['手冲咖啡体验','拉花体验','咖啡品鉴','都可参与']}]},
+  '6':{fields:[{id:'program',label:'您想参与的节目',type:'select',options:['破冰游戏','桌游互动','才艺展示','都可参与']},{id:'story',label:'您的故事',type:'textarea',placeholder:'简单介绍一下自己，让更多人认识你...'}]},
+  '7':{fields:[{id:'role',label:'您擅长的角色',type:'select',options:['推理担当','演技担当','气氛担当','萌新小白']},{id:'story',label:'您的故事',type:'textarea',placeholder:'说说你为什么喜欢剧本杀...'}]},
+  '99':{fields:[{id:'program',label:'请选择您要参加的节目',type:'select',options:['第一期：谈恋爱/结婚，我最看重的是______','第二期：如果七夕有"使用说明书"，上面会写什么？','第三期：在感情里，我是一个______的人','第四期：一个人的时候，我把生活过成了______','第五期：______是我2026年的爱情关键词']},{id:'story',label:'请填写您的故事',type:'textarea',placeholder:'请围绕您选择的节目主题，写下你想分享的故事或观点...'}]},
+};
+
+// Mock participants
+var ALL_PARTICIPANTS={
+  '1':[
+    {name:'阳光骑士',gender:'male',photo:'images/photo/male/crop.17.0.1224.1632.0.750.1000.jpg'},
+    {name:'甜心小鹿',gender:'female',photo:'images/photo/female/crop.0.67.1079.1438.0.750.1000.jpg'},
+    {name:'清风徐来',gender:'male',photo:'images/photo/male/crop.0.0.1078.1438.0.750.1000.jpg'},
+    {name:'奶茶妹妹',gender:'female',photo:'images/photo/female/crop.0.61.723.964.0.750.1000.jpg'},
+    {name:'北辰',gender:'male',photo:'images/photo/male/crop.194.56.917.1222.0.750.1000.jpg'},
+    {name:'浅笑安然',gender:'female',photo:'images/photo/female/crop.384.0.2304.3072.0.750.1000.jpg'},
+    {name:'咖啡不加糖',gender:'male',photo:'images/photo/male/crop.0.501.960.1280.0.750.1000.jpg'},
+    {name:'栀子花开',gender:'female',photo:'images/photo/female/crop.0.0.2267.3023.0.750.1000.jpg'},
+  ],
+};
+function getParticipants(actId){
+  if(ALL_PARTICIPANTS[actId])return ALL_PARTICIPANTS[actId];
+  // Generate random
+  var pool=[],NM=['清风徐来','阳光骑士','北辰','追风少年','海的彼岸','咖啡不加糖','大熊','星河漫步','枫叶飘零','时光旅人'];
+  var NF=['甜心小鹿','奶茶妹妹','浅笑安然','栀子花开','月亮不睡','棉花糖','小兔软糖','咕咚姑娘','雪落无声','薄荷微光'];
+  var PM=['images/photo/male/crop.0.0.1078.1438.0.750.1000.jpg','images/photo/male/crop.17.0.1224.1632.0.750.1000.jpg','images/photo/male/crop.194.56.917.1222.0.750.1000.jpg','images/photo/male/crop.0.501.960.1280.0.750.1000.jpg'];
+  var PF=['images/photo/female/crop.0.67.1079.1438.0.750.1000.jpg','images/photo/female/crop.0.61.723.964.0.750.1000.jpg','images/photo/female/crop.384.0.2304.3072.0.750.1000.jpg','images/photo/female/crop.0.0.2267.3023.0.750.1000.jpg'];
+  for(var i=0;i<a.current;i++){
+    var isMale=i%2===0;
+    pool.push({name:isMale?NM[i%10]:NF[i%10],gender:isMale?'male':'female',photo:isMale?PM[i%4]:PF[i%4]});
+  }
+  ALL_PARTICIPANTS[actId]=pool;return pool;
+}
+var participants=getParticipants(parseInt(id));
+
+// ====== Registration Modal ======
+var ef=EXTRA_FIELDS[nid];
+function getExtraFieldsHtml(){
+  if(!ef)return'';
+  var html='';
+  ef.fields.forEach(function(f){
+    html+='<div><label class="block text-sm font-bold text-gray-700 mb-2">'+f.label+' <span class="text-brand-pink">*</span></label>';
+    if(f.type==='select'){
+      html+='<select id="reg-'+f.id+'" required class="block cursor-pointer w-full px-4 py-3 rounded-xl border border-gray-200 text-sm bg-gray-50 focus:outline-none focus:border-brand-pink"><option value="">请选择</option>';
+      f.options.forEach(function(o){html+='<option value="'+o+'">'+o+'</option>'});
+      html+='</select></div>';
+    }else{
+      html+='<textarea id="reg-'+f.id+'" required rows="3" placeholder="'+f.placeholder+'" class="block cursor-pointer w-full px-4 py-3 rounded-xl border border-gray-200 text-sm bg-gray-50 focus:outline-none focus:border-brand-pink resize-none"></textarea></div>';
+    }
+  });
+  return html;
+}
+
+function showReg(){
+  var isPaid=a.price>0,efHtml=getExtraFieldsHtml();
+  document.getElementById('reg-form').innerHTML=
+    (isPaid?'<div class="bg-amber-50 rounded-xl p-3 text-center"><span class="text-sm text-gray-700">本活动为<b class="text-brand-pink">付费活动</b>，报名需支付</span><div class="text-xl font-black text-brand-pink mt-1">¥'+a.price+'</div></div>':'<div class="bg-green-50 rounded-xl p-3 text-center"><span class="text-sm text-green-700">🎉 本活动<b>免费</b>参与</span></div>')+
+    efHtml+
+    '<label class="flex items-start gap-2 cursor-pointer pt-2"><input type="checkbox" id="reg-safety" class="mt-0.5 w-4 h-4 accent-brand-pink"/><span class="text-sm text-gray-600">我已阅读并同意 <span class="text-brand-pink underline cursor-pointer" onclick="showSafety()">《安全提醒》</span> <span class="text-brand-pink">*</span></span></label>'+
+    '<div class="flex gap-3 pt-2"><span onclick="hideReg()" class="px-5 py-3 rounded-2xl bg-white border border-gray-200 text-gray-500 font-bold text-sm card-hover">暂不报名</span><span onclick="confirmReg()" class="flex-1 py-3 rounded-2xl bg-gradient-to-tr from-brand-pink to-brand-orange text-white font-bold text-base shadow-lg shadow-brand-pink/20 card-hover flex items-center justify-center">确认报名</span></div>';
+	  window.Common.showPopup('reg-overlay');
+}
+
+function hideReg(e){ window.Common.closePopup(e, 'reg-overlay'); }
+
+function confirmReg(){
+  if(!document.getElementById('reg-safety').checked){window.Common.showToast('请阅读并同意安全提醒');return}
+  if(ef){var ok=true;ef.fields.forEach(function(f){var el=document.getElementById('reg-'+f.id);if(!el.value){window.Common.showToast('请填写'+f.label);ok=false}});if(!ok)return}
+  window.Common.hidePopup('reg-overlay');
+  if(a.price>0){showPay()}else{registered=true;window.Common.showToast(isReview?'提交成功，请等待审核！':'报名成功！');a.current++;render()}
+}
+
+function showPay(){
+  document.getElementById('pay-title').textContent='报名费用：'+a.title;
+  document.getElementById('pay-amount').textContent='¥'+a.price;
+	  window.Common.showPopup('pay-overlay');
+}
+function hidePay(e){ window.Common.closePopup(e, 'pay-overlay'); }
+function doPay(){window.Common.hidePopup('pay-overlay');registered=true;window.Common.showToast(isReview?'支付成功，请等待审核！':'支付成功，报名完成！');a.current++;render()}
+
+function cancelReg(){
+  window.Common.showPopup('cancel-reg-overlay');
+}
+function hideCancelReg(e){ window.Common.closePopup(e, 'cancel-reg-overlay'); }
+function confirmCancel(){
+  window.Common.hidePopup('cancel-reg-overlay');registered=false;a.current--;window.Common.showToast('已取消报名');render();
+}
+
+function showSafety(){ window.Common.showPopup('safety-overlay'); }
+function hideSafety(e){ window.Common.closePopup(e, 'safety-overlay'); }
+
+function render(){
+  var orgHtml='';
+  if(a.zone==='chaoyang'){
+    orgHtml='<div class="flex items-center justify-between mb-6"><div class="flex items-center gap-3"><img src="images/icon_chaoyang.png" class="w-10 h-10 rounded-full border border-gray-100 object-contain bg-gray-50"/><div><div class="font-bold text-gray-900 text-sm">朝阳相伴</div><div class="text-xs text-gray-400">发起方</div></div></div><a href="chaoyang.html" class="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-brand-pink/10 text-brand-pink font-bold underline decoration-dotted cursor-pointer hover:bg-brand-pink/20 transition-colors">朝阳相伴专区 <i data-lucide="arrow-up-right" class="w-3 h-3"></i></a></div>';
+  }else if(a.zone==='qingai'){
+    orgHtml='<div class="flex items-center justify-between mb-6"><div class="flex items-center gap-3"><img src="images/icon_qingai.png" class="w-10 h-10 rounded-full border border-gray-100 object-contain bg-gray-50"/><div><div class="font-bold text-gray-900 text-sm">青爱团</div><div class="text-xs text-gray-400">发起方</div></div></div><a href="qingai.html" class="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-purple-50 text-purple-600 font-bold underline decoration-dotted cursor-pointer hover:bg-purple-100 transition-colors">青爱团专区 <i data-lucide="arrow-up-right" class="w-3 h-3"></i></a></div>';
+  }
+
+// Shuffle for random display
+for(var i2=participants.length-1;i2>0;i2--){var j2=Math.floor(Math.random()*(i2+1));[participants[i2],participants[j2]]=[participants[j2],participants[i2]];}
+
+  var pList=participants.map(function(u){
+    var gb=u.gender==='male'?'<span class="text-[10px] px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-500 font-medium inline-flex items-center gap-0.5"><i data-lucide="mars" class="w-2.5 h-2.5"></i>男</span>':'<span class="text-[10px] px-1.5 py-0.5 rounded-full bg-pink-50 text-brand-pink font-medium inline-flex items-center gap-0.5"><i data-lucide="venus" class="w-2.5 h-2.5"></i>女</span>';
+    return'<div class="flex items-center gap-2.5 py-2 cursor-pointer card-hover" onclick="window.location.href=\'profile.html\'"><img src="'+u.photo+'" class="w-9 h-9 rounded-full object-cover border border-gray-100 flex-shrink-0"/><div class="flex-1 min-w-0 leading-tight"><span class="text-sm font-bold text-gray-800 truncate max-w-[72px]">'+u.name+'</span><br/><span class="text-[10px] px-1.5 py-0.5 rounded-full '+(u.gender==='male'?'bg-blue-50 text-blue-500':'bg-pink-50 text-brand-pink')+' font-medium inline-flex items-center gap-0.5">'+(u.gender==='male'?'<i data-lucide="mars" class="w-2.5 h-2.5"></i>男':'<i data-lucide="venus" class="w-2.5 h-2.5"></i>女')+'</span></div></div>';
+  });
+
+  document.getElementById('app').innerHTML=
+    '<div class="fixed top-0 left-0 right-0 z-50 flex items-center px-4 py-3 bg-transparent bg-gradient-to-b from-black/50 to-transparent text-white">'+
+      '<span onclick="window.history.back()" class="p-2 bg-black/20 backdrop-blur rounded-full"><i data-lucide="chevron-left" class="w-6 h-6"></i></span>'+
+    '</div>'+
+    '<div class="relative h-72 w-full"><img src="'+a.image+'" class="w-full h-full object-cover"/><div class="absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-white to-transparent"></div></div>'+
+    '<div class="relative -mt-6 bg-white rounded-t-3xl px-5 pt-6 fade-in">'+
+      '<h1 class="text-2xl font-black text-gray-900 mb-3 leading-snug break-words">'+a.title+'</h1>'+
+      '<div class="text-brand-pink font-bold text-lg mb-6">'+(a.price===0?'免费':'¥'+a.price)+'</div>'+
+      '<hr class="border-gray-100 mb-6"/>'+
+      orgHtml+
+      // Info block with separators
+      '<div class="bg-gray-50 rounded-xl p-4 mb-6">'+
+        '<div class="flex items-start gap-3 py-3"><div class="p-2 bg-white rounded-lg shadow-sm text-brand-pink"><i data-lucide="calendar" class="w-5 h-5"></i></div><div><div class="font-bold text-gray-900 text-sm">活动时间</div><div class="text-sm text-gray-600">'+a.date+'</div></div></div>'+
+        '<div class="border-t border-gray-200"></div>'+
+        '<div class="flex items-start gap-3 py-3"><div class="p-2 bg-white rounded-lg shadow-sm text-brand-orange"><i data-lucide="map-pin" class="w-5 h-5"></i></div><div class="flex-1"><div class="font-bold text-gray-900 text-sm">活动地点</div><div class="text-sm text-gray-600 flex items-center gap-1">'+a.location+'<i data-lucide="chevron-right" class="w-4 h-4 text-gray-400"></i></div></div></div>'+
+        '<div class="border-t border-gray-200"></div>'+
+        '<div class="flex items-start gap-3 py-3"><div class="p-2 bg-white rounded-lg shadow-sm text-purple-500"><i data-lucide="users" class="w-5 h-5"></i></div><div><div class="font-bold text-gray-900 text-sm">人员限制</div><div class="text-sm text-gray-600">已报 '+a.current+' 人 / 限 '+a.max+' 人'+a.genderLimit+'</div></div></div>'+
+      '</div>'+
+      // Description
+      '<h3 class="font-bold text-lg mb-3">活动详情</h3>'+
+      '<div class="text-gray-600 text-sm leading-relaxed mb-6">'+a.desc.replace(/\n/g,'<br/>')+'</div>'+
+      // Participants
+      '<h3 class="font-bold text-lg mb-3">报名名单 <span class="text-sm font-normal text-gray-400">('+participants.length+'人)</span></h3>'+
+      '<div class="grid grid-cols-2 gap-x-4 gap-y-0 mb-24">'+pList.join('')+'</div>'+
+    '</div>'+
+    // Bottom bar
+    (function(){
+      var dc=!!a.deadline,cl=(a.status==='CLOSED'),canReg=!(isFull||cl||registered);
+      var btnCls,btnHtml;
+      if(isFull||cl){
+        btnCls='bg-gray-300 text-white';btnHtml='<span class="text-base leading-tight">'+(isFull?'名额已满':'已截止')+'</span>';
+      }else if(registered){
+        btnCls='bg-amber-100 text-amber-700 border border-amber-200';
+        btnHtml='<span class="text-base font-bold leading-tight">取消报名</span><span class="text-[10px] font-normal leading-tight mt-0.5">取消截止 '+a.cancelDeadline+'</span>';
+      }else{
+        btnCls='bg-gradient-to-tr from-brand-pink to-brand-orange text-white shadow-lg shadow-brand-pink/30';
+        btnHtml='<span class="text-base font-bold leading-tight">立即报名</span>'+(dc?'<span class="text-[10px] font-normal leading-tight mt-0.5">报名截止 '+a.deadline+'</span>':'');
+      }
+      var onclick=(canReg?'showReg()':(registered?'cancelReg()':''));
+      return ''+
+    '<div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-6 py-3 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] flex items-center gap-4 z-50">'+
+      '<div class="flex flex-col items-center gap-0.5 text-gray-500 cursor-pointer" onclick="window.Common.showToast(\'转发功能开发中\')"><i data-lucide="share-2" class="w-6 h-6"></i><span class="text-[10px]">转发</span></div>'+
+      '<span class="flex-1 py-2.5 rounded-full font-bold flex flex-col items-center justify-center '+btnCls+'" onclick="'+onclick+'">'+btnHtml+'</span>'+
+    '</div>';
+    })()+
+    '</div>';
+  window.Common.initIcons();
+}
+
+document.addEventListener('DOMContentLoaded',function(){render()});
+</script>
+</body>
+</html>

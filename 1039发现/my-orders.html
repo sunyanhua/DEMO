@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>我的订单 - 1039发现</title>
+<script src="lib/tailwind.min.js"></script><script src="lib/lucide.min.js"></script><link rel="stylesheet" href="style.css">
+</head>
+<body class="antialiased">
+<div class="bg-decoration"><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div></div>
+<div id="app" class="relative z-[1]"></div>
+<script src="common.js"></script>
+<script>
+var tab = 'all';
+var ALL_ORDERS = [
+    { orderNo:'OD202607180001', orderTime:'2026-07-17 14:30', productName:'2026冰丝带汽车生活节', coverImage:'images/cover1.jpg', specName:'单人票 | 7月18日', quantity:1, persons:[{group:1,label:'成人',name:'张三',mobile:'13812345678',idcard:'110101199001011234'}], personLabels:['成人'], price:99, originalPrice:99, couponAmount:0, status:'paid', type:'event', refundStages:[{text:'提前30天退款 → 退 100%'},{text:'提前7天退款 → 退 50%'},{text:'活动开始后 → 不可退'}], isPostRegister:true, registered:{}, detailUrl:'event-detail.html' },
+    { orderNo:'OD202607180002', orderTime:'2026-07-17 10:15', productName:'什刹海摇橹船票', coverImage:'images/cover2.png', specName:'1039专属船票 × 2', quantity:2, persons:[{group:1,label:'购票人',name:'小明',mobile:'13912345678',idcard:'110101199205152345'},{group:2,label:'购票人',name:'小红',mobile:'13612345678',idcard:'110101199308152345'}], price:336, originalPrice:336, couponAmount:0, status:'paid', type:'ticket', refundStages:[{days_before:0,refund_value:100,text:'票未核销前可随时全额退款'}], isBooking:true, isPostRegister:true, personLabels:['购票人'], bookings:[{group:1,dateLabel:'2026-08-05',slot:'10:00-11:00',count:1}], detailUrl:'ticket-detail.html' },
+    { orderNo:'OD202607180003', orderTime:'2026-07-16 20:45', productName:'北京交通广播专属冰箱贴', coverImage:'images/cover3.jpg', specName:'经典圆形款', quantity:1, persons:[{label:'',name:'小明',mobile:'13912345678',address:'北京市朝阳区建国路88号'}], price:29.9, originalPrice:29.9, couponAmount:0, status:'paid', type:'product', refundStages:[], detailUrl:'product-detail.html' },
+    { orderNo:'OD202607180004', orderTime:'2026-07-18 09:00', productName:'2025大运河音乐节', coverImage:'images/cover4.jpeg', specName:'VIP区 | 10月6日', quantity:2, persons:[{group:1,label:'成人',name:'王五',mobile:'13512345678',idcard:'110101199508067890'},{group:2,label:'成人',name:'赵六',mobile:'13712345678',idcard:'110101199602087654'}], personLabels:['成人'], price:976, originalPrice:976, couponAmount:0, status:'refunded', type:'event', refundStages:[{text:'提前30天退款 → 退 100%'},{text:'提前7天退款 → 退 50%'},{text:'活动开始后 → 不可退'}], detailUrl:'event-detail2.html' },
+    { orderNo:'OD202607180005', orderTime:'2026-07-18 11:30', productName:'景山公园', coverImage:'images/cover5.jpeg', specName:'门票 × 3', quantity:3, persons:[{group:1,label:'',name:'',mobile:''},{group:2,label:'',name:'',mobile:''},{group:3,label:'',name:'',mobile:''}], price:30, originalPrice:30, couponAmount:0, status:'pending', type:'ticket', refundStages:[{days_before:0,refund_value:100,text:'票未核销前可随时全额退款'}], isNoRegister:true, detailUrl:'ticket-detail2.html' },
+];
+
+function render() {
+    var filtered = tab === 'all' ? ALL_ORDERS : ALL_ORDERS.filter(function(o){return o.status === tab;});
+    var tabs = [{key:'all',label:'全部'},{key:'pending',label:'待付款'},{key:'paid',label:'已付款'},{key:'refunded',label:'已退款'}];
+
+    var tabHtml = tabs.map(function(t){ return '<span class="text-xs px-3 py-1.5 rounded-full cursor-pointer card-hover whitespace-nowrap '+(tab===t.key?'bg-brand-gold text-white font-bold':'bg-gray-100 text-gray-500')+'" onclick="switchTab(\''+t.key+'\')">'+t.label+'</span>'; }).join('');
+    var statusMap = {pending:{label:'待付款',cls:'text-orange-500'},paid:{label:'已付款',cls:'text-green-500'},refunded:{label:'已退款',cls:'text-gray-400'}};
+
+    var listHtml = filtered.map(function(o){
+        var st = statusMap[o.status]||statusMap.paid;
+        return '\
+        <div class="bg-white rounded-xl p-3 shadow-sm border border-gray-100 mb-2 cursor-pointer card-hover" onclick="goOrder(\''+o.orderNo+'\')">\
+            <div class="flex gap-3">\
+                <img src="'+o.coverImage+'" class="w-16 h-16 rounded-lg object-cover flex-shrink-0" />\
+                <div class="flex-1 min-w-0">\
+                    <h4 class="text-sm font-bold text-gray-800 truncate">'+o.productName+'</h4>\
+                    <p class="text-xs text-gray-400 mt-0.5 truncate">'+o.specName+'</p>\
+                    <p class="text-xs mt-1 '+st.cls+'">'+st.label+'</p>\
+                </div>\
+                <div class="flex-shrink-0 text-right">\
+                    <span class="text-sm font-bold text-brand-gold">¥'+o.price.toFixed(0)+'</span>\
+                </div>\
+            </div>\
+        </div>';
+    }).join('');
+
+    document.getElementById('app').innerHTML = '\
+        <div class="top-section"><div class="px-4 pt-3 pb-2"><img src="logo.png" alt="1039发现" style="height:28px;"/></div></div>\
+        <div class="content-card">\
+            <div class="px-4 py-4 border-b border-gray-100 flex items-center gap-2">\
+                <i data-lucide="file-text" class="w-5 h-5 text-brand-gold"></i>\
+                <span class="text-base font-black text-gray-800">我的订单</span>\
+            </div>\
+            <div class="px-4 pt-3 pb-2 flex gap-2 overflow-x-auto no-scrollbar">'+tabHtml+'</div>\
+            <div class="px-4 pb-3">'+(listHtml||'<p class="text-center text-xs text-gray-400 py-8">暂无订单</p>')+'</div>\
+        </div>\
+        <div class="pb-6"></div>';
+    Common.initIcons();
+}
+
+function switchTab(t) { tab = t; render(); }
+function goOrder(orderNo) {
+    var o = ALL_ORDERS.filter(function(x){return x.orderNo===orderNo;})[0];
+    if (o) { localStorage.setItem('lastOrder', JSON.stringify(o)); location.href = 'order-detail.html'; }
+}
+
+document.addEventListener('DOMContentLoaded', render);
+</script>
+</body>
+</html>

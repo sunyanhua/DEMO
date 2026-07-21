@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>活动详情 - 1039发现</title>
+<script src="lib/tailwind.min.js"></script>
+<script src="lib/lucide.min.js"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="antialiased">
+
+<div class="bg-decoration">
+    <div class="bg-blob"></div><div class="bg-blob"></div>
+    <div class="bg-blob"></div><div class="bg-blob"></div>
+    <div class="bg-blob"></div><div class="bg-blob"></div>
+</div>
+
+<div id="app" class="relative z-[1]"></div>
+
+<!-- ============ 报名弹窗（底部滑出） ============ -->
+<div id="reg-overlay" class="fixed inset-0 bg-black/40 z-[100] hidden items-end justify-center" onclick="hideReg(event)">
+<div class="bg-white w-full rounded-t-2xl max-h-[90vh] overflow-y-auto animate-slide-up" onclick="event.stopPropagation()">
+<div class="sticky top-0 bg-white z-10 flex items-center px-4 py-4 border-b border-gray-100 rounded-t-2xl">
+    <span class="text-lg font-black text-gray-800 flex-1 text-center" id="reg-step-title">选择票种</span>
+    <span onclick="hideReg()" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center card-hover flex-shrink-0"><i data-lucide="x" class="w-5 h-5 text-gray-500"></i></span>
+</div>
+<div class="p-4 space-y-4" id="reg-form"></div>
+</div></div>
+
+<!-- ============ 优惠券弹窗（居中） ============ -->
+<div id="coupon-overlay" class="fixed inset-0 bg-black/40 z-[110] hidden items-center justify-center" onclick="hideCoupon(event)">
+<div class="bg-white rounded-2xl p-5 mx-auto w-80 max-h-[70vh] overflow-y-auto shadow-xl" onclick="event.stopPropagation()">
+<div class="flex items-center justify-between mb-3">
+<span class="text-base font-black text-gray-800">选择优惠券</span>
+<span onclick="hideCoupon()" class="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center card-hover"><i data-lucide="x" class="w-4 h-4 text-gray-500"></i></span>
+</div>
+<div class="mb-3 relative">
+<input type="text" placeholder="输入兑换码" class="w-full text-sm px-3 py-2.5 rounded-xl bg-gray-50 border border-gray-200 outline-none focus:border-brand-purple pr-16" id="coupon-code"/>
+<span class="absolute right-1.5 top-1/2 -translate-y-1/2 px-3 py-1 rounded-lg bg-brand-purple text-white text-xs font-bold cursor-pointer card-hover" onclick="applyCouponCode()">兑换</span>
+</div>
+<div class="space-y-2" id="coupon-list"></div>
+</div></div>
+
+<!-- ============ 微信支付弹窗 ============ -->
+<div id="pay-overlay" class="fixed inset-0 bg-black/40 z-[120] hidden items-end justify-center" onclick="hidePay(event)">
+<div class="bg-white w-full rounded-t-2xl animate-slide-up" onclick="event.stopPropagation()">
+<div class="sticky top-0 bg-white z-10 flex items-center justify-between px-4 py-4 border-b border-gray-100 rounded-t-2xl">
+<span class="text-lg font-black text-gray-800">确认支付</span>
+<span onclick="hidePay()" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center card-hover"><i data-lucide="x" class="w-5 h-5 text-gray-500"></i></span>
+</div>
+<div class="p-4 text-center space-y-4">
+<div class="text-5xl">💳</div>
+<div class="text-sm text-gray-500" id="pay-title"></div>
+<div class="text-2xl font-black text-brand-purple" id="pay-amount"></div>
+<div class="text-xs text-gray-400">请选择支付方式</div>
+<div class="px-4">
+<span class="block text-center cursor-pointer w-full py-4 rounded-xl bg-gradient-to-tr from-green-500 to-green-600 text-white font-bold text-base shadow-lg shadow-green-500/20 card-hover flex items-center justify-center gap-2" onclick="doPay()">
+<i data-lucide="smartphone" class="w-5 h-5"></i>微信支付
+</span>
+</div>
+<span onclick="hidePay()" class="block text-center cursor-pointer w-full py-2.5 rounded-xl bg-gray-100 text-gray-500 font-bold text-sm card-hover">取消</span>
+</div></div></div>
+
+<script src="common.js"></script>
+<script>
+// ============ 数据模型: SKU = 票种 + 日期 = 价格 ============
+var SPEC_TYPES = [
+    { id:0, name:'SVIP区', personCount:1, personLabels:['成人'] },
+    { id:1, name:'VIP区',  personCount:1, personLabels:['成人'] },
+    { id:2, name:'A区',    personCount:1, personLabels:['成人'] },
+    { id:3, name:'B区',    personCount:1, personLabels:['成人'] },
+];
+
+var DATES = [
+    { id:0, label:'10月6日', value:'2026-10-06' },
+    { id:1, label:'10月7日', value:'2026-10-07' },
+];
+
+// SKU 价格矩阵 [specIdx][dateIdx]
+var SKU_PRICES = [
+    [688, 688],   // SVIP区
+    [488, 488],   // VIP区
+    [288, 288],   // A区
+    [188, 188],   // B区
+];
+
+var MY_COUPONS = [
+    { id:0, name:'新用户专享券', desc:'满200减20', amount:20, minPrice:200 },
+    { id:1, name:'1039周年庆券', desc:'满400减50', amount:50, minPrice:400 },
+    { id:2, name:'大运河专属券', desc:'满600减80', amount:80, minPrice:600 },
+];
+
+var REFUND_STAGES = [
+    { days_before:30, refund_type:'rate', refund_value:100, text:'提前30天退款 → 退 100%' },
+    { days_before:7,  refund_type:'rate', refund_value:50,  text:'提前7天退款 → 退 50%'  },
+    { days_before:0,  refund_type:'rate', refund_value:0,   text:'活动开始后 → 不可退'   },
+];
+
+var state = {
+    specIdx: 0,
+    dateIdx: 0,
+    quantity: 1,
+    selectedCoupon: -1,
+    couponAmount: 0,
+};
+
+// 预填测试数据
+var PRE_FILL = [
+    { name:'李明', mobile:'13712345678', idcard:'110101199003087654' },
+];
+
+// ============ 页面渲染 ============
+function renderHeader() {
+    return '\
+    <div class="fixed top-0 left-0 right-0 z-50 flex items-center px-4 py-3 text-white" style="background:linear-gradient(180deg,rgba(26,24,24,0.85) 0%,rgba(26,24,24,0) 100%);">\
+        <a href="events.html" class="p-2 bg-white/10 backdrop-blur rounded-full card-hover"><i data-lucide="chevron-left" class="w-6 h-6"></i></a>\
+    </div>';
+}
+
+function renderCover() {
+    return '\
+    <div class="relative w-full" style="aspect-ratio:16/9;">\
+        <img src="images/cover4.jpeg" class="w-full h-full object-cover" />\
+        <div class="absolute bottom-0 left-0 right-0 h-12" style="background:linear-gradient(to top,#FFFFFF,transparent);"></div>\
+    </div>';
+}
+
+function getSkuPrice() {
+    return SKU_PRICES[state.specIdx][state.dateIdx];
+}
+
+function render() {
+    var price = getSkuPrice();
+    var itemTotal = price - state.couponAmount;
+    var totalPrice = itemTotal * state.quantity;
+    var spec = SPEC_TYPES[state.specIdx];
+    var date = DATES[state.dateIdx];
+
+    document.getElementById('app').innerHTML = '\
+        ' + renderHeader() + '\
+        ' + renderCover() + '\
+        <div class="relative -mt-6 bg-white rounded-t-3xl px-5 pt-6 pb-28 fade-in" style="min-height:calc(100vh - 44vw - 56px);">\
+            <h1 class="text-xl font-black text-gray-900 mb-2">2025大运河音乐节</h1>\
+            <p class="text-xs text-gray-500 mb-5">运河潮音，燃动京城——大运河畔年度最强音乐嘉年华震撼来袭！</p>\
+            \
+            <div class="bg-gray-50 rounded-xl p-4 mb-5 space-y-3">\
+                <div class="flex items-start gap-3">\
+                    <div class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style="background:rgba(131,110,194,0.12);">\
+                        <i data-lucide="building" class="w-4 h-4 text-brand-purple"></i>\
+                    </div>\
+                    <div><p class="text-sm font-bold text-gray-800">主办方</p><p class="text-xs text-gray-500">北京交通广播 × 通州文旅集团 × 大运河文化中心</p></div>\
+                </div>\
+                <div class="flex items-start gap-3">\
+                    <div class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style="background:rgba(253,190,218,0.20);">\
+                        <i data-lucide="calendar" class="w-4 h-4 text-brand-pink-dark"></i>\
+                    </div>\
+                    <div><p class="text-sm font-bold text-gray-800">活动时间</p><p class="text-xs text-gray-500">2026年10月6日-7日</p></div>\
+                </div>\
+                <div class="flex items-start gap-3">\
+                    <div class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style="background:rgba(154,223,243,0.18);">\
+                        <i data-lucide="map-pin" class="w-4 h-4 text-brand-blue-dark"></i>\
+                    </div>\
+                    <div><p class="text-sm font-bold text-gray-800">活动地点</p><p class="text-xs text-gray-500">北京通州大运河文化旅游景区</p></div>\
+                </div>\
+            </div>\
+            \
+            <h3 class="text-gray-800 font-bold text-base mb-3">音乐节亮点</h3>\
+            <div class="text-sm text-gray-600 space-y-2 mb-5">\
+                <div class="flex items-start gap-2"><span class="text-brand-purple mt-0.5">●</span><span>超强阵容集结：华语乐坛顶级唱将、当红摇滚乐队、独立音乐人轮番登场，连续两天不间断</span></div>\
+                <div class="flex items-start gap-2"><span class="text-brand-purple mt-0.5">●</span><span>双舞台设计：主舞台"运河之声"+副舞台"潮音台"，沉浸式舞美灯光与千年运河交相辉映</span></div>\
+                <div class="flex items-start gap-2"><span class="text-brand-purple mt-0.5">●</span><span>运河美食市集：沿线30+特色餐饮摊位，逛吃逛吃两不误</span></div>\
+                <div class="flex items-start gap-2"><span class="text-brand-purple mt-0.5">●</span><span>文创互动体验：定制音乐节限定周边、互动打卡装置、古风汉服游船体验</span></div>\
+            </div>\
+            \
+            <div class="rounded-xl overflow-hidden mb-5">\
+                <img src="images/photo4.jpeg" class="w-full object-cover" />\
+            </div>\
+            \
+            <h3 class="text-gray-800 font-bold text-base mb-3">退款规则</h3>\
+            <div class="text-sm text-gray-500 bg-gray-50 rounded-xl p-3 mb-5 space-y-1">\
+                ' + REFUND_STAGES.map(function(r) { return '<p>· ' + r.text + '</p>'; }).join('') + '\
+            </div>\
+        </div>\
+        <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-6 py-3 z-50 flex items-center gap-4" style="box-shadow:0 -4px 10px rgba(0,0,0,0.05);">\
+            <div class="flex-1">\
+                <span class="text-xl font-black text-brand-purple">¥' + Math.min.apply(null, SKU_PRICES.flat()) + '元起</span>\
+            </div>\
+            <span class="px-8 py-3 rounded-full bg-gradient-to-tr from-brand-purple to-brand-pink text-white font-bold text-sm card-hover shadow-lg shadow-brand-purple/25" onclick="showReg()">立即报名</span>\
+        </div>\
+    ';
+    Common.initIcons();
+}
+
+// ============ 报名弹窗 Step 1: 票种 + 日期 + 优惠券 ============
+function showReg() {
+    renderRegStep1();
+    Common.showPopup('reg-overlay');
+}
+function hideReg(e) { Common.closePopup(e, 'reg-overlay'); }
+
+function renderRegStep1() {
+    document.getElementById('reg-step-title').textContent = '选择票种';
+    var spec = SPEC_TYPES[state.specIdx];
+    var date = DATES[state.dateIdx];
+    var price = getSkuPrice();
+    var itemTotal = price - state.couponAmount;
+    var totalPrice = itemTotal * state.quantity;
+
+    // 票种 pills
+    var specHtml = SPEC_TYPES.map(function(s, i) {
+        var sel = state.specIdx === i;
+        return '\
+        <div class="flex-1 py-2.5 rounded-xl text-center text-sm font-medium cursor-pointer card-hover border-2 transition-all ' + (sel ? 'border-brand-purple bg-brand-purple-light text-brand-purple' : 'border-gray-100 bg-white text-gray-600') + '" onclick="selectSpec(' + i + ')">\
+            ' + s.name + '\
+        </div>';
+    }).join('');
+
+    // 日期 pills
+    var dateHtml = DATES.map(function(d, j) {
+        var dsel = state.dateIdx === j;
+        return '\
+        <div class="flex-1 py-3 rounded-xl text-center text-sm font-medium cursor-pointer card-hover border-2 transition-all ' + (dsel ? 'border-brand-purple bg-brand-purple-light text-brand-purple' : 'border-gray-100 bg-white text-gray-600') + '" onclick="selectDate(' + j + ')">\
+            ' + d.label + '\
+        </div>';
+    }).join('');
+
+    // 优惠券状态
+    var cpText, cpCls, cpIcon;
+    if (state.selectedCoupon >= 0) {
+        var cp = MY_COUPONS[state.selectedCoupon];
+        cpText = cp.name + '（省¥' + cp.amount + '）';
+        cpCls = 'bg-green-50 border-green-200 text-green-700';
+        cpIcon = 'check-circle';
+    } else {
+        cpText = '选择优惠券抵扣';
+        cpCls = 'bg-gray-50 border-gray-200 text-gray-500';
+        cpIcon = 'ticket';
+    }
+
+    document.getElementById('reg-form').innerHTML = '\
+        <div>\
+            <label class="block text-sm font-bold text-gray-700 mb-2">票种</label>\
+            <div class="flex gap-2">' + specHtml + '</div>\
+        </div>\
+        <div>\
+            <label class="block text-sm font-bold text-gray-700 mb-2">日期</label>\
+            <div class="flex gap-2">' + dateHtml + '</div>\
+        </div>\
+        <div>\
+            <label class="block text-sm font-bold text-gray-700 mb-2">数量</label>\
+            <div class="flex items-center gap-3">\
+                <span class="w-10 h-10 rounded-xl border-2 border-gray-200 flex items-center justify-center text-lg font-bold cursor-pointer card-hover ' + (state.quantity <= 1 ? 'text-gray-300 border-gray-100' : 'text-gray-600') + '" onclick="changeQty(-1)">−</span>\
+                <span class="text-lg font-bold text-gray-800 w-8 text-center">' + state.quantity + '</span>\
+                <span class="w-10 h-10 rounded-xl border-2 border-gray-200 flex items-center justify-center text-lg font-bold cursor-pointer card-hover text-gray-600" onclick="changeQty(1)">+</span>\
+            </div>\
+        </div>\
+        <div>\
+            <label class="block text-sm font-bold text-gray-700 mb-2">优惠券</label>\
+            <div class="flex items-center justify-between p-3 rounded-xl cursor-pointer card-hover border ' + cpCls + '" onclick="showCoupons()">\
+                <div class="flex items-center gap-2 text-sm">\
+                    <i data-lucide="' + cpIcon + '" class="w-4 h-4"></i>\
+                    <span>' + cpText + '</span>\
+                </div>\
+                <i data-lucide="chevron-right" class="w-4 h-4 text-gray-300"></i>\
+            </div>\
+        </div>\
+        <div class="text-xs text-gray-400 text-center">\
+            ' + spec.name + ' | ' + date.label + (state.quantity > 1 ? ' × ' + state.quantity : '') + '\
+        </div>\
+        <div class="bg-gray-50 rounded-xl p-3">\
+            <div class="flex justify-between text-sm mb-2">\
+                <span class="text-gray-500">单价</span><span class="text-gray-800">¥' + itemTotal + '</span>\
+            </div>\
+            ' + '<div class="flex justify-between text-sm mb-2"><span class="text-gray-500">数量</span><span class="text-gray-800">×' + state.quantity + '</span></div>' + '\
+            ' + (state.couponAmount > 0 ? '<div class="flex justify-between text-sm mb-2"><span class="text-gray-500">优惠券</span><span class="text-red-400">-¥' + (state.couponAmount * state.quantity) + '</span></div>' : '') + '\
+            <div class="flex justify-between text-sm font-bold pt-2 border-t border-gray-200">\
+                <span class="text-gray-800">待支付</span><span class="text-lg font-black text-brand-purple">¥' + totalPrice + '</span>\
+            </div>\
+        </div>\
+        <span class="block text-center cursor-pointer w-full py-3 rounded-full bg-gradient-to-tr from-brand-purple to-brand-pink text-white font-bold text-sm card-hover shadow-lg shadow-brand-purple/20" onclick="goRegStep2()">下一步</span>\
+    ';
+    Common._icons(document.getElementById('reg-form'));
+}
+
+function selectSpec(i) { state.specIdx = i; renderRegStep1(); }
+function selectDate(j) { state.dateIdx = j; renderRegStep1(); }
+function changeQty(d) { var n = state.quantity + d; if (n >= 1 && n <= 5) { state.quantity = n; renderRegStep1(); } }
+
+// ============ Step 2: 填写报名信息 ============
+function goRegStep2() {
+    renderRegStep2();
+}
+function backRegStep1() {
+    renderRegStep1();
+}
+
+function renderRegStep2() {
+    document.getElementById('reg-step-title').textContent = '登记信息';
+    var spec = SPEC_TYPES[state.specIdx];
+    var date = DATES[state.dateIdx];
+    var price = getSkuPrice();
+    var itemTotal = price - state.couponAmount;
+    var totalPrice = itemTotal * state.quantity;
+
+    var fieldsHtml = '';
+    for (var g = 0; g < state.quantity; g++) {
+        if (g > 0) fieldsHtml += '<div class="border-t-2 border-dashed border-gray-200 my-4 pt-2"></div>';
+        fieldsHtml += '<h4 class="text-sm font-black text-brand-purple mb-3">报名信息' + (g + 1) + '</h4>';
+        for (var p = 0; p < spec.personCount; p++) {
+            var pf = PRE_FILL[p] || { name:'', mobile:'', idcard:'' };
+            fieldsHtml += '\
+            <div class="mb-3">\
+                <h5 class="text-xs font-bold text-gray-500 mb-2">' + spec.personLabels[p] + '</h5>\
+                <div class="space-y-2">\
+                    <div class="flex items-center gap-2">\
+                        <span class="text-xs text-gray-400 w-12 flex-shrink-0">姓名</span>\
+                        <input type="text" id="name-' + g + '-' + p + '" value="' + pf.name + '" placeholder="请填写姓名" class="flex-1 text-sm px-3 py-2.5 rounded-xl bg-gray-50 border border-gray-200 outline-none focus:border-brand-purple"/>\
+                    </div>\
+                    <div class="flex items-center gap-2">\
+                        <span class="text-xs text-gray-400 w-12 flex-shrink-0">手机号</span>\
+                        <input type="tel" id="mobile-' + g + '-' + p + '" value="' + ('mobile' in pf ? pf.mobile : '') + '" placeholder="请填写手机号" class="flex-1 text-sm px-3 py-2.5 rounded-xl bg-gray-50 border border-gray-200 outline-none focus:border-brand-purple"/>\
+                    </div>\
+                    <div class="flex items-center gap-2">\
+                        <span class="text-xs text-gray-400 w-12 flex-shrink-0">身份证</span>\
+                        <input type="text" id="idcard-' + g + '-' + p + '" value="' + ('idcard' in pf ? pf.idcard : '') + '" placeholder="请填写身份证号" class="flex-1 text-sm px-3 py-2.5 rounded-xl bg-gray-50 border border-gray-200 outline-none focus:border-brand-purple"/>\
+                    </div>\
+                </div>\
+            </div>';
+        }
+    }
+
+    var qtyNote = state.quantity > 1 ? ' × ' + state.quantity : '';
+    document.getElementById('reg-form').innerHTML = '\
+        <div class="bg-brand-purple-light rounded-xl p-3 flex items-center justify-between">\
+            <div class="flex items-center gap-3">\
+                <i data-lucide="ticket" class="w-5 h-5 text-brand-purple flex-shrink-0"></i>\
+                <div>\
+                    <p class="text-sm font-bold text-gray-800">' + spec.name + ' | ' + date.label + qtyNote + '</p>\
+                    <p class="text-brand-purple font-bold text-base">¥' + totalPrice + '</p>\
+                </div>\
+            </div>\
+            ' + (state.couponAmount > 0 ? '<span class="text-xs text-red-400 bg-red-50 px-2 py-0.5 rounded-full">已优惠¥' + (state.couponAmount * state.quantity) + '</span>' : '') + '\
+        </div>\
+        ' + fieldsHtml + '\
+        <label class="flex items-start gap-2 cursor-pointer pt-2">\
+            <input type="checkbox" id="reg-agreement" class="mt-0.5 accent-brand-purple"/>\
+            <span class="text-sm text-gray-600">我已阅读并同意 <span class="text-brand-purple underline cursor-pointer" onclick="Common.showToast(\'活动报名协议详情\')">活动报名协议</span></span>\
+        </label>\
+        <div class="flex gap-3">\
+            <span class="flex-1 text-center cursor-pointer py-3 rounded-full border-2 border-gray-200 text-gray-500 font-bold text-sm card-hover" onclick="backRegStep1()">← 上一步</span>\
+            <span class="flex-[2] text-center cursor-pointer py-3 rounded-full bg-gradient-to-tr from-brand-purple to-brand-pink text-white font-bold text-sm card-hover shadow-lg shadow-brand-purple/20" onclick="confirmReg()">确认并支付</span>\
+        </div>\
+    ';
+    Common._icons(document.getElementById('reg-form'));
+}
+
+// ============ 确认报名 → 支付 → 跳转订单页 ============
+function confirmReg() {
+    if (!document.getElementById('reg-agreement').checked) { Common.showToast('请阅读并同意活动报名协议'); return; }
+
+    var spec = SPEC_TYPES[state.specIdx];
+    for (var g = 0; g < state.quantity; g++) {
+        for (var p = 0; p < spec.personCount; p++) {
+            var nEl = document.getElementById('name-' + g + '-' + p);
+            if (!nEl || !nEl.value.trim()) { Common.showToast('请填写报名信息' + (g+1) + ' - ' + spec.personLabels[p] + '姓名'); return; }
+        }
+    }
+
+    Common.hidePopup('reg-overlay');
+
+    var date = DATES[state.dateIdx];
+    var price = getSkuPrice();
+    var itemTotal = price - state.couponAmount;
+    var totalPrice = itemTotal * state.quantity;
+
+    document.getElementById('pay-title').textContent = spec.name + ' | ' + date.label + (state.quantity > 1 ? ' × ' + state.quantity : '');
+    document.getElementById('pay-amount').textContent = '¥' + totalPrice;
+    Common.showPopup('pay-overlay');
+}
+
+function doPay() {
+    Common.hidePopup('pay-overlay');
+
+    var spec = SPEC_TYPES[state.specIdx];
+    var date = DATES[state.dateIdx];
+    var price = getSkuPrice();
+    var itemTotal = price - state.couponAmount;
+    var totalPrice = itemTotal * state.quantity;
+
+    var persons = [];
+    for (var g = 0; g < state.quantity; g++) {
+        for (var p = 0; p < spec.personCount; p++) {
+            var pf = PRE_FILL[p] || {};
+            persons.push({
+                group: g + 1,
+                groupLabel: '报名信息' + (g + 1),
+                label: spec.personLabels[p],
+                name: document.getElementById('name-' + g + '-' + p).value,
+                mobile: document.getElementById('mobile-' + g + '-' + p).value,
+                idcard: document.getElementById('idcard-' + g + '-' + p).value,
+            });
+        }
+    }
+
+    var order = {
+        orderNo: 'OD' + Date.now(),
+        orderTime: new Date().toLocaleString('zh-CN'),
+        productName: '2025大运河音乐节',
+        productEmoji: '🎵', coverImage: 'images/cover4.jpeg',
+        specName: spec.name + (state.quantity > 1 ? ' × ' + state.quantity : ''),
+        dateLabel: date.label,
+        dateValue: date.value,
+        quantity: state.quantity,
+        persons: persons,
+        price: totalPrice,
+        originalPrice: price * state.quantity,
+        couponAmount: state.couponAmount * state.quantity,
+        couponName: state.selectedCoupon >= 0 ? MY_COUPONS[state.selectedCoupon].name : '',
+        refundStages: REFUND_STAGES,
+        status: 'paid',
+        type: 'event',
+        detailUrl: 'event-detail2.html',
+    };
+    localStorage.setItem('lastOrder', JSON.stringify(order));
+
+    Common.showToast('支付成功！');
+    setTimeout(function() { location.href = 'order-detail.html'; }, 600);
+}
+
+function hidePay(e) { Common.closePopup(e, 'pay-overlay'); }
+
+// ============ 优惠券 ============
+function showCoupons() {
+    var listHtml = MY_COUPONS.map(function(cp, i) {
+        var active = state.selectedCoupon === i;
+        var disabled = getSkuPrice() * state.quantity < cp.minPrice;
+        return '\
+        <div class="flex items-center justify-between p-3 rounded-xl cursor-pointer card-hover border-2 transition-all ' + (active ? 'border-brand-purple bg-brand-purple-light' : (disabled ? 'border-gray-100 bg-gray-50 opacity-50' : 'border-gray-100 bg-white')) + '" onclick="' + (disabled ? '' : 'selectCoupon(' + i + ')') + '">\
+            <div class="flex items-center gap-2.5">\
+                <div class="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center"><i data-lucide="ticket" class="w-5 h-5 text-red-400"></i></div>\
+                <div><span class="text-sm font-bold text-gray-800">' + cp.name + '</span><p class="text-xs text-gray-400">' + cp.desc + (disabled ? '（未满¥' + cp.minPrice + '）' : '') + '</p></div>\
+            </div>\
+            ' + (active ? '<div class="w-5 h-5 rounded-full bg-brand-purple flex items-center justify-center"><i data-lucide="check" class="w-3.5 h-3.5 text-white"></i></div>' : '<div class="w-5 h-5 rounded-full border-2 border-gray-200"></div>') + '\
+        </div>';
+    }).join('');
+
+    var noneActive = state.selectedCoupon === -1;
+    listHtml += '\
+    <div class="flex items-center justify-between p-3 rounded-xl cursor-pointer card-hover border-2 transition-all ' + (noneActive ? 'border-brand-purple bg-brand-purple-light' : 'border-gray-100 bg-white') + '" onclick="selectCoupon(-1)">\
+        <span class="text-sm text-gray-500">不使用优惠券</span>\
+        ' + (noneActive ? '<div class="w-5 h-5 rounded-full bg-brand-purple flex items-center justify-center"><i data-lucide="check" class="w-3.5 h-3.5 text-white"></i></div>' : '<div class="w-5 h-5 rounded-full border-2 border-gray-200"></div>') + '\
+    </div>';
+
+    document.getElementById('coupon-list').innerHTML = listHtml;
+    Common.showPopup('coupon-overlay');
+    setTimeout(function() { Common._icons(document.getElementById('coupon-overlay')); }, 50);
+}
+
+function hideCoupon(e) { Common.closePopup(e, 'coupon-overlay'); }
+
+function selectCoupon(i) {
+    state.selectedCoupon = i;
+    state.couponAmount = i >= 0 ? MY_COUPONS[i].amount : 0;
+    Common.hidePopup('coupon-overlay');
+    renderRegStep1();
+}
+
+function applyCouponCode() {
+    var code = document.getElementById('coupon-code').value.trim();
+    if (!code) { Common.showToast('请输入兑换码'); return; }
+    state.selectedCoupon = 0;
+    state.couponAmount = MY_COUPONS[0].amount;
+    Common.showToast('优惠券兑换成功！');
+    Common.hidePopup('coupon-overlay');
+    renderRegStep1();
+}
+
+document.addEventListener('DOMContentLoaded', render);
+</script>
+</body>
+</html>

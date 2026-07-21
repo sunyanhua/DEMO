@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>我的发票 - 1039发现</title>
+<script src="lib/tailwind.min.js"></script><script src="lib/lucide.min.js"></script><link rel="stylesheet" href="style.css">
+</head>
+<body class="antialiased">
+<div class="bg-decoration"><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div></div>
+<div id="app" class="relative z-[1]"></div>
+<script src="common.js"></script>
+<script>
+// 预置 Mock 发票数据
+var MOCK_INVOICES = [
+    { id:'INV202607180001', orderNo:'OD202607180001', productName:'2026冰丝带汽车生活节', specName:'单人票 | 7月18日', amount:99, type:'企业', title:'北京某某科技有限公司', taxNumber:'91110108XXXXXXXXXX', email:'example@qq.com', status:'issued', applyTime:'2026-07-18 15:30' },
+    { id:'INV202607180002', orderNo:'OD202607180002', productName:'什刹海摇橹船票', specName:'1039专属船票 × 2', amount:336, type:'个人', title:'小明', taxNumber:'', email:'xiaoming@163.com', status:'pending', applyTime:'2026-07-19 10:15' },
+];
+
+function getInvoices() {
+    var stored = JSON.parse(localStorage.getItem('invoices') || 'null');
+    if (stored && stored.length > 0) return stored;
+    // 首次使用，写入 Mock 数据
+    localStorage.setItem('invoices', JSON.stringify(MOCK_INVOICES));
+    return MOCK_INVOICES;
+}
+
+function render() {
+    var invoices = getInvoices();
+
+    var listHtml = invoices.length > 0 ? invoices.map(function(inv) {
+        var statusLabel = inv.status === 'issued' ? '已开具' : '待开具';
+        var statusCls = inv.status === 'issued'
+            ? 'bg-green-100 text-green-600'
+            : 'bg-amber-100 text-amber-600';
+
+        return '\
+        <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100 mb-3">\
+            <div class="flex justify-between items-start mb-3">\
+                <div class="flex-1 min-w-0">\
+                    <h4 class="text-sm font-bold text-gray-800 truncate">' + inv.productName + '</h4>\
+                    <p class="text-xs text-gray-400 mt-0.5">' + inv.specName + '</p>\
+                </div>\
+                <span class="px-2.5 py-1 rounded-full text-xs font-bold ' + statusCls + ' flex-shrink-0 ml-2">' + statusLabel + '</span>\
+            </div>\
+            <div class="bg-gray-50 rounded-xl p-3 space-y-2 text-xs">\
+                <div class="flex justify-between">\
+                    <span class="text-gray-400">订单编号</span>\
+                    <span class="text-gray-700 font-medium">' + inv.orderNo + '</span>\
+                </div>\
+                <div class="flex justify-between">\
+                    <span class="text-gray-400">发票类型</span>\
+                    <span class="text-gray-700">' + inv.type + '</span>\
+                </div>\
+                <div class="flex justify-between">\
+                    <span class="text-gray-400">发票抬头</span>\
+                    <span class="text-gray-700 font-medium">' + inv.title + '</span>\
+                </div>\
+                ' + (inv.taxNumber ? '<div class="flex justify-between"><span class="text-gray-400">税号</span><span class="text-gray-700">' + inv.taxNumber + '</span></div>' : '') + '\
+                <div class="flex justify-between">\
+                    <span class="text-gray-400">接收邮箱</span>\
+                    <span class="text-gray-700">' + inv.email + '</span>\
+                </div>\
+                <div class="flex justify-between pt-2 border-t border-gray-200">\
+                    <span class="text-gray-400">开票金额</span>\
+                    <span class="text-base font-black text-brand-gold">&yen;' + inv.amount.toFixed(2) + '</span>\
+                </div>\
+                <div class="flex justify-between">\
+                    <span class="text-gray-400">申请时间</span>\
+                    <span class="text-gray-500">' + inv.applyTime + '</span>\
+                </div>\
+            </div>\
+        </div>';
+    }).join('') : '<div class="text-center py-12"><i data-lucide="receipt" class="w-16 h-16 text-gray-300 mx-auto mb-4"></i><p class="text-sm text-gray-400">暂无发票申请</p></div>';
+
+    document.getElementById('app').innerHTML = '\
+        <div class="top-section"><div class="px-4 pt-3 pb-2"><img src="logo.png" alt="1039发现" style="height:28px;"/></div></div>\
+        <div class="content-card">\
+            <div class="px-4 py-4 border-b border-gray-100 flex items-center gap-2">\
+                <i data-lucide="receipt" class="w-5 h-5 text-brand-gold"></i>\
+                <span class="text-base font-black text-gray-800">我的发票</span>\
+                <span class="text-xs text-gray-400 ml-auto">共 ' + invoices.length + ' 条</span>\
+            </div>\
+            <div class="px-4 pt-3 pb-3">\
+                ' + listHtml + '\
+            </div>\
+        </div>\
+        <div class="pb-6"></div>';
+    Common.initIcons();
+}
+
+document.addEventListener('DOMContentLoaded', render);
+</script>
+</body>
+</html>

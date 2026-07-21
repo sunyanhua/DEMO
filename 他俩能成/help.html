@@ -1,0 +1,30 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/><title>帮助与反馈 - 他俩能成</title><script src="lib/tailwind.min.js"></script><script src="lib/lucide.min.js"></script><link rel="stylesheet" href="style.css"></head><body class="bg-white text-gray-900 antialiased pb-2">
+<div class="bg-decoration"><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div></div><div id="app" class="relative z-[1]"></div>
+<script src="common.js"></script><script>
+var faqs=[
+  {q:'如何提高匹配度？',a:'双方亲友的推荐、互相关注和心动都可以提高匹配度。匹配度达到1314时可解锁畅聊功能。'},
+  {q:'金币如何获取和使用？',a:'每天签到可获得50金币，每进行20次玩法操作可获得10金币。金币可用于购买平台礼物赠送给其他用户。'},
+  {q:'如何申请加入朝阳相伴或青爱团？',a:'进入对应专区页面，点击底部"申请加入"按钮，按要求填写所属工会/单位信息并上传证明材料，等待审核即可。'},
+  {q:'抽奖的红包如何提现？',a:'中奖红包将自动进入"我的钱包"，金额满1元后可申请提现至微信钱包。'},
+  {q:'如何取消报名活动？',a:'在活动详情页底部，已报名状态下点击"取消报名"按钮，确认后即可取消。取消截止时间前可重新报名。'},
+  {q:'无感/关注/心动的区别？',a:'无感表示不感兴趣，该用户不再推荐；关注表示加入关注名单，可随时查看；心动表示特别好感，对方会收到通知。'},
+  {q:'牵线玩法怎么玩？',a:'进入牵线页面查看推荐CP，点击"能成"或"不成"为两人投票。锁定一方后继续切换可以专门为该用户牵线。'},
+  {q:'如何联系客服？',a:'点击下方"咨询客服"按钮，可在线提交问题，客服将在24小时内回复。紧急问题可拨打客服热线 400-123-4567。'},
+];
+var openIdx=null;
+function toggleFaq(idx){
+  openIdx=openIdx===idx?null:idx;render();
+}
+function render(){
+  var rows=faqs.map(function(f,i){
+    var isOpen=openIdx===i;
+    return'<div class="bg-white rounded-xl shadow-sm border border-gray-100 mx-4 mb-2 overflow-hidden"><div class="flex items-center justify-between px-4 py-3.5 cursor-pointer card-hover" onclick="toggleFaq('+i+')"><span class="text-sm font-medium text-gray-800 flex-1">'+f.q+'</span><i data-lucide="'+(isOpen?'chevron-up':'chevron-down')+'" class="w-4 h-4 text-gray-400 flex-shrink-0 ml-2"></i></div>'+(isOpen?'<div class="px-4 pb-3.5 text-sm text-gray-500 leading-relaxed border-t border-gray-50 pt-3">'+f.a+'</div>':'')+'</div>';
+  }).join('');
+  document.getElementById('app').innerHTML=
+    '<div class="sticky top-0 z-40 bg-white/95 backdrop-blur-md px-4 py-2.5 shadow-sm flex items-center"><i data-lucide="help-circle" class="w-3.5 h-3.5 text-gray-500 mr-2"></i><h1 class="text-sm font-bold text-gray-900">帮助与反馈</h1></div>'+
+    '<div class="content-section"><div class="pt-3 pb-24">'+rows+'</div></div>'+
+    '<div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 px-6 py-3 rounded-full bg-gradient-to-tr from-brand-pink to-brand-orange text-white font-bold text-sm shadow-xl shadow-brand-pink/30 card-hover cursor-pointer flex items-center gap-2" onclick="window.Common.showToast(\x27已连接客服，请稍候\x27)"><i data-lucide="message-circle" class="w-4 h-4"></i>咨询客服</div>';
+  window.Common.initIcons();
+}
+document.addEventListener('DOMContentLoaded',function(){render()});
+</script></body></html>

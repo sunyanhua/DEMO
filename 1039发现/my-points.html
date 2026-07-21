@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>我的积分 - 1039发现</title>
+<script src="lib/tailwind.min.js"></script><script src="lib/lucide.min.js"></script><link rel="stylesheet" href="style.css">
+</head>
+<body class="antialiased">
+<div class="bg-decoration"><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div></div>
+<div id="app" class="relative z-[1]"></div>
+<script src="common.js"></script>
+<script>
+var records = [
+    {date:'2026-07-18', action:'购买商品赠送', type:'income', points:30, remark:'冰箱贴 ×1'},
+    {date:'2026-07-17', action:'活动报名赠送', type:'income', points:50, remark:'汽车生活节'},
+    {date:'2026-07-15', action:'购买门票赠送', type:'income', points:20, remark:'摇橹船票 ×2'},
+    {date:'2026-07-10', action:'积分兑换优惠券', type:'expense', points:-100, remark:'兑换满100减10券'},
+    {date:'2026-07-05', action:'每日签到', type:'income', points:10, remark:''},
+    {date:'2026-07-01', action:'新用户注册', type:'income', points:100, remark:'欢迎加入'},
+];
+function render() {
+    document.getElementById('app').innerHTML = '\
+        <div class="top-section"><div class="px-4 pt-3 pb-2"><img src="logo.png" alt="1039发现" style="height:28px;"/></div></div>\
+        <div class="content-card">\
+            <div class="px-4 py-4 border-b border-gray-100 flex items-center gap-2">\
+                <i data-lucide="gift" class="w-5 h-5 text-brand-gold"></i>\
+                <span class="text-base font-black text-gray-800">我的积分</span></div>\
+            <div class="px-4 py-5 text-center">\
+                <p class="text-xs text-gray-400">可用积分</p>\
+                <p class="text-3xl font-black text-brand-gold mt-2">1,280</p>\
+                <p class="text-xs text-gray-400 mt-1">累计获得 1,480 · 已使用 200</p>\
+            </div>\
+            <div class="border-t border-gray-100 px-4 py-3">\
+                <h4 class="text-sm font-bold text-gray-800 mb-3">积分明细</h4>\
+                ' + records.map(function(r) {
+                    return '<div class="flex items-center justify-between py-2 border-b border-gray-50 last:border-b-0"><div><p class="text-sm text-gray-700">'+r.action+'</p><p class="text-xs text-gray-400 mt-0.5">'+r.date + (r.remark?' · '+r.remark:'')+'</p></div><span class="text-sm font-bold '+(r.type==='income'?'text-green-500':'text-red-400')+'">'+(r.points>0?'+':'')+r.points+'</span></div>';
+                }).join('') + '\
+            </div>\
+        </div>\
+        <div class="pb-6"></div>';
+    Common.initIcons();
+}
+document.addEventListener('DOMContentLoaded', render);
+</script>
+</body>
+</html>

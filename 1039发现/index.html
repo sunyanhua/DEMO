@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>1039发现</title>
+    <script src="lib/tailwind.min.js"></script>
+    <script src="lib/lucide.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="antialiased pb-20">
+
+    <!-- 深色背景层 -- 7个大面积不规则曲线色块叠加（无渐变无模糊），金色为主 -->
+    <div class="bg-decoration">
+        <div class="bg-blob"></div><div class="bg-blob"></div>
+        <div class="bg-blob"></div><div class="bg-blob"></div>
+        <div class="bg-blob"></div><div class="bg-blob"></div>
+    </div>
+
+    <div id="app" class="relative z-[1]"></div>
+
+    <script src="common.js"></script>
+    <script>
+        // ========== 顶部导航 ==========
+        function renderTopBar() {
+            return '\
+            <div class="px-4 pt-3 pb-1 flex items-center justify-between">\
+                <img src="logo.png" alt="1039发现" style="height:32px;" />\
+                <div class="flex items-center gap-3">\
+                    <span class="cursor-pointer card-hover" onclick="Common.showToast(\'搜索功能开发中\')">\
+                        <i data-lucide="search" class="w-5 h-5" style="color:rgba(255,255,255,0.70)"></i>\
+                    </span>\
+                    <span class="cursor-pointer card-hover" onclick="window.location.href=\'me.html\'">\
+                        <i data-lucide="user" class="w-5 h-5" style="color:rgba(255,255,255,0.70)"></i>\
+                    </span>\
+                </div>\
+            </div>';
+        }
+
+        // ========== Banner 轮播 ==========
+        function renderBanner() {
+            var banners = [
+                { title:'2026冰丝带汽车生活节', subtitle:'年度最大汽车主题盛会',
+                  bg:'#836ec2', deco1:'#fdbeda', deco2:'#9adff3', emoji:'🏎️', link:'event-detail.html' },
+                { title:'什刹海摇橹船票', subtitle:'泛舟什刹海，感受老北京风情',
+                  bg:'#3DAFD8', deco1:'#f2a600', deco2:'#836ec2', emoji:'🛶', link:'ticket-detail.html' },
+                { title:'北京交通广播专属冰箱贴', subtitle:'FM103.9 官方文创',
+                  bg:'#E880A5', deco1:'#f2a600', deco2:'#9adff3', emoji:'📻', link:'product-detail.html' },
+            ];
+
+            var slidesHtml = banners.map(function(b) {
+                return '\
+                <a href="' + b.link + '" class="flex-shrink-0 snap-center min-w-full no-underline cursor-pointer">\
+                    <div class="mx-4 rounded-2xl overflow-hidden relative" style="aspect-ratio:16/7;background-color:' + b.bg + ';">\
+                        <div style="position:absolute;top:-30%;right:-15%;width:65%;height:100%;border-radius:45% 55% 40% 60% / 55% 45% 60% 40%;background:' + b.deco1 + ';opacity:0.55;"></div>\
+                        <div style="position:absolute;bottom:-25%;left:-10%;width:50%;height:80%;border-radius:60% 40% 55% 45% / 40% 60% 45% 55%;background:' + b.deco2 + ';opacity:0.45;"></div>\
+                        <div style="position:absolute;top:15%;left:30%;width:35%;height:45%;border-radius:50% 50% 45% 55% / 55% 45% 50% 50%;background:rgba(255,255,255,0.12);"></div>\
+                        <div class="relative z-10 h-full flex items-center justify-center">\
+                            <div class="text-center px-4">\
+                                <span class="text-5xl block mb-1 drop-shadow-lg">' + b.emoji + '</span>\
+                                <p class="text-white font-black text-lg leading-tight drop-shadow-md">' + b.title + '</p>\
+                                <p class="text-white/80 text-xs mt-0.5">' + b.subtitle + '</p>\
+                            </div>\
+                        </div>\
+                    </div>\
+                </a>';
+            }).join('');
+
+            var dotsHtml = banners.map(function(_, i) {
+                return '<div class="w-1.5 h-1.5 rounded-full transition-all duration-300 banner-dot ' + (i === 0 ? 'bg-white w-3' : 'bg-white/50') + '"></div>';
+            }).join('');
+
+            return '\
+            <div class="pt-2 pb-1">\
+                <div class="relative">\
+                    <div id="banner-container" class="flex overflow-x-auto snap-x snap-mandatory no-scrollbar w-full scroll-smooth">\
+                        ' + slidesHtml + '\
+                    </div>\
+                    <div id="banner-dots" class="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 p-1.5 bg-black/20 rounded-full backdrop-blur-sm">\
+                        ' + dotsHtml + '\
+                    </div>\
+                </div>\
+            </div>';
+        }
+
+        // ========== 三入口卡片 ==========
+        function renderEntryCards() {
+            var entries = [
+                { icon:'calendar',     label:'活动', desc:'精彩活动等你参加',   color:'#836ec2', lightBg:'#F3F0FA', textColor:'#836ec2', href:'events.html' },
+                { icon:'ticket',       label:'门票', desc:'热门票务一站购齐',   color:'#3DAFD8', lightBg:'#F0F9FC', textColor:'#3DAFD8', href:'tickets.html' },
+                { icon:'shopping-bag', label:'商品', desc:'1039官方文创好物', color:'#E880A5', lightBg:'#FFF5F9', textColor:'#E880A5', href:'products.html' },
+            ];
+
+            var cardsHtml = entries.map(function(e) {
+                return '\
+                <a href="' + e.href + '" class="flex-1 no-underline cursor-pointer entry-card rounded-xl overflow-hidden bg-white border-0 shadow-lg">\
+                    <div style="background-color:' + e.color + ';height:3px;"></div>\
+                    <div class="px-3 py-3 flex flex-col items-center text-center gap-1.5">\
+                        <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background-color:' + e.lightBg + ';">\
+                            <i data-lucide="' + e.icon + '" class="w-5 h-5" style="color:' + e.textColor + ';"></i>\
+                        </div>\
+                        <span class="text-sm font-bold text-gray-800">' + e.label + '</span>\
+                        <span class="text-[10px] text-gray-400">' + e.desc + '</span>\
+                    </div>\
+                </a>';
+            }).join('');
+
+            return '\
+            <div class="px-4 py-3">\
+                <div class="flex gap-3">' + cardsHtml + '</div>\
+            </div>';
+        }
+
+        // ========== 推荐列表 ==========
+        function renderRecommendList() {
+            var items = [
+                { type:'活动', tagClass:'tag-activity', title:'2026冰丝带汽车生活节',
+                  img:'images/cover1.jpg',
+                  priceRange:'¥99元起', meta1:'2026/07/18 - 2026/07/20', meta2:'国家速滑馆（冰丝带）南广场', href:'event-detail.html' },
+                { type:'门票', tagClass:'tag-ticket', title:'什刹海摇橹船票',
+                  img:'images/cover2.png',
+                  priceRange:'¥120元起', meta1:'有效期：购票后30天', meta2:'什刹海风景区', href:'ticket-detail.html' },
+                { type:'商品', tagClass:'tag-product', title:'北京交通广播专属冰箱贴',
+                  img:'images/cover3.jpg',
+                  priceRange:'¥29.9元起', meta1:'FM103.9 官方文创', meta2:'锌合金材质 · 珐琅工艺', href:'product-detail.html' },
+            ];
+
+            var listHtml = items.map(function(item) {
+                return '\
+                <a href="' + item.href + '" class="flex gap-3 bg-white rounded-xl p-3 card-hover cursor-pointer no-underline shadow-sm border border-gray-100">\
+                    <div class="w-24 h-24 rounded-lg flex-shrink-0 overflow-hidden">\
+                        <img src="' + item.img + '" class="w-full h-full object-cover" />\
+                    </div>\
+                    <div class="flex-1 flex flex-col min-w-0" style="gap:4px;padding-top:5px;">\
+                        <h3 class="text-sm font-bold text-gray-800 truncate flex items-center gap-1 pt-0.5">\
+                            <span class="text-xs px-1.5 py-0.5 rounded-full text-[10px] font-medium ' + item.tagClass + ' flex-shrink-0 leading-none">' + item.type + '</span>\
+                            <span class="truncate">' + item.title + '</span>\
+                        </h3>\
+                        <div class="text-xs text-gray-400" style="margin-top:-1px;">\
+                            <p class="truncate">' + item.meta1 + '</p>\
+                            <p class="truncate">' + item.meta2 + '</p>\
+                        </div>\
+                        <span class="font-bold text-sm" style="color:#f2a600;margin-top:5px;">' + item.priceRange + '</span>\
+                    </div>\
+                </a>';
+            }).join('');
+
+            return '\
+            <div class="px-4 pt-4 pb-4">\
+                <div class="flex items-center justify-between mb-3">\
+                    <h2 class="text-base font-black text-gray-800 flex items-center gap-1.5">\
+                        🔥 热门推荐\
+                    </h2>\
+                </div>\
+                <div class="flex flex-col gap-3">\
+                    ' + listHtml + '\
+                </div>\
+            </div>';
+        }
+
+        // ========== 主渲染 ==========
+        function render() {
+            document.getElementById('app').innerHTML = '\
+                <div class="top-section">\
+                    ' + renderTopBar() + '\
+                    ' + renderBanner() + '\
+                    ' + renderEntryCards() + '\
+                </div>\
+                <div class="content-card">\
+                    ' + renderRecommendList() + '\
+                </div>\
+                <div class="pb-2"></div>\
+                ' + Common.renderBottomNav('home') + '\
+            ';
+            Common.initIcons();
+        }
+
+        // ========== Banner 轮播 ==========
+        function startBannerCarousel() {
+            var container = document.getElementById('banner-container');
+            var dotsContainer = document.getElementById('banner-dots');
+            if (!container || !dotsContainer) return;
+
+            var total = 3;
+            var current = 0;
+
+            function updateDots() {
+                var dots = dotsContainer.children;
+                for (var i = 0; i < dots.length; i++) {
+                    dots[i].className = 'w-1.5 h-1.5 rounded-full transition-all duration-300 banner-dot ' + (i === current ? 'bg-white w-3' : 'bg-white/50');
+                }
+            }
+
+            container.addEventListener('scroll', function() {
+                var idx = Math.round(container.scrollLeft / container.offsetWidth);
+                if (idx !== current && idx >= 0 && idx < total) {
+                    current = idx;
+                    updateDots();
+                }
+            });
+
+            setInterval(function() {
+                current = (current + 1) % total;
+                container.scrollTo({ left: container.offsetWidth * current, behavior: 'smooth' });
+                updateDots();
+            }, 4000);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            render();
+            startBannerCarousel();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>帮助与反馈 - 1039发现</title>
+<script src="lib/tailwind.min.js"></script><script src="lib/lucide.min.js"></script><link rel="stylesheet" href="style.css">
+</head>
+<body class="antialiased">
+<div class="bg-decoration"><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div></div>
+<div id="app" class="relative z-[1]"></div>
+<script src="common.js"></script>
+<script>
+var openIdx = -1;
+var FAQS = [
+    {q:'如何购买门票？',a:'在首页点击"门票"进入票务列表，选择您想购买的门票，在详情页选择票种和数量，填写购票人信息后完成支付即可。支付成功后可在"我的订单"中查看。'},
+    {q:'如何报名活动？',a:'在首页点击"活动"进入活动列表，选择您感兴趣的活动，在详情页选择票种、日期和数量，填写报名信息后完成支付即可。部分活动支持先支付后登记。'},
+    {q:'如何退款？',a:'活动和门票支持退款，具体规则请查看订单详情页的退款说明。商品暂不支持线上退款，如有疑问请联系客服。预约成功后不可退款。'},
+    {q:'如何核销门票？',a:'进入订单详情页，在"我的入场券/我的门票"中点击"核销"按钮，向工作人员出示核销码即可。也可使用批量核销功能一次性核销多张门票。'},
+    {q:'优惠券如何使用？',a:'在下单时选择"使用优惠券"，系统会展示您账户中可用的优惠券列表，选择后即可抵扣相应金额。也可在支付前输入兑换码获取新优惠券。'},
+    {q:'如何联系客服？',a:'客服热线：010-88888888（工作日9:00-18:00），或关注微信公众号 FM1039KF 在线咨询。'},
+];
+function render() {
+    var faqHtml = FAQS.map(function(f,i){
+        var open = openIdx === i;
+        return '<div class="border border-gray-100 rounded-xl mb-2 overflow-hidden"><div class="px-4 py-3 cursor-pointer card-hover flex items-center justify-between" onclick="toggleFaq('+i+')"><span class="text-sm font-medium text-gray-800">'+f.q+'</span><i data-lucide="'+(open?'chevron-up':'chevron-down')+'" class="w-4 h-4 text-gray-400"></i></div>'+(open?'<div class="px-4 pb-3 text-sm text-gray-500 leading-relaxed">'+f.a+'</div>':'')+'</div>';
+    }).join('');
+
+    document.getElementById('app').innerHTML = '\
+        <div class="top-section"><div class="px-4 pt-3 pb-2"><img src="logo.png" alt="1039发现" style="height:28px;"/></div></div>\
+        <div class="content-card">\
+            <div class="px-4 py-4 border-b border-gray-100 flex items-center gap-2">\
+                <i data-lucide="help-circle" class="w-5 h-5 text-brand-gold"></i>\
+                <span class="text-base font-black text-gray-800">帮助与反馈</span></div>\
+            <div class="px-4 py-4">'+faqHtml+'</div>\
+        </div>\
+        <div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-40">\
+            <span class="px-6 py-3 rounded-full bg-brand-gold text-white font-bold text-sm shadow-xl shadow-brand-gold/30 card-hover cursor-pointer flex items-center gap-2" onclick="Common.showToast(\'已连接客服，请稍候\')"><i data-lucide="message-circle" class="w-4 h-4"></i>咨询客服</span>\
+        </div>\
+        <div class="pb-6"></div>';
+    Common.initIcons();
+}
+function toggleFaq(i) { openIdx = openIdx===i ? -1 : i; render(); }
+document.addEventListener('DOMContentLoaded', render);
+</script>
+</body>
+</html>

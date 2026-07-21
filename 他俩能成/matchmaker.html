@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>他俩能成 - 牵线玩法</title>
+<script src="lib/tailwind.min.js"></script>
+<script src="lib/lucide.min.js"></script>
+<link rel="stylesheet" href="style.css">
+<style>
+.fade-in-out{animation:fadeInOut 0.45s ease}
+@keyframes fadeInOut{0%{opacity:0;transform:translateY(6px)}100%{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body class="bg-gray-50 text-gray-900 antialiased">
+<div class="bg-decoration"><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div></div>
+<div id="app" class="relative z-[1] min-h-screen"></div>
+
+<!-- 帮助弹窗 -->
+<div id="help-overlay" class="fixed inset-0 bg-black/40 z-[200] hidden items-center justify-center" onclick="hideHelp(event)">
+<div class="bg-white rounded-2xl p-5 mx-auto w-80 shadow-xl max-h-[80vh] overflow-y-auto" onclick="event.stopPropagation()">
+<div class="flex items-center justify-between mb-4"><span class="text-base font-black text-gray-800">玩法说明</span><span class="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center cursor-pointer" onclick="hideHelp()"><i data-lucide="x" class="w-4 h-4 text-gray-500"></i></span></div>
+<div class="space-y-3 text-sm text-gray-600 leading-relaxed">
+<div class="flex items-start gap-3"><div class="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center shrink-0"><i data-lucide="heart" class="w-5 h-5 text-red-500"></i></div><p>若您觉得他俩<b class="text-red-500">能成</b>，请点击这里，您的推荐可能让他们更容易看到彼此</p></div>
+<div class="flex items-start gap-3"><div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center shrink-0"><i data-lucide="heart-crack" class="w-5 h-5 text-gray-600"></i></div><p>若您觉得他俩<b class="text-gray-600">不成</b>，请点击这里，您的操作可能让他们在平台上远离</p></div>
+<div class="flex items-start gap-3"><div class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center shrink-0"><i data-lucide="info" class="w-5 h-5 text-blue-500"></i></div><p>若您的操作与他们的匹配度一致，<b class="text-blue-600">嗑学分</b>会增加，否则会减少。若您锁定一方进行操作，每天仅<b class="text-blue-600">前20次</b>计算嗑学分</p></div>
+</div>
+<div class="mt-4 w-full py-2.5 rounded-xl bg-brand-pink text-white font-bold text-sm card-hover text-center cursor-pointer" onclick="hideHelp()">我知道了</div>
+</div></div>
+
+<!-- 投票结果弹窗 -->
+<div id="vote-popup" class="fixed inset-0 bg-black/40 z-[200] hidden items-center justify-center" onclick="hideVote(event)">
+<div class="bg-white rounded-2xl p-5 mx-auto w-80 shadow-xl text-center" onclick="event.stopPropagation()">
+<div class="text-5xl mb-3" id="vote-emoji"></div>
+<div id="vote-title" class="text-lg font-black text-gray-800"></div>
+<p id="vote-score" class="text-sm text-gray-500 mt-1 mb-2"></p>
+<p id="vote-msg" class="text-xs text-gray-400 mb-4"></p>
+<div class="space-y-2">
+<span onclick="goToFateDetail()" class="block text-center cursor-pointer w-full py-2.5 rounded-xl bg-brand-pink/10 text-brand-pink font-bold text-sm card-hover">查看详情</span>
+<span onclick="refreshPair()" class="block text-center cursor-pointer w-full py-2.5 rounded-xl bg-white border border-brand-pink/30 text-brand-pink font-bold text-sm card-hover">继续牵线</span>
+</div>
+</div></div>
+
+<script src="common.js"></script>
+<script>
+// ====== User Pool ======
+var CONS=['白羊座','金牛座','双子座','巨蟹座','狮子座','处女座','天秤座','天蝎座','射手座','摩羯座','水瓶座','双鱼座'];
+var NM=['清风徐来','阳光骑士','北辰','追风少年','海的彼岸','咖啡不加糖','大熊','星河漫步','枫叶飘零','时光旅人'];
+var NF=['甜心小鹿','奶茶妹妹','浅笑安然','栀子花开','月亮不睡','棉花糖','小兔软糖','咕咚姑娘','雪落无声','薄荷微光'];
+var PM=['images/photo/male/crop.17.0.1224.1632.0.750.1000.jpg','images/photo/male/crop.0.0.1078.1438.0.750.1000.jpg','images/photo/male/crop.194.56.917.1222.0.750.1000.jpg','images/photo/male/crop.0.501.960.1280.0.750.1000.jpg','images/photo/male/crop.0.237.1080.1440.0.750.1000.jpg'];
+var PF=['images/photo/female/crop.0.67.1079.1438.0.750.1000.jpg','images/photo/female/crop.0.61.723.964.0.750.1000.jpg','images/photo/female/crop.384.0.2304.3072.0.750.1000.jpg','images/photo/female/crop.0.0.2267.3023.0.750.1000.jpg','images/photo/female/crop.0.0.4896.6528.0.750.1000.jpg'];
+
+var MALE_INTROS=['一个阳光开朗、热爱生活的大男孩。工作上认真负责，生活中幽默风趣，喜欢运动和旅行，也享受安静读书的时光。希望能遇到一个性格温柔、三观契合的女生，一起看遍四季风景。','热爱运动，喜欢户外探索。周末经常去奥森跑步，希望找到一个能一起早起运动的人~','金融行业，喜欢看书、咖啡和旅行。成熟稳重但也不失幽默感，期待遇见同样热爱生活的你。','95后狮子座，热爱运动和户外。喜欢有活力的生活，希望能找到志同道合的另一半。','温和内敛，喜欢安静的生活。看书、听音乐、做美食是我的日常，希望找到温柔又坚定的你。'];
+var FEMALE_INTROS=['慢热型但遇到同频的人会很快熟悉起来。喜欢咖啡、阅读和旅行，期待遇见同样热爱生活的你。对待感情认真专一，相信缘分和真心。','热爱生活，开朗活泼。周末喜欢逛展览、看演出，希望能和有趣的人一起探索这座城市。','安静温柔，喜欢小动物和花花草草。周末经常泡在图书馆或咖啡馆，希望遇到一个同样温暖的人。','事业型女生，工作充实但也会享受生活。喜欢瑜伽和旅行，对另一半的要求是真诚和上进。','文艺青年，喜欢摄影、写作和民谣。希望能遇到一个懂我、支持我的人，一起把日子过成诗。'];
+
+function r(n){return Math.floor(Math.random()*n)}
+function makeUserPool(n,isMale){
+  var names=isMale?NM:NF,photos=isMale?PM:PF,intros=isMale?MALE_INTROS:FEMALE_INTROS;
+  var pool=[];
+  for(var i=0;i<n;i++){
+    pool.push({
+      name:names[i%10],gender:isMale?'male':'female',
+      age:isMale?23+r(13):22+r(11),cons:CONS[r(12)],
+      marital:(['未婚','未婚','未婚','未婚','离异'])[r(5)],
+      zodiac:['鼠','牛','虎','兔','龙','蛇','马','羊','猴','鸡','狗','猪'][r(12)],
+      blood:['A型','B型','O型','AB型'][r(4)],
+      nation:'汉族',
+      edu:['大学本科','硕士','博士','大专'][r(4)],
+      height:isMale?(170+r(15))+'cm':(158+r(12))+'cm',
+      photo:photos[i%photos.length],
+      verified:Math.random()<0.4,
+      intro:intros[i%intros.length],
+      standard:isMale?'希望找一个温柔善良、有共同话题的她，能一起成长、互相扶持。':'希望找到一个成熟稳重性格温和的男士，无不良嗜好，闲暇也喜欢阅读和运动的伴侣。'
+    });
+  }
+  for(i=n-1;i>0;i--){var j=r(i+1);[pool[i],pool[j]]=[pool[j],pool[i]]}
+  return pool;
+}
+
+// Pools
+var malePool=makeUserPool(10,true),femalePool=makeUserPool(10,false);
+var maleIdx=0,femaleIdx=0;
+var male=malePool[maleIdx],female=femalePool[femaleIdx];
+var lockedMale=false,lockedFemale=false;
+
+// URL params — e.g. matchmaker.html?lock=profile&name=XXX&gender=male
+(function(){
+  var params=new URLSearchParams(window.location.search);
+  if(params.get('lock')==='profile'){
+    var pName=params.get('name')||'',pGender=params.get('gender')||'';
+    if(pGender==='male'){
+      lockedMale=true;
+      // Find or inject the profile user into male pool
+      var pm=makeUserPool(1,true)[0];malePool=[pm];maleIdx=0;male=malePool[maleIdx];male.name=pName;
+    }else{
+      lockedFemale=true;
+      var pf=makeUserPool(1,false)[0];femalePool=[pf];femaleIdx=0;female=femalePool[femaleIdx];female.name=pf.name;
+    }
+  }
+})();
+
+var matchScore=Math.floor(200+Math.random()*1200);
+var hasHeart=(Math.random()<0.3);
+var hasFollow=(Math.random()<0.4);
+var hasDislike=(Math.random()<0.2);
+if(hasDislike){hasHeart=false;hasFollow=false;matchScore=-Math.floor(100+Math.random()*2000);}
+else if(hasHeart){matchScore=Math.floor(500+Math.random()*4000);hasFollow=true;}
+else if(hasFollow){matchScore=Math.floor(100+Math.random()*500);}
+
+// ====== Helpers ======
+function el(id){return document.getElementById(id)}
+function hideHelp(e){window.Common.closePopup(e,'help-overlay')}
+function showHelp(){window.Common.showPopup('help-overlay')}
+
+// ====== Card builder ======
+function userCard(u,clickable){
+  var gb=u.gender==='male'?'<span class="text-xs px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-500 font-medium inline-flex items-center gap-0.5"><i data-lucide="mars" class="w-2.5 h-2.5"></i>男</span>':'<span class="text-xs px-1.5 py-0.5 rounded-full bg-pink-50 text-brand-pink font-medium inline-flex items-center gap-0.5"><i data-lucide="venus" class="w-2.5 h-2.5"></i>女</span>';
+  var ver=u.verified?'<span class="absolute top-2 right-2 z-10 text-[9px] px-1.5 py-0.5 rounded-full bg-gradient-to-r from-brand-pink to-brand-orange text-white font-medium">已实名</span>':'';
+  var clickAttr=clickable?' onclick="window.location.href=\'profile.html\'"':'';
+  return'<div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 flex flex-col card-hover cursor-pointer"'+clickAttr+'><div class="relative"><img src="'+u.photo+'" class="w-full object-cover" style="aspect-ratio:3/4"/>'+ver+'</div><div class="p-3"><div class="flex items-center gap-1.5 mb-1"><span class="text-base font-black text-gray-800 truncate">'+u.name+'</span>'+gb+'</div><div class="text-xs text-gray-500 mb-1">'+u.age+'岁 · '+u.cons+' · '+u.marital+'</div><div class="text-xs text-gray-500 mb-1">属'+u.zodiac+' · '+u.blood+' · '+u.nation+'</div><div class="text-xs text-gray-500 mb-3">'+u.edu+' · '+u.height+'</div><div class="text-xs text-gray-600 leading-relaxed mb-2"><span class="text-gray-400 font-bold">自我介绍：</span>'+u.intro+'</div><div class="text-xs text-gray-600 leading-relaxed"><span class="text-gray-400 font-bold">择偶标准：</span>'+u.standard+'</div></div></div>';
+}
+
+// ====== Vote logic ======
+var lastVote=null;
+
+function getVoteResult(type){
+  var scoreDelta=0, msg='';
+
+  // 1. Never matched
+  if(!hasHeart&&!hasFollow&&!hasDislike&&matchScore<200&&matchScore>-200){
+    if(type==='yes'){scoreDelta=1;msg='他俩的缘分从你开始';}
+    else{scoreDelta=1;msg='他俩缘聚缘散，在你一念之间';}
+  }
+  // 2. Mutual heart
+  else if(hasHeart){
+    if(type==='yes'){
+      scoreDelta=matchScore>=1000?50:20;msg='他俩互有心动，你锦上添花了';
+    }else{
+      scoreDelta=matchScore>=1000?-300:-100;msg='他俩互有心动，你棒打鸳鸯了';
+    }
+  }
+  // 3. Mutual follow
+  else if(hasFollow){
+    if(type==='yes'){
+      scoreDelta=matchScore>=200?20:10;msg='他俩互有关注，你成功助力';
+    }else{
+      scoreDelta=matchScore>=200?-50:-20;msg='他俩互有关注，差点被你拆散';
+    }
+  }
+  // 4. Mutual dislike
+  else if(hasDislike){
+    if(type==='yes'){
+      scoreDelta=matchScore<=-1000?-50:-20;msg='他俩互相无感，你乱点鸳鸯谱了';
+    }else{
+      scoreDelta=matchScore<=-1000?10:5;msg='你看人挺准，他俩互相无感';
+    }
+  }
+  // 5. Other
+  else{
+    var pct=r(30)+5;
+    if(type==='yes'){
+      if(matchScore>=0){scoreDelta=1;msg=pct+'%的牵线用户和你看法一致';}
+      else{scoreDelta=-1;msg=pct+'%的牵线用户和你看法相反';}
+    }else{
+      if(matchScore>=0){scoreDelta=-1;msg=pct+'%的牵线用户和你看法相反';}
+      else{scoreDelta=1;msg=pct+'%的牵线用户和你看法一致';}
+    }
+  }
+
+  return {scoreDelta:scoreDelta, msg:msg};
+}
+
+function vote(type){
+  var result=getVoteResult(type);
+  lastVote={type:type, scoreDelta:result.scoreDelta, msg:result.msg, male:male, female:female, matchScore:matchScore};
+  var emoji=type==='yes'?'❤️':'💔';
+  var title=type==='yes'?'你觉得他俩能成！':'你觉得他俩不成！';
+  var scoreSign=result.scoreDelta>=0?'+':'';
+  el('vote-emoji').innerHTML=emoji;
+  el('vote-title').innerHTML=title;
+  el('vote-score').innerHTML='嗑学分 <b class="text-brand-pink">'+scoreSign+result.scoreDelta+'</b>';
+  el('vote-msg').innerHTML=result.msg;
+  window.Common.showPopup('vote-popup');
+}
+
+function hideVote(e){window.Common.closePopup(e,'vote-popup')}
+
+function goToFateDetail(){
+  window.Common.hidePopup('vote-popup');
+  if(!lastVote)return;
+  // Store data for fate-detail page
+  var data={
+    male:lastVote.male,female:lastVote.female,
+    matchScore:lastVote.matchScore,type:lastVote.type,
+    hasHeart:hasHeart,hasFollow:hasFollow,hasDislike:hasDislike
+  };
+  sessionStorage.setItem('fateData',JSON.stringify(data));
+  window.location.href='fate-detail.html';
+}
+
+function refreshPair(){
+  window.Common.hidePopup('vote-popup');
+  // Advance indices; if locked, keep that one
+  if(!lockedMale)maleIdx=(maleIdx+1)%malePool.length;
+  if(!lockedFemale)femaleIdx=(femaleIdx+1)%femalePool.length;
+  male=malePool[maleIdx];female=femalePool[femaleIdx];
+  // Regenerate state
+  hasHeart=(Math.random()<0.3);hasFollow=(Math.random()<0.4);hasDislike=(Math.random()<0.2);
+  if(hasDislike){hasHeart=false;hasFollow=false;matchScore=-Math.floor(100+Math.random()*2000);}
+  else if(hasHeart){matchScore=Math.floor(500+Math.random()*4000);hasFollow=true;}
+  else if(hasFollow){matchScore=Math.floor(100+Math.random()*500);}
+  else{matchScore=Math.floor(200+Math.random()*1200);}
+  renderCard();
+}
+
+// ====== Render ======
+function renderCard(){
+  el('app').innerHTML=
+    '<div class="pt-3 pb-2 px-4 flex items-center justify-between"><h1 class="text-sm font-bold text-gray-400">💕 推荐CP</h1><div class="flex gap-2"><span class="w-8 h-8 rounded-full bg-white shadow-sm border border-gray-100 flex items-center justify-center cursor-pointer" onclick="showHelp()"><i data-lucide="help-circle" class="w-4 h-4 text-gray-500"></i></span><span class="w-8 h-8 rounded-full bg-white shadow-sm border border-gray-100 flex items-center justify-center cursor-pointer" onclick="window.location.href=\'ranking.html\'"><i data-lucide="trophy" class="w-4 h-4 text-gray-500"></i></span><span class="w-8 h-8 rounded-full bg-white shadow-sm border border-gray-100 flex items-center justify-center cursor-pointer" onclick="window.location.href=\x27user-list.html\x27"><i data-lucide="search" class="w-4 h-4 text-gray-500"></i></span></div></div>'+
+    '<div class="px-4 pb-28 fade-in-out"><div class="grid grid-cols-2 gap-1.5 mb-3">'+userCard(male,true)+userCard(female,true)+'</div><div class="grid grid-cols-2 gap-1.5 mb-4"><span id="lock-male" class="py-2.5 rounded-xl bg-white border border-gray-200 text-gray-400 font-bold text-sm card-hover cursor-pointer text-center flex items-center justify-center gap-1.5" onclick="toggleLock(\'male\')"><i data-lucide="lock" class="w-4 h-4"></i>帮TA选</span><span id="lock-female" class="py-2.5 rounded-xl bg-white border border-gray-200 text-gray-400 font-bold text-sm card-hover cursor-pointer text-center flex items-center justify-center gap-1.5" onclick="toggleLock(\'female\')"><i data-lucide="lock" class="w-4 h-4"></i>帮TA选</span></div></div>'+
+    '<div class="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-gray-100 px-6 py-3"><div class="flex gap-3"><span class="flex-1 py-3.5 rounded-2xl bg-gray-100 text-gray-600 font-bold text-base card-hover flex items-center justify-center gap-2 shadow-sm" onclick="vote(\'no\')"><i data-lucide="heart-crack" class="w-5 h-5"></i>我觉得不成</span><span class="flex-1 py-3.5 rounded-2xl bg-red-50 text-red-500 font-bold text-base card-hover flex items-center justify-center gap-2 shadow-sm" onclick="vote(\'yes\')"><img src="images/logo.png" class="w-5 h-5 object-contain" onerror="this.style.display=\'none\'"/>我觉得能成</span></div></div>';
+  // Restore lock state
+  if(lockedMale)updateLockBtn('male');if(lockedFemale)updateLockBtn('female');
+  window.Common.initIcons();
+}
+
+function toggleLock(side){
+  var isLocked=(side==='male')?lockedMale:lockedFemale;
+  if(isLocked){if(side==='male')lockedMale=false;else lockedFemale=false;}
+  else{if(side==='male'){lockedMale=true;lockedFemale=false;}else{lockedFemale=true;lockedMale=false;}}
+  updateLockBtn('male');updateLockBtn('female');window.Common.initIcons();
+}
+function updateLockBtn(side){
+  var e=el('lock-'+side);var isLocked=(side==='male')?lockedMale:lockedFemale;
+  if(!e)return;
+  if(isLocked){
+    e.className='py-2.5 rounded-xl bg-brand-pink/10 border-2 border-brand-pink text-brand-pink font-bold text-sm card-hover cursor-pointer text-center flex items-center justify-center gap-1.5';
+    e.innerHTML='<i data-lucide="lock" class="w-4 h-4"></i>帮TA选（已锁定）';
+  }else{
+    e.className='py-2.5 rounded-xl bg-white border border-gray-200 text-gray-400 font-bold text-sm card-hover cursor-pointer text-center flex items-center justify-center gap-1.5';
+    e.innerHTML='<i data-lucide="lock" class="w-4 h-4"></i>帮TA选';
+  }
+}
+
+document.addEventListener('DOMContentLoaded',function(){renderCard()});
+</script>
+</body>
+</html>

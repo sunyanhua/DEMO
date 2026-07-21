@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>我的优惠券 - 1039发现</title>
+<script src="lib/tailwind.min.js"></script><script src="lib/lucide.min.js"></script><link rel="stylesheet" href="style.css">
+</head>
+<body class="antialiased">
+<div class="bg-decoration"><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div></div>
+<div id="app" class="relative z-[1]"></div>
+<script src="common.js"></script>
+<script>
+var ctab = 'all';
+var COUPONS = [
+    { desc:'满100减10', name:'新用户专享券', type:'新用户专享', amount:10, minPrice:100, status:'unused', expiry:'2026-12-31' },
+    { desc:'满200减20', name:'1039周年庆券', type:'周年庆专用', amount:20, minPrice:200, status:'unused', expiry:'2026-09-30' },
+    { desc:'满150减15', name:'夏日特惠券',   type:'活动专用', amount:15, minPrice:150, status:'used',   expiry:'2026-08-15' },
+    { desc:'满600减80', name:'大运河专属券', type:'大运河音乐节专用', amount:80, minPrice:600, status:'unused', expiry:'2026-10-31' },
+    { desc:'满50减5',   name:'全场通用券',   type:'全场通用', amount:5,  minPrice:50,  status:'used',   expiry:'2026-07-01' },
+    { desc:'无门槛减3',  name:'新用户立减券', type:'新用户专享', amount:3,  minPrice:0,   status:'expired',expiry:'2026-06-30' },
+];
+function render() {
+    var filtered = ctab === 'all' ? COUPONS : COUPONS.filter(function(c){return c.status===ctab;});
+    var tabs = [{key:'all',label:'全部'},{key:'unused',label:'待使用'},{key:'used',label:'已使用'},{key:'expired',label:'已过期'}];
+    var tabHtml = tabs.map(function(t){ return '<span class="text-xs px-3 py-1.5 rounded-full cursor-pointer card-hover whitespace-nowrap '+(ctab===t.key?'bg-brand-gold text-white font-bold':'bg-gray-100 text-gray-500')+'" onclick="switchTab(\''+t.key+'\')">'+t.label+'</span>'; }).join('');
+
+    var statusMap = {unused:{label:'可使用',cls:'text-green-500'},used:{label:'已使用',cls:'text-gray-400'},expired:{label:'已过期',cls:'text-gray-300'}};
+
+    var listHtml = filtered.map(function(c){
+        var st = statusMap[c.status];
+        var isGrey = c.status !== 'unused';
+        return '\
+        <div class="bg-white rounded-xl p-3 shadow-sm border border-gray-100 mb-2 '+(isGrey?'opacity-50':'')+'">\
+            <div class="flex items-center gap-3">\
+                <div class="w-12 h-12 rounded-lg bg-red-50 flex items-center justify-center flex-shrink-0"><i data-lucide="ticket" class="w-6 h-6 text-red-400"></i></div>\
+                <div class="flex-1 min-w-0">\
+                    <div class="flex items-center justify-between"><span class="text-sm font-bold text-gray-800">'+c.desc+'</span><span class="text-xs '+st.cls+' font-medium">'+st.label+'</span></div>\
+                    <p class="text-xs text-gray-400 mt-0.5">'+c.type+'</p>\
+                    <p class="text-xs text-gray-400 mt-0.5">有效期至 '+c.expiry+'</p>\
+                </div>\
+            </div>\
+        </div>';
+    }).join('');
+
+    document.getElementById('app').innerHTML = '\
+        <div class="top-section"><div class="px-4 pt-3 pb-2"><img src="logo.png" alt="1039发现" style="height:28px;"/></div></div>\
+        <div class="content-card">\
+            <div class="px-4 py-4 border-b border-gray-100 flex items-center gap-2">\
+                <i data-lucide="ticket" class="w-5 h-5 text-brand-gold"></i>\
+                <span class="text-base font-black text-gray-800">我的优惠券</span></div>\
+            <div class="px-4 pt-3 pb-2 flex gap-2 overflow-x-auto no-scrollbar">'+tabHtml+'</div>\
+            <div class="px-4 pb-3">'+(listHtml||'<p class="text-center text-xs text-gray-400 py-8">暂无优惠券</p>')+'</div>\
+        </div>\
+        <div class="pb-6"></div>';
+    Common.initIcons();
+}
+function switchTab(t) { ctab = t; render(); }
+document.addEventListener('DOMContentLoaded', render);
+</script>
+</body>
+</html>

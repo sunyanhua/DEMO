@@ -1,0 +1,21 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/><title>我的钱包 - 他俩能成</title><script src="lib/tailwind.min.js"></script><script src="lib/lucide.min.js"></script><link rel="stylesheet" href="style.css"></head><body class="bg-white text-gray-900 antialiased pb-2">
+<div class="bg-decoration"><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div></div><div id="app" class="relative z-[1]"></div>
+<script src="common.js"></script><script>
+var balance=3.50;
+var records=[
+  {title:'广播节目抽奖中奖',amount:'+0.50',time:'7月18日 10:25'},{title:'广播节目抽奖中奖',amount:'+0.20',time:'7月15日 14:30'},{title:'提现到微信',amount:'-2.00',time:'7月10日 09:00'},{title:'广播节目抽奖中奖',amount:'+0.50',time:'7月8日 11:20'},{title:'提现到微信',amount:'-1.00',time:'7月1日 15:00'},{title:'活动签到红包',amount:'+0.30',time:'6月25日 08:00'},
+];
+function render(){
+  var rows=records.map(function(r){var c=r.amount.indexOf('+')===0?'text-green-500':'text-red-500';return'<div class="flex items-center justify-between px-4 py-3 border-b border-gray-50"><div><div class="text-sm font-medium text-gray-800">'+r.title+'</div><div class="text-xs text-gray-400">'+r.time+'</div></div><span class="text-sm font-black '+c+'">'+r.amount+'</span></div>'}).join('');
+  document.getElementById('app').innerHTML=
+    '<div class="sticky top-0 z-40 bg-white/95 backdrop-blur-md px-4 py-2.5 shadow-sm flex items-center"><i data-lucide="wallet" class="w-3.5 h-3.5 text-green-600 mr-2"></i><h1 class="text-sm font-bold text-gray-900">我的钱包</h1></div>'+
+    '<div class="px-4 pt-3 pb-6">'+
+      '<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-3 deco-card flex flex-col items-center"><i data-lucide="wallet" class="w-10 h-10 text-brand-pink mb-2"></i><div class="text-4xl font-black text-brand-pink">¥ '+balance.toFixed(2)+'</div><div class="text-xs text-gray-400 mt-1">钱包余额</div></div>'+
+      '<div class="mb-3"><span class="block text-center w-full py-3 rounded-2xl bg-gradient-to-tr from-brand-pink to-brand-orange text-white font-bold text-base shadow-lg shadow-brand-pink/20 card-hover cursor-pointer" onclick="window.Common.showToast(\x27提现申请已提交\x27)">提现</span></div>'+
+      '<div class="bg-blue-50 rounded-xl p-3 mb-3 text-xs text-blue-700 leading-relaxed"><i data-lucide="info" class="w-3.5 h-3.5 inline mr-1"></i>余额来源为平台互动抽奖，满<b>1.00元</b>可提现至微信钱包。</div>'+
+      '<div class="bg-white rounded-2xl shadow-sm border border-gray-100"><div class="px-4 py-2.5 border-b border-gray-100"><span class="text-xs text-gray-400 font-bold">交易记录</span></div>'+rows+'</div>'+
+    '</div>';
+  window.Common.initIcons();
+}
+document.addEventListener('DOMContentLoaded',function(){render()});
+</script></body></html>

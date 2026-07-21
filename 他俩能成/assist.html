@@ -1,0 +1,85 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/><title>神助攻 - 他俩能成</title><script src="lib/tailwind.min.js"></script><script src="lib/lucide.min.js"></script><link rel="stylesheet" href="style.css"></head><body class="bg-white text-gray-900 antialiased">
+<div class="bg-decoration"><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div></div><div id="app" class="relative z-[1]"></div>
+<script src="common.js"></script><script>
+var PHOTOS_M=['images/photo/male/crop.17.0.1224.1632.0.750.1000.jpg','images/photo/male/crop.0.0.1078.1438.0.750.1000.jpg','images/photo/male/crop.194.56.917.1222.0.750.1000.jpg','images/photo/male/crop.0.237.1080.1440.0.750.1000.jpg','images/photo/male/crop.0.501.960.1280.0.750.1000.jpg'];
+var PHOTOS_F=['images/photo/female/crop.0.67.1079.1438.0.750.1000.jpg','images/photo/female/crop.0.61.723.964.0.750.1000.jpg','images/photo/female/crop.384.0.2304.3072.0.750.1000.jpg','images/photo/female/crop.0.0.2267.3023.0.750.1000.jpg','images/photo/female/crop.0.0.4896.6528.0.750.1000.jpg'];
+var NM=['阳光骑士','清风徐来','北辰','追风少年','咖啡不加糖','海的彼岸','星河漫步','枫叶飘零'];
+var NF=['甜心小鹿','浅笑安然','栀子花开','棉花糖','薄荷微光','雪落无声','小兔软糖','咕咚姑娘'];
+
+var allPairs=[];
+for(var i=0;i<15;i++){
+  allPairs.push({
+    id:'p'+i,maleName:NM[i%8],malePhoto:PHOTOS_M[i%5],maleId:'100000'+(10+i),
+    femaleName:NF[(i+2)%8],femalePhoto:PHOTOS_F[i%5],femaleId:'100000'+(30+i),
+    match:1200+Math.floor(Math.random()*115),
+  });
+}
+
+var filteredPairs=allPairs.slice();
+var keyword='';
+
+function applySearch(){
+  var kw=document.getElementById('search-input').value.trim().toLowerCase();
+  if(!kw){filteredPairs=allPairs.slice();}
+  else{filteredPairs=allPairs.filter(function(p){return p.maleId.indexOf(kw)>=0||p.femaleId.indexOf(kw)>=0});}
+  render();
+}
+
+function render(){
+  var rows=filteredPairs.map(function(p){
+    return'<div class="border-b border-gray-200 cursor-pointer card-hover" onclick="window.location.href=\x27fate-detail.html\x27">'+
+      '<div class="flex items-start justify-between px-4 py-4">'+
+        '<div class="flex flex-col items-center gap-0.5" style="width:70px">'+
+          '<img src="'+p.malePhoto+'" class="w-14 h-14 rounded-full object-cover border-2 border-blue-100"/>'+
+          '<span class="text-sm font-bold text-gray-800 truncate max-w-full">'+p.maleName+'</span>'+
+          '<span class="text-xs text-gray-400">'+p.maleId+'</span>'+
+        '</div>'+
+        '<div class="flex-1 flex flex-col items-center justify-center gap-0.5 pt-3">'+
+          '<span class="text-2xl font-black text-brand-pink">'+p.match+'</span>'+
+          '<span class="text-xs text-gray-400">匹配度</span>'+
+        '</div>'+
+        '<div class="flex flex-col items-center gap-0.5" style="width:70px">'+
+          '<img src="'+p.femalePhoto+'" class="w-14 h-14 rounded-full object-cover border-2 border-pink-100"/>'+
+          '<span class="text-sm font-bold text-gray-800 truncate max-w-full">'+p.femaleName+'</span>'+
+          '<span class="text-xs text-gray-400">'+p.femaleId+'</span>'+
+        '</div>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+
+  document.getElementById('app').innerHTML=
+    '<div class="top-section"><div class="px-4 pt-3 pb-2"><h1 class="text-lg font-black text-gray-800 flex items-center justify-between"><span class="flex items-center gap-1.5"><i data-lucide="zap" class="w-5 h-5 text-brand-pink"></i>神助攻</span><span class="px-4 py-1.5 rounded-full bg-white border-2 border-brand-pink/30 text-brand-pink text-xs font-bold card-hover cursor-pointer shadow-sm" onclick="window.location.href=\x27my-assist.html\x27">我的</span></h1></div></div>'+
+    '<div id="search-sentinel" class="rounded-top"></div>'+
+    '<div class="content-section">'+
+      '<div id="search-bar" class="sticky top-0 z-30 px-4 pt-3 pb-2">'+
+        '<div class="flex items-center gap-3">'+
+          '<div class="flex-1 flex items-center bg-gray-50 rounded-xl px-4 py-3 border border-gray-200">'+
+            '<i data-lucide="search" class="w-5 h-5 text-gray-400 mr-3 flex-shrink-0"></i>'+
+            '<input id="search-input" onkeydown="if(event.key===\x27Enter\x27)applySearch()" placeholder="请输入任意一方的能成ID" class="flex-1 bg-transparent text-sm text-gray-800 placeholder-gray-400 focus:outline-none"/>'+
+          '</div>'+
+          '<span class="w-10 h-10 rounded-xl bg-brand-pink text-white flex items-center justify-center cursor-pointer card-hover" onclick="applySearch()"><i data-lucide="search" class="w-5 h-5"></i></span>'+
+        '</div>'+
+      '</div>'+
+      '<div class="px-4 pt-2 pb-6">'+
+        '<div class="text-xs text-gray-400 mb-2">求助攻名单</div>'+
+        '<div class="bg-white rounded-2xl shadow-sm border border-gray-100">'+(rows||'<div class="text-center text-gray-400 py-8 text-sm">没有符合条件的结果</div>')+'</div>'+
+      '</div>'+
+    '</div>';
+  window.Common.initIcons();
+}
+
+function initSearchSticky(){
+  var bar=document.getElementById('search-bar');
+  var sentinel=document.getElementById('search-sentinel');
+  if(!bar||!sentinel)return;
+  var observer=new IntersectionObserver(function(e){
+    if(e[0].isIntersecting){bar.classList.remove('bg-white','shadow-sm');}
+    else{bar.classList.add('bg-white','shadow-sm');}
+  },{threshold:0});
+  observer.observe(sentinel);
+}
+var _origRender=render;
+render=function(){_origRender();setTimeout(initSearchSticky,50);};
+document.addEventListener('DOMContentLoaded',function(){render()});
+</script>
+</body></html>

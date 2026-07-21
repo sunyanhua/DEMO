@@ -1,0 +1,85 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/><title>我的亲友团 - 他俩能成</title><script src="lib/tailwind.min.js"></script><script src="lib/lucide.min.js"></script><link rel="stylesheet" href="style.css"></head><body class="bg-white text-gray-900 antialiased pb-2">
+<div class="bg-decoration"><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div></div><div id="app" class="relative z-[1]"></div>
+<script src="common.js"></script><script>
+var CONS=['白羊座','金牛座','双子座','巨蟹座','狮子座','处女座','天秤座','天蝎座','射手座','摩羯座','水瓶座','双鱼座'];
+var PHOTOS_M=['images/photo/male/crop.17.0.1224.1632.0.750.1000.jpg','images/photo/male/crop.0.0.1078.1438.0.750.1000.jpg','images/photo/male/crop.194.56.917.1222.0.750.1000.jpg','images/photo/male/crop.0.237.1080.1440.0.750.1000.jpg','images/photo/male/crop.0.501.960.1280.0.750.1000.jpg'];
+var PHOTOS_F=['images/photo/female/crop.0.67.1079.1438.0.750.1000.jpg','images/photo/female/crop.0.61.723.964.0.750.1000.jpg','images/photo/female/crop.384.0.2304.3072.0.750.1000.jpg','images/photo/female/crop.0.0.2267.3023.0.750.1000.jpg','images/photo/female/crop.0.0.4896.6528.0.750.1000.jpg'];
+
+var NM=['阳光骑士','清风徐来','北辰','追风少年','咖啡不加糖','海的彼岸','星河漫步'];
+var NF=['甜心小鹿','浅笑安然','栀子花开','棉花糖','薄荷微光','雪落无声','小兔软糖'];
+
+// 我的亲友团
+var myFamily=[];
+for(var i=0;i<6;i++){
+  var male=Math.random()>0.5;
+  myFamily.push({
+    name:male?NM[i%7]:NF[i%7],photo:male?PHOTOS_M[i%5]:PHOTOS_F[i%5],
+    score:1000+Math.floor(Math.random()*29000),recCount:Math.floor(Math.random()*5)+1,
+  });
+}
+
+// 亲友团推荐
+var recommendList=[];
+for(var i=0;i<5;i++){
+  var male=Math.random()>0.5;
+  var recBy=Math.random()>0.5?(NM[(i+3)%7]):(NF[(i+3)%7]);
+  recommendList.push({
+    name:male?NM[i%7]:NF[i%7],gender:male?'male':'female',age:male?23+Math.floor(Math.random()*13):22+Math.floor(Math.random()*11),
+    cons:CONS[Math.floor(Math.random()*12)],photo:male?PHOTOS_M[i%5]:PHOTOS_F[i%5],
+    recBy:recBy,recTime:'7月'+(5+Math.floor(Math.random()*25))+'日',
+  });
+}
+
+var activeTab='my';
+
+function gb(g){return g==='male'?'<span class="text-[10px] px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-500 font-medium inline-flex items-center gap-0.5"><i data-lucide="mars" class="w-2.5 h-2.5"></i>男</span>':'<span class="text-[10px] px-1.5 py-0.5 rounded-full bg-pink-50 text-brand-pink font-medium inline-flex items-center gap-0.5"><i data-lucide="venus" class="w-2.5 h-2.5"></i>女</span>'}
+
+function render(){
+  var filterBar='<div class="flex gap-2 pt-1 pb-2 px-0">'+
+    '<span onclick="activeTab=\x27my\x27;render()" class="px-3 py-1.5 text-xs rounded-full font-medium transition-all '+(activeTab==='my'?'bg-brand-pink text-white':'bg-gray-100 text-gray-500')+' cursor-pointer">我的亲友团</span>'+
+    '<span onclick="activeTab=\x27rec\x27;render()" class="px-3 py-1.5 text-xs rounded-full font-medium transition-all '+(activeTab==='rec'?'bg-brand-pink text-white':'bg-gray-100 text-gray-500')+' cursor-pointer">亲友团推荐</span>'+
+  '</div>';
+
+  var rows='';
+  if(activeTab==='my'){
+    rows=myFamily.map(function(f){
+      return'<div class="flex items-center gap-3 px-4 py-4 border-b border-gray-50">'+
+        '<img src="'+f.photo+'" class="w-12 h-12 rounded-full object-cover border border-gray-100 flex-shrink-0"/>'+
+        '<div class="flex-1 min-w-0">'+
+          '<div class="text-sm font-bold text-gray-800">'+f.name+'</div>'+
+          '<div class="text-[11px] text-brand-pink mt-0.5">📋 嗑学分 '+f.score.toLocaleString()+'</div>'+
+        '</div>'+
+        '<div class="text-right flex-shrink-0"><span class="text-[11px] text-gray-500">为你推荐了 <b class="text-lg font-black text-brand-pink">'+f.recCount+'</b> 人</span></div>'+
+      '</div>';
+    }).join('');
+  }else{
+    rows=recommendList.map(function(r){
+      return'<div class="border-b border-gray-50">'+
+        '<div class="flex items-center gap-3 px-4 py-4">'+
+          '<img src="'+r.photo+'" class="w-12 h-12 rounded-full object-cover border border-gray-100 flex-shrink-0"/>'+
+          '<div class="flex-1 min-w-0">'+
+            '<div class="flex items-center gap-1.5"><span class="text-sm font-bold text-gray-800 truncate max-w-[80px]">'+r.name+'</span>'+gb(r.gender)+'</div>'+
+            '<div class="flex items-center gap-2 text-[11px] text-gray-400 mt-0.5"><span>'+r.age+'岁</span><span>'+r.cons+'</span></div>'+
+          '</div>'+
+          '<span class="px-3 py-1.5 rounded-full bg-brand-pink/10 text-brand-pink text-xs font-bold card-hover cursor-pointer inline-block text-center flex-shrink-0" onclick="window.location.href=\x27profile.html\x27">去查看</span>'+
+        '</div>'+
+        '<div class="flex items-center gap-2 rounded-lg px-3 py-2 mx-4 mb-3" style="background:rgba(224,77,44,0.12);">'+
+          '<span class="text-[11px] text-gray-500">亲友</span>'+
+          '<span class="text-[11px] font-bold text-gray-700">'+r.recBy+'</span>'+
+          '<span class="text-[11px] text-gray-500">于'+r.recTime+'向你推荐了TA</span>'+
+        '</div>'+
+      '</div>';
+    }).join('');
+  }
+
+  document.getElementById('app').innerHTML=
+    '<div class="sticky top-0 z-40 bg-white/95 backdrop-blur-md px-4 py-2.5 shadow-sm flex items-center"><i data-lucide="users" class="w-3.5 h-3.5 text-brand-pink mr-2"></i><h1 class="text-sm font-bold text-gray-900">我的亲友团</h1></div>'+
+    '<div class="px-4 pt-3 pb-6">'+
+      filterBar+
+      '<div class="bg-white rounded-2xl shadow-sm border border-gray-100">'+rows+'</div>'+
+    '</div>';
+  window.Common.initIcons();
+}
+document.addEventListener('DOMContentLoaded',function(){render()});
+</script>
+</body></html>

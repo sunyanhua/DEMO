@@ -1,0 +1,74 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/><title>注册 - 他俩能成</title><script src="lib/tailwind.min.js"></script><script src="lib/lucide.min.js"></script><link rel="stylesheet" href="style.css"></head><body class="bg-white text-gray-900 antialiased pb-2">
+<div class="bg-decoration"><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div></div><div id="app" class="relative z-[1]"></div>
+<script src="common.js"></script><script>
+var DISTRICTS=[];
+var registered=false;
+
+function render(){
+  
+  document.getElementById('app').innerHTML=
+    '<div class="top-section"><div class="px-4 pt-3 pb-2"><h1 class="text-lg font-black text-gray-800 flex items-center gap-1.5"><i data-lucide="user-plus" class="w-5 h-5 text-brand-pink"></i>注册</h1></div></div>'+
+    '<div class="rounded-top"></div>'+
+    '<div class="content-section px-4 pt-3 pb-6">'+
+
+      '<div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 mb-4">'+
+        '<div class="flex items-center justify-between">'+
+          '<div class="flex items-center gap-3">'+
+            '<div class="relative">'+
+              '<img id="avatar-preview" src="images/photo/female/crop.0.67.1079.1438.0.750.1000.jpg" class="w-16 h-16 rounded-full border-2 border-gray-200 object-cover bg-gray-100">'+
+              '<span onclick="changeAvatar()" class="absolute bottom-0 right-0 bg-brand-pink text-white w-6 h-6 rounded-full flex items-center justify-center text-xs cursor-pointer"><i data-lucide="camera" class="w-3 h-3"></i></span>'+
+            '</div>'+
+            '<div><h2 class="font-bold text-gray-900">头像</h2><p class="text-xs text-gray-400">点击更换头像</p></div>'+
+          '</div>'+
+          '<span onclick="changeAvatar()" class="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-full text-sm font-medium cursor-pointer card-hover">更换</span>'+
+        '</div>'+
+        '<input type="file" id="avatar-input" accept="image/*" class="hidden" onchange="handleAvatar(event)">'+
+      '</div>'+
+
+      '<div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 space-y-4">'+
+        '<div class="bg-amber-50 rounded-xl p-3 flex items-start gap-2">'+
+          '<i data-lucide="alert-triangle" class="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5"></i>'+
+          '<p class="text-xs text-amber-700 leading-relaxed">以下信息注册后<b>不能修改</b>，请准确填写。</p>'+
+        '</div>'+
+        '<div class="space-y-2"><label class="text-sm font-medium text-gray-700">昵称 <span class="text-brand-pink">*</span></label><input type="text" id="nickname" value="甜心小鹿" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:border-brand-pink"></div>'+
+        '<div class="space-y-2"><label class="text-sm font-medium text-gray-700">手机号 <span class="text-brand-pink">*</span></label><input type="tel" id="phone" value="13651260211" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:border-brand-pink"></div>'+
+        '<div class="space-y-2"><label class="text-sm font-medium text-gray-700">性别 <span class="text-brand-pink">*</span></label><div class="flex gap-4"><label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="gender" value="female" checked class="w-4 h-4 accent-brand-pink"> <span class="text-gray-700">女</span></label><label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="gender" value="male" class="w-4 h-4 accent-brand-pink"> <span class="text-gray-700">男</span></label></div></div>'+
+        '<div class="space-y-2"><label class="text-sm font-medium text-gray-700">出生日期 <span class="text-brand-pink">*</span></label><input type="date" id="birth" value="2000-06-15" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:border-brand-pink"></div>'+
+      '</div>'+
+
+      '<div class="mt-6">'+
+        (registered?
+          '<div class="w-full py-3.5 bg-gray-200 text-gray-400 font-bold text-lg rounded-xl text-center"><i data-lucide="check" class="w-4 h-4 inline mr-1"></i>注册成功</div>':
+          '<span onclick="doRegister()" class="block text-center w-full py-3.5 bg-gradient-to-tr from-brand-pink to-brand-orange text-white font-bold text-lg rounded-xl shadow-lg shadow-brand-pink/20 card-hover cursor-pointer">注册</span>'
+        )+
+        '<span onclick="window.history.back()" class="block text-center w-full py-3 rounded-xl bg-gray-100 text-gray-500 font-bold text-sm mt-3 cursor-pointer card-hover">返回</span>'+
+      '</div>'+
+    '</div>';
+  window.Common.initIcons();
+}
+
+function changeAvatar(){document.getElementById('avatar-input').click()}
+function handleAvatar(e){
+  var file=e.target.files[0];if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(ev){document.getElementById('avatar-preview').src=ev.target.result};
+  reader.readAsDataURL(file);
+}
+function doRegister(){
+  var n=document.getElementById('nickname').value.trim();
+  var p=document.getElementById('phone').value.trim();
+  var g=document.querySelector('input[name="gender"]:checked');
+  var b=document.getElementById('birth').value;
+  if(!n){window.Common.showToast('请填写昵称');return}
+  if(!p){window.Common.showToast('请填写手机号');return}
+  if(!/^1\d{10}$/.test(p)){window.Common.showToast('请输入正确的手机号');return}
+  if(!g){window.Common.showToast('请选择性别');return}
+  if(!b){window.Common.showToast('请选择出生日期');return}
+  registered=true;
+  window.Common.showToast('注册成功！即将返回个人中心');
+  render();
+  setTimeout(function(){window.location.href='me.html'},1200);
+}
+document.addEventListener('DOMContentLoaded',function(){render()});
+</script>
+</body></html>

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>他俩能成 - 缘分详情</title>
+<script src="lib/tailwind.min.js"></script>
+<script src="lib/lucide.min.js"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-white text-gray-900 antialiased">
+<div class="bg-decoration"><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div></div>
+
+<div id="app" class="relative z-[1] pb-20"></div>
+
+<!-- 神助攻确认弹窗 -->
+<div id="assist-confirm-overlay" class="fixed inset-0 bg-black/40 z-[200] hidden items-center justify-center" onclick="window.Common.closePopup(event,'assist-confirm-overlay')">
+<div class="bg-white rounded-2xl p-5 mx-auto w-80 shadow-xl text-center" onclick="event.stopPropagation()">
+<div class="text-4xl mb-3">⚡</div>
+<p class="text-sm text-gray-700 mb-4">确定使用 <b class="text-brand-pink">1</b> 次神助攻？<br/>助攻后双方匹配度将直达<b class="text-brand-pink">1314</b></p>
+<div class="space-y-2">
+<span id="assist-confirm-btn" class="block w-full py-2.5 rounded-xl bg-gradient-to-tr from-brand-pink to-brand-orange text-white font-bold text-sm card-hover text-center cursor-pointer" onclick="doAssist()">确定助攻</span>
+<span onclick="window.Common.hidePopup('assist-confirm-overlay')" class="block w-full py-2.5 rounded-xl bg-gray-100 text-gray-500 font-bold text-sm card-hover text-center cursor-pointer">我再想想</span>
+</div>
+</div></div>
+
+<script src="common.js"></script>
+<script>
+
+// Parse data from sessionStorage
+var raw=sessionStorage.getItem('fateData');
+var d=raw?JSON.parse(raw):null;
+if(!d){
+  // Fallback
+  d={male:{name:'清风徐来',gender:'male',age:28,cons:'狮子座',marital:'未婚',photo:'images/photo/male/crop.0.0.1078.1438.0.750.1000.jpg',verified:true},female:{name:'甜心小鹿',gender:'female',age:26,cons:'天秤座',marital:'未婚',photo:'images/photo/female/crop.0.67.1079.1438.0.750.1000.jpg',verified:true},matchScore:1314,type:'yes',hasHeart:true,hasFollow:true};
+}
+
+// Fate events builder
+function makeFateEvents(){
+  var events=[];
+  var mn=d.male.name,fn=d.female.name;
+  events.push({html:'昨天，热心用户 <b class="text-brand-pink mx-0.5">阳光骑士</b> 开启了他俩的缘分'});
+  if(d.hasHeart){
+    events.push({html:'昨天，你关注了他俩的动态'});
+    events.push({html:'今天，<b class="text-brand-pink mx-0.5">'+mn+'</b> 关注了 <b class="text-brand-pink mx-0.5">'+fn+'</b>，并在之后对TA <b class="text-brand-pink mx-0.5">心动</b> 了 <b class="text-brand-pink mx-0.5">'+ (1+Math.floor(Math.random()*3)) +'</b> 次'});
+    events.push({html:'今天，<b class="text-brand-pink mx-0.5">'+fn+'</b> 关注了 <b class="text-brand-pink mx-0.5">'+mn+'</b>，并在之后对TA <b class="text-brand-pink mx-0.5">心动</b> 了 <b class="text-brand-pink mx-0.5">'+ (1+Math.floor(Math.random()*3)) +'</b> 次'});
+  }else if(d.hasFollow){
+    events.push({html:'今天，<b class="text-brand-pink mx-0.5">'+mn+'</b> 关注了 <b class="text-brand-pink mx-0.5">'+fn+'</b>'});
+    events.push({html:'今天，<b class="text-brand-pink mx-0.5">'+fn+'</b> 也关注了 <b class="text-brand-pink mx-0.5">'+mn+'</b>'});
+  }else{
+    events.push({html:'目前还没有人开启他俩的缘分，等待你来牵线'});
+  }
+  if(d.hasDislike){events=[{html:'他俩目前互相无感，暂无缘分记录。'}];}
+  return events;
+}
+
+var fateEvents=makeFateEvents();
+var matchYes=Math.floor(2+Math.random()*10),matchNo=Math.floor(0+Math.random()*3);
+var assistDone=false;
+
+function doAssist(){
+  window.Common.hidePopup('assist-confirm-overlay');
+  assistDone=true;
+  d.matchScore=1314;
+  fateEvents.push({html:'今天，用户 <b class="text-brand-pink mx-0.5">甜心小鹿</b> 为他俩送上神助攻'});
+  render();
+  window.Common.showToast('神助攻已送达！匹配度直达1314');
+}
+
+function miniCard(u){
+  var gb=u.gender==='male'?'<span class="text-xs px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-500 font-medium inline-flex items-center gap-0.5"><i data-lucide="mars" class="w-2.5 h-2.5"></i>男</span>':'<span class="text-xs px-1.5 py-0.5 rounded-full bg-pink-50 text-brand-pink font-medium inline-flex items-center gap-0.5"><i data-lucide="venus" class="w-2.5 h-2.5"></i>女</span>';
+  var ver=u.verified?'<span class="absolute top-2 right-2 z-10 text-[9px] px-1.5 py-0.5 rounded-full bg-gradient-to-r from-brand-pink to-brand-orange text-white font-medium">已实名</span>':'';
+  var zo=u.zodiac||'虎',bl=u.blood||'O型',na=u.nation||'汉族';
+  return'<div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 flex flex-col card-hover cursor-pointer" onclick="window.location.href=\'profile.html\'"><div class="relative"><img src="'+u.photo+'" class="w-full object-cover" style="aspect-ratio:3/4"/>'+ver+'</div><div class="p-2.5"><div class="flex items-center gap-1.5 mb-1"><span class="text-sm font-black text-gray-800 truncate">'+u.name+'</span>'+gb+'</div><div class="text-xs text-gray-500 mb-1">'+u.age+'岁 · '+u.cons+' · '+u.marital+'</div><div class="text-xs text-gray-500 mb-1">属'+zo+' · '+bl+' · '+na+'</div><div class="text-xs text-gray-500">'+u.edu+' · '+u.height+'</div></div></div>';
+}
+
+function render(){
+  var voteLabel=d.type==='yes'?'能成':'不成';
+  var voteCls=d.type==='yes'?'text-red-500 bg-red-50 border-red-200':'text-gray-600 bg-gray-100 border-gray-300';
+  var eventsHtml='<div class="border-t border-pink-200 my-1.5"></div>'+fateEvents.map(function(e,i){return'<div class="text-sm text-gray-500 leading-relaxed mx-1">'+e.html+'</div><div class="border-t border-dashed border-pink-200 my-1.5"></div>'}).join('');
+
+  el('app').innerHTML=
+    '<div class="px-4 pt-3 pb-24">'+
+      '<div class="grid grid-cols-2 gap-1.5 mb-4">'+miniCard(d.male)+miniCard(d.female)+'</div>'+
+      '<div class="block text-center cursor-pointer w-full py-3 rounded-xl border '+voteCls+' text-center mb-4"><span class="font-bold text-sm leading-relaxed">您对他俩的看法是：'+voteLabel+'</span></div>'+
+      '<h3 class="text-base font-black text-gray-800 mb-3">❤️ 缘分记录</h3>'+
+      '<div class="bg-pink-50/50 rounded-xl p-3 space-y-2 mb-4 border border-pink-100">'+
+        '<div class="flex items-center gap-1.5 text-sm"><span class="text-brand-pink font-black text-xl">'+d.matchScore+'</span><span class="text-sm text-gray-600">匹配度</span><span class="text-xs text-brand-pink underline cursor-pointer ml-1" onclick="showRules()">规则</span></div>'+
+        '<div class="text-sm text-gray-500">共有 <b class="text-brand-pink mx-0.5">'+matchYes+'</b> 人认为他俩能成，<b class="text-gray-700 mx-0.5">'+matchNo+'</b> 人认为他俩不成</div>'+
+        eventsHtml+
+        (assistDone?'':'<div class="flex items-center justify-center py-1"><span class="inline-flex items-center gap-1 text-xs text-brand-pink font-bold cursor-pointer card-hover px-3 py-1.5 rounded-full bg-white border border-brand-pink/30" onclick="window.Common.showPopup(\x27assist-confirm-overlay\x27)">⚡ 送上神助攻</span></div>')+
+      '</div>'+
+    '</div>'+
+    '<div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 px-6 py-3 rounded-full bg-gradient-to-tr from-brand-pink to-brand-orange text-white font-bold text-sm shadow-xl shadow-brand-pink/30 card-hover cursor-pointer flex items-center gap-2" onclick="window.history.back()"><i data-lucide="corner-down-left" class="w-4 h-4"></i>返回</div>';
+  window.Common.initIcons();
+}
+
+// Match rules popup
+setTimeout(function(){
+  var rules=document.createElement('div');
+  rules.id='rules-popup';
+  rules.className='fixed inset-0 bg-black/40 z-[200] hidden items-center justify-center';
+  rules.setAttribute('onclick','window.Common.closePopup(event,\"rules-popup\")');
+  rules.innerHTML='<div class="bg-white rounded-2xl p-5 mx-auto w-80 shadow-xl" onclick="event.stopPropagation()"><div class="flex items-center justify-between mb-3"><span class="text-base font-black text-gray-800">匹配度规则</span><span class="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center cursor-pointer" onclick="window.Common.hidePopup(\'rules-popup\')"><i data-lucide="x" class="w-4 h-4 text-gray-500"></i></span></div><div class="text-sm text-gray-600 leading-relaxed space-y-2"><p>每多一人认为他俩能成，匹配度<b class="text-brand-pink text-base">+1</b>（若为双方亲友<b class="text-brand-pink text-base">+20</b>）</p><p>每多一人认为他俩不成，匹配度<b class="text-gray-800 text-base">-1</b>（若为双方亲友<b class="text-gray-800 text-base">-20</b>）</p><p>每一方关注另一方，匹配度<b class="text-brand-pink text-base">+100</b></p><p>每一方对另一方心动，匹配度<b class="text-brand-pink text-base">+500</b>（直接心动将默认完成关注，仅互相首次心动增加匹配度）</p></div><div class="mt-4 w-full py-2.5 rounded-xl bg-brand-pink text-white font-bold text-sm card-hover text-center cursor-pointer" onclick="window.Common.hidePopup(\'rules-popup\')">知道了</div></div>';
+  document.body.appendChild(rules);
+},100);
+
+function el(id){return document.getElementById(id)}
+function showRules(){window.Common.showPopup('rules-popup')}
+
+document.addEventListener('DOMContentLoaded',function(){render()});
+</script>
+</body>
+</html>

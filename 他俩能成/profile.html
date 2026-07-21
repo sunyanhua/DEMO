@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>他俩能成 - 个人主页</title>
+<script src="lib/tailwind.min.js"></script>
+<script src="lib/lucide.min.js"></script>
+<link rel="stylesheet" href="style.css">
+<style>
+.photo-carousel{position:relative;width:100%;overflow:hidden;}
+.photo-carousel .slides{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-ms-overflow-style:none;}
+.photo-carousel .slides::-webkit-scrollbar{display:none;}
+.photo-carousel .slides img{scroll-snap-align:start;width:100%;flex-shrink:0;object-fit:cover;aspect-ratio:3/4;}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+</style>
+</head>
+<body class="bg-white text-gray-900 antialiased">
+<div class="bg-decoration"><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div></div>
+<div id="app" class="relative z-[1] pb-24"></div>
+
+<!-- MATCH RULES POPUP -->
+<div id="rules-popup" class="fixed inset-0 bg-black/40 z-[150] hidden items-center justify-center" onclick="hideRules(event)">
+<div class="bg-white rounded-2xl p-5 mx-auto w-80 shadow-xl" onclick="event.stopPropagation()">
+<div class="flex items-center justify-between mb-3"><span class="text-base font-black text-gray-800">匹配度规则</span><span onclick="hideRules()" class="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center"><i data-lucide="x" class="w-4 h-4 text-gray-500"></i></span></div>
+<div class="text-sm text-gray-600 leading-relaxed space-y-2">
+<p>每多一人认为你俩能成，匹配度<b class="text-brand-pink text-base">+1</b>（若为双方亲友<b class="text-brand-pink text-base">+20</b>）</p>
+<p>每多一人认为你俩不成，匹配度<b class="text-gray-800 text-base">-1</b>（若为双方亲友<b class="text-gray-800 text-base">-20</b>）</p>
+<p>每一方关注另一方，匹配度<b class="text-brand-pink text-base">+100</b></p>
+<p>每一方对另一方心动，匹配度<b class="text-brand-pink text-base">+500</b>（直接心动将默认完成关注，仅互相首次心动增加匹配度）</p>
+</div>
+<span onclick="hideRules()" class="block text-center cursor-pointer mt-4 w-full py-2.5 rounded-xl bg-brand-pink text-white font-bold text-sm card-hover">知道了</span>
+</div></div>
+
+<!-- HELP POPUP -->
+<div id="help-popup" class="fixed inset-0 bg-black/40 z-[150] hidden items-center justify-center" onclick="hideHelp(event)">
+<div class="bg-white rounded-2xl p-5 mx-auto w-80 shadow-xl" onclick="event.stopPropagation()">
+<div class="flex items-center justify-between mb-3"><span class="text-base font-black text-gray-800">获取助力</span><span onclick="hideHelp()" class="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center"><i data-lucide="x" class="w-4 h-4 text-gray-500"></i></span></div>
+<p class="text-sm text-gray-600 mb-3">您可以通过以下方式获取助力：</p>
+<div class="space-y-3">
+<div class="bg-pink-50 rounded-xl p-3"><p class="text-sm text-gray-700 mb-2">将你们的缘分页面分享给你的亲友，每个亲友助力将获得<b class="text-brand-pink">匹配度+20</b></p><span class="block text-center cursor-pointer w-full py-2 rounded-lg bg-brand-pink text-white font-bold text-sm card-hover" onclick="window.Common.showToast('分享功能开发中');hideHelp()">马上分享</span></div>
+<div class="bg-orange-50 rounded-xl p-3"><p class="text-sm text-gray-700 mb-2">请平台的磕学家和主持人为你们一键助攻，将可<b class="text-brand-pink">直达1314</b></p><span class="block text-center cursor-pointer w-full py-2 rounded-lg bg-brand-pink text-white font-bold text-sm card-hover" onclick="hideHelp();showAssistSuccess()">求助攻</span></div>
+</div></div></div>
+
+<!-- ASSIST SUCCESS POPUP -->
+<div id="assist-success-popup" class="fixed inset-0 bg-black/40 z-[155] hidden items-center justify-center" onclick="hideAssistSuccess(event)">
+<div class="bg-white rounded-2xl p-5 mx-auto w-80 shadow-xl text-center" onclick="event.stopPropagation()">
+<div class="text-4xl mb-3">⚡</div><p class="text-sm text-gray-700 mb-4">求助攻成功，请前往神助攻页面查看</p>
+<div class="space-y-2"><span class="block text-center cursor-pointer w-full py-2.5 rounded-xl bg-brand-pink text-white font-bold text-sm card-hover" onclick="window.location.href='assist.html'">马上查看</span><span class="block text-center cursor-pointer w-full py-2.5 rounded-xl bg-gray-100 text-gray-500 font-bold text-sm card-hover" onclick="hideAssistSuccess()">我知道了</span></div>
+</div></div>
+
+<!-- COMPLETE PROFILE POPUP -->
+<div id="complete-popup" class="fixed inset-0 bg-black/40 z-[150] hidden items-center justify-center" onclick="hideComplete(event)">
+<div class="bg-white rounded-2xl p-5 mx-auto w-80 shadow-xl text-center" onclick="event.stopPropagation()">
+<div class="text-4xl mb-3">📝</div><p class="text-sm text-gray-700 mb-4">您需要先完善脱单资料</p>
+<div class="space-y-2"><span class="block text-center cursor-pointer w-full py-2.5 rounded-xl bg-brand-pink text-white font-bold text-sm card-hover" onclick="window.location.href='profile-wizard.html';hideComplete()">马上完善</span><span class="block text-center cursor-pointer w-full py-2.5 rounded-xl bg-gray-100 text-gray-500 font-bold text-sm card-hover" onclick="hideComplete()">我再想想</span></div>
+</div></div>
+
+<!-- HEART CONFIRM POPUP -->
+<div id="heart-popup" class="fixed inset-0 bg-black/40 z-[150] hidden items-center justify-center" onclick="hideHeart(event)">
+<div class="bg-white rounded-2xl p-5 mx-auto w-80 shadow-xl text-center" onclick="event.stopPropagation()">
+<div class="text-4xl mb-3">💕</div><p class="text-sm text-gray-700 mb-4">您今天还有<b class="text-brand-pink">3次</b>心动机会，确定使用么？</p>
+<div class="space-y-2"><span class="block text-center cursor-pointer w-full py-2.5 rounded-xl bg-brand-pink text-white font-bold text-sm card-hover" onclick="doHeartConfirm()">确定心动</span><span class="block text-center cursor-pointer w-full py-2.5 rounded-xl bg-gray-100 text-gray-500 font-bold text-sm card-hover" onclick="hideHeart()">我再想想</span></div>
+</div></div>
+
+<!-- GIFT SELECT POPUP -->
+<div id="gift-popup" class="fixed inset-0 bg-black/40 z-[150] hidden items-end justify-center" onclick="hideGift(event)">
+<div class="bg-white w-full rounded-t-2xl max-h-[70vh] overflow-y-auto animate-slide-up" onclick="event.stopPropagation()">
+<div class="sticky top-0 bg-white z-10 flex items-center justify-between px-4 py-4 border-b border-gray-100 rounded-t-2xl"><span class="text-lg font-black text-gray-800">赠送礼物</span><span onclick="hideGift()" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center"><i data-lucide="x" class="w-5 h-5 text-gray-500"></i></span></div>
+
+
+<div id="gift-list" class="p-4 space-y-3"></div></div></div>
+
+<!-- GIFT CONFIRM POPUP -->
+<div id="gift-confirm-popup" class="fixed inset-0 bg-black/40 z-[160] hidden items-center justify-center" onclick="hideGiftConfirm(event)">
+<div class="bg-white rounded-2xl p-5 mx-auto w-80 shadow-xl text-center" onclick="event.stopPropagation()">
+<div class="text-4xl mb-3">🎁</div><p id="gift-confirm-msg" class="text-sm text-gray-700 mb-4"></p>
+<div class="space-y-2"><span id="gift-confirm-btn" class="block text-center cursor-pointer w-full py-2.5 rounded-xl bg-brand-pink text-white font-bold text-sm card-hover">确定赠送</span><span class="block text-center cursor-pointer w-full py-2.5 rounded-xl bg-gray-100 text-gray-500 font-bold text-sm card-hover" onclick="hideGiftConfirm()">我再想想</span></div>
+</div></div>
+
+<!-- FAMILY JOIN CONFIRM POPUP -->
+<div id="family-join-popup" class="fixed inset-0 bg-black/40 z-[160] hidden items-center justify-center" onclick="hideFamilyJoin(event)">
+<div class="bg-white rounded-2xl p-5 mx-auto w-80 shadow-xl text-center" onclick="event.stopPropagation()">
+<div class="text-4xl mb-3">🤝</div><p id="family-join-msg" class="text-sm text-gray-700 mb-4"></p>
+<div class="space-y-2"><span class="block text-center cursor-pointer w-full py-2.5 rounded-xl bg-brand-pink text-white font-bold text-sm card-hover" onclick="doJoinFamily()">确定加入</span><span class="block text-center cursor-pointer w-full py-2.5 rounded-xl bg-gray-100 text-gray-500 font-bold text-sm card-hover" onclick="hideFamilyJoin()">我再想想</span></div>
+</div></div>
+
+<script src="common.js"></script>
+<script>
+// ====== Data ======
+var profile={
+  name:'甜心小鹿',gender:'female',age:26,cons:'天秤座',marital:'未婚',id:'10000135',
+  photos:['images/photo/female/crop.0.67.1079.1438.0.750.1000.jpg','images/photo/female/crop.0.61.723.964.0.750.1000.jpg','images/photo/female/crop.0.0.4896.6528.0.750.1000.jpg'],
+  matchScore:1314,matchYes:4,matchNo:1,
+  fateEvents:[
+    {html:'2天前，热心用户 <b class="text-brand-pink mx-0.5">阳光骑士</b> 开启了你们的缘分'},
+    {html:'昨天，你关注了TA，并在之后对TA心动 了 <b class="text-brand-pink mx-0.5">2</b> 次'},
+    {html:'昨天，TA关注了你，并在之后对你心动 了 <b class="text-brand-pink mx-0.5">1</b> 次'},
+    {html:'今天，用户 <b class="text-brand-pink mx-0.5">真是郭炜</b> 为你们送上神助攻'},
+  ],
+  popularity:507,followers:3,heartTimes:3,familyCount:0,joinedFamily:false,
+  gifts:[
+    {icon:'images/gift1.png',name:'菜小宝',score:100,price:100,count:3},
+    {icon:'images/gift2.gif',name:'听小北-爱你',score:150,price:200,count:2},
+    {icon:'images/gift3.gif',name:'听小北-亲亲',score:200,price:300,count:5},
+  ],
+  about:{height:'156cm',weight:'46kg',job:'销售',zodiac:'鸡',blood:'AB型',edu:'大学本科',district:'海淀区',nation:'汉族',hukou:'天津市',hometown:'内蒙古自治区',hobbies:'旅游，书法，瑜伽',talent:'需要你慢慢发现，我正在努力',intro:'我是一个对生活充满热情，性格比较细腻温和的喜欢平静的生活，比较喜欢小宠物，没事的时候会把屋子收拾干净练练瑜伽听听音乐也喜欢去旅行！慢热型的但遇到同频的人会很快熟悉起来',standard:'希望找到一个成熟稳重性格温和的男士，无不良嗜好，闲暇也喜欢阅读和运动的伴侣'},
+  certs_all:['实名认证','学历认证','单位认证','朝阳相伴','青爱团'],
+  fateCard:'',
+  interactMode:Math.random()>0.5?'icons':'meet',
+};
+
+// Pick random certs (3-4), 朝阳相伴 and 青爱团 never both shown
+// Sort: 实名认证 > 学历认证 > 单位认证 first, then special ones
+function pickCerts(){
+  var all=profile.certs_all.slice(),out=[],order=['实名认证','学历认证','单位认证'];
+  var cy=all.indexOf('朝阳相伴'),qa=all.indexOf('青爱团');
+  if(cy>=0&&qa>=0){if(Math.random()>0.5)all.splice(qa,1);else all.splice(cy,1)}
+
+  // Pick 3-4
+  var n=3+Math.floor(Math.random()*2);
+  for(var i=all.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));[all[i],all[j]]=[all[j],all[i]]}
+  out=all.slice(0,Math.min(n,all.length));
+
+  // Sort: standard certs in defined order first, then special ones
+  out.sort(function(a,b){
+    var ai=order.indexOf(a),bi=order.indexOf(b);
+    if(ai>=0&&bi>=0)return ai-bi;
+    if(ai>=0)return -1;if(bi>=0)return 1;
+    return 0;
+  });
+  return out;
+}
+
+var certs=pickCerts();
+profile.fateCard=Math.random()>0.5?'success':'pending';
+
+var liked=false,followed=false,hearted=false;
+
+function doLikeAll(){window.Common.showToast('操作成功');liked=true;render()}
+function doFollowBtn(){
+  followed=true;
+  profile.popularity+=10;showScorePopup('人气值+10');refreshSections();
+}
+function doHeartConfirm(){
+  hideHeart();hearted=true;
+  profile.popularity+=100;showScorePopup('人气值+100');refreshSections();
+}
+
+function initCarousel(){
+  var c=document.getElementById('photo-carousel'),d=document.getElementById('carousel-dots'),imgs=profile.photos,idx=0;
+  if(!c||!d||imgs.length<2)return;
+  function upd(){var dots=d.children;for(var i=0;i<dots.length;i++)dots[i].className='w-1 h-1 rounded-full transition-all duration-300 '+(i===idx?'bg-white w-2':'bg-white/50')}
+  setInterval(function(){idx=(idx+1)%imgs.length;c.scrollTo({left:c.offsetWidth*idx,behavior:'smooth'});upd()},3500);
+}
+
+function hideRules(e){window.Common.closePopup(e,'rules-popup')}
+function showRules(){window.Common.showPopup('rules-popup')}
+function hideHelp(e){window.Common.closePopup(e,'help-popup')}
+function showHelp(){window.Common.showPopup('help-popup')}
+function showAssistSuccess(){window.Common.showPopup('assist-success-popup')}
+function hideAssistSuccess(e){window.Common.closePopup(e,'assist-success-popup')}
+function hideComplete(e){window.Common.closePopup(e,'complete-popup')}
+function showComplete(){window.Common.showPopup('complete-popup')}
+function hideHeart(e){window.Common.closePopup(e,'heart-popup')}
+function showHeart(){window.Common.showPopup('heart-popup')}
+function hideGift(e){window.Common.closePopup(e,'gift-popup')}
+function showGift(){
+  var p=document.getElementById('gift-popup'),html='';
+  profile.gifts.forEach(function(g,i){html+='<div class="flex items-center gap-3 p-3 rounded-xl border border-gray-100"><img src="'+g.icon+'" class="object-contain rounded-lg flex-shrink-0" style="width:50px;height:50px;"/><div class="flex-1 min-w-0"><div class="text-sm font-bold text-gray-800">'+g.name+'</div><div class="flex items-center gap-2 text-xs text-gray-400 mt-0.5"><span>人气值+'+g.score+'</span><span class="w-px h-2 bg-gray-200"></span><span>💰'+g.price+'金币</span></div></div><span onclick="showGiftConfirm('+i+')" class="px-4 py-1.5 rounded-full bg-gradient-to-r from-brand-pink to-brand-orange text-white text-xs font-bold card-hover flex-shrink-0">赠送</span></div>'});
+  document.getElementById('gift-list').innerHTML=html;window.Common.showPopup('gift-popup');
+}
+// Gift confirm
+var pendingGiftIdx=null;
+function showGiftConfirm(idx){
+  var g=profile.gifts[idx];pendingGiftIdx=idx;
+  document.getElementById('gift-confirm-msg').innerHTML='确定使用 <b class="text-brand-pink">'+g.price+'</b> 金币赠送TA<b> 【'+g.name+'】</b>？';
+  document.getElementById('gift-confirm-btn').onclick=function(){confirmGift()};
+  window.Common.showPopup('gift-confirm-popup');
+}
+function hideGiftConfirm(e){window.Common.closePopup(e,'gift-confirm-popup')}
+function confirmGift(){
+  var g=profile.gifts[pendingGiftIdx];hideGiftConfirm();hideGift();
+  showScorePopup('人气值+'+g.score);refreshSections();
+}
+function showFamilyJoin(){
+  document.getElementById('family-join-msg').innerHTML='确定要加入<b class="text-brand-pink">'+profile.name+'</b>的亲友团吗？<br/><span class="text-xs text-gray-400">加入后不能取消</span>';
+  window.Common.showPopup('family-join-popup');
+}
+function hideFamilyJoin(e){window.Common.closePopup(e,'family-join-popup')}
+function doJoinFamily(){
+  hideFamilyJoin();profile.joinedFamily=true;profile.familyCount++;
+  refreshSections();window.Common.showToast('已加入'+profile.name+'的亲友团');
+}
+function showScorePopup(text){window.Common.showScorePopup(text)}
+function refreshSections(){
+  ['fate-section','pop-section'].forEach(function(id){
+    var el=document.getElementById(id);if(!el)return;
+    var ov=document.createElement('div');
+    ov.className='absolute inset-0 bg-white/60 backdrop-blur-sm rounded-xl flex items-center justify-center z-10';
+    ov.innerHTML='<div class="flex flex-col items-center gap-2"><div class="rounded-full" style="width:28px;height:28px;border:3px solid rgba(224,77,44,0.2);border-top-color:#e04d2c;animation:spin 0.8s linear infinite;"></div><span class="text-brand-pink text-xs font-medium">刷新中...</span></div>';
+    el.style.position='relative';
+    el.appendChild(ov);
+    setTimeout(function(){ov.style.opacity='0';setTimeout(function(){ov.remove();render()},300)},800);
+  });
+}
+function copyId(){
+  var ta=document.createElement('textarea');ta.value=profile.id;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();
+  window.Common.showToast('已复制');
+}
+
+function goMatchmaker(){
+  window.location.href='matchmaker.html?lock=profile&name='+encodeURIComponent(profile.name)+'&gender='+encodeURIComponent(profile.gender);
+}
+
+function render(){
+  var ph=profile.photos;
+  var slidesHtml=ph.map(function(s){return'<img src="'+s+'" alt="" onerror="this.src=\'images/photo/female/crop.0.67.1079.1438.0.750.1000.jpg\'"/>'}).join('');
+  var dotsHtml=ph.map(function(_,i){return'<div class="w-1 h-1 rounded-full transition-all duration-300 '+(i===0?'bg-white w-2':'bg-white/50')+'"></div>'}).join('');
+
+  // Cert badges — normal on left, special link-styles on right
+  var certIcons={'实名认证':'badge-check','学历认证':'graduation-cap','单位认证':'building-2','朝阳相伴':'sun','青爱团':'heart-handshake'};
+  var certClsMap={'实名认证':'bg-green-50 text-green-600','学历认证':'bg-blue-50 text-blue-600','单位认证':'bg-purple-50 text-purple-600','朝阳相伴':'','青爱团':''};
+  var normalCerts=[],specialCerts=[];
+  certs.forEach(function(c){
+    if(c==='朝阳相伴'||c==='青爱团'){
+      var href=c==='朝阳相伴'?'chaoyang.html':'qingai.html';
+      specialCerts.push('<a href="'+href+'" class="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-brand-pink/10 text-brand-pink font-bold underline decoration-dotted cursor-pointer hover:bg-brand-pink/20 transition-colors"><i data-lucide="'+certIcons[c]+'" class="w-3 h-3"></i>'+c+' <i data-lucide="arrow-up-right" class="w-3 h-3"></i></a>');
+    }else{
+      normalCerts.push('<span class="text-xs px-2 py-0.5 rounded-full '+certClsMap[c]+' font-medium flex items-center gap-1"><i data-lucide="'+certIcons[c]+'" class="w-3 h-3"></i>'+c+'</span>');
+    }
+  });
+  var certsHtml='<div class="flex-1 flex flex-wrap gap-1.5">'+normalCerts.join('')+'</div>';
+  var specHtml=specialCerts.length?'<div class="flex-shrink-0 flex flex-col gap-1 ml-2">'+specialCerts.join('')+'</div>':'';
+
+  // Fate events — fixed text display
+  var eventsHtml='<div class="border-t border-pink-200 my-1.5"></div>'+profile.fateEvents.map(function(e,i){return'<div class="text-sm text-gray-500 leading-relaxed mx-1">'+e.html+'</div><div class="border-t border-dashed border-pink-200 my-1.5"></div>'}).join('');
+
+  // Match rules bold
+  // (hardcoded in HTML, update below)
+  var fateCard='';
+  if(profile.fateCard==='success'){
+    fateCard='<div class="flex items-center justify-between bg-brand-pink/5 rounded-xl px-4 py-3 mt-3 border border-pink-100"><span class="text-sm font-black text-brand-pink">你们成了！恭喜！</span><span class="px-4 py-1.5 rounded-full bg-gradient-to-r from-brand-pink to-brand-orange text-white text-xs font-bold card-hover" onclick="window.location.href=\'chat.html?name='+encodeURIComponent(profile.name)+'\'">联系TA</span></div>';
+  }else{
+    fateCard='<div class="flex items-center justify-between bg-brand-pink/5 rounded-xl px-4 py-3 mt-3 border border-pink-100"><span class="text-sm font-black text-brand-pink">你们已经相互心动，就差最后一步！</span><span class="px-4 py-1.5 rounded-full bg-gradient-to-r from-brand-pink to-brand-orange text-white text-xs font-bold card-hover" onclick="showHelp()">找助力</span></div>';
+  }
+
+  // Popularity grid — indent pl-4
+  var popHtml='<div class="grid grid-cols-2 gap-x-4 gap-y-2 pl-4 text-sm text-gray-600">'+
+    '<div>TA的人气值：<b class="text-brand-pink">'+profile.popularity+'</b></div><div>关注TA的：'+profile.followers+'人</div>'+
+    '<div>被心动次数：'+profile.heartTimes+'次</div><div>亲友团人数：'+profile.familyCount+'人 '+(!profile.joinedFamily?'<span class="text-brand-pink text-xs cursor-pointer underline" onclick="showFamilyJoin()">[加入]</span>':'<span class="text-brand-pink text-xs">已加入</span>')+'</div>'+
+  '</div>';
+
+  // Gifts — indent + larger layout
+  var giftsHtml='<div class="pl-4 flex gap-4">';
+  profile.gifts.forEach(function(g){
+    giftsHtml+='<div class="flex flex-col items-center gap-0.5"><img src="'+g.icon+'" class="object-contain rounded-xl bg-gray-50" style="width:56px;height:56px;" title="'+g.name+'"/><span class="text-xs text-gray-600 font-medium text-center leading-tight">'+g.name+' ×<b class="text-brand-pink">'+g.count+'</b></span></div>';
+  });
+  giftsHtml+='</div>';
+
+  // About — field titles larger
+  var ab=profile.about;
+  var gridPairs=[
+    ['身　高',ab.height,'体　重',ab.weight],['职　业',ab.job,'属　相',ab.zodiac],
+    ['血　型',ab.blood,'学　历',ab.edu],['所在区县',ab.district,'民　族',ab.nation],
+    ['户　籍',ab.hukou,'家　乡',ab.hometown],
+  ];
+  var aboutGrid=gridPairs.map(function(q){return'<div class="flex py-2.5 border-b border-gray-100"><span class="text-sm text-gray-400 flex-shrink-0 mr-2" style="width:4em">'+q[0]+'</span><span class="text-sm text-gray-700 flex-1">'+q[1]+'</span><span class="text-sm text-gray-400 flex-shrink-0 mr-2" style="width:4em">'+q[2]+'</span><span class="text-sm text-gray-700 flex-1">'+q[3]+'</span></div>'}).join('');
+var aboutWide=[['兴趣爱好',ab.hobbies],['才　　艺',ab.talent],['自我介绍',ab.intro],['择偶标准',ab.standard]].map(function(p){
+  return'<div class="flex py-2.5 border-b border-gray-100"><span class="text-sm text-gray-400 flex-shrink-0 mr-2" style="width:4em">'+p[0]+'</span><span class="text-sm text-gray-700 flex-1">'+p[1]+'</span></div>';
+}).join('');
+
+  // Interactive
+  var interactHtml='';
+  if(profile.interactMode==='meet'){
+    interactHtml='<div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 px-6 py-3 rounded-full bg-gradient-to-tr from-brand-pink to-brand-orange text-white font-bold text-sm shadow-xl shadow-brand-pink/30 card-hover cursor-pointer flex items-center gap-2" onclick="showComplete()"><i data-lucide="user-plus" class="w-4 h-4"></i>认识TA一下</div>';
+  }else{
+    // 1.like→all4 gray  2.follow→like+follow gray  3.heart→like+follow gray  4.gift→never
+    var grayAB=(liked||followed||hearted);
+    var likCls=grayAB?'bg-gray-300 text-white':'bg-gray-100 text-gray-600';
+    var folCls=grayAB?'bg-gray-300 text-white':'bg-blue-50 text-blue-500';
+    var hCls=liked?'bg-gray-300 text-white':'bg-pink-50 text-brand-pink';
+    var gftCls=liked?'bg-gray-300 text-white':'bg-amber-50 text-amber-500';
+    interactHtml='<div class="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-gray-100 px-4 py-3">'+
+      '<div class="flex justify-around items-center">'+
+        '<span class="w-14 h-14 rounded-full flex items-center justify-center card-hover '+likCls+'" onclick="doLikeAll()"><i data-lucide="x" class="w-6 h-6"></i></span>'+
+        '<span class="w-14 h-14 rounded-full flex items-center justify-center card-hover '+folCls+'" onclick="doFollowBtn()"><i data-lucide="bookmark" class="w-6 h-6"></i></span>'+
+        '<span class="w-14 h-14 rounded-full flex items-center justify-center card-hover '+hCls+'" onclick="showHeart()"><i data-lucide="heart" class="w-6 h-6"></i></span>'+
+        '<span class="w-14 h-14 rounded-full flex items-center justify-center card-hover '+gftCls+'" onclick="showGift()"><i data-lucide="gift" class="w-6 h-6"></i></span>'+
+      '</div></div>';
+  }
+
+  var gb=profile.gender==='male'?'<span class="text-xs px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-500 font-medium inline-flex items-center gap-0.5"><i data-lucide="mars" class="w-2.5 h-2.5"></i>男</span>':'<span class="text-xs px-1.5 py-0.5 rounded-full bg-pink-50 text-brand-pink font-medium inline-flex items-center gap-0.5"><i data-lucide="venus" class="w-2.5 h-2.5"></i>女</span>';
+
+  document.getElementById('app').innerHTML =
+    '<div class="photo-carousel">'+
+      '<div class="slides" id="photo-carousel">'+slidesHtml+'</div>'+
+      '<div class="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 p-1.5 bg-black/20 rounded-full backdrop-blur-sm z-10" id="carousel-dots">'+dotsHtml+'</div>'+
+      '<div class="absolute top-3 right-3 z-10 flex items-center gap-1.5 bg-white/70 backdrop-blur-sm rounded-full px-3 py-1.5 shadow-sm"><i data-lucide="flame" class="w-4 h-4 text-brand-pink"></i><span class="text-gray-800 text-sm font-black">'+profile.popularity+'</span></div>'+
+    '</div>'+
+
+    '<div id="user-info-bar" class="sticky top-0 z-30 bg-white px-4 py-3 border-b border-gray-100 shadow-sm">'+
+      '<div class="flex items-start justify-between">'+
+        '<div>'+
+          '<div class="flex items-center gap-2"><span class="text-lg font-black text-gray-800">'+profile.name+'</span>'+gb+'</div>'+
+          '<div class="flex items-center gap-2 text-xs text-gray-400 mt-1"><span>'+profile.age+'岁</span><span class="w-px h-2.5 bg-gray-200"></span><span>'+profile.cons+'</span><span class="w-px h-2.5 bg-gray-200"></span><span>'+profile.marital+'</span></div>'+
+        '</div>'+
+        '<div class="text-right flex-shrink-0"><div class="text-xs text-gray-400">能成ID</div><div class="flex items-center gap-1 mt-0.5"><span class="text-sm font-bold text-gray-700">'+profile.id+'</span><span class="text-[10px] text-brand-pink cursor-pointer bg-brand-pink/5 px-1.5 py-0.5 rounded" onclick="copyId()">复制</span></div></div>'+
+      '</div>'+
+      '<div class="border-t border-gray-100 mt-2 pt-3 flex items-center gap-2">'+certsHtml+specHtml+'</div>'+
+    '</div>'+
+
+    '<div class="pb-1" id="fate-section">'+
+      '<div class="px-4 py-3 border-b border-gray-100">'+
+        '<h3 class="text-base font-black text-gray-800 mb-3">❤️ 你和TA的缘分记录</h3>'+
+        '<div class="bg-pink-50/50 rounded-xl p-3 space-y-2 border border-pink-100">'+
+          '<div class="flex items-center gap-1.5 text-sm"><span class="text-brand-pink font-black text-xl">'+profile.matchScore+'</span><span class="text-sm text-gray-600">匹配度</span><span class="text-xs text-brand-pink underline cursor-pointer ml-1" onclick="showRules()">规则</span></div>'+
+          '<div class="text-sm text-gray-500">共有 <b class="text-brand-pink mx-0.5">'+profile.matchYes+'</b> 人认为你俩能成，<b class="text-gray-700 mx-0.5">'+profile.matchNo+'</b> 人认为你俩不成</div>'+
+          eventsHtml+
+        '</div>'+fateCard+
+      '</div>'+
+    '</div>'+
+
+    '<div class="pb-1" id="pop-section">'+
+      '<div class="px-4 py-3 border-b border-gray-100">'+
+        '<div class="flex items-center justify-between mb-3"><h3 class="text-base font-black text-gray-800">🔥 TA的人气指数</h3><span class="text-xs text-brand-pink font-medium bg-brand-pink/5 px-3 py-1 rounded-full card-hover" onclick="goMatchmaker()">帮TA牵线</span></div>'+
+        popHtml+
+        '<div class="mt-3"><div class="text-sm font-bold text-gray-700 mb-2 pl-4">TA收到的礼物</div>'+giftsHtml+'</div>'+
+      '</div>'+
+    '</div>'+
+
+    '<div class="pb-1">'+
+      '<div class="px-4 py-3 border-b border-gray-100">'+
+        '<h3 class="text-base font-black text-gray-800 mb-3">📋 关于TA</h3>'+aboutGrid+aboutWide+
+      '</div>'+
+    '</div>'+
+    interactHtml;
+
+  window.Common.initIcons();setTimeout(initCarousel,100);
+}
+
+document.addEventListener('DOMContentLoaded',function(){render()});
+</script>
+</body>
+</html>

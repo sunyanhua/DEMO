@@ -1,0 +1,20 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/><title>我的金币 - 他俩能成</title><script src="lib/tailwind.min.js"></script><script src="lib/lucide.min.js"></script><link rel="stylesheet" href="style.css"></head><body class="bg-white text-gray-900 antialiased pb-2">
+<div class="bg-decoration"><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div></div><div id="app" class="relative z-[1]"></div>
+<script src="common.js"></script><script>
+var balance=1280;
+var records=[
+  {title:'每日签到',amount:'+50',time:'今天 09:00'},{title:'每日签到',amount:'+50',time:'昨天 08:30'},{title:'玩法操作奖励（20次）',amount:'+10',time:'昨天 20:15'},{title:'每日签到',amount:'+50',time:'7月10日 09:00'},{title:'赠送礼物 - 菜小宝',amount:'-100',time:'7月10日 16:30'},{title:'每日签到',amount:'+50',time:'7月9日 08:00'},{title:'每日签到',amount:'+50',time:'7月8日 09:15'},{title:'赠送礼物 - 听小北-爱你',amount:'-200',time:'7月8日 14:00'},{title:'每日签到',amount:'+50',time:'7月7日 08:45'},{title:'玩法操作奖励（20次）',amount:'+10',time:'7月6日 21:00'},
+];
+function render(){
+  var rows=records.map(function(r){var c=r.amount.indexOf('+')===0?'text-green-500':'text-red-500';return'<div class="flex items-center justify-between px-4 py-3 border-b border-gray-50"><div><div class="text-sm font-medium text-gray-800">'+r.title+'</div><div class="text-xs text-gray-400">'+r.time+'</div></div><span class="text-sm font-black '+c+'">'+r.amount+'</span></div>'}).join('');
+  document.getElementById('app').innerHTML=
+    '<div class="sticky top-0 z-40 bg-white/95 backdrop-blur-md px-4 py-2.5 shadow-sm flex items-center"><i data-lucide="coins" class="w-3.5 h-3.5 text-yellow-500 mr-2"></i><h1 class="text-sm font-bold text-gray-900">我的金币</h1></div>'+
+    '<div class="px-4 pt-3 pb-6">'+
+      '<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-3 deco-card flex flex-col items-center"><i data-lucide="coins" class="w-10 h-10 text-brand-pink mb-2"></i><div class="text-4xl font-black text-brand-pink">'+balance.toLocaleString()+'</div><div class="text-xs text-gray-400 mt-1">金币余额</div></div>'+
+      '<div class="bg-amber-50 rounded-xl p-3 mb-3 text-xs text-amber-700 leading-relaxed"><i data-lucide="info" class="w-3.5 h-3.5 inline mr-1"></i>每天签到获得<b>50金币</b>，每进行<b>20次</b>玩法操作可获得<b>10金币</b>。<br/>金币可用于购买平台礼物进行赠送。</div>'+
+      '<div class="bg-white rounded-2xl shadow-sm border border-gray-100"><div class="px-4 py-2.5 border-b border-gray-100"><span class="text-xs text-gray-400 font-bold">金币记录</span></div>'+rows+'</div>'+
+    '</div>';
+  window.Common.initIcons();
+}
+document.addEventListener('DOMContentLoaded',function(){render()});
+</script></body></html>

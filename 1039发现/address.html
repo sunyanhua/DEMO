@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>收货地址 - 1039发现</title>
+<script src="lib/tailwind.min.js"></script><script src="lib/lucide.min.js"></script><link rel="stylesheet" href="style.css">
+</head>
+<body class="antialiased">
+<div class="bg-decoration"><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div></div>
+<div id="app" class="relative z-[1]"></div>
+
+<!-- 删除确认弹窗 -->
+<div id="delete-overlay" class="fixed inset-0 bg-black/40 z-[120] hidden items-center justify-center" onclick="hideDelete(event)">
+<div class="bg-white rounded-2xl p-5 mx-auto w-80 shadow-xl text-center" onclick="event.stopPropagation()">
+<div class="text-4xl mb-3">🗑️</div>
+<p class="text-sm text-gray-700 mb-4">确定要<b class="text-brand-gold">删除该地址</b>吗？</p>
+<div class="space-y-2">
+<span onclick="confirmDelete()" class="block text-center cursor-pointer w-full py-2.5 rounded-xl bg-red-500 text-white font-bold text-sm card-hover">确认删除</span>
+<span onclick="hideDelete()" class="block text-center cursor-pointer w-full py-2.5 rounded-xl bg-gray-100 text-gray-500 font-bold text-sm card-hover">取消</span>
+</div></div></div>
+
+<!-- 新增/编辑地址弹窗 -->
+<div id="addr-overlay" class="fixed inset-0 bg-black/40 z-[110] hidden items-end justify-center" onclick="hideAddrPopup(event)">
+<div class="bg-white w-full rounded-t-2xl max-h-[88vh] overflow-y-auto animate-slide-up" onclick="event.stopPropagation()">
+<div class="sticky top-0 bg-white z-10 flex items-center px-4 py-4 border-b border-gray-100 rounded-t-2xl">
+    <span class="text-lg font-black text-gray-800 flex-1 text-center" id="addr-popup-title">新增地址</span>
+    <span onclick="hideAddrPopup()" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center card-hover flex-shrink-0"><i data-lucide="x" class="w-5 h-5 text-gray-500"></i></span>
+</div>
+<div class="p-4 space-y-3" id="addr-form"></div>
+</div></div>
+
+<script src="common.js"></script>
+<script>
+var addrEditIdx = -1;
+var addrDeleteIdx = -1;
+var ADDRESSES = JSON.parse(localStorage.getItem('my_addresses') || 'null') || [
+    { id:0, name:'小明', mobile:'13812345678', address:'北京市朝阳区建国路88号SOHO现代城A座1206', isDefault:true },
+    { id:1, name:'小明', mobile:'13912345678', address:'北京市海淀区中关村大街1号中关村大厦1802', isDefault:false },
+];
+
+function saveAddrs() { localStorage.setItem('my_addresses', JSON.stringify(ADDRESSES)); }
+
+function render() {
+    var listHtml = ADDRESSES.map(function(a, i) {
+        return '\
+        <div class="rounded-xl p-4 mb-3 border border-gray-100" style="background:#fafafa;">\
+            <div class="flex items-start justify-between mb-2">\
+                <div><span class="text-sm font-bold text-gray-800">'+a.name+'</span><span class="text-sm text-gray-400 ml-2">'+a.mobile+'</span></div>\
+                '+(a.isDefault?'<span class="text-xs px-2 py-0.5 rounded-full bg-brand-gold text-white font-medium">默认</span>':'')+'\
+            </div>\
+            <p class="text-sm text-gray-600 mb-3">'+a.address+'</p>\
+            <div class="flex gap-2">\
+                '+(a.isDefault?'':'<span class="px-3 py-1 rounded-full border border-brand-gold/30 text-brand-gold text-xs font-medium cursor-pointer card-hover" onclick="setDefault('+i+')">设为默认</span>')+'\
+                <span class="px-3 py-1 rounded-full border border-gray-200 text-gray-500 text-xs font-medium cursor-pointer card-hover" onclick="editAddr('+i+')">编辑</span>\
+                <span class="px-3 py-1 rounded-full border border-red-200 text-red-400 text-xs font-medium cursor-pointer card-hover" onclick="showDelete('+i+')">删除</span>\
+            </div>\
+        </div>';
+    }).join('');
+
+    document.getElementById('app').innerHTML = '\
+        <div class="top-section"><div class="px-4 pt-3 pb-2"><img src="logo.png" alt="1039发现" style="height:28px;"/></div></div>\
+        <div class="content-card">\
+            <div class="px-4 py-4 border-b border-gray-100 flex items-center gap-2">\
+                <i data-lucide="map-pin" class="w-5 h-5 text-brand-gold"></i>\
+                <span class="text-base font-black text-gray-800">我的收货地址</span></div>\
+            <div class="p-4">'+listHtml+'</div>\
+            <div class="px-4 pb-4">\
+                <span class="block text-center cursor-pointer py-3 rounded-full border-2 border-dashed border-gray-300 text-gray-400 font-bold text-sm card-hover" onclick="showAddAddr()"><i data-lucide="plus" class="w-4 h-4 inline mr-1"></i>添加新地址</span>\
+            </div>\
+        </div>\
+        <div class="pb-6"></div>';
+    Common.initIcons();
+}
+
+function showAddAddr() { addrEditIdx = -1; showAddrPopup('新增地址'); }
+function editAddr(i) { addrEditIdx = i; showAddrPopup('编辑地址'); }
+
+function showAddrPopup(title) {
+    document.getElementById('addr-popup-title').textContent = title;
+    var d = addrEditIdx >= 0 ? ADDRESSES[addrEditIdx] : {name:'',mobile:'',address:'',isDefault:false};
+    document.getElementById('addr-form').innerHTML = '\
+        <div class="flex items-center gap-2"><span class="text-xs text-gray-400 w-12">姓名</span><input type="text" id="af-name" value="'+d.name+'" class="flex-1 text-sm px-3 py-2.5 rounded-xl bg-gray-50 border border-gray-200 outline-none"/></div>\
+        <div class="flex items-center gap-2"><span class="text-xs text-gray-400 w-12">手机号</span><input type="tel" id="af-mobile" value="'+d.mobile+'" class="flex-1 text-sm px-3 py-2.5 rounded-xl bg-gray-50 border border-gray-200 outline-none"/></div>\
+        <div class="flex items-center gap-2"><span class="text-xs text-gray-400 w-12">地址</span><input type="text" id="af-address" value="'+d.address+'" class="flex-1 text-sm px-3 py-2.5 rounded-xl bg-gray-50 border border-gray-200 outline-none"/></div>\
+        <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="af-default" class="accent-brand-gold" '+(d.isDefault?'checked':'')+'/><span class="text-sm text-gray-600">设为默认地址</span></label>\
+        <span class="block text-center cursor-pointer w-full py-3 rounded-full bg-brand-gold text-white font-bold text-sm card-hover" onclick="saveAddr()">保存</span>';
+    Common.showPopup('addr-overlay');
+    Common._icons(document.getElementById('addr-overlay'));
+}
+
+function hideAddrPopup(e) { Common.closePopup(e, 'addr-overlay'); }
+
+function saveAddr() {
+    var n = document.getElementById('af-name').value.trim();
+    var m = document.getElementById('af-mobile').value.trim();
+    var a2 = document.getElementById('af-address').value.trim();
+    var isDef = document.getElementById('af-default').checked;
+    if (!n || !a2) { Common.showToast('请填写完整信息'); return; }
+    if (isDef) ADDRESSES.forEach(function(x){x.isDefault=false;});
+    if (addrEditIdx >= 0) {
+        ADDRESSES[addrEditIdx].name = n; ADDRESSES[addrEditIdx].mobile = m; ADDRESSES[addrEditIdx].address = a2; ADDRESSES[addrEditIdx].isDefault = isDef;
+    } else {
+        ADDRESSES.push({id:Date.now(), name:n, mobile:m, address:a2, isDefault:isDef});
+    }
+    saveAddrs();
+    Common.hidePopup('addr-overlay');
+    Common.showToast('保存成功');
+    render();
+}
+
+function setDefault(i) { ADDRESSES.forEach(function(x){x.isDefault=false;}); ADDRESSES[i].isDefault=true; saveAddrs(); render(); }
+
+function showDelete(i) { addrDeleteIdx = i; Common.showPopup('delete-overlay'); }
+function hideDelete(e) { Common.closePopup(e, 'delete-overlay'); }
+function confirmDelete() { ADDRESSES.splice(addrDeleteIdx,1); saveAddrs(); Common.hidePopup('delete-overlay'); Common.showToast('已删除'); render(); }
+
+document.addEventListener('DOMContentLoaded', render);
+</script>
+</body>
+</html>

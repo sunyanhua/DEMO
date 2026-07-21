@@ -1,0 +1,70 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/><title>我的神助攻 - 他俩能成</title><script src="lib/tailwind.min.js"></script><script src="lib/lucide.min.js"></script><link rel="stylesheet" href="style.css"></head><body class="bg-white text-gray-900 antialiased pb-2">
+<div class="bg-decoration"><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div></div><div id="app" class="relative z-[1]"></div>
+
+<!-- 操作说明弹窗 -->
+<div id="guide-popup" class="fixed inset-0 bg-black/40 z-[200] hidden items-center justify-center" onclick="window.Common.closePopup(event,'guide-popup')">
+<div class="bg-white rounded-2xl p-5 mx-auto w-80 shadow-xl" onclick="event.stopPropagation()">
+<h3 class="text-base font-black text-gray-800 mb-3 text-center">⚡ 神助攻说明</h3>
+<div class="text-sm text-gray-600 leading-relaxed space-y-3">
+<p>为相互心动的CP送上神圣的助攻，让他俩匹配度直达<b class="text-brand-pink">1314</b>，并在他们的缘分记录里留下你重要的一笔！</p>
+<p>每周嗑学分达到<b class="text-brand-pink">1314</b>即可获取<b class="text-brand-pink">1</b>次，达到<b class="text-brand-pink">3344</b>获得<b class="text-brand-pink">3</b>次（以周六牵线榜揭晓时为准）</p>
+</div>
+<div class="mt-4 w-full py-2.5 rounded-xl bg-brand-pink text-white font-bold text-sm card-hover text-center cursor-pointer" onclick="window.Common.hidePopup('guide-popup')">我知道了</div>
+</div></div>
+
+<script src="common.js"></script><script>
+var assistCount=3; // 当前神助攻次数余额
+
+var PHOTOS_M=['images/photo/male/crop.17.0.1224.1632.0.750.1000.jpg','images/photo/male/crop.0.0.1078.1438.0.750.1000.jpg','images/photo/male/crop.194.56.917.1222.0.750.1000.jpg','images/photo/male/crop.0.237.1080.1440.0.750.1000.jpg','images/photo/male/crop.0.501.960.1280.0.750.1000.jpg'];
+var PHOTOS_F=['images/photo/female/crop.0.67.1079.1438.0.750.1000.jpg','images/photo/female/crop.0.61.723.964.0.750.1000.jpg','images/photo/female/crop.384.0.2304.3072.0.750.1000.jpg','images/photo/female/crop.0.0.2267.3023.0.750.1000.jpg','images/photo/female/crop.0.0.4896.6528.0.750.1000.jpg'];
+var NM=['阳光骑士','清风徐来','北辰','追风少年','咖啡不加糖','海的彼岸'];
+var NF=['甜心小鹿','浅笑安然','栀子花开','棉花糖','薄荷微光','雪落无声'];
+
+var records=[];
+for(var i=0;i<5;i++){
+  records.push({
+    male:{name:NM[i%6],photo:PHOTOS_M[i%5]},
+    female:{name:NF[(i+2)%6],photo:PHOTOS_F[i%5]},
+    time:'7月'+(3+Math.floor(Math.random()*25))+'日',
+  });
+}
+
+function render(){
+  var balanceCard='<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-3 deco-card">'+
+    '<div class="text-center mb-4"><span class="text-xs text-gray-500">神助攻次数</span><div class="text-5xl font-black text-brand-pink my-2">'+assistCount+'</div><span class="text-xs text-gray-400">次</span></div>'+
+    '<div class="flex gap-3"><span class="flex-1 text-center py-2.5 rounded-xl bg-brand-pink/10 text-brand-pink text-sm font-bold card-hover cursor-pointer border border-brand-pink/20" onclick="window.Common.showPopup(\x27guide-popup\x27)">操作说明</span><span class="flex-1 text-center py-2.5 rounded-xl bg-gradient-to-tr from-brand-pink to-brand-orange text-white text-sm font-bold card-hover cursor-pointer shadow-lg shadow-brand-pink/20" onclick="window.location.href=\x27assist.html\x27">前去助攻</span></div>'+
+  '</div>';
+
+  var listRows=records.map(function(r){
+    return'<div class="border-b border-gray-50 cursor-pointer card-hover" onclick="window.location.href=\x27fate-detail.html\x27">'+
+      '<div class="flex items-center justify-between px-4 py-4">'+
+        '<div class="flex flex-col items-center gap-1" style="width:70px">'+
+          '<img src="'+r.male.photo+'" class="w-14 h-14 rounded-full object-cover border-2 border-blue-100"/>'+
+          '<span class="text-xs font-bold text-gray-800 truncate max-w-full">'+r.male.name+'</span>'+
+        '</div>'+
+        '<div class="flex-1 flex flex-col items-center justify-center gap-0.5">'+
+          '<span class="text-2xl font-black text-brand-pink">1314</span>'+
+          '<span class="text-xs text-gray-400">匹配度</span>'+
+        '</div>'+
+        '<div class="flex flex-col items-center gap-1" style="width:70px">'+
+          '<img src="'+r.female.photo+'" class="w-14 h-14 rounded-full object-cover border-2 border-pink-100"/>'+
+          '<span class="text-xs font-bold text-gray-800 truncate max-w-full">'+r.female.name+'</span>'+
+        '</div>'+
+      '</div>'+
+      '<div class="flex items-center justify-center gap-2 rounded-lg px-3 py-2 mx-4 mb-3" style="background:rgba(224,77,44,0.12);">'+
+        '<span class="text-[11px] text-gray-500">你于'+r.time+'为他俩送上神助攻</span>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+
+  document.getElementById('app').innerHTML=
+    '<div class="sticky top-0 z-40 bg-white/95 backdrop-blur-md px-4 py-2.5 shadow-sm flex items-center"><i data-lucide="zap" class="w-3.5 h-3.5 text-brand-pink mr-2"></i><h1 class="text-sm font-bold text-gray-900">我的神助攻</h1></div>'+
+    '<div class="px-4 pt-3 pb-6">'+
+      balanceCard+
+      '<div class="bg-white rounded-2xl shadow-sm border border-gray-100">'+listRows+'</div>'+
+    '</div>';
+  window.Common.initIcons();
+}
+document.addEventListener('DOMContentLoaded',function(){render()});
+</script>
+</body></html>

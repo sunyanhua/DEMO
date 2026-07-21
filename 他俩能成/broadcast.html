@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>他俩能成 - 广播节目</title>
+    <script src="lib/tailwind.min.js"></script>
+    <script src="lib/lucide.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-white text-gray-900 antialiased pb-20">
+
+    <div class="bg-decoration">
+        <div class="bg-blob"></div><div class="bg-blob"></div>
+        <div class="bg-blob"></div><div class="bg-blob"></div>
+        <div class="bg-blob"></div>
+    </div>
+
+    <div id="app" class="relative z-[1]"></div>
+
+<!-- 图片放大弹窗 -->
+<div id="image-zoom-overlay" class="fixed inset-0 bg-black/80 z-[200] hidden items-center justify-center" onclick="window.Common.hidePopup('image-zoom-overlay')">
+<img id="image-zoom-img" src="" class="max-w-[95vw] max-h-[90vh] object-contain rounded-xl" onclick="event.stopPropagation()"/>
+</div>
+
+<!-- 完善资料确认弹窗 -->
+<div id="profile-check-popup" class="fixed inset-0 bg-black/40 z-[200] hidden items-center justify-center" onclick="window.Common.closePopup(event,'profile-check-popup')">
+<div class="bg-white rounded-2xl p-5 mx-auto w-80 shadow-xl text-center" onclick="event.stopPropagation()">
+<div class="text-4xl mb-3">📝</div><p class="text-sm text-gray-700 mb-4">您需要先完善脱单档案</p>
+<div class="space-y-2"><span class="block text-center cursor-pointer w-full py-2.5 rounded-xl bg-brand-pink text-white font-bold text-sm card-hover" onclick="window.location.href='profile-wizard.html'">马上完善</span><span class="block text-center cursor-pointer w-full py-2.5 rounded-xl bg-gray-100 text-gray-500 font-bold text-sm card-hover" onclick="cancelProfileCheck()">我再想想</span></div>
+</div></div>
+
+    <!-- 投稿弹窗遮罩 -->
+    <div id="modal-overlay" class="fixed inset-0 bg-black/40 z-[100] hidden flex items-end justify-center" onclick="closeModal(event)">
+        <div id="modal-content" class="bg-white w-full rounded-t-2xl max-h-[85vh] overflow-y-auto animate-slide-up" onclick="event.stopPropagation()">
+            <div class="sticky top-0 bg-white z-10 flex items-center justify-between px-4 py-4 border-b border-gray-100 rounded-t-2xl">
+                <span class="text-lg font-black text-gray-800">我要投稿</span>
+                <span onclick="closeModal()" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
+                    <i data-lucide="x" class="w-5 h-5 text-gray-500"></i>
+                </span>
+            </div>
+            <form id="submit-form" class="p-4 space-y-4" onsubmit="handleSubmit(event)">
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">投稿类型 <span class="text-brand-pink">*</span></label>
+                    <select id="post-type" required class="block cursor-pointer w-full px-4 py-3 rounded-xl border border-gray-200 text-sm bg-gray-50 focus:outline-none focus:border-brand-pink" onchange="if(this.value==='show'){this.value='';showProfileCheck();}">
+                        <option value="">请选择</option>
+                        <option value="show">我要展示（需先完善脱单档案）</option>
+                        <option value="confess">我要表白</option>
+                        <option value="goodnews">我要报喜</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">投稿内容 <span class="text-brand-pink">*</span></label>
+                    <textarea id="post-content" required rows="4" placeholder="写下你想说的话..." class="block cursor-pointer w-full px-4 py-3 rounded-xl border border-gray-200 text-sm bg-gray-50 focus:outline-none focus:border-brand-pink resize-none"></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">配图上传</label>
+                    <div class="flex gap-2 flex-wrap" id="image-preview-area">
+                        <label class="w-20 h-20 rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer hover:border-brand-pink transition-colors">
+                            <i data-lucide="plus" class="w-6 h-6 text-gray-400"></i>
+                            <input type="file" accept="image/*" multiple class="hidden" onchange="handleImageSelect(event)" />
+                        </label>
+                    </div>
+                </div>
+                <button type="submit" class="w-full py-3.5 rounded-2xl bg-gradient-to-tr from-brand-pink to-brand-orange text-white font-bold text-base shadow-lg shadow-brand-pink/20 card-hover">
+                    提交投稿
+                </span>
+            </form>
+        </div>
+    </div>
+
+    <script src="common.js"></script>
+    <script>
+        // ========== 弹窗系统 ==========
+        function openModal() {
+            window.Common.showPopup('modal-overlay');
+        }
+        function closeModal(e) { window.Common.closePopup(e, 'modal-overlay'); }
+        function showImageZoom(src){document.getElementById('image-zoom-img').src=src;window.Common.showPopup('image-zoom-overlay');}
+        function showProfileCheck(){window.Common.showPopup('profile-check-popup');}
+        function cancelProfileCheck(){window.Common.hidePopup('profile-check-popup');document.getElementById('post-type').value='';}
+
+        let selectedImages = [];
+        function handleImageSelect(event) {
+            const files = Array.from(event.target.files);
+            const area = document.getElementById('image-preview-area');
+            files.forEach((file, idx) => {
+                if (selectedImages.length >= 9) return;
+                selectedImages.push(file);
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'preview-img-wrapper relative w-20 h-20 rounded-xl overflow-hidden';
+                    wrapper.innerHTML = `
+                        <img src="${e.target.result}" class="w-full h-full object-cover" />
+                        <span type="button" class="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-black/50 text-white flex items-center justify-center" onclick="removeImage(this, ${selectedImages.length - 1})">
+                            <i data-lucide="x" class="w-3 h-3"></i>
+                        </span>`;
+                    area.insertBefore(wrapper, area.lastElementChild);
+                    window.Common.initIcons();
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+        function removeImage(btn, idx) {
+            selectedImages.splice(idx, 1);
+            btn.closest('.preview-img-wrapper').remove();
+        }
+
+        function handleSubmit(e) {
+            e.preventDefault();
+            const type = document.getElementById('post-type').value;
+            const content = document.getElementById('post-content').value.trim();
+            if (!type) { window.Common.showToast('请选择投稿类型'); return; }
+            if (!content) { window.Common.showToast('请输入投稿内容'); return; }
+            window.Common.showToast('投稿成功！等待审核播出');
+            selectedImages = [];
+            window.Common.hidePopup('modal-overlay');
+        }
+
+        // ========== 抽奖系统 ==========
+        function doLottery() {
+            const prizes = [
+                { type: 'prize', title: '恭喜中奖！', msg: '红包 0.2 元', img: '💰', cls: 'text-green-500' },
+                { type: 'prize', title: '恭喜中奖！', msg: '红包 0.5 元', img: '💵', cls: 'text-green-500' },
+                { type: 'prize', title: '恭喜中奖！', msg: '搭子计划优惠券', img: '🎫', cls: 'text-brand-pink' },
+                { type: 'prize', title: '恭喜中奖！', msg: '精品包挂', img: '🎀', cls: 'text-brand-pink' },
+                { type: 'error1', title: '抽奖失败', msg: '请在节目时间内抽奖！', img: '⏰', cls: 'text-gray-400' },
+                { type: 'error2', title: '抽奖失败', msg: '本时段您已经抽过奖了！', img: '🔔', cls: 'text-gray-400' },
+            ];
+            const result = prizes[Math.floor(Math.random() * prizes.length)];
+            document.getElementById('lottery-result-title').innerHTML = result.title;
+            document.getElementById('lottery-result-img').innerHTML = result.img;
+            document.getElementById('lottery-result-msg').innerHTML = result.msg;
+            const titleEl = document.getElementById('lottery-result-title');
+            titleEl.className = `text-lg font-black ${result.cls} mt-2`;
+            const hintEl = document.getElementById('lottery-result-hint');
+            if (result.type === 'prize') {
+                hintEl.innerHTML = '<p class="text-xs text-gray-400 mt-2">您可前往 个人中心 → 我的奖品 查看</p><span onclick="window.location.href=\'my-prizes.html\'" class="inline-block text-center cursor-pointer mt-2 px-4 py-1.5 rounded-lg bg-brand-pink/10 text-brand-pink font-bold text-xs card-hover">马上查看</span>';
+            } else {
+                hintEl.innerHTML = '';
+            }
+            window.Common.showPopup('lottery-popup');
+        }
+        function closeLottery(e) { window.Common.closePopup(e, 'lottery-popup'); }
+
+        // ========== Mock 投稿数据 ==========
+        const POSTS = [
+            {
+                id: 1,
+                user: { name: '阳光骑士', avatar: 'images/photo/male/crop.0.0.1078.1438.0.750.1000.jpg' },
+                time: '3 小时前',
+                tag: '#我要展示#',
+                tagColor: 'text-purple-500 bg-purple-50',
+                content: '92年男生，180cm，互联网大厂产品经理，喜欢骑行和摄影。希望在这里遇到有趣的灵魂，一起探索北京的美食和胡同~',
+                images: ['images/photo/male/crop.0.237.1080.1440.0.750.1000.jpg'],
+                status: '待播出',
+                statusClass: 'bg-yellow-50 text-yellow-600',
+                likes: 28, liked: false,
+            },
+            {
+                id: 2,
+                user: { name: '甜心小鹿', avatar: 'images/photo/female/crop.0.67.1079.1438.0.750.1000.jpg' },
+                time: '5 小时前',
+                tag: '#我要表白#',
+                tagColor: 'text-pink-500 bg-pink-50',
+                content: '上周末在三里屯Bistro遇见穿蓝色卫衣的你，你说你也在听这个节目。如果看到这条请私信我，想认识你~ 💌',
+                images: [],
+                status: '已播出',
+                statusClass: 'bg-green-50 text-green-600',
+                likes: 56, liked: true,
+            },
+            {
+                id: 3,
+                user: { name: '奶茶妹妹', avatar: 'images/photo/female/crop.0.61.723.964.0.750.1000.jpg' },
+                time: '8 小时前',
+                tag: '#我要报喜#',
+                tagColor: 'text-orange-500 bg-orange-50',
+                content: '通过这个节目认识的小哥哥，我们已经在一起三个月啦！谢谢"他俩能成"的红娘团队，超靠谱！大家也要相信缘分哦~ 🎉',
+                images: ['images/photo/female/crop.0.0.4896.6528.0.750.1000.jpg'],
+                status: '已播出',
+                statusClass: 'bg-green-50 text-green-600',
+                likes: 132, liked: false,
+            },
+            {
+                id: 4,
+                user: { name: '追风少年', avatar: 'images/photo/male/crop.0.875.2143.2857.0.750.1000.jpg' },
+                time: '昨天 21:30',
+                tag: '#我要展示#',
+                tagColor: 'text-purple-500 bg-purple-50',
+                content: '95后狮子座，热爱运动和户外。周末经常去奥森跑步，喜欢有活力的女孩子。希望能找到一个一起早起跑步的人~',
+                images: ['images/photo/male/crop.1033.0.3000.4000.0.750.1000.jpg', 'images/photo/male/crop.0.501.960.1280.0.750.1000.jpg'],
+                status: '待播出',
+                statusClass: 'bg-yellow-50 text-yellow-600',
+                statusDate: '预计 7月15日 播出',
+                likes: 41, liked: false,
+            },
+            {
+                id: 5,
+                user: { name: '浅笑安然', avatar: 'images/photo/female/crop.384.0.2304.3072.0.750.1000.jpg' },
+                time: '昨天 18:15',
+                tag: '#我要表白#',
+                tagColor: 'text-pink-500 bg-pink-50',
+                content: '给那个每周三下午都在朝阳图书馆二楼靠窗座位看书的男生：你认真看书的样子真的很帅。下一期节目我会点一首歌送给你~ 🎵',
+                images: [],
+                status: '待播出',
+                statusClass: 'bg-yellow-50 text-yellow-600',
+                likes: 89, liked: true,
+            },
+            {
+                id: 6,
+                user: { name: '咖啡不加糖', avatar: 'images/photo/male/crop.0.0.1773.2364.0.750.1000.jpg' },
+                time: '2 天前',
+                tag: '#我要展示#',
+                tagColor: 'text-purple-500 bg-purple-50',
+                content: '88年天秤座，自律且热爱生活。金融行业，喜欢看书、咖啡和旅行。成熟稳重但也不失幽默感，期待遇见同样热爱生活的你。',
+                images: [],
+                status: '已播出',
+                statusClass: 'bg-green-50 text-green-600',
+                likes: 67, liked: false,
+            },
+        ];
+
+        // ========== 点赞 ==========
+        function toggleLike(postId) {
+            const post = POSTS.find(p => p.id === postId);
+            if (!post) return;
+            post.liked = !post.liked;
+            post.likes += post.liked ? 1 : -1;
+            const heartEl = document.getElementById(`heart-${postId}`);
+            const countEl = document.getElementById(`like-count-${postId}`);
+            if (post.liked) {
+                heartEl.classList.add('text-brand-pink', 'fill-brand-pink');
+                heartEl.classList.remove('text-gray-400');
+            } else {
+                heartEl.classList.remove('text-brand-pink', 'fill-brand-pink');
+                heartEl.classList.add('text-gray-400');
+            }
+            countEl.textContent = post.likes;
+        }
+
+        // ========== 渲染 ==========
+        function renderFeed() {
+            return POSTS.map(p => `
+            <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 fade-in">
+                <!-- 用户信息行 -->
+                <div class="flex items-start gap-3 mb-3">
+                    <img src="${p.user.avatar}" class="w-10 h-10 rounded-full object-cover border border-gray-100 flex-shrink-0" />
+                    <div class="flex-1 min-w-0">
+                        <span class="text-[15px] font-bold text-gray-800 block truncate">${p.user.name}</span>
+                        <span class="text-[11px] text-gray-400 mt-0.5">${p.time}</span>
+                    </div>
+                    <span class="flex-shrink-0 px-3 py-1.5 rounded-full bg-brand-pink/5 text-brand-pink text-[11px] font-medium border border-brand-pink/20 card-hover" onclick="window.location.href='profile.html'">
+                        个人主页
+                    </span>
+                </div>
+                <!-- 内容区 -->
+                <div class="mb-3">
+                    <span class="inline-block text-[11px] px-2 py-0.5 rounded-md font-medium mb-2 ${p.tagColor}">${p.tag}</span>
+                    <p class="text-sm text-gray-700 leading-relaxed">${p.content}</p>
+                    ${p.images.length > 0 ? `
+                    <div class="flex gap-2 mt-2 flex-wrap">
+                        ${p.images.map(img => `<img src="${img}" class="w-24 h-24 rounded-xl object-cover cursor-pointer" onclick="showImageZoom('${img}')" />`).join('')}
+                    </div>` : ''}
+                </div>
+                <!-- 状态 + 点赞 -->
+                <div class="flex items-center justify-between pt-2 border-t border-gray-50">
+                    <span class="text-[11px] px-2 py-0.5 rounded-full font-medium ${p.statusClass}">
+                        ${p.status}${p.statusDate ? ' · ' + p.statusDate : ''}
+                    </span>
+                    <span onclick="toggleLike(${p.id})" class="flex items-center gap-1.5 text-xs cursor-pointer">
+                        <i id="heart-${p.id}" data-lucide="heart" class="w-4 h-4 ${p.liked ? 'text-brand-pink fill-brand-pink' : 'text-gray-400'}" stroke-width="${p.liked ? 2.5 : 2}"></i>
+                        <span id="like-count-${p.id}" class="text-gray-500 font-medium">${p.likes}</span>
+                    </span>
+                </div>
+            </div>
+            `).join('');
+        }
+
+        function render() {
+            document.getElementById('app').innerHTML = `
+                <!-- 顶部区域 -->
+                <div class="top-section" id="program-header">
+                    <div class="px-4 pt-3">
+                        <img src="images/program.jpg" alt="节目" class="block text-center cursor-pointer w-full h-auto rounded-2xl border border-black/5" />
+                    </div>
+                </div>
+                <!-- 两个按钮 — 滚动吸顶 -->
+                <div id="sticky-btns" class="sticky top-0 z-30 px-4 py-3 flex gap-3">
+                    <span class="flex-1 py-3 rounded-2xl bg-gradient-to-tr from-brand-pink to-brand-orange text-white font-bold text-base shadow-lg shadow-brand-pink/20 card-hover" onclick="window.Common.showToast('即将跳转到收听页面')">
+                        <span class="flex items-center justify-center gap-2"><i data-lucide="radio" class="w-4 h-4"></i>马上收听</span>
+                    </span>
+                    <span class="flex-1 py-3 rounded-2xl bg-white border-2 border-brand-pink text-brand-pink font-bold text-base card-hover" onclick="doLottery()">
+                        <span class="flex items-center justify-center gap-2"><i data-lucide="gift" class="w-4 h-4"></i>立即抽奖</span>
+                    </span>
+                </div>
+                <!-- 投稿列表 -->
+                <div class="px-4 pt-4 pb-6">
+                    <div class="flex items-center justify-between mb-3">
+                        <h2 class="text-lg font-black text-gray-800 flex items-center gap-1.5">
+                            <span class="text-brand-pink">📻</span>广播投稿
+                        </h2>
+                    </div>
+                    <div class="space-y-3">
+                        ${renderFeed()}
+                    </div>
+                </div>
+            `;
+            window.Common.initIcons();
+        }
+
+        // 抽奖弹窗注入
+        function injectLotteryPopup() {
+            const popup = document.createElement('div');
+            popup.id = 'lottery-popup';
+            popup.className = 'fixed inset-0 bg-black/40 z-[120] hidden items-center justify-center';
+            popup.setAttribute('onclick', 'closeLottery(event)');
+            popup.innerHTML = `
+                <div class="bg-white rounded-2xl p-5 mx-auto w-80 shadow-xl text-center" onclick="event.stopPropagation()">
+                    <div class="text-5xl mb-3" id="lottery-result-img">🎁</div>
+                    <div id="lottery-result-title" class="text-lg font-black text-gray-800">抽奖中...</div>
+                    <p id="lottery-result-msg" class="text-sm text-gray-500 mt-1"></p>
+                    <div id="lottery-result-hint"></div>
+                    <span onclick="closeLottery()" class="block text-center cursor-pointer mt-5 w-full py-2.5 rounded-xl bg-brand-pink text-white font-bold text-sm card-hover">知道了</span>
+                </div>`;
+            document.body.appendChild(popup);
+        }
+
+        // sticky 按钮初始透明→吸顶加白底
+        function initStickyBtns() {
+            const btns = document.getElementById('sticky-btns');
+            const header = document.getElementById('program-header');
+            if (!btns || !header) return;
+            const observer = new IntersectionObserver(([e]) => {
+                if (e.isIntersecting) {
+                    btns.classList.remove('bg-white','backdrop-blur-md','shadow-sm');
+                } else {
+                    btns.classList.add('bg-white','backdrop-blur-md','shadow-sm');
+                }
+            }, { threshold: 0 });
+            observer.observe(header);
+        }
+
+        // 浮动投稿按钮注入
+        function injectFloatingBtn() {
+            const btn = document.createElement('div');
+            btn.id = 'floating-submit';
+            btn.className = 'fixed bottom-6 left-1/2 -translate-x-1/2 z-40 px-6 py-3 rounded-full bg-gradient-to-tr from-brand-pink to-brand-orange text-white font-bold text-sm shadow-xl shadow-brand-pink/30 card-hover cursor-pointer flex items-center gap-2';
+            btn.innerHTML = '<i data-lucide="edit-3" class="w-4 h-4"></i>我要投稿';
+            btn.onclick = openModal;
+            document.body.appendChild(btn);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            render();
+            injectLotteryPopup();
+            injectFloatingBtn();
+            initStickyBtns();
+            window.Common.initIcons();
+        });
+    </script>
+
+
+</body>
+</html>

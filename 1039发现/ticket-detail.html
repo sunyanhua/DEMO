@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>票务详情 - 1039发现</title>
+<script src="lib/tailwind.min.js"></script>
+<script src="lib/lucide.min.js"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="antialiased">
+
+<div class="bg-decoration">
+    <div class="bg-blob"></div><div class="bg-blob"></div>
+    <div class="bg-blob"></div><div class="bg-blob"></div>
+    <div class="bg-blob"></div><div class="bg-blob"></div>
+</div>
+
+<div id="app" class="relative z-[1]"></div>
+
+<!-- 购买弹窗 -->
+<div id="buy-overlay" class="fixed inset-0 bg-black/40 z-[100] hidden items-end justify-center" onclick="hideBuy(event)">
+<div class="bg-white w-full rounded-t-2xl max-h-[90vh] overflow-y-auto animate-slide-up" onclick="event.stopPropagation()">
+<div class="sticky top-0 bg-white z-10 flex items-center px-4 py-4 border-b border-gray-100 rounded-t-2xl">
+    <span class="text-lg font-black text-gray-800 flex-1 text-center" id="buy-step-title">选择船票类型</span>
+    <span onclick="hideBuy()" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center card-hover flex-shrink-0"><i data-lucide="x" class="w-5 h-5 text-gray-500"></i></span>
+</div>
+<div class="p-4 space-y-4" id="buy-form"></div>
+</div></div>
+
+<!-- 优惠券弹窗 -->
+<div id="coupon-overlay" class="fixed inset-0 bg-black/40 z-[110] hidden items-center justify-center" onclick="hideCoupon(event)">
+<div class="bg-white rounded-2xl p-5 mx-auto w-80 max-h-[70vh] overflow-y-auto shadow-xl" onclick="event.stopPropagation()">
+<div class="flex items-center justify-between mb-3">
+<span class="text-base font-black text-gray-800">选择优惠券</span>
+<span onclick="hideCoupon()" class="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center card-hover"><i data-lucide="x" class="w-4 h-4 text-gray-500"></i></span>
+</div>
+<div class="mb-3 relative">
+<input type="text" placeholder="输入兑换码" class="w-full text-sm px-3 py-2.5 rounded-xl bg-gray-50 border border-gray-200 outline-none focus:border-brand-blue pr-16" id="coupon-code"/>
+<span class="absolute right-1.5 top-1/2 -translate-y-1/2 px-3 py-1 rounded-lg text-white text-xs font-bold cursor-pointer card-hover" style="background-color:#3DAFD8;" onclick="applyCouponCode()">兑换</span>
+</div>
+<div class="space-y-2" id="coupon-list"></div>
+</div></div>
+
+<!-- 微信支付弹窗 -->
+<div id="pay-overlay" class="fixed inset-0 bg-black/40 z-[120] hidden items-end justify-center" onclick="hidePay(event)">
+<div class="bg-white w-full rounded-t-2xl animate-slide-up" onclick="event.stopPropagation()">
+<div class="sticky top-0 bg-white z-10 flex items-center justify-between px-4 py-4 border-b border-gray-100 rounded-t-2xl">
+<span class="text-lg font-black text-gray-800">确认支付</span>
+<span onclick="hidePay()" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center card-hover"><i data-lucide="x" class="w-5 h-5 text-gray-500"></i></span>
+</div>
+<div class="p-4 text-center space-y-4">
+<div class="text-5xl">💳</div>
+<div class="text-sm text-gray-500" id="pay-title"></div>
+<div class="text-2xl font-black" style="color:#3DAFD8;" id="pay-amount"></div>
+<div class="text-xs text-gray-400">请选择支付方式</div>
+<div class="px-4">
+<span class="block text-center cursor-pointer w-full py-4 rounded-xl bg-gradient-to-tr from-green-500 to-green-600 text-white font-bold text-base shadow-lg shadow-green-500/20 card-hover flex items-center justify-center gap-2" onclick="doPay()">
+<i data-lucide="smartphone" class="w-5 h-5"></i>微信支付
+</span>
+</div>
+<span onclick="hidePay()" class="block text-center cursor-pointer w-full py-2.5 rounded-xl bg-gray-100 text-gray-500 font-bold text-sm card-hover">取消</span>
+</div></div></div>
+
+<script src="common.js"></script>
+<script>
+var SPECS = [
+    { id:0, name:'普通船票',     price:120, stock:99999, stockText:'不限' },
+    { id:1, name:'1039专属船票', price:168, stock:99999, stockText:'不限' },
+];
+
+var MY_COUPONS = [
+    { id:0, name:'新用户专享券', desc:'满100减10', amount:10, minPrice:100 },
+    { id:1, name:'1039周年庆券', desc:'满200减20', amount:20, minPrice:200 },
+];
+
+var state = {
+    specIdx: 0,
+    quantity: 1,
+    selectedCoupon: -1,
+    couponAmount: 0,
+    agreed: false,
+};
+
+function getPrice() { return SPECS[state.specIdx].price; }
+
+function renderHeader() {
+    return '\
+    <div class="fixed top-0 left-0 right-0 z-50 flex items-center px-4 py-3 text-white" style="background:linear-gradient(180deg,rgba(26,24,24,0.85) 0%,rgba(26,24,24,0) 100%);">\
+        <a href="tickets.html" class="p-2 bg-white/10 backdrop-blur rounded-full card-hover"><i data-lucide="chevron-left" class="w-6 h-6"></i></a>\
+    </div>';
+}
+
+function renderCover() {
+    return '\
+    <div class="relative w-full" style="aspect-ratio:16/9;">\
+        <img src="images/cover2.png" class="w-full h-full object-cover" />\
+        <div class="absolute bottom-0 left-0 right-0 h-12" style="background:linear-gradient(to top,#FFFFFF,transparent);"></div>\
+    </div>';
+}
+
+function render() {
+    var spec = SPECS[state.specIdx];
+    var itemTotal = spec.price - state.couponAmount;
+    var totalPrice = itemTotal * state.quantity;
+
+    document.getElementById('app').innerHTML = '\
+        ' + renderHeader() + '\
+        ' + renderCover() + '\
+        <div class="relative -mt-6 bg-white rounded-t-3xl px-5 pt-6 pb-20 fade-in" style="min-height:calc(100vh - 44vw - 56px);">\
+            <h1 class="text-xl font-black text-gray-900 mb-2">什刹海摇橹船票</h1>\
+            <p class="text-xs text-gray-500 mb-5">泛舟什刹海，感受老北京水岸风情</p>\
+            \
+            <h3 class="text-gray-800 font-bold text-base mb-3">行程亮点</h3>\
+            <div class="text-sm text-gray-600 space-y-2 mb-5">\
+                <div class="flex items-start gap-2"><span style="color:#3DAFD8;" class="mt-0.5">●</span><span>什刹海是北京城内最古老的水域，已有700余年历史</span></div>\
+                <div class="flex items-start gap-2"><span style="color:#3DAFD8;" class="mt-0.5">●</span><span>专业船夫摇橹，全程约40分钟</span></div>\
+                <div class="flex items-start gap-2"><span style="color:#3DAFD8;" class="mt-0.5">●</span><span>途经银锭桥、望海楼、恭王府等历史景点</span></div>\
+                <div class="flex items-start gap-2"><span style="color:#3DAFD8;" class="mt-0.5">●</span><span>船上配有茶点，可品尝老北京小吃</span></div>\
+            </div>\
+            \
+            <h3 class="text-gray-800 font-bold text-base mb-3">使用说明</h3>\
+            <div class="text-sm text-gray-600 space-y-1 mb-5">\
+                <p>· 请提前1天预约，电话：010-88888888</p>\
+                <p>· 每张船票限1人使用，1.2米以下儿童半价</p>\
+                <p>· 使用时间：每天9:00-18:00</p>\
+                <p>· 有效期：购票后30天内有效</p>\
+            </div>\
+            \
+            <h3 class="text-gray-800 font-bold text-base mb-3">退款说明</h3>\
+            <div class="text-sm text-gray-500 bg-gray-50 rounded-xl p-3 mb-5">\
+                <p>票未核销前可随时申请全额退款。</p>\
+            </div>\
+        </div>\
+        <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-6 py-3 z-50 flex items-center gap-4" style="box-shadow:0 -4px 10px rgba(0,0,0,0.05);">\
+            <div class="flex-1">\
+                <span class="text-xl font-black" style="color:#3DAFD8;">¥' + Math.min.apply(null, SPECS.map(function(s){return s.price;})) + '元起</span>\
+            </div>\
+            <span class="px-8 py-3 rounded-full text-white font-bold text-sm card-hover shadow-lg" style="background-color:#3DAFD8;box-shadow:0 4px 16px rgba(61,175,216,0.25);" onclick="showBuy()">立即购买</span>\
+        </div>\
+    ';
+    Common.initIcons();
+}
+
+// ============ 购买弹窗 Step 1 ============
+function showBuy() { renderBuyStep1(); Common.showPopup('buy-overlay'); }
+function hideBuy(e) { Common.closePopup(e, 'buy-overlay'); }
+
+function renderBuyStep1() {
+    document.getElementById('buy-step-title').textContent = '选择船票类型';
+    var spec = SPECS[state.specIdx];
+    var price = spec.price;
+    var itemTotal = price - state.couponAmount;
+    var totalPrice = itemTotal * state.quantity;
+
+    var specHtml = SPECS.map(function(s, i) {
+        var sel = state.specIdx === i;
+        return '\
+        <div class="flex-1 py-3 rounded-xl text-center text-sm font-medium cursor-pointer card-hover border-2 transition-all ' + (sel ? 'border-brand-blue bg-brand-blue-light' : 'border-gray-100 bg-white text-gray-600') + '" style="' + (sel ? 'border-color:#3DAFD8;background:rgba(61,175,216,0.08);color:#3DAFD8;' : '') + '" onclick="selectSpec(' + i + ')">\
+            ' + s.name + '\
+        </div>';
+    }).join('');
+
+    var cpText = state.selectedCoupon >= 0 ? MY_COUPONS[state.selectedCoupon].name + '（省¥' + MY_COUPONS[state.selectedCoupon].amount + '）' : '选择优惠券抵扣';
+    var cpCls = state.selectedCoupon >= 0 ? 'bg-green-50 border-green-200 text-green-700' : 'bg-gray-50 border-gray-200 text-gray-500';
+    var cpIcon = state.selectedCoupon >= 0 ? 'check-circle' : 'ticket';
+
+    document.getElementById('buy-form').innerHTML = '\
+        <div>\
+            <label class="block text-sm font-bold text-gray-700 mb-2">船票类型</label>\
+            <div class="flex gap-2">' + specHtml + '</div>\
+        </div>\
+        <div>\
+            <label class="block text-sm font-bold text-gray-700 mb-2">数量</label>\
+            <div class="flex items-center gap-3">\
+                <span class="w-10 h-10 rounded-xl border-2 border-gray-200 flex items-center justify-center text-lg font-bold cursor-pointer card-hover ' + (state.quantity <= 1 ? 'text-gray-300 border-gray-100' : 'text-gray-600') + '" onclick="changeQty(-1)">−</span>\
+                <span class="text-lg font-bold text-gray-800 w-8 text-center">' + state.quantity + '</span>\
+                <span class="w-10 h-10 rounded-xl border-2 border-gray-200 flex items-center justify-center text-lg font-bold cursor-pointer card-hover text-gray-600" onclick="changeQty(1)">+</span>\
+            </div>\
+        </div>\
+        <div>\
+            <label class="block text-sm font-bold text-gray-700 mb-2">优惠券</label>\
+            <div class="flex items-center justify-between p-3 rounded-xl cursor-pointer card-hover border ' + cpCls + '" onclick="showCoupons()">\
+                <div class="flex items-center gap-2 text-sm">\
+                    <i data-lucide="' + cpIcon + '" class="w-4 h-4"></i>\
+                    <span>' + cpText + '</span>\
+                </div>\
+                <i data-lucide="chevron-right" class="w-4 h-4 text-gray-300"></i>\
+            </div>\
+        </div>\
+        <div class="bg-gray-50 rounded-xl p-3">\
+            <div class="flex justify-between text-sm mb-2">\
+                <span class="text-gray-500">单价</span><span class="text-gray-800">¥' + itemTotal + '</span>\
+            </div>\
+            ' + '<div class="flex justify-between text-sm mb-2"><span class="text-gray-500">数量</span><span class="text-gray-800">×' + state.quantity + '</span></div>' + '\
+            ' + (state.couponAmount > 0 ? '<div class="flex justify-between text-sm mb-2"><span class="text-gray-500">优惠券</span><span class="text-red-400">-¥' + (state.couponAmount * state.quantity) + '</span></div>' : '') + '\
+            <div class="flex justify-between text-sm font-bold pt-2 border-t border-gray-200">\
+                <span class="text-gray-800">待支付</span><span class="text-lg font-black" style="color:#3DAFD8;">¥' + totalPrice + '</span>\
+            </div>\
+        </div>\
+        <label class="flex items-start gap-2 cursor-pointer pt-1 pb-3">\
+            <input type="checkbox" id="buy-agreement-step1" class="mt-0.5" style="accent-color:#3DAFD8;" ' + (state.agreed ? 'checked' : '') + ' onchange="state.agreed=this.checked"/>\
+            <span class="text-sm text-gray-600">我已阅读并同意 <span class="underline cursor-pointer" style="color:#3DAFD8;" onclick="Common.showToast(\'购票须知详情\')">购票须知</span></span>\
+        </label>\
+        <span class="block text-center cursor-pointer w-full py-3 rounded-full text-white font-bold text-sm card-hover" style="background-color:#3DAFD8;" onclick="confirmBuy()">确认并支付</span>\
+    ';
+    Common._icons(document.getElementById('buy-form'));
+}
+
+function selectSpec(i) { state.specIdx = i; renderBuyStep1(); }
+function changeQty(d) { var n = state.quantity + d; if (n >= 1 && n <= 5) { state.quantity = n; renderBuyStep1(); } }
+
+function confirmBuy() {
+    if (!document.getElementById('buy-agreement-step1').checked) { Common.showToast('请阅读并同意购票须知'); return; }
+    Common.hidePopup('buy-overlay');
+
+    var spec = SPECS[state.specIdx];
+    var itemTotal = spec.price - state.couponAmount;
+    var totalPrice = itemTotal * state.quantity;
+    document.getElementById('pay-title').textContent = spec.name + (state.quantity > 1 ? ' × ' + state.quantity : '');
+    document.getElementById('pay-amount').textContent = '¥' + totalPrice;
+    Common.showPopup('pay-overlay');
+}
+
+function doPay() {
+    Common.hidePopup('pay-overlay');
+    var spec = SPECS[state.specIdx];
+    var itemTotal = spec.price - state.couponAmount;
+    var totalPrice = itemTotal * state.quantity;
+
+    var persons = [];
+    for (var g = 0; g < state.quantity; g++) {
+        persons.push({ group: g + 1, label: '购票人', name: '', mobile: '', idcard: '' });
+    }
+
+    var order = {
+        orderNo:'OD' + Date.now(),
+        orderTime: new Date().toLocaleString('zh-CN'),
+        productName:'什刹海摇橹船票', productEmoji:'🛶', coverImage:'images/cover2.png',
+        specName: spec.name + (state.quantity > 1 ? ' × ' + state.quantity : ''),
+        dateLabel:'', dateValue:'',
+        quantity: state.quantity,
+        persons: persons,
+        personCount: 1, personLabels: ['购票人'],
+        price: totalPrice, originalPrice: spec.price * state.quantity,
+        couponAmount: state.couponAmount * state.quantity,
+        couponName: state.selectedCoupon >= 0 ? MY_COUPONS[state.selectedCoupon].name : '',
+        refundStages:[{days_before:0, refund_value:100, text:'票未核销前可随时全额退款'}],
+        status:'paid', type:'ticket', detailUrl:'ticket-detail.html',
+        isBooking: true, isPostRegister: true,
+    };
+    localStorage.setItem('lastOrder', JSON.stringify(order));
+    Common.showToast('支付成功！');
+    setTimeout(function() { location.href = 'order-detail.html'; }, 600);
+}
+function hidePay(e) { Common.closePopup(e, 'pay-overlay'); }
+
+// ============ 优惠券 ============
+function showCoupons() {
+    var listHtml = MY_COUPONS.map(function(cp, i) {
+        var active = state.selectedCoupon === i;
+        var disabled = SPECS[state.specIdx].price * state.quantity < cp.minPrice;
+        return '\
+        <div class="flex items-center justify-between p-3 rounded-xl cursor-pointer card-hover border-2 transition-all ' + (active ? 'border-brand-blue bg-brand-blue-light' : (disabled ? 'border-gray-100 bg-gray-50 opacity-50' : 'border-gray-100 bg-white')) + '" onclick="' + (disabled ? '' : 'selectCoupon(' + i + ')') + '">\
+            <div class="flex items-center gap-2.5">\
+                <div class="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center"><i data-lucide="ticket" class="w-5 h-5 text-red-400"></i></div>\
+                <div><span class="text-sm font-bold text-gray-800">' + cp.name + '</span><p class="text-xs text-gray-400">' + cp.desc + (disabled ? '（未满¥' + cp.minPrice + '）' : '') + '</p></div>\
+            </div>\
+            ' + (active ? '<div class="w-5 h-5 rounded-full flex items-center justify-center" style="background:#3DAFD8;"><i data-lucide="check" class="w-3.5 h-3.5 text-white"></i></div>' : '<div class="w-5 h-5 rounded-full border-2 border-gray-200"></div>') + '\
+        </div>';
+    }).join('');
+
+    var noneActive = state.selectedCoupon === -1;
+    listHtml += '\
+    <div class="flex items-center justify-between p-3 rounded-xl cursor-pointer card-hover border-2 transition-all ' + (noneActive ? 'border-brand-blue bg-brand-blue-light' : 'border-gray-100 bg-white') + '" onclick="selectCoupon(-1)">\
+        <span class="text-sm text-gray-500">不使用优惠券</span>\
+        ' + (noneActive ? '<div class="w-5 h-5 rounded-full flex items-center justify-center" style="background:#3DAFD8;"><i data-lucide="check" class="w-3.5 h-3.5 text-white"></i></div>' : '<div class="w-5 h-5 rounded-full border-2 border-gray-200"></div>') + '\
+    </div>';
+
+    document.getElementById('coupon-list').innerHTML = listHtml;
+    Common.showPopup('coupon-overlay');
+    setTimeout(function() { Common._icons(document.getElementById('coupon-overlay')); }, 50);
+}
+function hideCoupon(e) { Common.closePopup(e, 'coupon-overlay'); }
+function selectCoupon(i) {
+    state.selectedCoupon = i; state.couponAmount = i >= 0 ? MY_COUPONS[i].amount : 0;
+    Common.hidePopup('coupon-overlay'); renderBuyStep1();
+}
+function applyCouponCode() {
+    var code = document.getElementById('coupon-code').value.trim();
+    if (!code) { Common.showToast('请输入兑换码'); return; }
+    state.selectedCoupon = 0; state.couponAmount = MY_COUPONS[0].amount;
+    Common.showToast('优惠券兑换成功！'); Common.hidePopup('coupon-overlay'); renderBuyStep1();
+}
+
+document.addEventListener('DOMContentLoaded', render);
+</script>
+</body>
+</html>

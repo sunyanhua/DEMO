@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>他俩能成 - 活动</title>
+<script src="lib/tailwind.min.js"></script>
+<script src="lib/lucide.min.js"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-white text-gray-900 antialiased pb-28">
+<div class="bg-decoration"><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div></div>
+<div id="app" class="relative z-[1]"></div>
+<script src="common.js"></script>
+<script>
+var filter='all';
+var ALL_ACTIVITIES=[
+  {id:99,title:'"朝阳相伴"广播节目嘉宾招募 | 来《一路畅通·他俩能成》聊聊你的故事',desc:'走进北京广播电视台直播间，让你的声音传遍京城。专属于朝阳区工会职工的出圈机会！',image:'https://images.unsplash.com/photo-1529333166437-7750a6dd5a70?w=800&q=80',location:'北京广播电视台直播间',date:'2026年7月25日-12月1日',price:0,status:'RECRUITING',current:8,max:30,deadline:'7月20日 24:00',zone:'chaoyang',isFeatured:true},
+  {id:1,title:'春日花语·朝阳青年联谊会',desc:'以花为媒，遇见心动。在花香四溢的午后，与TA一起体验插花艺术。',image:'https://images.unsplash.com/photo-1563241527-3004b7be0ffd?w=800&q=80',location:'朝阳公园·花艺工坊',date:'7月20日 周日 14:00',price:0,status:'RECRUITING',current:18,max:30,deadline:'7月18日 24:00',zone:'chaoyang'},
+  {id:2,title:'啡常心动·职场精英咖啡沙龙',desc:'一杯手冲，一段缘分。品味醇香，畅聊人生。',image:'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=800&q=80',location:'三里屯·精品咖啡馆',date:'7月26日 周六 10:00',price:39,status:'RECRUITING',current:8,max:16,deadline:'7月24日 24:00',zone:'chaoyang'},
+  {id:3,title:'律动青春·奥森趣味定向赛',desc:'协作闯关中自然拉近彼此距离~',image:'https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?w=800&q=80',location:'奥林匹克森林公园南园',date:'8月2日 周六 8:30',price:0,status:'CLOSED',current:22,max:40,deadline:'7月30日 24:00',zone:''},
+  {id:4,title:'光影之约·电影主题交友派对',desc:'在电影的世界里发现共鸣，现场还有趣味问答。',image:'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=800&q=80',location:'建外SOHO·私人影院',date:'8月9日 周六 14:30',price:29,status:'FULL',current:20,max:20,deadline:'8月7日 24:00',zone:'chaoyang'},
+  {id:5,title:'甜蜜烘焙·七夕联谊专场',desc:'和TA一起动手制作甜蜜甜点，邂逅属于你的那份甜蜜。',image:'https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=800&q=80',location:'望京·烘焙体验馆',date:'8月16日 周六 14:00',price:49,status:'RECRUITING',current:12,max:24,deadline:'8月14日 24:00',zone:''},
+  {id:6,title:'青春志爱团·秋天第一场遇见',desc:'大型青年联谊活动，趣味破冰+桌游互动。',image:'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=800&q=80',location:'奥森公园',date:'8月23日 周六 9:00',price:0,status:'RECRUITING',current:35,max:60,deadline:'8月21日 24:00',zone:'qingai'},
+  {id:7,title:'周末单身俱乐部·剧本杀专场',desc:'在角色扮演中展现魅力，找到最默契的搭档。',image:'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=800&q=80',location:'朝阳大悦城·推理社',date:'8月30日 周六 14:00',price:88,status:'RECRUITING',current:4,max:8,deadline:'8月28日 24:00',zone:'qingai'},
+  {id:8,title:'红娘志愿者·七夕公益联谊',desc:'红娘现场牵线，让缘分不再等待。',image:'https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=800&q=80',location:'北京青少年服务中心',date:'8月17日 周日 14:00',price:0,status:'CLOSED',current:40,max:80,deadline:'8月15日 24:00',zone:''},
+  {id:9,title:'秋日漫步·朝阳公园摄影联谊',desc:'带上相机，在秋色中捕捉美好瞬间。一边拍照一边交友。',image:'https://images.unsplash.com/photo-1531415074968-036ba1b575da?w=800&q=80',location:'朝阳公园',date:'9月6日 周六 9:00',price:0,status:'RECRUITING',current:15,max:30,deadline:'9月4日 24:00',zone:'chaoyang'},
+  {id:10,title:'书香交友·CBD读书分享会',desc:'每周精选一本好书，在阅读中发现共鸣、在分享中遇见知己。',image:'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=800&q=80',location:'CBD·共享书房',date:'9月13日 周六 14:30',price:0,status:'RECRUITING',current:8,max:20,deadline:'9月11日 24:00',zone:'chaoyang'},
+  {id:11,title:'青恋课堂·情感沟通工作坊',desc:'专业心理咨询师带你探索内在情感模式。',image:'https://images.unsplash.com/photo-1573497491208-6b1acb260507?w=800&q=80',location:'北京青少年服务中心',date:'9月20日 周六 14:00',price:0,status:'FULL',current:40,max:40,deadline:'9月18日 24:00',zone:'qingai'},
+  {id:12,title:'红娘志愿者·温馨茶话会',desc:'由经验丰富的红娘志愿者主持的温馨茶话会。',image:'https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?w=800&q=80',location:'北京青少年服务中心',date:'9月27日 周六 15:00',price:0,status:'RECRUITING',current:12,max:24,deadline:'9月25日 24:00',zone:'qingai'},
+];
+
+function activityCard(a){
+  var isFull=a.status==='FULL';
+  var isClosed=a.status==='CLOSED';
+  var sb=isFull?'<span class="bg-red-400 text-white px-2 py-1 text-xs rounded-full">已满员</span>':isClosed?'<span class="bg-gray-400 text-white px-2 py-1 text-xs rounded-full">已截止</span>':'<span class="bg-gradient-to-r from-brand-pink to-brand-orange text-white px-2 py-1 text-xs rounded-full">招募中</span>';
+  var disabled=isFull||isClosed;
+  var bc=disabled?'bg-gray-100 text-gray-400 cursor-not-allowed':'bg-gradient-to-r from-brand-pink to-brand-orange text-white shadow-brand-pink/20 shadow-lg';
+  var btnText=isFull?'已满':isClosed?'已截止':'去报名';
+  var zoneTag=a.zone?'<span class="inline-block text-[10px] bg-white/20 backdrop-blur-sm text-white px-2 py-0.5 rounded-md">'+(a.zone==='qingai'?'青爱团':'朝阳相伴')+'</span>':'';
+  return'<div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 card-hover fade-in cursor-pointer" onclick="window.location.href=\'activity-detail.html?id='+a.id+'\'"><div class="relative h-44 overflow-hidden"><img src="'+a.image+'" class="w-full h-full object-cover"/><div class="absolute top-3 right-3">'+sb+'</div><div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3 pt-10">'+zoneTag+'</div></div><div class="p-4"><h3 class="text-base font-bold text-gray-800 mb-2">'+a.title+'</h3><div class="flex items-center gap-2 text-xs text-gray-400 mb-1"><i data-lucide="calendar" class="w-3.5 h-3.5 text-brand-pink"></i><span>'+a.date+'</span></div><div class="flex items-center gap-2 text-xs text-gray-400"><i data-lucide="map-pin" class="w-3.5 h-3.5 text-brand-pink"></i><span class="truncate">'+a.location+'</span></div><div class="mt-3 flex items-center justify-between">'+(a.price>0?'<span class="text-sm font-bold text-brand-pink">¥'+a.price+'</span>':'<span class="text-sm font-bold text-green-500">免费</span>')+'<div class="flex items-center gap-3"><span class="text-xs text-gray-400"><i data-lucide="users" class="w-3.5 h-3.5 inline mr-0.5"></i>'+a.current+'/'+a.max+'人</span><span class="px-4 py-1.5 rounded-full text-xs font-bold '+bc+'">'+btnText+'</span></div></div></div></div>';
+}
+
+function render(){
+  var list=filter==='all'?ALL_ACTIVITIES:ALL_ACTIVITIES.filter(function(a){return a.zone===filter});
+  var fa='font-bold text-brand-pink border-b-[3px] border-brand-pink';
+  var filterBtns=['all','chaoyang','qingai'].map(function(k){
+    var labels={all:'全部',chaoyang:'朝阳相伴',qingai:'青爱团'};
+    var cls=filter===k?fa:'text-gray-400 font-medium border-b-[3px] border-transparent';
+    return'<span onclick="switchFilter(\''+k+'\')" class="pb-2 pt-1 text-sm '+cls+' transition-colors">'+labels[k]+'</span>';
+  }).join('');
+
+  document.getElementById('app').innerHTML=
+    '<div class="top-section"><div class="px-4 pt-3 pb-2"><h1 class="text-lg font-black text-gray-800 flex items-center gap-1.5"><span class="text-brand-pink">📅</span>活动列表</h1></div></div>'+
+    '<div class="rounded-top"></div>'+
+    '<div class="content-section">'+
+      '<div class="sticky top-0 z-30 bg-white px-4 pt-3 pb-1 border-b border-gray-100"><div class="flex gap-4">'+filterBtns+'</div></div>'+
+      '<div class="px-4 pt-3 pb-6"><div class="space-y-4">'+(list.length?list.map(function(a){return activityCard(a)}).join(''):'<div class="text-center text-gray-400 py-10 text-sm">暂无活动</div>')+'</div></div>'+
+    '</div>'+
+    window.Common.renderBottomNav('activity');
+  window.Common.initIcons();
+}
+
+function switchFilter(k){filter=k;render()}
+document.addEventListener('DOMContentLoaded',function(){render()});
+</script>
+</body>
+</html>

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>他俩能成 - 全部用户</title>
+<script src="lib/tailwind.min.js"></script>
+<script src="lib/lucide.min.js"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-white text-gray-900 antialiased pb-28">
+
+<div class="bg-decoration"><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div></div>
+<div id="app" class="relative z-[1]"></div>
+
+<!-- 搜索筛选弹窗 -->
+<div id="filter-overlay" class="fixed inset-0 bg-black/40 z-[100] hidden items-end justify-center" onclick="hideFilter(event)">
+<div class="bg-white w-full rounded-t-2xl max-h-[85vh] overflow-y-auto animate-slide-up flex flex-col" onclick="event.stopPropagation()">
+<div class="sticky top-0 bg-white z-10 flex items-center justify-between px-4 py-4 border-b border-gray-100 rounded-t-2xl">
+<span class="text-lg font-black text-gray-800">筛选条件</span>
+<span class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center cursor-pointer" onclick="hideFilter()"><i data-lucide="x" class="w-5 h-5 text-gray-500"></i></span>
+</div>
+<div class="p-4 space-y-4 overflow-y-auto flex-1" id="filter-form"></div>
+<div class="sticky bottom-0 bg-white px-4 py-3 border-t border-gray-100 z-10">
+<div class="flex gap-3"><span onclick="doSearch()" class="flex-1 py-3 rounded-2xl bg-gradient-to-tr from-brand-pink to-brand-orange text-white font-bold text-base shadow-lg shadow-brand-pink/20 card-hover flex items-center justify-center cursor-pointer">搜索</span><span onclick="resetFilters()" class="px-5 py-3 rounded-2xl bg-white border border-gray-200 text-gray-500 font-bold text-sm card-hover cursor-pointer">重置</span></div>
+</div>
+</div></div>
+
+<script src="common.js"></script>
+<script>
+var CONS=['白羊座','金牛座','双子座','巨蟹座','狮子座','处女座','天秤座','天蝎座','射手座','摩羯座','水瓶座','双鱼座'];
+var ZODIACS=['鼠','牛','虎','兔','龙','蛇','马','羊','猴','鸡','狗','猪'];
+var DISTRICTS=['东城区','西城区','朝阳区','海淀区','丰台区','石景山区','通州区','大兴区','房山区','门头沟区','昌平区','顺义区','平谷区','怀柔区','密云区','延庆区'];
+var EDU=['高中及以下','大专','大学本科','硕士','博士'];
+var NM=['清风徐来','阳光骑士','北辰','追风少年','海的彼岸','咖啡不加糖','大熊','星河漫步','枫叶飘零','时光旅人','城北徐公','蓝调人生'];
+var NF=['甜心小鹿','奶茶妹妹','浅笑安然','栀子花开','月亮不睡','棉花糖','小兔软糖','咕咚姑娘','雪落无声','薄荷微光','星光点点','初夏之梦'];
+var PHOTOS_M=['images/photo/male/crop.17.0.1224.1632.0.750.1000.jpg','images/photo/male/crop.0.0.1078.1438.0.750.1000.jpg','images/photo/male/crop.194.56.917.1222.0.750.1000.jpg','images/photo/male/crop.0.501.960.1280.0.750.1000.jpg','images/photo/male/crop.0.237.1080.1440.0.750.1000.jpg','images/photo/male/crop.0.54.942.1256.0.750.1000.jpg','images/photo/male/crop.1.0.3877.5170.0.750.1000.jpg','images/photo/male/crop.0.0.1773.2364.0.750.1000.jpg','images/photo/male/crop.0.875.2143.2857.0.750.1000.jpg','images/photo/male/crop.1033.0.3000.4000.0.750.1000.jpg'];
+var PHOTOS_F=['images/photo/female/crop.0.67.1079.1438.0.750.1000.jpg','images/photo/female/crop.0.61.723.964.0.750.1000.jpg','images/photo/female/crop.384.0.2304.3072.0.750.1000.jpg','images/photo/female/crop.0.0.2267.3023.0.750.1000.jpg','images/photo/female/crop.0.0.4896.6528.0.750.1000.jpg','images/photo/female/crop.70.444.1537.2050.0.750.1000.jpg','images/photo/female/crop.0.479.2160.2880.0.750.1000.jpg','images/photo/female/crop.0.181.1064.1418.0.750.1000.jpg','images/photo/female/crop.882.0.2266.3022.0.750.1000.jpg','images/photo/female/crop.0.0.3456.4608.0.750.1000.jpg'];
+
+function r(n){return Math.floor(Math.random()*n)}
+function buildUsers(n){
+  var u=[];
+  for(var i=0;i<n;i++){
+    var male=i%2===0;
+    u.push({
+      id:'u'+i,name:male?NM[r(12)]:NF[r(12)],gender:male?'male':'female',
+      age:male?23+r(13):22+r(11),cons:CONS[r(12)],
+      zodiac:ZODIACS[r(12)],marital:(['未婚','未婚','未婚','未婚','离异','丧偶'])[r(6)],
+      edu:EDU[r(5)],height:male?(170+r(15)):male?170+r(15):(158+r(12)),
+      district:DISTRICTS[r(16)],uid:'1'+Math.floor(10000000+Math.random()*90000000),
+      photo:male?PHOTOS_M[r(10)]:PHOTOS_F[r(10)],verified:Math.random()<0.3,
+    });
+  }
+  for(i=n-1;i>0;i--){var j=r(i+1);[u[i],u[j]]=[u[j],u[i]]}
+  return u;
+}
+var allUsers=buildUsers(30);
+var filteredUsers=allUsers.slice();
+
+// ====== Filter state ======
+var filters={keyword:'',gender:'',marital:[],ageMin:'',ageMax:'',heightMin:'',heightMax:'',districts:[],edu:[],zodiac:[],cons:[]};
+
+function userCard(u){
+  var gb=u.gender==='male'?'<span class="text-[10px] px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-500 font-medium inline-flex items-center gap-0.5"><i data-lucide="mars" class="w-2.5 h-2.5"></i>男</span>':'<span class="text-[10px] px-1.5 py-0.5 rounded-full bg-pink-50 text-brand-pink font-medium inline-flex items-center gap-0.5"><i data-lucide="venus" class="w-2.5 h-2.5"></i>女</span>';
+  var vf=u.verified?'<span class="text-[9px] px-1.5 py-0.5 rounded-full bg-gradient-to-r from-brand-pink to-brand-orange text-white font-medium flex items-center gap-0.5"><i data-lucide="badge-check" class="w-2.5 h-2.5"></i>已实名</span>':'';
+  return'<div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 card-hover flex flex-col cursor-pointer" onclick="window.location.href=\'profile.html\'"><div class="relative w-full overflow-hidden bg-gray-100 flex-shrink-0" style="aspect-ratio:3/4"><img src="'+u.photo+'" class="w-full h-full object-cover" onerror="this.src=\'images/photo/female/crop.0.67.1079.1438.0.750.1000.jpg\'"/><div class="absolute top-2 right-2 flex flex-col gap-1 items-end">'+vf+'</div></div><div class="p-2.5 flex flex-col gap-1"><div class="flex items-center gap-1.5"><span class="text-sm font-bold text-gray-800 truncate max-w-[72px]">'+u.name+'</span>'+gb+'</div><div class="flex items-center gap-2 text-xs text-gray-400"><span>'+u.age+'岁</span><span class="w-px h-2.5 bg-gray-200"></span><span>'+u.cons+'</span></div></div></div>';
+}
+
+function applyFilters(){
+  filteredUsers=allUsers.filter(function(u){
+    if(filters.keyword){
+      var kw=filters.keyword.toLowerCase();
+      if(u.name.indexOf(kw)===-1 && u.uid.indexOf(kw)===-1)return false;
+    }
+    if(filters.gender&&u.gender!==filters.gender)return false;
+    if(filters.marital.length&&filters.marital.indexOf(u.marital)===-1)return false;
+    if(filters.ageMin&&u.age<parseInt(filters.ageMin))return false;
+    if(filters.ageMax&&u.age>parseInt(filters.ageMax))return false;
+    if(filters.heightMin&&u.height<parseInt(filters.heightMin))return false;
+    if(filters.heightMax&&u.height>parseInt(filters.heightMax))return false;
+    if(filters.districts.length&&filters.districts.indexOf(u.district)===-1)return false;
+    if(filters.edu.length&&filters.edu.indexOf(u.edu)===-1)return false;
+    if(filters.zodiac.length&&filters.zodiac.indexOf(u.zodiac)===-1)return false;
+    if(filters.cons.length&&filters.cons.indexOf(u.cons)===-1)return false;
+    return true;
+  });
+  render();
+}
+
+function resetFilters(){
+  filters={keyword:'',gender:'',marital:[],ageMin:'',ageMax:'',heightMin:'',heightMax:'',districts:[],edu:[],zodiac:[],cons:[]};
+  filteredUsers=allUsers.slice();
+  showFilter();
+}
+
+function showFilter(){
+  var h='';
+  // 关键词
+  h+='<div><label class="block text-sm font-bold text-gray-700 mb-2">关键词</label><input type="text" id="f-keyword" value="'+filters.keyword+'" placeholder="用户名或能成ID" class="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm bg-gray-50 focus:outline-none focus:border-brand-pink"/></div>';
+  // 性别
+  h+='<div><label class="block text-sm font-bold text-gray-700 mb-2">性别</label><div class="flex gap-2">'+[{v:'',l:'不限'},{v:'male',l:'男'},{v:'female',l:'女'}].map(function(o){return'<span class="px-4 py-2 rounded-full text-sm font-medium cursor-pointer '+(filters.gender===o.v?'bg-brand-pink text-white':'bg-gray-100 text-gray-500')+'" onclick="pickSingle(this,\'gender\',\''+o.v+'\')">'+o.l+'</span>'}).join('')+'</div></div>';
+  // 婚姻
+  h+='<div><label class="block text-sm font-bold text-gray-700 mb-2">婚姻状况</label><div class="flex flex-wrap gap-2">'+[{v:'未婚',l:'未婚'},{v:'离异',l:'离异'},{v:'丧偶',l:'丧偶'}].map(function(o){return'<span class="px-4 py-2 rounded-full text-sm font-medium cursor-pointer '+(filters.marital.indexOf(o.v)>=0?'bg-brand-pink text-white':'bg-gray-100 text-gray-500')+'" onclick="pickMulti(this,\'marital\',\''+o.v+'\')">'+o.l+'</span>'}).join('')+'</div></div>';
+  // 年龄
+  h+='<div><label class="block text-sm font-bold text-gray-700 mb-2">年龄</label><div class="flex gap-2 items-center"><input type="number" id="f-ageMin" value="'+filters.ageMin+'" placeholder="最小" class="flex-1 px-4 py-3 rounded-xl border border-gray-200 text-sm bg-gray-50 focus:outline-none focus:border-brand-pink"/><span class="text-gray-400">—</span><input type="number" id="f-ageMax" value="'+filters.ageMax+'" placeholder="最大" class="flex-1 px-4 py-3 rounded-xl border border-gray-200 text-sm bg-gray-50 focus:outline-none focus:border-brand-pink"/></div></div>';
+  // 身高
+  h+='<div><label class="block text-sm font-bold text-gray-700 mb-2">身高（cm）</label><div class="flex gap-2 items-center"><input type="number" id="f-heightMin" value="'+filters.heightMin+'" placeholder="最低" class="flex-1 px-4 py-3 rounded-xl border border-gray-200 text-sm bg-gray-50 focus:outline-none focus:border-brand-pink"/><span class="text-gray-400">—</span><input type="number" id="f-heightMax" value="'+filters.heightMax+'" placeholder="最高" class="flex-1 px-4 py-3 rounded-xl border border-gray-200 text-sm bg-gray-50 focus:outline-none focus:border-brand-pink"/></div></div>';
+  // 地区
+  h+='<div><label class="block text-sm font-bold text-gray-700 mb-2">地区</label><div class="flex flex-wrap gap-2">'+DISTRICTS.map(function(d){return'<span class="px-4 py-2 rounded-full text-sm font-medium cursor-pointer '+(filters.districts.indexOf(d)>=0?'bg-brand-pink text-white':'bg-gray-100 text-gray-500')+'" onclick="pickMulti(this,\'districts\',\''+d+'\')">'+d+'</span>'}).join('')+'</div></div>';
+  // 学历
+  h+='<div><label class="block text-sm font-bold text-gray-700 mb-2">学历</label><div class="flex flex-wrap gap-2">'+EDU.map(function(d){return'<span class="px-4 py-2 rounded-full text-sm font-medium cursor-pointer '+(filters.edu.indexOf(d)>=0?'bg-brand-pink text-white':'bg-gray-100 text-gray-500')+'" onclick="pickMulti(this,\'edu\',\''+d+'\')">'+d+'</span>'}).join('')+'</div></div>';
+  // 属相
+  h+='<div><label class="block text-sm font-bold text-gray-700 mb-2">属相</label><div class="flex flex-wrap gap-2">'+ZODIACS.map(function(d){return'<span class="px-4 py-2 rounded-full text-sm font-medium cursor-pointer '+(filters.zodiac.indexOf(d)>=0?'bg-brand-pink text-white':'bg-gray-100 text-gray-500')+'" onclick="pickMulti(this,\'zodiac\',\''+d+'\')">'+d+'</span>'}).join('')+'</div></div>';
+  // 星座
+  h+='<div><label class="block text-sm font-bold text-gray-700 mb-2">星座</label><div class="flex flex-wrap gap-2">'+CONS.map(function(d){return'<span class="px-4 py-2 rounded-full text-sm font-medium cursor-pointer '+(filters.cons.indexOf(d)>=0?'bg-brand-pink text-white':'bg-gray-100 text-gray-500')+'" onclick="pickMulti(this,\'cons\',\''+d+'\')">'+d+'</span>'}).join('')+'</div></div>';
+
+  document.getElementById('filter-form').innerHTML=h;
+  window.Common.showPopup('filter-overlay');
+}
+
+function pickSingle(el,key,val){filters[key]=filters[key]===val?'':val;showFilter()}
+function pickMulti(el,key,val){var arr=filters[key];var i=arr.indexOf(val);if(i>=0)arr.splice(i,1);else arr.push(val);showFilter()}
+
+function hideFilter(e){window.Common.closePopup(e,'filter-overlay')}
+
+function doSearch(){
+  filters.keyword=document.getElementById('f-keyword').value.trim();
+  filters.ageMin=document.getElementById('f-ageMin').value;
+  filters.ageMax=document.getElementById('f-ageMax').value;
+  filters.heightMin=document.getElementById('f-heightMin').value;
+  filters.heightMax=document.getElementById('f-heightMax').value;
+  window.Common.hidePopup('filter-overlay');
+  applyFilters();
+}
+
+function render(){
+  var cards=filteredUsers.map(function(u){return userCard(u)}).join('');
+  document.getElementById('app').innerHTML=
+    '<div class="top-section"><div class="px-4 pt-3 pb-2"><h1 class="text-lg font-black text-gray-800 flex items-center gap-1.5"><i data-lucide="users" class="w-5 h-5 text-brand-pink"></i>全部用户</h1></div></div>'+
+    '<div id="search-sentinel" class="rounded-top"></div>'+
+    '<div class="content-section">'+
+      '<div id="search-bar" class="sticky top-0 z-30 px-4 pt-3 pb-2">'+
+        '<div class="flex-1 flex items-center gap-3 bg-white rounded-xl px-1 py-1 border border-brand-pink/30 shadow-sm cursor-pointer card-hover" onclick="showFilter()">'+
+          '<div class="w-8 h-8 rounded-lg bg-brand-pink/10 flex items-center justify-center flex-shrink-0"><i data-lucide="search" class="w-4 h-4 text-brand-pink"></i></div>'+
+          '<span class="text-sm text-gray-500">搜索筛选</span>'+
+          '<div class="ml-auto flex items-center gap-1.5">'+
+            '<span class="text-[10px] text-brand-pink/60 bg-brand-pink/5 px-2 py-0.5 rounded-full font-medium">点击筛选</span>'+
+            '<i data-lucide="sliders-horizontal" class="w-4 h-4 text-brand-pink"></i>'+
+          '</div>'+
+        '</div>'+
+      '</div>'+
+      '<div class="px-4 pt-3 pb-6">'+
+        '<div class="grid grid-cols-2 gap-3">'+cards+'</div>'+
+        (filteredUsers.length===0?'<div class="text-center text-gray-400 py-10 text-sm">没有符合条件的结果</div>':'')+
+      '</div>'+
+    '</div>';
+  window.Common.initIcons();
+}
+
+// Save search state across showFilter re-renders
+function saveFilterState(){
+  var el=document.getElementById('f-keyword');if(el)filters.keyword=el.value.trim();
+  el=document.getElementById('f-ageMin');if(el)filters.ageMin=el.value;
+  el=document.getElementById('f-ageMax');if(el)filters.ageMax=el.value;
+  el=document.getElementById('f-heightMin');if(el)filters.heightMin=el.value;
+  el=document.getElementById('f-heightMax');if(el)filters.heightMax=el.value;
+}
+// Override doSearch to save first
+var _doSearch=doSearch;
+doSearch=function(){saveFilterState();_doSearch()};
+
+function initSearchSticky(){
+  var bar=document.getElementById('search-bar');
+  var sentinel=document.getElementById('search-sentinel');
+  if(!bar||!sentinel)return;
+  var observer=new IntersectionObserver(function(e){
+    if(e[0].isIntersecting){bar.classList.remove('bg-white','shadow-sm');}
+    else{bar.classList.add('bg-white','shadow-sm');}
+  },{threshold:0});
+  observer.observe(sentinel);
+}
+
+var _origRender=render;
+render=function(){_origRender();setTimeout(initSearchSticky,50);};
+
+document.addEventListener('DOMContentLoaded',function(){render()});
+</script>
+</body>
+</html>

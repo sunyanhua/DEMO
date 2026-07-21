@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>消息 - 他俩能成</title>
+<script src="lib/tailwind.min.js"></script>
+<script src="lib/lucide.min.js"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gray-50 text-gray-900 pb-28">
+
+<div class="bg-decoration"><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div></div>
+<div id="app" class="min-h-screen relative z-[1]"></div>
+
+<script src="common.js"></script>
+<script>
+var notifications=[
+  {icon:'bell',bg:'bg-blue-50',tc:'text-blue-500',title:'审核通知',content:'您的脱单资料已经通过审核！',time:'今天 10:25',unread:true},
+  {icon:'bell',bg:'bg-blue-50',tc:'text-blue-500',title:'审核通知',content:'您的"朝阳相伴"专区加入申请已通过审核！',time:'昨天 16:30',unread:true},
+  {icon:'bell',bg:'bg-blue-50',tc:'text-blue-500',title:'审核通知',content:'您的广播投稿已通过审核！',time:'昨天 14:10',unread:false},
+  {icon:'bell',bg:'bg-blue-50',tc:'text-blue-500',title:'活动通知',content:'您报名的活动【"朝阳相伴"广播节目嘉宾招募 | 来《一路畅通·他俩能成》聊聊你的故事】已通过审核！',time:'7月12日',unread:true},
+  {icon:'bell',bg:'bg-blue-50',tc:'text-blue-500',title:'系统通知',content:'欢迎加入他俩能成！请尽快完善您的脱单资料，提升交友成功率。',time:'7月10日',unread:false},
+];
+
+var unreadSysCount=notifications.filter(function(n){return n.unread}).length;
+
+var categoryEntries=[
+  {icon:'bell',bg:'bg-blue-50',tc:'text-blue-500',label:'系统通知',count:unreadSysCount,click:"renderSysNotifs()"},
+  {icon:'heart',bg:'bg-red-50',tc:'text-red-500',label:'新的心动',count:3,click:"window.location.href='my-lists.html?tab=heart&sub=toMe'"},
+  {icon:'user-plus',bg:'bg-blue-50',tc:'text-blue-500',label:'新增关注',count:5,click:"window.location.href='my-lists.html?tab=follow&sub=toMe'"},
+  {icon:'gift',bg:'bg-amber-50',tc:'text-amber-500',label:'收到礼物',count:2,click:"window.location.href='my-gifts.html'"},
+  {icon:'sparkles',bg:'bg-brand-pink/10',tc:'text-brand-pink',label:'达到1314',count:1,click:"window.location.href='my-1314.html'"},
+];
+
+var chats=[
+  {name:'阳光骑士',avatar:'images/photo/male/crop.0.0.1078.1438.0.750.1000.jpg',lastMsg:'你好呀，很高兴认识你~',time:'10分钟前',unread:2},
+  {name:'奶茶妹妹',avatar:'images/photo/female/crop.0.61.723.964.0.750.1000.jpg',lastMsg:'周末一起参加活动吧！',time:'1小时前',unread:1},
+  {name:'浅笑安然',avatar:'images/photo/female/crop.384.0.2304.3072.0.750.1000.jpg',lastMsg:'我也在朝阳这边，好巧',time:'昨天',unread:0},
+  {name:'咖啡不加糖',avatar:'images/photo/male/crop.0.501.960.1280.0.750.1000.jpg',lastMsg:'周日奥森一起跑步吧',time:'2天前',unread:0},
+  {name:'棉花糖',avatar:'images/photo/female/crop.0.0.2267.3023.0.750.1000.jpg',lastMsg:'晚安~明天聊',time:'3天前',unread:0},
+];
+
+var sysView=false;
+
+function notifRow(n){
+  var dot=n.unread?'<span class="absolute top-0.5 right-0.5 w-2 h-2 bg-red-500 rounded-full"></span>':'';
+  return'<div class="p-4 bg-white mb-2 rounded-lg shadow-sm mx-4 mt-2">'+
+    '<div class="flex items-start gap-3">'+
+      '<div class="p-2 rounded-full '+n.bg+' '+n.tc+' mt-0.5 relative">'+
+        '<i data-lucide="'+n.icon+'" class="w-4 h-4"></i>'+dot+
+      '</div>'+
+      '<div class="flex-1 min-w-0">'+
+        '<div class="flex justify-between items-start mb-0.5">'+
+          '<h3 class="font-bold text-sm text-gray-900">'+n.title+'</h3>'+
+          '<span class="text-[10px] text-gray-400 flex-shrink-0 ml-2">'+n.time+'</span>'+
+        '</div>'+
+        '<p class="text-xs text-gray-500 leading-relaxed">'+n.content+'</p>'+
+      '</div>'+
+    '</div>'+
+  '</div>';
+}
+
+function renderSysNotifs(){
+  sysView=true;
+  render();
+}
+
+function catHtml(){
+  return categoryEntries.map(function(c){
+    return'<div class="flex items-center gap-3 p-4 bg-white mb-2 rounded-lg shadow-sm mx-4 mt-2 cursor-pointer card-hover"'+(c.click?' onclick="'+c.click+'"':'')+'>'+
+      '<div class="p-2 rounded-full '+c.bg+' '+c.tc+'">'+
+        '<i data-lucide="'+c.icon+'" class="w-4 h-4"></i>'+
+      '</div>'+
+      '<span class="flex-1 text-sm text-gray-700 font-medium">'+c.label+'</span>'+
+      (c.count>0?'<span class="text-xs text-brand-pink font-bold bg-brand-pink/5 px-2 py-0.5 rounded-full">'+c.count+'</span>':'')+
+      '<i data-lucide="chevron-right" class="w-4 h-4 text-gray-300"></i>'+
+    '</div>';
+  }).join('');
+}
+
+function chatListHtml(){
+  return chats.map(function(c){
+    var unreadBadge=c.unread>0?'<span class="text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full bg-red-500 absolute -top-1 -right-1 border border-white">'+c.unread+'</span>':'';
+    return'<div class="p-4 bg-white border-b border-gray-50 cursor-pointer card-hover" onclick="window.location.href=\'chat.html?name='+encodeURIComponent(c.name)+'&avatar='+encodeURIComponent(c.avatar)+'\'">'+
+      '<div class="flex items-center gap-3">'+
+        '<div class="relative"><img src="'+c.avatar+'" class="w-12 h-12 rounded-full border border-gray-100 object-cover"/>'+unreadBadge+'</div>'+
+        '<div class="flex-1 min-w-0">'+
+          '<div class="flex items-center justify-between mb-1"><h3 class="font-bold text-gray-900 text-sm truncate">'+c.name+'</h3><span class="text-xs text-gray-400 flex-shrink-0 ml-2">'+c.time+'</span></div>'+
+          '<p class="text-sm text-gray-500 truncate">'+c.lastMsg+'</p>'+
+        '</div>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+function render(){
+  var params=new URLSearchParams(window.location.search);
+  var activeTab=params.get('tab')||'notification';
+
+  var inner;
+  if(sysView){
+    inner='<div class="flex items-center gap-3 px-4 py-3 bg-white border-b border-gray-100">'+
+      '<span class="cursor-pointer" onclick="sysView=false;render()"><i data-lucide="chevron-left" class="w-5 h-5 text-gray-700"></i></span>'+
+      '<span class="font-bold text-sm text-gray-900">系统通知</span>'+
+    '</div>'+
+    '<div class="pb-4 pt-2">'+notifications.map(function(n){return notifRow(n)}).join('')+'</div>';
+  }else if(activeTab==='chat'){
+    inner='<div class="bg-white">'+chatListHtml()+'</div>';
+  }else{
+    inner='<div class="pb-4">'+catHtml()+'</div>';
+  }
+
+  document.getElementById('app').innerHTML=
+    (sysView?'':'<div class="fixed top-0 left-0 right-0 bg-white z-40 px-4 h-[50px] flex items-center justify-center shadow-sm"><div class="flex bg-gray-100 p-1 rounded-lg"><span onclick="window.location.href=\'message.html?tab=notification\'" class="px-6 py-1 text-sm font-bold rounded-md transition-all '+(activeTab==='notification'?'bg-white text-gray-900 shadow-sm':'text-gray-500')+'">通知</span><span onclick="window.location.href=\'message.html?tab=chat\'" class="px-6 py-1 text-sm font-bold rounded-md transition-all '+(activeTab==='chat'?'bg-white text-gray-900 shadow-sm':'text-gray-500')+'">私信</span></div></div>')+
+    '<div'+(sysView?'':' class="pt-[50px]"')+'>'+inner+'</div>'+
+    (sysView?'':window.Common.renderBottomNav('message'));
+  window.Common.initIcons();
+}
+
+document.addEventListener('DOMContentLoaded',render);
+</script>
+</body>
+</html>

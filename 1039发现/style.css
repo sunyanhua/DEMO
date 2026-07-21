@@ -1,0 +1,317 @@
+/* ============================================
+   1039发现 — 全局样式标准
+   ============================================ */
+
+/* --- 品牌色变量 --- */
+:root {
+    --purple: #836ec2;
+    --purple-deep: #5B3E9E;
+    --purple-light: #F3F0FA;
+    --pink: #fdbeda;
+    --pink-deep: #E880A5;
+    --pink-light: #FFF5F9;
+    --blue: #9adff3;
+    --blue-deep: #3DAFD8;
+    --blue-light: #F0F9FC;
+    --gold: #f2a600;
+    --gold-deep: #C27A00;
+    --gold-light: #FFF8EB;
+}
+
+/* --- 基础设置 — 深色底 --- */
+body {
+    -webkit-tap-highlight-color: transparent;
+    font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background-color: #18152C;
+    color: #e0dce8;
+}
+::selection {
+    background-color: #836ec2;
+    color: white;
+}
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* --- 动画 --- */
+.fade-in {
+    animation: fadeIn 0.35s ease-in-out;
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes heartbeat {
+    0%, 100% { transform: scale(1); }
+    15% { transform: scale(1.2); }
+    30% { transform: scale(1); }
+    45% { transform: scale(1.12); }
+    60% { transform: scale(1); }
+}
+.heartbeat { animation: heartbeat 1.8s ease-in-out infinite; }
+@keyframes slide-up{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.animate-slide-up{animation:slide-up 0.3s ease-out}
+
+.tab-indicator {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* --- 交互 --- */
+.card-hover:active {
+    transform: scale(0.97);
+    transition: transform 0.15s ease;
+}
+
+/* ============================================
+   深色背景层 — 大面积不规则曲线色块叠加（无渐变、无模糊）
+   整体以 LOGO 金色为主，辅以紫粉蓝做点缀
+   ============================================ */
+
+.bg-decoration {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+    background-color: #1a1818;
+}
+
+.bg-blob {
+    position: absolute;
+    animation: blobFloat 20s ease-in-out infinite;
+}
+
+/* --- 金色铺满背景（静态） --- */
+.bg-blob:nth-child(1) {
+    width: 100vw; height: 100vh;
+    background: #f2a600;
+    top: 0; left: 0;
+    border-radius: 0;
+    opacity: 0.55;
+    animation: none;
+}
+
+/* --- 右上大紫压角 --- */
+.bg-blob:nth-child(2) {
+    width: 80vw; height: 60vh;
+    background: #836ec2;
+    top: -12%; right: -20%;
+    border-radius: 55% 45% 35% 65% / 45% 50% 50% 55%;
+    animation-delay: -5s;
+    opacity: 0.9;
+}
+
+/* --- 中部左侧大粉穿插 --- */
+.bg-blob:nth-child(3) {
+    width: 75vw; height: 58vh;
+    background: #fdbeda;
+    top: 25%; left: -18%;
+    border-radius: 45% 55% 55% 45% / 50% 50% 50% 50%;
+    animation-delay: -9s;
+    opacity: 0.9;
+}
+
+/* --- 下部右侧大蓝 --- */
+.bg-blob:nth-child(4) {
+    width: 85vw; height: 60vh;
+    background: #9adff3;
+    bottom: -12%; right: -15%;
+    border-radius: 35% 65% 40% 60% / 55% 45% 55% 45%;
+    animation-delay: -13s;
+    opacity: 0.9;
+}
+
+/* --- 中右蓝点缀 --- */
+.bg-blob:nth-child(5) {
+    width: 50vw; height: 42vh;
+    background: #3DAFD8;
+    top: 28%; right: 8%;
+    border-radius: 65% 35% 50% 50% / 40% 60% 40% 60%;
+    animation-delay: -8s;
+    opacity: 0.8;
+}
+
+/* --- 左下粉点缀 --- */
+.bg-blob:nth-child(6) {
+    width: 48vw; height: 40vh;
+    background: #E880A5;
+    bottom: 15%; left: 5%;
+    border-radius: 50% 50% 45% 55% / 45% 55% 45% 55%;
+    animation-delay: -11s;
+    opacity: 0.8;
+}
+
+@keyframes blobFloat {
+    0%, 100% { transform: translate(0, 0) rotate(0deg) scale(1); }
+    25%  { transform: translate(1.5vw, -2vh) rotate(1.5deg) scale(1.02); }
+    50%  { transform: translate(-1vw, 1.5vh) rotate(-1deg) scale(0.98); }
+    75%  { transform: translate(2vw, 0.5vh) rotate(1deg) scale(1.01); }
+}
+
+/* ============================================
+   内容层
+   ============================================ */
+
+/* --- 顶部区域 — 透明，露出深色底 --- */
+.top-section {
+    padding-bottom: 8px;
+    position: relative;
+    z-index: 2;
+}
+
+/* --- 内容卡片 — 白色圆角卡片，两侧留边距 --- */
+.content-card {
+    background: #FFFFFF;
+    border-radius: 20px;
+    margin: 0 12px;
+    position: relative;
+    z-index: 2;
+    color: #333;
+    overflow: hidden;
+}
+
+/* ============================================
+   组件样式
+   ============================================ */
+
+/* --- 装饰卡片 — 多彩曲线花纹点缀 --- */
+.deco-card {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(0,0,0,0.05) !important;
+}
+.deco-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 320px; height: 280px;
+    pointer-events: none;
+    z-index: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 320 280'%3E%3Cg stroke='%23836ec2' stroke-opacity='0.12' fill='none' stroke-linecap='round'%3E%3Cpath d='M0 80 Q60 45 90 70 T180 50 T260 68 T320 80' stroke-width='1.5'/%3E%3Cpath d='M0 45 Q50 20 80 44 T160 18 T240 40' stroke-width='1'/%3E%3Cpath d='M0 120 Q65 100 100 118 T190 100 T280 120' stroke-width='0.9'/%3E%3Cpath d='M55 0 Q35 35 60 60 T40 110 T70 165 T100 200' stroke-width='1.2'/%3E%3Cpath d='M95 0 Q78 30 100 55 T82 100 T110 140' stroke-width='0.8'/%3E%3C/g%3E%3C/svg%3E");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: top left;
+}
+.deco-card > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* --- 入口卡片 --- */
+.entry-card {
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    transition: all 0.25s ease;
+}
+.entry-card:active {
+    transform: scale(0.97);
+    box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+}
+
+/* --- 深色背景上浅色文字 --- */
+.text-light-on-dark { color: rgba(255,255,255,0.85) !important; }
+.text-muted-on-dark { color: rgba(255,255,255,0.55) !important; }
+.text-sub-on-dark { color: rgba(255,255,255,0.70) !important; }
+
+/* --- 底部导航 — 毛玻璃白底 --- */
+.bottom-nav-glass {
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 -1px 0 rgba(131,110,194,0.10), 0 -4px 16px rgba(0,0,0,0.08);
+}
+
+/* --- 标签样式 --- */
+.tag-activity { background: #F3F0FA; color: #836ec2; }
+.tag-ticket   { background: #F0F9FC; color: #3DAFD8; }
+.tag-product  { background: #FFF5F9; color: #E880A5; }
+
+/* --- 票券卡片 --- */
+.ticket-card {
+    background: #FFF8EB;
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    min-height: 160px;
+    position: relative;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    border: 1px solid rgba(242,166,0,0.12);
+}
+/* 豁口层：在竖条与主体连接处打上下穿孔 */
+.ticket-card::after {
+    content: '';
+    position: absolute;
+    left: 21px;
+    top: 0; bottom: 0;
+    width: 12px;
+    pointer-events: none;
+    z-index: 5;
+    background:
+        radial-gradient(circle at 6px 14px, #FFFFFF 6px, transparent 7px),
+        radial-gradient(circle at 6px calc(100% - 14px), #FFFFFF 6px, transparent 7px);
+}
+.ticket-left-bar {
+    width: 28px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+.ticket-rotate-text {
+    writing-mode: vertical-rl;
+    font-size: 9px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.85);
+    letter-spacing: 2px;
+}
+.ticket-body {
+    flex: 1;
+    padding: 12px 16px 12px 12px;
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+}
+/* 竖条与主体间的分隔虚线 */
+.ticket-body::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 16px; bottom: 16px;
+    width: 1px;
+    z-index: 2;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+        to bottom,
+        #d0c8b0 0px, #d0c8b0 4px,
+        transparent 4px, transparent 8px
+    );
+}
+/* 票券右侧圆点装饰 */
+.ticket-body::after {
+    content: '';
+    position: absolute;
+    right: 10px; top: 0; bottom: 0; width: 8px;
+    pointer-events: none;
+    z-index: 1;
+    background:
+        radial-gradient(circle at 4px 12px, rgba(194,122,0,0.22) 2.5px, transparent 3px),
+        radial-gradient(circle at 4px calc(100% - 12px), rgba(194,122,0,0.22) 2.5px, transparent 3px);
+}
+.ticket-body > * {
+    position: relative;
+    z-index: 1;
+}
+/* 竖条与主体间的分隔虚线 */
+.ticket-body::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 16px; bottom: 16px;
+    width: 1px;
+    z-index: 2;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+        to bottom,
+        #d0c8b0 0px, #d0c8b0 4px,
+        transparent 4px, transparent 8px
+    );
+}

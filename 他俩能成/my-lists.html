@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>我的列表 - 他俩能成</title>
+<script src="lib/tailwind.min.js"></script>
+<script src="lib/lucide.min.js"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-white text-gray-900 antialiased pb-4">
+
+<div class="bg-decoration"><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div></div>
+<div id="app" class="relative z-[1]"></div>
+
+<!-- 取消确认弹窗 -->
+<div id="cancel-confirm-overlay" class="fixed inset-0 bg-black/40 z-[200] hidden items-center justify-center" onclick="hideCancelConfirm(event)">
+<div class="bg-white rounded-2xl p-5 mx-auto w-80 shadow-xl text-center" onclick="event.stopPropagation()">
+<div class="text-4xl mb-3">❓</div>
+<p id="cancel-confirm-msg" class="text-sm text-gray-700 mb-4"></p>
+<div class="space-y-2">
+<span id="cancel-confirm-btn" class="block w-full py-2.5 rounded-xl bg-brand-pink text-white font-bold text-sm card-hover text-center cursor-pointer">确定</span>
+<span onclick="hideCancelConfirm()" class="block w-full py-2.5 rounded-xl bg-gray-100 text-gray-500 font-bold text-sm card-hover text-center cursor-pointer">我再想想</span>
+</div>
+</div></div>
+
+<script src="common.js"></script>
+<script>
+// Tab state from URL: ?tab=heart&sub=toMe or ?tab=follow&sub=byMe etc
+var params=new URLSearchParams(location.search);
+var mainTab=params.get('tab')||'heart';
+var subTab=params.get('sub')||(mainTab==='heart'?'byMe':mainTab==='follow'?'toMe':mainTab==='dislike'?'all':'');
+
+// Mock data
+var CONS=['白羊座','金牛座','双子座','巨蟹座','狮子座','处女座','天秤座','天蝎座','射手座','摩羯座','水瓶座','双鱼座'];
+var NM=['阳光骑士','清风徐来','北辰','追风少年','海的彼岸','咖啡不加糖','大熊','星河漫步','枫叶飘零','时光旅人'];
+var NF=['甜心小鹿','奶茶妹妹','浅笑安然','栀子花开','月亮不睡','棉花糖','小兔软糖','咕咚姑娘','雪落无声','薄荷微光'];
+var PM=['images/photo/male/crop.17.0.1224.1632.0.750.1000.jpg','images/photo/male/crop.0.0.1078.1438.0.750.1000.jpg','images/photo/male/crop.194.56.917.1222.0.750.1000.jpg','images/photo/male/crop.0.237.1080.1440.0.750.1000.jpg','images/photo/male/crop.0.501.960.1280.0.750.1000.jpg'];
+var PF=['images/photo/female/crop.0.67.1079.1438.0.750.1000.jpg','images/photo/female/crop.0.61.723.964.0.750.1000.jpg','images/photo/female/crop.384.0.2304.3072.0.750.1000.jpg','images/photo/female/crop.0.0.2267.3023.0.750.1000.jpg','images/photo/female/crop.0.0.4896.6528.0.750.1000.jpg'];
+
+// Generate 8 heart records
+var heartToMe=[],heartByMe=[];
+for(var i=0;i<8;i++){
+  var male=i%2===0;var name=male?NM[i%10]:NF[i%10];var photo=male?PM[i%5]:PF[i%5];var age=male?23+Math.floor(Math.random()*13):22+Math.floor(Math.random()*11);var cons=CONS[Math.floor(Math.random()*12)];
+  var mutual=Math.random()<0.3;
+  heartToMe.push({name:name,gender:male?'male':'female',age:age,cons:cons,photo:photo,count:1+Math.floor(Math.random()*5),mutual:mutual,isNew:Math.random()<0.3});
+}
+for(var i=0;i<4;i++){
+  var male=i%2===0;var name=male?NM[(i+3)%10]:NF[(i+3)%10];var photo=male?PM[(i+2)%5]:PF[(i+2)%5];var age=male?23+Math.floor(Math.random()*13):22+Math.floor(Math.random()*11);var cons=CONS[Math.floor(Math.random()*12)];
+  var mutual=Math.random()<0.3;
+  heartByMe.push({name:name,gender:male?'male':'female',age:age,cons:cons,photo:photo,count:1+Math.floor(Math.random()*3),mutual:mutual,isNew:Math.random()<0.3});
+}
+
+var followByMe=[],followToMe=[];
+for(var i=0;i<6;i++){
+  var male=i%2===0;var name=male?NM[(i+5)%10]:NF[(i+5)%10];var photo=male?PM[(i+3)%5]:PF[(i+3)%5];var age=male?23+Math.floor(Math.random()*13):22+Math.floor(Math.random()*11);var cons=CONS[Math.floor(Math.random()*12)];
+  var mutual=Math.random()<0.3;
+  followByMe.push({name:name,gender:male?'male':'female',age:age,cons:cons,photo:photo,mutual:mutual,isNew:Math.random()<0.3});
+}
+for(var i=0;i<5;i++){
+  var male=i%2===0;var name=male?NM[(i+7)%10]:NF[(i+7)%10];var photo=male?PM[(i+1)%5]:PF[(i+1)%5];var age=male?23+Math.floor(Math.random()*13):22+Math.floor(Math.random()*11);var cons=CONS[Math.floor(Math.random()*12)];
+  var mutual=Math.random()<0.3;
+  followToMe.push({name:name,gender:male?'male':'female',age:age,cons:cons,photo:photo,mutual:mutual,isNew:Math.random()<0.3});
+}
+
+var dislikeList=[];
+for(var i=0;i<5;i++){
+  var male=i%2===0;var name=male?NM[(i+1)%10]:NF[(i+1)%10];var photo=male?PM[(i+4)%5]:PF[(i+4)%5];var age=male?23+Math.floor(Math.random()*13):22+Math.floor(Math.random()*11);var cons=CONS[Math.floor(Math.random()*12)];
+  dislikeList.push({name:name,gender:male?'male':'female',age:age,cons:cons,photo:photo});
+}
+
+// Mutable copies
+heartToMe=[].concat(heartToMe);heartByMe=[].concat(heartByMe);
+followByMe=[].concat(followByMe);followToMe=[].concat(followToMe);
+dislikeList=[].concat(dislikeList);
+
+function gb(u){return u.gender==='male'?'<span class="text-[10px] px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-500 font-medium inline-flex items-center gap-0.5"><i data-lucide="mars" class="w-2.5 h-2.5"></i>男</span>':'<span class="text-[10px] px-1.5 py-0.5 rounded-full bg-pink-50 text-brand-pink font-medium inline-flex items-center gap-0.5"><i data-lucide="venus" class="w-2.5 h-2.5"></i>女</span>'}
+
+function render(){
+  var data=[],rowFn;
+  var subTabs='';
+
+  if(mainTab==='heart'){
+    subTabs='<div class="flex gap-2 pt-2 pb-1 px-0">'+
+      '<span onclick="nav(\'heart\',\'toMe\')" class="px-3 py-1.5 text-xs rounded-full font-medium transition-all '+(subTab==='toMe'?'bg-brand-pink text-white':'bg-gray-100 text-gray-500')+' cursor-pointer">对我心动的</span>'+
+      '<span onclick="nav(\'heart\',\'byMe\')" class="px-3 py-1.5 text-xs rounded-full font-medium transition-all '+(subTab==='byMe'?'bg-brand-pink text-white':'bg-gray-100 text-gray-500')+' cursor-pointer">我心动的</span>'+
+    '</div>';
+    if(subTab==='toMe'){
+      data=heartToMe;
+      rowFn=function(u){
+        var status=u.mutual?'<span class="text-xs font-bold text-brand-pink bg-brand-pink/5 px-2 py-0.5 rounded-full">已互相心动</span>':'<span class="text-xs text-gray-400">你暂未回应</span>';
+        return row(u,'心动次数：'+u.count+'次',status,u.isNew);
+      };
+    }else{
+      data=heartByMe;
+      rowFn=function(u){
+        var status=u.mutual?'<span class="text-xs font-bold text-brand-pink bg-brand-pink/5 px-2 py-0.5 rounded-full">已互相心动</span>':'<span class="text-xs text-gray-400">TA暂未回应</span>';
+        return row(u,'心动次数：'+u.count+'次',status,u.isNew);
+      };
+    }
+  }else if(mainTab==='follow'){
+    subTabs='<div class="flex gap-2 pt-2 pb-1 px-0">'+
+      '<span onclick="nav(\'follow\',\'toMe\')" class="px-3 py-1.5 text-xs rounded-full font-medium transition-all '+(subTab==='toMe'?'bg-brand-pink text-white':'bg-gray-100 text-gray-500')+' cursor-pointer">关注我的</span>'+
+      '<span onclick="nav(\'follow\',\'byMe\')" class="px-3 py-1.5 text-xs rounded-full font-medium transition-all '+(subTab==='byMe'?'bg-brand-pink text-white':'bg-gray-100 text-gray-500')+' cursor-pointer">我关注的</span>'+
+    '</div>';
+    if(subTab==='toMe'){
+      data=followToMe;
+      rowFn=function(u){
+        var status=u.mutual?'<span class="text-xs font-bold text-brand-pink bg-brand-pink/5 px-2 py-0.5 rounded-full">已互相关注</span>':'<span class="text-xs text-gray-400">你尚未回应</span>';
+        return row(u,'',status,u.isNew);
+      };
+    }else{
+      data=followByMe;
+      rowFn=function(u){
+        var status=u.mutual?'<span class="text-xs font-bold text-brand-pink bg-brand-pink/5 px-2 py-0.5 rounded-full">已互相关注</span>':'<span class="text-xs text-gray-400">TA尚未回应</span>';
+        var btn='<span class="text-[11px] px-2 py-0.5 rounded-xl bg-gray-100 text-gray-500 cursor-pointer card-hover" onclick="event.stopPropagation();cancelFollow('+followByMe.indexOf(u)+',\'byMe\')">取消关注</span>';
+        return row(u,btn,status,false);
+      };
+    }
+  }else if(mainTab==='dislike'){
+    subTab='all';
+    data=dislikeList;
+    rowFn=function(u){
+      var btn='<span class="text-[11px] px-2 py-0.5 rounded-xl bg-gray-100 text-gray-500 cursor-pointer card-hover" onclick="event.stopPropagation();cancelDislike('+dislikeList.indexOf(u)+')">取消无感</span>';
+      return row(u,btn,'',false);
+    };
+  }
+
+  function row(u,info,right,isNew){
+    var dot=isNew?'<span class="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white" style="top:-0.05rem;right:-0.05rem;"></span>':'';
+    return'<div class="flex items-center gap-3 py-3 border-b border-gray-200 cursor-pointer card-hover" onclick="window.location.href=\x27profile.html\x27">'+
+      '<div class="relative flex-shrink-0"><img src="'+u.photo+'" class="w-10 h-10 rounded-full object-cover border border-gray-100"/>'+dot+'</div>'+
+      '<div class="flex-1 min-w-0">'+
+        '<div class="flex items-center gap-1.5"><span class="text-sm font-bold text-gray-800 truncate max-w-[72px]">'+u.name+'</span>'+gb(u)+'</div>'+
+        '<div class="flex items-center gap-2 text-[11px] text-gray-400 mt-0.5"><span>'+u.age+'岁</span><span>'+u.cons+'</span></div>'+
+        (info?'<div class="text-[11px] text-gray-500 mt-0.5">'+info+'</div>':'')+
+      '</div>'+
+      '<div class="flex-shrink-0 text-right">'+right+'</div>'+
+    '</div>';
+  }
+
+  var mainTabs=['heart','follow','dislike'].map(function(k){
+    var labels={heart:'我的心动',follow:'我的关注',dislike:'我的无感'};
+    var act=mainTab===k;
+    return'<span onclick="nav(\''+k+'\')" class="flex-1 text-center text-sm pb-2.5 font-bold transition-colors duration-200 '+(act?'text-brand-pink border-b-[3px] border-brand-pink':'text-gray-400 border-b-[3px] border-transparent')+' cursor-pointer">'+labels[k]+'</span>';
+  }).join('');
+
+  document.getElementById('app').innerHTML=
+    '<div id="tab-bar" class="sticky top-0 z-30 bg-white px-4 pt-3 pb-0 shadow-sm">'+
+      '<div class="flex w-full border-b border-gray-100">'+mainTabs+'</div>'+
+    '</div>'+
+    '<div class="px-4 pt-3 pb-2">'+
+      subTabs+
+      '<div class="bg-white rounded-2xl shadow-sm border border-gray-100 mt-2"><div class="px-3">'+data.map(rowFn).join('')+'</div></div>'+
+    '</div>';
+  window.Common.initIcons();
+}
+
+function nav(tab,sub){
+  mainTab=tab;subTab=sub||(tab==='heart'?'byMe':tab==='follow'?'toMe':'all');
+  render();
+}
+
+function cancelFollow(idx,type){
+  showCancelConfirm('确定要取消关注该用户吗？',function(){
+    if(type==='byMe'){followByMe.splice(idx,1);window.Common.showToast('已取消关注');nav('follow','byMe')}
+    else{followToMe.splice(idx,1);window.Common.showToast('已取消关注');nav('follow','toMe')}
+  });
+}
+function cancelDislike(idx){
+  showCancelConfirm('确定要取消对该用户的无感标记吗？',function(){
+    dislikeList.splice(idx,1);window.Common.showToast('已取消无感');nav('dislike');
+  });
+}
+
+var cancelCallback=null;
+function showCancelConfirm(msg,cb){
+  cancelCallback=cb;
+  document.getElementById('cancel-confirm-msg').innerHTML=msg;
+  document.getElementById('cancel-confirm-btn').onclick=function(){
+    window.Common.hidePopup('cancel-confirm-overlay');
+    if(cancelCallback)cancelCallback();
+  };
+  window.Common.showPopup('cancel-confirm-overlay');
+}
+function hideCancelConfirm(e){window.Common.closePopup(e,'cancel-confirm-overlay')}
+
+document.addEventListener('DOMContentLoaded',function(){render()});
+</script>
+</body>
+</html>

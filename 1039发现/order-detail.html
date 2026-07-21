@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>订单详情 - 1039发现</title>
+<script src="lib/tailwind.min.js"></script>
+<script src="lib/lucide.min.js"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="antialiased">
+
+<div class="bg-decoration">
+    <div class="bg-blob"></div><div class="bg-blob"></div>
+    <div class="bg-blob"></div><div class="bg-blob"></div>
+    <div class="bg-blob"></div><div class="bg-blob"></div>
+</div>
+
+<div id="app" class="relative z-[1]"></div>
+
+<!-- 退款第一步：显示规则 + 模拟计算金额 -->
+<div id="refund-step1" class="fixed inset-0 bg-black/40 z-[120] hidden items-center justify-center" onclick="hideRefundStep1(event)">
+<div class="bg-white rounded-2xl p-5 mx-auto w-80 shadow-xl" onclick="event.stopPropagation()">
+<div class="flex items-center justify-between mb-3">
+<span class="text-base font-black text-gray-800">申请退款</span>
+<span onclick="hideRefundStep1()" class="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center card-hover"><i data-lucide="x" class="w-4 h-4 text-gray-500"></i></span>
+</div>
+<div id="refund-rules-html" class="text-xs text-gray-500 bg-gray-50 rounded-xl p-3 mb-3 space-y-1"></div>
+<div class="flex justify-between text-sm mb-1">
+<span class="text-gray-500">可退金额</span>
+<span class="text-lg font-black text-brand-gold" id="refund-amount"></span>
+</div>
+<p class="text-xs text-gray-400 mb-4">退款将原路返回至微信支付，预计3-5个工作日到账</p>
+<div class="space-y-2">
+<span onclick="confirmRefund()" class="block text-center cursor-pointer w-full py-2.5 rounded-xl bg-gradient-to-tr from-brand-gold to-brand-pink text-white font-bold text-sm card-hover shadow-lg shadow-brand-gold/20">确认退款</span>
+<span onclick="hideRefundStep1()" class="block text-center cursor-pointer w-full py-2.5 rounded-xl bg-gray-100 text-gray-500 font-bold text-sm card-hover">我再想想</span>
+</div></div></div>
+
+<!-- 核销弹窗 -->
+<div id="verify-overlay" class="fixed inset-0 bg-black/40 z-[140] hidden items-center justify-center" onclick="hideVerify(event)">
+<div class="bg-white rounded-2xl p-6 mx-auto w-80 shadow-xl text-center relative" onclick="event.stopPropagation()">
+<span onclick="hideVerify()" class="absolute top-3 right-3 w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center card-hover cursor-pointer"><i data-lucide="x" class="w-4 h-4 text-gray-500"></i></span>
+<p class="text-base font-black text-gray-800 mb-3">核销</p>
+<p class="verify-extra text-xs font-bold text-brand-gold mb-3" style="display:none;"></p>
+<div class="w-48 h-48 mx-auto bg-gray-100 rounded-xl flex items-center justify-center mb-4">
+<i data-lucide="qr-code" class="w-24 h-24 text-gray-700"></i>
+</div>
+<p class="text-sm font-bold text-gray-800 mb-2">请将本核销码向工作人员出示</p>
+<p class="text-xs text-red-500 leading-relaxed">请勿出示给其他人员以免被误核销</p>
+<p class="text-xs text-gray-400 mt-3 bg-amber-50 rounded-lg py-2 px-3">⚠ 核销成功后订单不能再进行退款</p>
+<span onclick="hideVerify()" class="block text-center cursor-pointer mt-4 w-full py-2.5 rounded-xl bg-gray-100 text-gray-500 font-bold text-sm card-hover">关闭</span>
+</div></div>
+
+<!-- 转赠弹窗 -->
+<div id="transfer-overlay" class="fixed inset-0 bg-black/40 z-[145] hidden items-center justify-center" onclick="hideTransfer(event)">
+<div class="bg-white rounded-2xl p-6 mx-auto w-80 shadow-xl text-center relative" onclick="event.stopPropagation()">
+<span onclick="hideTransfer()" class="absolute top-3 right-3 w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center card-hover cursor-pointer"><i data-lucide="x" class="w-4 h-4 text-gray-500"></i></span>
+<p class="text-base font-black text-gray-800 mb-3">转赠</p>
+<div class="w-48 h-48 mx-auto bg-gray-100 rounded-xl flex items-center justify-center mb-4">
+<i data-lucide="qr-code" class="w-24 h-24 text-gray-700"></i>
+</div>
+<p class="text-sm font-bold text-gray-800 mb-2">请将本二维码向您要转赠的亲友出示</p>
+<p class="text-xs text-red-500 leading-relaxed">请不要向其他人出示以避免被误领</p>
+<p class="text-xs text-gray-400 mt-3 bg-amber-50 rounded-lg py-2 px-3">⚠ 转赠后无法收回，且本订单不能退款</p>
+<span onclick="hideTransfer()" class="block text-center cursor-pointer mt-4 w-full py-2.5 rounded-xl bg-gray-100 text-gray-500 font-bold text-sm card-hover">关闭</span>
+</div></div>
+
+<!-- 预约弹窗 -->
+<div id="booking-overlay" class="fixed inset-0 bg-black/40 z-[150] hidden items-end justify-center" onclick="hideBooking(event)">
+<div class="bg-white w-full rounded-t-2xl max-h-[88vh] overflow-y-auto animate-slide-up" onclick="event.stopPropagation()">
+<div class="sticky top-0 bg-white z-10 flex items-center px-4 py-4 border-b border-gray-100 rounded-t-2xl">
+    <span class="text-lg font-black text-gray-800 flex-1 text-center" id="booking-step-title">选择预约时间</span>
+    <span onclick="hideBooking()" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center card-hover flex-shrink-0"><i data-lucide="x" class="w-5 h-5 text-gray-500"></i></span>
+</div>
+<div class="p-4 space-y-4" id="booking-form"></div>
+</div></div>
+
+<!-- 支付弹窗 -->
+<div id="pay-overlay2" class="fixed inset-0 bg-black/40 z-[170] hidden items-end justify-center" onclick="hidePay2(event)">
+<div class="bg-white w-full rounded-t-2xl animate-slide-up" onclick="event.stopPropagation()">
+<div class="sticky top-0 bg-white z-10 flex items-center justify-between px-4 py-4 border-b border-gray-100 rounded-t-2xl">
+<span class="text-lg font-black text-gray-800">确认支付</span>
+<span onclick="hidePay2()" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center card-hover"><i data-lucide="x" class="w-5 h-5 text-gray-500"></i></span>
+</div>
+<div class="p-4 text-center space-y-4">
+<div class="text-5xl">💳</div>
+<div class="text-sm text-gray-500"><span id="pay2-title"></span></div>
+<div class="text-2xl font-black text-brand-gold" id="pay2-amount"></div>
+<div class="text-xs text-gray-400">请选择支付方式</div>
+<div class="px-4">
+<span class="block text-center cursor-pointer w-full py-4 rounded-xl bg-gradient-to-tr from-green-500 to-green-600 text-white font-bold text-base shadow-lg shadow-green-500/20 card-hover flex items-center justify-center gap-2" onclick="doPayNow()">
+<i data-lucide="smartphone" class="w-5 h-5"></i>微信支付
+</span>
+</div>
+<span onclick="hidePay2()" class="block text-center cursor-pointer w-full py-2.5 rounded-xl bg-gray-100 text-gray-500 font-bold text-sm card-hover">取消</span>
+</div></div></div>
+
+<!-- 申请发票弹窗 -->
+<div id="invoice-overlay" class="fixed inset-0 bg-black/40 z-[160] hidden items-end justify-center" onclick="hideInvoiceOverlay(event)">
+<div class="bg-white w-full rounded-t-2xl max-h-[88vh] overflow-y-auto animate-slide-up" onclick="event.stopPropagation()">
+<div class="sticky top-0 bg-white z-10 flex items-center px-4 py-4 border-b border-gray-100 rounded-t-2xl">
+	<span class="text-lg font-black text-gray-800 flex-1 text-center">申请开具发票</span>
+	<span onclick="hideInvoiceOverlay()" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center card-hover flex-shrink-0"><i data-lucide="x" class="w-5 h-5 text-gray-500"></i></span>
+</div>
+<div class="p-4 space-y-4" id="invoice-form-content">
+	<div class="bg-amber-50 rounded-xl p-3 text-xs text-gray-500">
+		<p class="font-bold text-gray-700 mb-1">📋 开票说明</p>
+		<p>发票将在订单完成后3个工作日内开具，并发送至您的邮箱。</p>
+	</div>
+	<div>
+		<label class="block text-sm font-bold text-gray-700 mb-2">发票类型</label>
+		<div class="flex gap-2" id="invoice-type-group">
+			<span class="flex-1 text-center cursor-pointer py-2.5 rounded-full text-sm font-bold transition-colors bg-brand-gold text-white" onclick="switchInvoiceType('企业', this)">企业</span>
+			<span class="flex-1 text-center cursor-pointer py-2.5 rounded-full text-sm font-bold transition-colors bg-gray-100 text-gray-500" onclick="switchInvoiceType('个人', this)">个人</span>
+		</div>
+	</div>
+	<div>
+		<label class="block text-sm font-bold text-gray-700 mb-2">发票抬头 <span class="text-red-400">*</span></label>
+		<input type="text" id="invoice-title" placeholder="请输入发票抬头" class="w-full text-sm px-3 py-2.5 rounded-xl bg-gray-50 border border-gray-200 outline-none focus:border-brand-gold"/>
+	</div>
+	<div id="invoice-tax-group">
+		<label class="block text-sm font-bold text-gray-700 mb-2">税号 <span class="text-red-400">*</span></label>
+		<input type="text" id="invoice-tax" placeholder="请输入纳税人识别号" class="w-full text-sm px-3 py-2.5 rounded-xl bg-gray-50 border border-gray-200 outline-none focus:border-brand-gold"/>
+	</div>
+	<div>
+		<label class="block text-sm font-bold text-gray-700 mb-2">接收邮箱 <span class="text-red-400">*</span></label>
+		<input type="email" id="invoice-email" placeholder="请输入接收发票的邮箱" class="w-full text-sm px-3 py-2.5 rounded-xl bg-gray-50 border border-gray-200 outline-none focus:border-brand-gold"/>
+	</div>
+	<span class="block text-center cursor-pointer w-full py-3 rounded-full bg-gradient-to-tr from-brand-gold to-brand-pink text-white font-bold text-sm card-hover" onclick="submitInvoice()">提交申请</span>
+</div>
+</div></div>
+
+<!-- 后登记模式：登记信息弹窗 -->
+<div id="register-overlay" class="fixed inset-0 bg-black/40 z-[150] hidden items-end justify-center" onclick="hideRegForm(event)">
+<div class="bg-white w-full rounded-t-2xl max-h-[88vh] overflow-y-auto animate-slide-up" onclick="event.stopPropagation()">
+<div class="sticky top-0 bg-white z-10 flex items-center px-4 py-4 border-b border-gray-100 rounded-t-2xl">
+    <span class="text-lg font-black text-gray-800 flex-1 text-center">登记信息</span>
+    <span onclick="hideRegForm()" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center card-hover flex-shrink-0"><i data-lucide="x" class="w-5 h-5 text-gray-500"></i></span>
+</div>
+<div class="p-4 space-y-4" id="register-form"></div>
+</div></div>
+
+<script src="common.js"></script>
+<script>
+var order = JSON.parse(localStorage.getItem('lastOrder') || 'null');
+if (!order) {
+    order = {
+        orderNo:'OD202607180001', orderTime:'2026-07-17 14:30',
+        productName:'2026冰丝带汽车生活节', productEmoji:'🏎️',
+        specName:'单人票', dateLabel:'7月18日（周五）', dateValue:'2026-07-18',
+        persons:[{label:'成人',name:'张三',mobile:'13812345678',idcard:'110101199001011234'}],
+        price:99, originalPrice:99, couponAmount:0, couponName:'',
+        refundStages:[
+            {days:30, rate:100, text:'提前30天退款 → 退 100%'},
+            {days:7,  rate:50,  text:'提前7天退款 → 退 50%'},
+            {days:0,  rate:0,   text:'活动开始后 → 不可退'}
+        ],
+        status:'paid', type:'event', detailUrl:'event-detail.html',
+    };
+}
+var refunded = order.status === 'refunded';
+var verified = {};
+var transferred = {};
+var invoiceApplied = false;
+var currentInvoiceType = '企业';
+var batchMode = false;
+var batchType = 'verify'; // 'verify' or 'book'
+var batchSelected = {};
+
+// ============ 预约模式数据 ============
+if (order.isBooking && !order.bookings) order.bookings = [];
+var TIME_SLOTS = ['09:00-10:00','10:00-11:00','11:00-12:00','14:00-15:00','15:00-16:00','16:00-17:00'];
+var SLOTS_STATUS = {};
+if (!order.isBooking) order.isBooking = false;
+
+// 日历数据
+var bookingCalMonth = (new Date()).getMonth();
+var bookingCalYear = (new Date()).getFullYear();
+function getCalendarDates(year, month) {
+    var dates = [];
+    var firstDay = new Date(year, month, 1).getDay();
+    var daysInMonth = new Date(year, month + 1, 0).getDate();
+    for (var i = 0; i < firstDay; i++) dates.push(null);
+    var today = new Date();
+    for (var d = 1; d <= daysInMonth; d++) {
+        var dt = new Date(year, month, d);
+        var isPast = dt < new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        dates.push({day:d, date:dt, isPast:isPast});
+    }
+    return dates;
+}
+
+// 模拟计算当前可退款金额
+function calcRefundAmount() {
+    var stages = order.refundStages || [];
+    if (!stages.length) return 0;
+    // 模拟：假设今天距离活动还有15天
+    var dayDiff = 15;
+    // 从大到小排，取第一个 days_before <= dayDiff 的阶段（阶梯退：30→7→0）
+    var sorted = stages.slice().sort(function(a,b){ return (b.days_before||b.days||0) - (a.days_before||a.days||0); });
+    for (var i = 0; i < sorted.length; i++) {
+        var db = sorted[i].days_before || sorted[i].days || 0;
+        var rate = sorted[i].refund_value || sorted[i].rate || 0;
+        if (db <= dayDiff) {
+            return Math.round(order.price * rate / 100);
+        }
+    }
+    return 0;
+}
+
+function render() {
+    // 人员信息
+    var infoTitle = order.type === 'product' ? '收货信息' : (order.type === 'ticket' ? '我的门票' : '我的入场券');
+    var isEventOrTicket = order.type === 'event' || order.type === 'ticket';
+    var personsHtml = '';
+    var batchBarHtml = '';
+    var isPost = order.isPostRegister;
+
+    if (isEventOrTicket) {
+        var cardLabel = order.type === 'ticket' ? '门票' : '入场券';
+        var qty = order.quantity || 1;
+        personsHtml = '<div class="flex overflow-x-auto gap-3 no-scrollbar -mx-4 px-4 py-1" id="cards-row">';
+        for (var g = 1; g <= qty; g++) {
+            var isV = verified[g];
+            var isReg = !isPost || (order.registered && order.registered[g]);
+            if (order.isNoRegister) isReg = true;
+            var canSel = batchMode && canSelectCard(g);
+            var isSel = batchMode && batchSelected[g];
+            var isNoReg = order.isNoRegister;
+            var cardCls = 'ticket-card flex-shrink-0 relative';
+            if (batchMode && isSel) cardCls += ' outline outline-2 outline-brand-gold';
+            if (batchMode && !canSel) cardCls += ' opacity-50';
+            if (!batchMode && (isV || transferred[g] || refunded)) cardCls += ' opacity-50';
+
+            personsHtml += '<div class="' + cardCls + '" style="width:80%;" ' + (canSel ? 'onclick="toggleBatchCardKeepScroll(' + g + ')"' : '') + ' id="card-' + g + '">';
+
+            // 票券左侧色条
+            personsHtml += '<div class="ticket-left-bar" style="background:#C27A00;"><div class="ticket-rotate-text">1039发现</div></div>';
+
+            // 票券内容区
+            personsHtml += '<div class="ticket-body">';
+
+            // 批量模式：右上角勾选框
+            if (batchMode) {
+                if (isV) {
+                    personsHtml += '<div class="absolute top-2 right-3 w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center z-10"><i data-lucide="check" class="w-3.5 h-3.5 text-white"></i></div>';
+                } else if (!canSel) {
+                    personsHtml += '<div class="absolute top-2 right-3 w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center z-10"><i data-lucide="lock" class="w-3 h-3 text-gray-400"></i></div>';
+                } else if (isSel) {
+                    personsHtml += '<div class="absolute top-2 right-3 w-6 h-6 rounded-full bg-brand-gold flex items-center justify-center z-10"><i data-lucide="check" class="w-3.5 h-3.5 text-white"></i></div>';
+                } else {
+                    personsHtml += '<div class="absolute top-2 right-3 w-6 h-6 rounded-full border-2 border-gray-300 z-10"></div>';
+                }
+            }
+
+            
+            if (refunded) {
+                // 已退款：保留原有内容，所有按钮隐藏，只显示"已退款"
+                if (order.isNoRegister) {
+                    personsHtml += '<div class="py-4 text-center"><p class="text-xs text-gray-500 mb-1">' + order.productName + '</p><p class="text-xs font-bold text-gray-700">' + order.specName.split(' × ')[0] + '</p></div>';
+                } else if (order.isBooking && !isBooked) {
+                    personsHtml += '<div class="py-3 text-center"><p class="text-xs text-gray-500 mb-1">请先预约使用时间后核销使用</p></div>';
+                } else if (isPost && !isReg) {
+                    personsHtml += '<div class="py-3 text-center"><p class="text-xs text-gray-500 mb-1">请登记报名信息后核销使用</p></div>';
+                } else {
+                    var existBk2 = (order.bookings || []).filter(function(bk){return bk.group === g;})[0];
+                    if (existBk2) {
+                        personsHtml += '<div class="py-2"><p class="text-xs text-gray-500">预约时间</p><p class="text-xs font-bold text-gray-700">' + existBk2.dateLabel + ' ' + existBk2.slot + '</p></div>';
+                    }
+                    (order.persons || []).filter(function(p){return p.group === g || (!p.group && g === 1);}).forEach(function(p){
+                        if (p.name) {
+                            personsHtml += '<div class="py-1 border-t border-gray-100 first:border-t-0"><p class="text-xs font-bold text-gray-700 mb-0.5">' + p.label + '</p><p class="text-xs text-gray-500 ml-1">姓名：' + p.name + '</p><p class="text-xs text-gray-500 ml-1">手机号：' + p.mobile + '</p>' + (p.idcard ? '<p class="text-xs text-gray-500 ml-1">身份证号：' + p.idcard + '</p>' : '') + '</div>';
+                        } else {
+                            personsHtml += '<div class="py-1 border-t border-gray-100 first:border-t-0"><p class="text-xs font-bold text-gray-700 mb-0.5">' + p.label + '</p></div>';
+                        }
+                    });
+                }
+                if (!batchMode) {
+                    personsHtml += '<div style="text-align:center;margin-top:8px;"><span class="inline-block px-5 py-1.5 rounded-full text-xs font-bold bg-gray-200 text-gray-400 cursor-default">已退款</span></div>';
+                }
+            } else if (isNoReg) {
+                personsHtml += '<div class="py-4 text-center"><p class="text-xs text-gray-500 mb-1">' + order.productName + '</p><p class="text-xs font-bold text-gray-700">' + order.specName.split(' × ')[0] + '</p></div>';
+                if (!batchMode) {
+                    var btnDisabled2 = isV;
+                    var tfDisabled2 = isV || transferred[g];
+                    personsHtml += '<div style="display:flex;justify-content:center;gap:8px;margin-top:8px;">\
+                        <span class="inline-block px-5 py-1.5 rounded-full text-xs font-bold leading-none ' + (btnDisabled2 ? 'bg-gray-200 text-gray-400 cursor-default' : 'bg-brand-gold text-white cursor-pointer card-hover') + '" ' + (btnDisabled2 ? '' : 'onclick="showVerify(' + g + ')"') + ' style="' + (transferred[g] ? 'display:none;' : '') + '">' + (isV ? '已核销' : '核销') + '</span>\
+                        <span class="inline-block px-5 py-1.5 rounded-full text-xs font-bold leading-none ' + (tfDisabled2 ? 'bg-gray-200 text-gray-400 cursor-default' : 'bg-brand-pink text-white cursor-pointer card-hover') + '" ' + (tfDisabled2 ? '' : 'onclick="showTransfer(' + g + ')"') + '>' + (transferred[g] ? '已转赠' : '转赠') + '</span>\
+                    </div>';
+                }
+            } else if (order.isBooking) {
+                var existBk = (order.bookings || []).filter(function(bk){return bk.group === g;})[0];
+                if (!existBk) {
+                    personsHtml += '<div class="py-3 text-center"><p class="text-xs text-gray-500 mb-1">请先预约使用时间后核销使用</p></div>';
+                    if (!batchMode) {
+                        var btTfDisabledBk = transferred[g];
+                        personsHtml += '<div style="display:flex;justify-content:center;gap:8px;margin-top:8px;">\
+                            <span class="inline-block px-5 py-1.5 rounded-full border border-brand-gold text-brand-gold text-xs font-bold cursor-pointer card-hover" style="' + (transferred[g] ? 'display:none;' : '') + '" onclick="showBooking(' + g + ')">预约</span>\
+                            <span class="inline-block px-5 py-1.5 rounded-full text-xs font-bold leading-none ' + (btTfDisabledBk ? 'bg-gray-200 text-gray-400 cursor-default' : 'bg-brand-pink text-white cursor-pointer card-hover') + '" ' + (btTfDisabledBk ? '' : 'onclick="showTransfer(' + g + ')"') + '>' + (btTfDisabledBk ? '已转赠' : '转赠') + '</span>\
+                        </div>';
+                    }
+                } else {
+                    personsHtml += '<div class="py-2"><p class="text-xs text-gray-500">预约时间</p><p class="text-xs font-bold text-gray-700">' + existBk.dateLabel + ' ' + existBk.slot + '</p></div>';
+                    (order.persons || []).filter(function(p){return p.group === g || (!p.group && g === 1);}).forEach(function(p){
+                        personsHtml += '<div class="py-1 border-t border-gray-100 first:border-t-0"><p class="text-xs font-bold text-gray-700 mb-0.5">' + p.label + '</p><p class="text-xs text-gray-500 ml-1">姓名：' + p.name + '</p><p class="text-xs text-gray-500 ml-1">手机号：' + p.mobile + '</p></div>';
+                    });
+                    if (!batchMode) {
+                        var btnDisabled = isV;
+                        var tfDisabled = isV || transferred[g];
+                        personsHtml += '<div style="display:flex;justify-content:center;gap:8px;margin-top:8px;">\
+                            <span class="inline-block px-5 py-1.5 rounded-full text-xs font-bold leading-none ' + (btnDisabled ? 'bg-gray-200 text-gray-400 cursor-default' : 'bg-brand-gold text-white cursor-pointer card-hover') + '" ' + (btnDisabled ? '' : 'onclick="showVerify(' + g + ')"') + ' style="' + (transferred[g] ? 'display:none;' : '') + '">' + (isV ? '已核销' : '核销') + '</span>\
+                            <span class="inline-block px-5 py-1.5 rounded-full text-xs font-bold leading-none ' + (tfDisabled ? 'bg-gray-200 text-gray-400 cursor-default' : 'bg-brand-pink text-white cursor-pointer card-hover') + '" ' + (tfDisabled ? '' : 'onclick="showTransfer(' + g + ')"') + '>' + (transferred[g] ? '已转赠' : '转赠') + '</span>\
+                        </div>';
+                    }
+                }
+            } else if (isPost && !isReg) {
+                personsHtml += '<div class="py-3 text-center"><p class="text-xs text-gray-500 mb-1">请登记报名信息后核销使用</p></div>';
+                if (!batchMode) {
+                    var tfDisabledReg = transferred[g];
+                    personsHtml += '<div style="display:flex;justify-content:center;gap:8px;margin-top:8px;">\
+                        <span class="inline-block px-5 py-1.5 rounded-full border border-brand-gold text-brand-gold text-xs font-bold leading-none cursor-pointer card-hover" style="' + (transferred[g] ? 'display:none;' : '') + '" onclick="showRegForm(' + g + ')">登记</span>\
+                        <span class="inline-block px-5 py-1.5 rounded-full text-xs font-bold leading-none ' + (tfDisabledReg ? 'bg-gray-200 text-gray-400 cursor-default' : 'bg-brand-pink text-white cursor-pointer card-hover') + '" ' + (tfDisabledReg ? '' : 'onclick="showTransfer(' + g + ')"') + '>' + (tfDisabledReg ? '已转赠' : '转赠') + '</span>\
+                    </div>';
+                }
+            } else {
+                (order.persons || []).filter(function(p){return p.group === g || (!p.group && g === 1);}).forEach(function(p){
+                    personsHtml += '\
+                    <div class="py-2 border-t border-gray-100 first:border-t-0">\
+                        <p class="text-xs font-bold text-gray-700 mb-1">' + p.label + '</p>\
+                        <p class="text-xs text-gray-500 ml-1">姓名：' + p.name + '</p>\
+                        <p class="text-xs text-gray-500 ml-1">手机号：' + p.mobile + '</p>\
+                        ' + (p.idcard ? '<p class="text-xs text-gray-500 ml-1">身份证号：' + p.idcard + '</p>' : '') + '\
+                    </div>';
+                });
+                if (!batchMode) {
+                    var btnDisabled = isV;
+                    var tfDisabled = isV || transferred[g];
+                    personsHtml += '\
+                    <div style="display:flex;justify-content:center;gap:8px;margin-top:8px;">\
+                        <span class="inline-block px-5 py-1.5 rounded-full text-xs font-bold leading-none ' + (btnDisabled ? 'bg-gray-200 text-gray-400 cursor-default' : 'bg-brand-gold text-white cursor-pointer card-hover') + '" ' + (btnDisabled ? '' : 'onclick="showVerify(' + g + ')"') + ' style="' + (transferred[g] ? 'display:none;' : '') + '">' + (isV ? '已核销' : '核销') + '</span>\
+                        <span class="inline-block px-5 py-1.5 rounded-full text-xs font-bold leading-none ' + (tfDisabled ? 'bg-gray-200 text-gray-400 cursor-default' : 'bg-brand-pink text-white cursor-pointer card-hover') + '" ' + (tfDisabled ? '' : 'onclick="showTransfer(' + g + ')"') + '>' + (transferred[g] ? '已转赠' : '转赠') + '</span>\
+                    </div>';
+                }
+            }
+            personsHtml += '</div>'; // close ticket-body
+            personsHtml += '</div>'; // close ticket-card
+        }
+        personsHtml += '</div>';
+
+        // 批量操作栏
+        if (batchMode) {
+            var selCount = 0;
+            for (var k2 in batchSelected) { if (batchSelected[k2]) selCount++; }
+            var batchLabel = batchType === 'book' ? '批量预约' : '批量核销';
+            var batchAction = batchType === 'book' ? 'batchBook()' : 'batchVerify()';
+            batchBarHtml = '\
+            <div class="mt-3 flex gap-2">\
+                <span class="flex-1 text-center cursor-pointer py-2.5 rounded-full bg-gray-100 text-gray-500 font-bold text-xs card-hover" onclick="cancelBatch()">取消</span>\
+                <span class="flex-[2] text-center cursor-pointer py-2.5 rounded-full bg-brand-gold text-white font-bold text-xs card-hover ' + (selCount === 0 ? 'opacity-50 cursor-default' : '') + '" ' + (selCount > 0 ? 'onclick="' + batchAction + '"' : '') + '>' + batchLabel + (selCount > 0 ? '（' + selCount + '）' : '') + '</span>\
+            </div>';
+        }
+    } else {
+        order.persons.forEach(function(p) {
+            var rows = '<p><span class="text-gray-400">姓名：</span>' + p.name + '</p>';
+            rows += '<p><span class="text-gray-400">手机号：</span>' + p.mobile + '</p>';
+            if (p.idcard) rows += '<p><span class="text-gray-400">身份证号：</span>' + p.idcard + '</p>';
+            if (p.address) rows += '<p><span class="text-gray-400">地址：</span>' + p.address + '</p>';
+            var labelTag = p.label ? '<span class="text-xs text-gray-400 w-12 flex-shrink-0 pt-0.5">' + p.label + '</span>' : '';
+            personsHtml += '<div class="flex items-start gap-2 py-2">' + labelTag + '<div class="flex-1 text-sm text-gray-700">' + rows + '</div></div>';
+        });
+    }
+
+    var couponRow = order.couponAmount > 0
+        ? '<div class="flex justify-between text-sm mb-2"><span class="text-gray-500">优惠券（' + order.couponName + '）</span><span class="text-red-400">-¥' + order.couponAmount + '</span></div>'
+        : '';
+
+    // 状态 + 退款按钮
+    var statusAndActionHtml = '';
+    if (refunded) {
+        statusAndActionHtml = '\
+        <div class="flex items-center justify-between pt-2 border-t border-gray-200 mt-2">\
+            <div class="flex items-center gap-2 text-sm font-bold text-amber-600">\
+                <div class="w-7 h-7 rounded-full bg-amber-100 flex items-center justify-center"><i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i></div>已退款\
+            </div>\
+            <span class="text-xs text-gray-400">预计3-5个工作日到账</span>\
+        </div>';
+    } else if (order.status === 'pending') {
+        statusAndActionHtml = '\
+        <div class="flex items-center justify-between pt-2 border-t border-gray-200 mt-2">\
+            <div class="flex items-center gap-2 text-sm font-bold text-orange-500">\
+                <div class="w-7 h-7 rounded-full bg-orange-50 flex items-center justify-center"><i data-lucide="clock" class="w-3.5 h-3.5"></i></div>待付款\
+            </div>\
+            <span class="px-4 py-1.5 rounded-full bg-gradient-to-tr from-brand-gold to-brand-pink text-white text-xs font-bold cursor-pointer card-hover" onclick="payNow()">马上支付</span>\
+        </div>';
+    } else {
+        var anyVerified = false;
+        for (var k in verified) { if (verified[k]) { anyVerified = true; break; } }
+        var anyTransferred = false;
+        for (var tk in transferred) { if (transferred[tk]) { anyTransferred = true; break; } }
+        var refundBtnHtml2;
+        var hasBooking = order.isBooking && (order.bookings || []).length > 0;
+        var canInvoice = false;
+        if (anyVerified || anyTransferred) {
+            canInvoice = true;
+            var toastMsg = anyTransferred ? '您已转赠门票，本单不能退款！' : '您已核销门票，本单不能退款！';
+            refundBtnHtml2 = '<span class="px-4 py-1.5 rounded-full bg-gray-200 text-gray-400 text-xs font-bold cursor-pointer" onclick="Common.showToast(\'' + toastMsg + '\')">申请退款</span>';
+        } else if (order.type === 'product') {
+            refundBtnHtml2 = '<span class="px-4 py-1.5 rounded-full bg-gray-200 text-gray-400 text-xs font-bold cursor-pointer" onclick="Common.showToast(\'本商品不支持线上退款，如有疑问请与客服联系！\')">申请退款</span>';
+        } else if (hasBooking) {
+            canInvoice = true;
+            refundBtnHtml2 = '<span class="px-4 py-1.5 rounded-full bg-gray-200 text-gray-400 text-xs font-bold cursor-pointer" onclick="Common.showToast(\'您已进行门票预约，本单不能退款！\')">申请退款</span>';
+        } else {
+            refundBtnHtml2 = '<span class="px-4 py-1.5 rounded-full border border-brand-gold text-brand-gold text-xs font-bold cursor-pointer card-hover" onclick="showRefund()">申请退款</span>';
+        }
+
+        // 发票按钮
+        var invoiceBtnHtml = '';
+        if (canInvoice && !invoiceApplied) {
+            invoiceBtnHtml = '<span class="px-4 py-1.5 rounded-full bg-brand-gold text-white text-xs font-bold cursor-pointer card-hover ml-2" onclick="showInvoiceOverlay()">申请发票</span>';
+        } else if (invoiceApplied) {
+            invoiceBtnHtml = '<span class="px-4 py-1.5 rounded-full bg-gray-200 text-gray-400 text-xs font-bold cursor-default ml-2">已申请开发票</span>';
+        }
+
+        statusAndActionHtml = '\
+        <div class="flex items-center justify-between pt-2 border-t border-gray-200 mt-2">\
+            <div class="flex items-center gap-2 text-sm font-bold text-green-600">\
+                <div class="w-7 h-7 rounded-full bg-green-100 flex items-center justify-center"><i data-lucide="check-circle" class="w-3.5 h-3.5"></i></div>已支付\
+            </div>\
+            <div class="flex items-center">' + refundBtnHtml2 + invoiceBtnHtml + '</div>\
+        </div>';
+    }
+
+    document.getElementById('app').innerHTML = '\
+        <div class="top-section">\
+            <div class="px-4 pt-3 pb-2">\
+                <img src="logo.png" alt="1039发现" style="height:28px;" />\
+            </div>\
+        </div>\
+        <div class="content-card">\
+            <div class="px-4 py-4 border-b border-gray-100 flex items-center gap-2">\
+                <i data-lucide="file-text" class="w-5 h-5 text-brand-gold"></i>\
+                <span class="text-base font-black text-gray-800">订单详情</span>\
+            </div>\
+            \
+            <div class="px-4 py-4 border-b border-gray-100">\
+                <a href="' + (order.detailUrl || 'index.html') + '" class="flex items-center gap-3 mb-3 card-hover cursor-pointer no-underline group">\
+                    ' + (order.coverImage ? '<img src="' + order.coverImage + '" class="w-12 h-12 rounded-lg object-cover flex-shrink-0" />' : '<div class="w-12 h-12 rounded-lg flex items-center justify-center text-2xl flex-shrink-0" style="background:rgba(242,166,0,0.10);">' + (order.productEmoji || '🎵') + '</div>') + '\
+                    <div class="flex-1 min-w-0">\
+                        <h4 class="text-sm font-bold text-gray-800">' + order.productName + '</h4>\
+                        <p class="text-xs text-gray-500">' + order.specName + (order.dateLabel ? ' | ' + order.dateLabel : '') + '</p>\
+                    </div>\
+                    <i data-lucide="chevron-right" class="w-5 h-5 text-gray-300 flex-shrink-0 group-hover:text-gray-400"></i>\
+                </a>\
+                <div class="text-xs text-gray-400 space-y-1">\
+                    <p>订单编号：' + order.orderNo + '</p>\
+                    <p>下单时间：' + order.orderTime + '</p>\
+                </div>\
+            </div>\
+            \
+            <div class="px-4 py-3 border-b border-gray-100">\
+                <div class="flex items-center justify-between mb-3">\
+                    <h4 class="text-sm font-bold text-gray-800">' + infoTitle + '</h4>\
+                    ' + (isEventOrTicket && !batchMode && !refunded && qty > 1 ? '<div class="flex gap-1.5">' + (order.isBooking ? '<span class="text-xs text-brand-gold cursor-pointer card-hover font-medium px-2 py-1 rounded-full border border-brand-gold/40" onclick="enterBatch(\'book\')">批量预约</span>' : '<span class="text-xs text-brand-gold cursor-pointer card-hover font-medium px-2 py-1 rounded-full border border-brand-gold/40" onclick="enterBatch(\'verify\')">批量核销</span>') + '</div>' : '') + '\
+                    ' + (isEventOrTicket && batchMode ? '<span class="text-xs cursor-pointer card-hover font-medium px-2.5 py-1 rounded-full border ' + (function(){var allSel=true;for(var g2=1;g2<=qty;g2++){if(!canSelectCard(g2))continue;if(!batchSelected[g2]){allSel=false;break;}}return allSel?'bg-brand-gold text-white border-brand-gold':'text-brand-gold border-brand-gold/40';})() + '" onclick="selectAll()">全选</span>' : '') + '\
+                </div>\
+                ' + personsHtml + '\
+                ' + batchBarHtml + '\
+                ' + (order.type === 'product' ? '<div class="mt-3 bg-gray-50 rounded-xl p-3 text-xs text-gray-500 space-y-1"><p><span class="text-gray-400">快递公司：</span>顺丰速运</p><p><span class="text-gray-400">快递单号：</span>SF1234567890</p></div>' : '') + '\
+            </div>\
+            \
+            <div class="px-4 py-3 border-b border-gray-100">\
+                <div class="flex justify-between text-sm mb-2">\
+                    <span class="text-gray-500">商品金额</span><span class="text-gray-800">¥' + order.originalPrice.toFixed(2) + '</span>\
+                </div>\
+                ' + couponRow + '\
+                <div class="flex justify-between text-sm mb-2">\
+                    <span class="text-gray-500">数量</span><span class="text-gray-800">×' + (order.quantity || 1) + '</span>\
+                </div>\
+                <div class="flex justify-between text-sm font-bold pt-2 border-t border-gray-200">\
+                    <span class="text-gray-800">已付金额</span><span class="text-lg font-black text-brand-gold">¥' + order.price.toFixed(2) + '</span>\
+                </div>\
+                ' + statusAndActionHtml + '\
+            </div>\
+            \
+            <div class="px-4 py-4">\
+                <a href="my-orders.html" class="block text-center py-3 rounded-full bg-gray-100 text-gray-500 font-bold text-sm card-hover no-underline mb-2">返回全部订单</a>\
+                <a href="index.html" class="block text-center py-3 rounded-full bg-white border border-gray-200 text-gray-400 font-bold text-sm card-hover no-underline">返回首页</a>\
+            </div>\
+        </div>\
+        <div class="pb-6"></div>\
+    ';
+    Common.initIcons();
+}
+
+// ============ 退款流程 ============
+function showRefund() {
+    var refundAmount = calcRefundAmount();
+    var rulesHtml = order.refundStages.map(function(r) { return '<p>· ' + r.text + '</p>'; }).join('');
+    document.getElementById('refund-rules-html').innerHTML = rulesHtml;
+    document.getElementById('refund-amount').textContent = '¥' + refundAmount.toFixed(2);
+    Common.showPopup('refund-step1');
+}
+
+function hideRefundStep1(e) { Common.closePopup(e, 'refund-step1'); }
+
+function confirmRefund() {
+    Common.hidePopup('refund-step1');
+    refunded = true;
+    Common.showToast('退款已提交！');
+    render();
+}
+
+var currentVerifyGroup = 0;
+var batchVerifyCount = 0;
+
+function preserveScrollRender() {
+    var row = document.getElementById('cards-row');
+    var sl = row ? row.scrollLeft : 0;
+    render();
+    row = document.getElementById('cards-row');
+    if (row) row.scrollLeft = sl;
+}
+
+function showVerify(g) {
+    currentVerifyGroup = g;
+    batchVerifyCount = 0;
+    document.getElementById('verify-overlay').querySelector('.verify-extra').style.display = 'none';
+    Common.showPopup('verify-overlay');
+    setTimeout(function(){Common._icons(document.getElementById('verify-overlay'));},50);
+}
+
+function hideVerify(e) {
+    Common.closePopup(e, 'verify-overlay');
+    if (batchVerifyCount > 0) {
+        // 批量核销：标记所有选中的卡片
+        for (var k in batchSelected) { if (batchSelected[k]) verified[k] = true; }
+        var cnt = batchVerifyCount;
+        batchVerifyCount = 0;
+        batchSelected = {};
+        batchMode = false;
+        Common.showToast('已核销' + cnt + '份' + (order.type === 'ticket' ? '门票' : '报名信息'));
+        preserveScrollRender();
+    } else if (currentVerifyGroup) {
+        verified[currentVerifyGroup] = true;
+        preserveScrollRender();
+    }
+    currentVerifyGroup = 0;
+}
+
+var currentTransferGroup = 0;
+function showTransfer(g) {
+    currentTransferGroup = g;
+    Common.showPopup('transfer-overlay');
+    setTimeout(function(){Common._icons(document.getElementById('transfer-overlay'));},50);
+}
+function hideTransfer(e) {
+    Common.closePopup(e, 'transfer-overlay');
+    if (currentTransferGroup) { transferred[currentTransferGroup] = true; preserveScrollRender(); }
+    currentTransferGroup = 0;
+}
+
+function payNow() {
+    document.getElementById('pay2-title').textContent = order.productName;
+    document.getElementById('pay2-amount').textContent = '¥' + order.price.toFixed(2);
+    Common.showPopup('pay-overlay2');
+}
+function hidePay2(e) { Common.closePopup(e, 'pay-overlay2'); }
+function doPayNow() {
+    Common.hidePopup('pay-overlay2');
+    order.status = 'paid';
+    localStorage.setItem('lastOrder', JSON.stringify(order));
+    Common.showToast('支付成功！');
+    render();
+}
+
+// ============ 批量操作 ============
+function canSelectCard(g) {
+    if (verified[g]) return false;
+    if (transferred[g]) return false;
+    if (batchType === 'book') {
+        // 批量预约：已预约的不可选，后登记模式未登记的可选
+        var isBooked = (order.bookings || []).filter(function(bk){return bk.group === g;}).length > 0;
+        return !isBooked;
+    } else {
+        // 批量核销：后登记模式未登记不可选；预约模式未预约不可选
+        if (order.isPostRegister && !(order.registered && order.registered[g])) return false;
+        if (order.isBooking) {
+            var isBooked2 = (order.bookings || []).filter(function(bk){return bk.group === g;}).length > 0;
+            if (!isBooked2) return false;
+        }
+        return true;
+    }
+}
+
+function enterBatch(type) {
+    batchMode = true;
+    batchType = type;
+    batchSelected = {};
+    render();
+}
+
+function cancelBatch() {
+    batchMode = false;
+    batchType = 'verify';
+    batchSelected = {};
+    render();
+}
+
+function selectAll() {
+    var qty = order.quantity || 1;
+    var allSel = true;
+    for (var g = 1; g <= qty; g++) { if (canSelectCard(g) && !batchSelected[g]) { allSel = false; break; } }
+    if (allSel) { for (var g2 = 1; g2 <= qty; g2++) { if (canSelectCard(g2)) delete batchSelected[g2]; } }
+    else { for (var g3 = 1; g3 <= qty; g3++) { if (canSelectCard(g3)) batchSelected[g3] = true; } }
+    render();
+}
+
+function toggleBatchCard(g) {
+    if (!canSelectCard(g)) return;
+    if (batchSelected[g]) { delete batchSelected[g]; } else { batchSelected[g] = true; }
+    var row = document.getElementById('cards-row');
+    var scrollLeft = row ? row.scrollLeft : 0;
+    render();
+    row = document.getElementById('cards-row');
+    if (row) row.scrollLeft = scrollLeft;
+}
+
+function toggleBatchCardKeepScroll(g) { toggleBatchCard(g); }
+
+// ============ 后登记模式：登记信息弹窗 ============
+var regFormGroup = 0;
+var PRE_FILL_REG = [
+    { name:'张三', mobile:'13812345678', idcard:'110101199001011234' },
+    { name:'李四', mobile:'13912345678', idcard:'110101199205152345' },
+    { name:'张小宝', mobile:'', idcard:'110101201803201234' },
+];
+
+function showRegForm(g) {
+    regFormGroup = g;
+    var labels = order.personLabels || [];
+    var fieldsHtml = '';
+    for (var p = 0; p < labels.length; p++) {
+        var pf = PRE_FILL_REG[p] || { name:'', mobile:'', idcard:'' };
+        fieldsHtml += '\
+        <div class="mb-3">\
+            <h5 class="text-xs font-bold text-gray-500 mb-2">' + labels[p] + '</h5>\
+            <div class="space-y-2">\
+                <div class="flex items-center gap-2">\
+                    <span class="text-xs text-gray-400 w-12 flex-shrink-0">姓名</span>\
+                    <input type="text" id="rname-' + p + '" value="' + pf.name + '" placeholder="请填写姓名" class="flex-1 text-sm px-3 py-2.5 rounded-xl bg-gray-50 border border-gray-200 outline-none focus:border-brand-gold"/>\
+                </div>\
+                <div class="flex items-center gap-2">\
+                    <span class="text-xs text-gray-400 w-12 flex-shrink-0">手机号</span>\
+                    <input type="tel" id="rmobile-' + p + '" value="' + pf.mobile + '" placeholder="请填写手机号" class="flex-1 text-sm px-3 py-2.5 rounded-xl bg-gray-50 border border-gray-200 outline-none focus:border-brand-gold"/>\
+                </div>\
+                <div class="flex items-center gap-2">\
+                    <span class="text-xs text-gray-400 w-12 flex-shrink-0">身份证</span>\
+                    <input type="text" id="ridcard-' + p + '" value="' + pf.idcard + '" placeholder="请填写身份证号" class="flex-1 text-sm px-3 py-2.5 rounded-xl bg-gray-50 border border-gray-200 outline-none focus:border-brand-gold"/>\
+                </div>\
+            </div>\
+        </div>';
+    }
+
+    document.getElementById('register-form').innerHTML = '\
+        <div class="bg-brand-gold-light rounded-xl p-3 mb-3">\
+            <p class="text-sm font-bold text-gray-800">报名信息' + (order.quantity > 1 ? g : '') + '</p>\
+            <p class="text-xs text-gray-500 mt-0.5">' + order.productName + '</p>\
+        </div>\
+        ' + fieldsHtml + '\
+        <span class="block text-center cursor-pointer w-full py-3 rounded-full bg-brand-gold text-white font-bold text-sm card-hover" onclick="confirmRegForm()">确认登记</span>\
+    ';
+    Common.showPopup('register-overlay');
+    Common._icons(document.getElementById('register-overlay'));
+}
+
+function hideRegForm(e) { Common.closePopup(e, 'register-overlay'); }
+
+function confirmRegForm() {
+    var labels = order.personLabels || [];
+    for (var p = 0; p < labels.length; p++) {
+        var nEl = document.getElementById('rname-' + p);
+        if (!nEl || !nEl.value.trim()) { Common.showToast('请填写' + labels[p] + '姓名'); return; }
+    }
+
+    // 更新 persons 数据
+    for (var p = 0; p < labels.length; p++) {
+        var target = null;
+        for (var i = 0; i < order.persons.length; i++) {
+            if (order.persons[i].group === regFormGroup && order.persons[i].label === labels[p]) {
+                target = order.persons[i]; break;
+            }
+        }
+        if (target) {
+            target.name = document.getElementById('rname-' + p).value;
+            target.mobile = document.getElementById('rmobile-' + p).value;
+            target.idcard = document.getElementById('ridcard-' + p).value;
+        }
+    }
+
+    if (!order.registered) order.registered = {};
+    order.registered[regFormGroup] = true;
+    localStorage.setItem('lastOrder', JSON.stringify(order));
+
+    Common.hidePopup('register-overlay');
+    Common.showToast('登记成功！');
+    preserveScrollRender();
+}
+
+function batchVerify() {
+    var selCount = 0;
+    for (var k in batchSelected) { if (batchSelected[k]) selCount++; }
+    if (selCount === 0) return;
+    batchVerifyCount = selCount;
+    currentVerifyGroup = 0;
+
+    var overlay = document.getElementById('verify-overlay');
+    var extraEl = overlay.querySelector('.verify-extra');
+    if (extraEl) extraEl.style.display = 'block';
+    if (extraEl) extraEl.innerHTML = '您正在核销 <b class="text-brand-gold">' + selCount + '</b> 份' + (order.type === 'ticket' ? '门票' : '报名信息');
+
+    Common.showPopup('verify-overlay');
+    setTimeout(function(){Common._icons(overlay);},50);
+}
+
+// ============ 预约模式 ============
+var bookingGroup = 0;
+var bookingBatchGroups = [];
+var bookingSelectedDateStr = '';
+var bookingSelectedSlot = '';
+
+function showBooking(g) {
+    bookingGroup = g;
+    bookingBatchGroups = [];
+    bookingSelectedDateStr = '';
+    bookingSelectedSlot = '';
+    bookingCalMonth = (new Date()).getMonth();
+    bookingCalYear = (new Date()).getFullYear();
+    TIME_SLOTS.forEach(function(s) { SLOTS_STATUS[s] = Math.random() > 0.2; });
+    document.getElementById('booking-step-title').textContent = '选择预约时间';
+    renderBookingPopup();
+    Common.showPopup('booking-overlay');
+}
+
+function hideBooking(e) { Common.closePopup(e, 'booking-overlay'); }
+
+function renderBookingPopup() {
+    var CALS = getCalendarDates(bookingCalYear, bookingCalMonth);
+    var weekNames = ['日','一','二','三','四','五','六'];
+    var weekHeader = weekNames.map(function(w){return '<div class="text-center text-[10px] text-gray-400 font-medium py-1">'+w+'</div>';}).join('');
+
+    var calHtml = '';
+    for (var i = 0; i < CALS.length; i++) {
+        var cell = CALS[i];
+        if (cell === null) {
+            calHtml += '<div class="py-2 text-center text-xs text-gray-300"></div>';
+        } else {
+            var isPast = cell.isPast;
+            var sel = bookingSelectedDateStr === cell.date.toISOString().slice(0,10);
+            var cls = sel ? 'bg-brand-gold text-white rounded-full' : (isPast ? 'text-gray-300 cursor-default' : 'text-gray-700 cursor-pointer card-hover');
+            calHtml += '<div class="py-2 text-center text-xs font-medium ' + cls + '" ' + (!isPast ? 'onclick="selectBookingDate(\'' + cell.date.toISOString().slice(0,10) + '\')"' : '') + '>' + cell.day + '</div>';
+        }
+    }
+
+    var monthLabel = ((bookingCalMonth+1) + '月 ' + bookingCalYear + '年');
+    var selDateLabel = bookingSelectedDateStr;
+    var slotHtml = bookingSelectedDateStr ? TIME_SLOTS.map(function(s) {
+        var avail = SLOTS_STATUS[s];
+        var sel = bookingSelectedSlot === s;
+        return '<div class="py-2.5 rounded-xl text-center text-xs font-medium border-2 transition-all ' + (sel ? 'border-brand-gold bg-brand-gold-light text-brand-gold cursor-pointer' : (avail ? 'border-gray-100 bg-white text-gray-600 cursor-pointer card-hover' : 'border-gray-100 bg-gray-100 text-gray-300 cursor-default')) + '" ' + (avail ? 'onclick="selectBookingSlot(\'' + s + '\')"' : '') + '>' + s + (avail ? '' : '（不可预约）') + '</div>';
+    }).join('') : '<p class="text-xs text-gray-400 text-center py-4">请先选择日期</p>';
+
+    // 后登记模式：时段后加登记表单（按要预约的卡数展开）
+    var regFieldsHtml = '';
+    if (order.isPostRegister && selDateLabel && bookingSelectedSlot) {
+        var bkCards = bookingBatchGroups.length > 0 ? bookingBatchGroups : [bookingGroup];
+        bkCards.forEach(function(cardG, gi) {
+            regFieldsHtml += '<div class="border-t-2 border-dashed border-gray-200 my-3 pt-3"></div>';
+            regFieldsHtml += '<h4 class="text-sm font-bold text-gray-800 mb-2">购票信息' + (bkCards.length > 1 ? (gi + 1) : '') + '</h4>';
+            var labels = order.personLabels || ['购票人'];
+            for (var p = 0; p < labels.length; p++) {
+                regFieldsHtml += '\
+                <div class="mb-3">\
+                    <h5 class="text-xs font-bold text-gray-500 mb-2">' + labels[p] + '</h5>\
+                    <div class="space-y-2">\
+                        <div class="flex items-center gap-2">\
+                            <span class="text-xs text-gray-400 w-12 flex-shrink-0">姓名</span>\
+                            <input type="text" id="bk-name-' + cardG + '-' + p + '" value="小明" placeholder="请填写姓名" class="flex-1 text-sm px-3 py-2.5 rounded-xl bg-gray-50 border border-gray-200 outline-none focus:border-brand-gold"/>\
+                        </div>\
+                        <div class="flex items-center gap-2">\
+                            <span class="text-xs text-gray-400 w-12 flex-shrink-0">手机号</span>\
+                            <input type="tel" id="bk-mobile-' + cardG + '-' + p + '" value="13912345678" placeholder="请填写手机号" class="flex-1 text-sm px-3 py-2.5 rounded-xl bg-gray-50 border border-gray-200 outline-none focus:border-brand-gold"/>\
+                        </div>\
+                    </div>\
+                </div>';
+            }
+        });
+    }
+
+    var canConfirm = selDateLabel && bookingSelectedSlot;
+    if (order.isPostRegister) {
+        canConfirm = canConfirm && bookingSelectedSlot; // always true if slot is set
+    }
+
+    document.getElementById('booking-form').innerHTML = '\
+        <p class="text-xs text-gray-400 bg-amber-50 rounded-lg py-2 px-3 mb-3">⚠ 预约完成后不能修改，且本订单不再退款</p>\
+        <div>\
+            <label class="block text-sm font-bold text-gray-700 mb-2">选择日期</label>\
+            <div class="flex items-center justify-between mb-2">\
+                <span class="cursor-pointer card-hover px-2 py-1 rounded-lg bg-gray-100 text-sm" onclick="navCal(-1)"><i data-lucide="chevron-left" class="w-4 h-4"></i></span>\
+                <span class="text-sm font-bold text-gray-800">' + monthLabel + '</span>\
+                <span class="cursor-pointer card-hover px-2 py-1 rounded-lg bg-gray-100 text-sm" onclick="navCal(1)"><i data-lucide="chevron-right" class="w-4 h-4"></i></span>\
+            </div>\
+            <div class="grid grid-cols-7 gap-1">' + weekHeader + calHtml + '</div>\
+        </div>\
+        <div>\
+            <label class="block text-sm font-bold text-gray-700 mb-2">选择时段</label>\
+            <div class="grid grid-cols-3 gap-2">' + slotHtml + '</div>\
+        </div>\
+        ' + (regFieldsHtml ? '<div><label class="block text-sm font-bold text-gray-700 mb-2">购票信息</label>' + regFieldsHtml + '</div>' : '') + '\
+        ' + (selDateLabel && bookingSelectedSlot ? '<div class="bg-gray-50 rounded-xl p-3 text-xs"><span class="text-gray-500">预约时间：</span><span class="font-bold text-gray-800">' + selDateLabel + ' ' + bookingSelectedSlot + '</span></div>' : '') + '\
+        <span class="block text-center cursor-pointer w-full py-3 rounded-full bg-brand-gold text-white font-bold text-sm card-hover ' + (!canConfirm ? 'opacity-50' : '') + '" ' + (canConfirm ? 'onclick="confirmBooking()"' : '') + '>确认预约</span>\
+    ';
+    Common._icons(document.getElementById('booking-form'));
+}
+
+function navCal(dir) {
+    bookingCalMonth += dir;
+    if (bookingCalMonth < 0) { bookingCalMonth = 11; bookingCalYear--; }
+    if (bookingCalMonth > 11) { bookingCalMonth = 0; bookingCalYear++; }
+    renderBookingPopup();
+}
+function selectBookingDate(ds) { bookingSelectedDateStr = ds; bookingSelectedSlot = ''; renderBookingPopup(); }
+function selectBookingSlot(s) { bookingSelectedSlot = s; renderBookingPopup(); }
+
+function confirmBooking() {
+    if (!bookingSelectedDateStr || !bookingSelectedSlot) return;
+    Common.hidePopup('booking-overlay');
+
+    if (bookingBatchGroups.length > 0) {
+        bookingBatchGroups.forEach(function(g) {
+            addBooking(g, bookingSelectedDateStr, bookingSelectedSlot);
+        });
+        Common.showToast('已预约' + bookingBatchGroups.length + '张门票');
+        batchMode = false;
+        batchType = 'verify';
+        batchSelected = {};
+    } else {
+        addBooking(bookingGroup, bookingSelectedDateStr, bookingSelectedSlot);
+        Common.showToast('预约成功！');
+    }
+    preserveScrollRender();
+}
+
+function addBooking(g, dateLabel, slot) {
+    order.bookings = (order.bookings || []).filter(function(bk){return bk.group !== g;});
+    order.bookings.push({group:g, dateLabel:dateLabel, slot:slot, count:1});
+
+    // 后登记模式：保存购票人信息
+    if (order.isPostRegister) {
+        var labels = order.personLabels || ['购票人'];
+        var bkPrefix = 'bk-name-' + g + '-';
+        for (var p = 0; p < labels.length; p++) {
+            var bkNameEl = document.getElementById(bkPrefix + p);
+            if (!bkNameEl) continue;
+            var target = null;
+            for (var i = 0; i < order.persons.length; i++) {
+                if (order.persons[i].group === g && order.persons[i].label === labels[p]) {
+                    target = order.persons[i]; break;
+                }
+            }
+            if (target) {
+                target.name = bkNameEl.value;
+                var mobilePrefix = bkPrefix.replace('name','mobile');
+                target.mobile = document.getElementById(mobilePrefix + p).value;
+            }
+        }
+        if (!order.registered) order.registered = {};
+        order.registered[g] = true;
+    }
+
+    localStorage.setItem('lastOrder', JSON.stringify(order));
+}
+
+function batchBook() {
+    var selCount = 0;
+    bookingBatchGroups = [];
+    for (var k in batchSelected) { if (batchSelected[k]) { bookingBatchGroups.push(parseInt(k)); selCount++; } }
+    if (selCount === 0) return;
+    bookingGroup = 0;
+    bookingSelectedDateStr = '';
+    bookingSelectedSlot = '';
+    bookingCalMonth = (new Date()).getMonth();
+    bookingCalYear = (new Date()).getFullYear();
+    TIME_SLOTS.forEach(function(s) { SLOTS_STATUS[s] = Math.random() > 0.2; });
+    renderBookingPopup();
+    document.getElementById('booking-step-title').textContent = '批量预约（' + selCount + '张）';
+    Common.showPopup('booking-overlay');
+}
+
+// ============ 发票功能 ============
+function showInvoiceOverlay() {
+    // 预填开票信息
+    document.getElementById('invoice-title').value = '北京某某科技有限公司';
+    document.getElementById('invoice-tax').value = '91110108XXXXXXXXXX';
+    document.getElementById('invoice-email').value = 'example@qq.com';
+    // 默认企业类型
+    currentInvoiceType = '企业';
+    var typeBtns = document.querySelectorAll('#invoice-type-group span');
+    if (typeBtns.length >= 2) {
+        typeBtns[0].className = 'flex-1 text-center cursor-pointer py-2.5 rounded-full text-sm font-bold transition-colors bg-brand-gold text-white';
+        typeBtns[1].className = 'flex-1 text-center cursor-pointer py-2.5 rounded-full text-sm font-bold transition-colors bg-gray-100 text-gray-500';
+    }
+    document.getElementById('invoice-tax-group').style.display = 'block';
+    Common.showPopup('invoice-overlay');
+    Common._icons(document.getElementById('invoice-overlay'));
+}
+
+function hideInvoiceOverlay(e) { Common.closePopup(e, 'invoice-overlay'); }
+
+function switchInvoiceType(type, el) {
+    currentInvoiceType = type;
+    var btns = document.querySelectorAll('#invoice-type-group span');
+    for (var i = 0; i < btns.length; i++) {
+        btns[i].className = btns[i] === el
+            ? 'flex-1 text-center cursor-pointer py-2.5 rounded-full text-sm font-bold transition-colors bg-brand-gold text-white'
+            : 'flex-1 text-center cursor-pointer py-2.5 rounded-full text-sm font-bold transition-colors bg-gray-100 text-gray-500';
+    }
+    document.getElementById('invoice-tax-group').style.display = type === '企业' ? 'block' : 'none';
+    if (type === '个人') {
+        document.getElementById('invoice-title').value = '张三';
+        document.getElementById('invoice-tax').value = '';
+    } else {
+        document.getElementById('invoice-title').value = '北京某某科技有限公司';
+        document.getElementById('invoice-tax').value = '91110108XXXXXXXXXX';
+    }
+}
+
+function submitInvoice() {
+    var title = document.getElementById('invoice-title').value.trim();
+    var tax = document.getElementById('invoice-tax').value.trim();
+    var email = document.getElementById('invoice-email').value.trim();
+
+    if (!title) { Common.showToast('请填写发票抬头'); return; }
+    if (currentInvoiceType === '企业' && !tax) { Common.showToast('请填写税号'); return; }
+    if (!email) { Common.showToast('请填写接收邮箱'); return; }
+
+    // 生成发票记录
+    var now = new Date();
+    var timeStr = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0') + ' ' + String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+    var invoice = {
+        id: 'INV' + now.getFullYear() + String(now.getMonth()+1).padStart(2,'0') + String(now.getDate()).padStart(2,'0') + String(now.getHours()).padStart(2,'0') + String(now.getMinutes()).padStart(2,'0') + String(now.getSeconds()).padStart(2,'0'),
+        orderNo: order.orderNo,
+        productName: order.productName,
+        specName: order.specName,
+        amount: order.price,
+        type: currentInvoiceType,
+        title: title,
+        taxNumber: tax,
+        email: email,
+        status: 'pending',
+        applyTime: timeStr
+    };
+
+    // 存入 localStorage
+    var invoices = JSON.parse(localStorage.getItem('invoices') || '[]');
+    invoices.unshift(invoice);
+    localStorage.setItem('invoices', JSON.stringify(invoices));
+
+    invoiceApplied = true;
+    Common.hidePopup('invoice-overlay');
+    Common.showToast('发票申请已提交！');
+    render();
+}
+
+// 启动时检查是否已申请过发票
+(function() {
+    var invoices = JSON.parse(localStorage.getItem('invoices') || '[]');
+    for (var i = 0; i < invoices.length; i++) {
+        if (invoices[i].orderNo === order.orderNo) {
+            invoiceApplied = true;
+            break;
+        }
+    }
+})();
+
+document.addEventListener('DOMContentLoaded', render);
+</script>
+</body>
+</html>

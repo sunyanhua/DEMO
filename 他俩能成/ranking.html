@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>他俩能成 - 排行榜</title>
+<script src="lib/tailwind.min.js"></script>
+<script src="lib/lucide.min.js"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-white text-gray-900 antialiased pb-4">
+
+<div class="bg-decoration"><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div></div>
+<div id="app" class="relative z-[1]"></div>
+
+<script src="common.js"></script>
+<script>
+var PHOTOS_M=['images/photo/male/crop.17.0.1224.1632.0.750.1000.jpg','images/photo/male/crop.194.56.917.1222.0.750.1000.jpg','images/photo/male/crop.0.0.1078.1438.0.750.1000.jpg','images/photo/male/crop.0.875.2143.2857.0.750.1000.jpg','images/photo/male/crop.1033.0.3000.4000.0.750.1000.jpg','images/photo/male/crop.0.501.960.1280.0.750.1000.jpg','images/photo/male/crop.0.237.1080.1440.0.750.1000.jpg','images/photo/male/crop.0.54.942.1256.0.750.1000.jpg','images/photo/male/crop.1.0.3877.5170.0.750.1000.jpg','images/photo/male/crop.0.0.1773.2364.0.750.1000.jpg'];
+var PHOTOS_F=['images/photo/female/crop.70.444.1537.2050.0.750.1000.jpg','images/photo/female/crop.0.67.1079.1438.0.750.1000.jpg','images/photo/female/crop.0.61.723.964.0.750.1000.jpg','images/photo/female/crop.0.0.4896.6528.0.750.1000.jpg','images/photo/female/crop.384.0.2304.3072.0.750.1000.jpg','images/photo/female/crop.0.0.2267.3023.0.750.1000.jpg','images/photo/female/crop.0.479.2160.2880.0.750.1000.jpg','images/photo/female/crop.0.181.1064.1418.0.750.1000.jpg','images/photo/female/crop.882.0.2266.3022.0.750.1000.jpg','images/photo/female/crop.0.0.3456.4608.0.750.1000.jpg'];
+var CONS=['白羊座','金牛座','双子座','巨蟹座','狮子座','处女座','天秤座','天蝎座','射手座','摩羯座','水瓶座','双鱼座'];
+var NM=['清风徐来','阳光骑士','北辰','追风少年','海的彼岸','咖啡不加糖','大熊','星河漫步','枫叶飘零','时光旅人','城北徐公','蓝调人生'];
+var NF=['甜心小鹿','奶茶妹妹','浅笑安然','栀子花开','月亮不睡','棉花糖','小兔软糖','咕咚姑娘','雪落无声','薄荷微光','星光点点','初夏之梦'];
+function r(n){return Math.floor(Math.random()*n)}
+function shuffle(a){for(var i=a.length-1;i>0;i--){var j=r(i+1);[a[i],a[j]]=[a[j],a[i]]}return a}
+
+function buildUsers(n){
+  var pool=[];
+  NM.forEach(function(name,i){pool.push({name:name,gender:'male',age:23+r(13),cons:CONS[r(12)],photo:PHOTOS_M[i%10]})});
+  NF.forEach(function(name,i){pool.push({name:name,gender:'female',age:22+r(11),cons:CONS[r(12)],photo:PHOTOS_F[i%10]})});
+  var out=[];
+  for(var i=0;i<n;i++)out.push({id:i, name:pool[i%pool.length].name, gender:pool[i%pool.length].gender, age:pool[i%pool.length].age, cons:pool[i%pool.length].cons, photo:pool[i%pool.length].photo});
+  return shuffle(out);
+}
+
+function popularData(n){return buildUsers(n).map(function(u,i){return {rank:i+1, name:u.name, gender:u.gender, age:u.age, cons:u.cons, photo:u.photo, score:5000+Math.floor(Math.random()*95000)}})}
+function giftData(n){return buildUsers(n).map(function(u,i){return {rank:i+1, name:u.name, gender:u.gender, age:u.age, cons:u.cons, photo:u.photo, score:100+Math.floor(Math.random()*99900), patron:(u.gender==='male'?NF:NM)[r(12)]+(Math.random()>0.3?'':'（匿名）')}})}
+
+function getTitle(s){
+  if(s>50001)return'嘑学传奇';if(s>=20001)return'嘑学宗师';if(s>=10001)return'嘑学大神';if(s>=5001)return'嘑学行家';if(s>=2001)return'嘑学高手';if(s>=1001)return'嘑学爱好者';if(s>=101)return'嘑学门生';if(s>=0)return'嘑学菜鸟';if(s>=-100)return'嘑学门外汉';if(s>=-1000)return'反嘑学分子';if(s>=-10000)return'高级拆家';return'当代法海';
+}
+function kexueData(n,sign){
+  var d=buildUsers(n).map(function(u){return {name:u.name,gender:u.gender,age:u.age,cons:u.cons,photo:u.photo,score:sign*(Math.floor(Math.random()*80000))}});
+  d.forEach(function(u){u.title=getTitle(u.score)});
+  d.sort(function(a,b){return b.score-a.score});
+  d.forEach(function(u,i){u.rank=i+1});
+  return d;
+}
+
+var DATA={
+  'p-week-all':popularData(20),'p-week-m':popularData(20).filter(function(u){return u.gender==='male'}).map(function(u,i){u.rank=i+1;return u}).slice(0,15),
+  'p-week-f':popularData(20).filter(function(u){return u.gender==='female'}).map(function(u,i){u.rank=i+1;return u}).slice(0,15),
+  'p-total-all':popularData(20),'p-total-m':popularData(20).filter(function(u){return u.gender==='male'}).map(function(u,i){u.rank=i+1;return u}).slice(0,15),
+  'p-total-f':popularData(20).filter(function(u){return u.gender==='female'}).map(function(u,i){u.rank=i+1;return u}).slice(0,15),
+  'g-week':giftData(20),'g-total':giftData(20),
+  'k-week-pos':kexueData(20,1),'k-week-neg':kexueData(20,-1),'k-total-pos':kexueData(20,1),'k-total-neg':kexueData(20,-1),
+};
+
+var TITLE_MAP={popular:'人气榜',gift:'礼物榜',kexue:'牵线榜'};
+
+window.View={
+  m:'popular',p:'week',sg:'all',
+
+  rankIcon: function(r){
+    if(r===1)return'🥇';if(r===2)return'🥈';if(r===3)return'🥉';
+    return'<span class="text-xs text-gray-400" style="width:22px;display:inline-block;text-align:center;">'+r+'</span>';
+  },
+  gb: function(u){
+    return u.gender==='male'?'<span class="text-[10px] px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-500 font-medium inline-flex items-center gap-0.5"><i data-lucide="mars" class="w-2.5 h-2.5"></i>男</span>':'<span class="text-[10px] px-1.5 py-0.5 rounded-full bg-pink-50 text-brand-pink font-medium inline-flex items-center gap-0.5"><i data-lucide="venus" class="w-2.5 h-2.5"></i>女</span>';
+  },
+  getKey: function(){
+    if(this.m==='popular')return'p-'+this.p+'-'+this.sg;
+    if(this.m==='gift')return'g-'+this.p;
+    return'k-'+this.p+'-'+this.sg;
+  },
+  mainTabs: function(){
+    var sel=this;
+    return[{k:'popular',l:'人气榜'},{k:'gift',l:'礼物榜'},{k:'kexue',l:'牵线榜'}].map(function(x){
+      var act=sel.m===x.k;
+      var cls='flex-1 text-center text-base pb-2.5 font-bold transition-colors duration-200 '+(act?'text-brand-pink border-b-[3px] border-brand-pink':'text-gray-400 border-b-[3px] border-transparent');
+      return'<span onclick="View.mainClick(\''+x.k+'\')" class="'+cls+'">'+x.l+'</span>';
+    }).join('');
+  },
+  periodToggle: function(){
+    var sel=this,w=sel.p==='week';
+    return'<div class="flex bg-gray-100 rounded-full p-1 w-fit">'+
+      '<span onclick="View.periodClick(\'week\')" class="px-4 py-1.5 text-xs rounded-full font-medium transition-all '+(w?'bg-white text-gray-800 shadow-sm':'text-gray-500')+'">周排行</span>'+
+      '<span onclick="View.periodClick(\'total\')" class="px-4 py-1.5 text-xs rounded-full font-medium transition-all '+(!w?'bg-white text-gray-800 shadow-sm':'text-gray-500')+'">总排行</span>'+
+    '</div>';
+  },
+  genderTabs: function(){
+    if(this.m!=='popular')return'';
+    var sel=this;
+    return'<div class="flex gap-1">'+[{k:'all',l:'总'},{k:'m',l:'男'},{k:'f',l:'女'}].map(function(x){
+      var act=sel.sg===x.k;
+      return'<span onclick="View.genderClick(\''+x.k+'\')" class="px-3 py-1.5 text-xs rounded-full font-medium transition-all '+(act?'bg-brand-pink text-white':'bg-gray-100 text-gray-500')+'">'+x.l+'</span>';
+    }).join('')+'</div>';
+  },
+  pnTabs: function(){
+    if(this.m!=='kexue')return'';
+    var sel=this;
+    return'<div class="flex gap-1">'+[{k:'pos',l:'正'},{k:'neg',l:'负'}].map(function(x){
+      var act=sel.sg===x.k;
+      return'<span onclick="View.pnClick(\''+x.k+'\')" class="px-3 py-1.5 text-xs rounded-full font-medium transition-all '+(act?'bg-brand-pink text-white':'bg-gray-100 text-gray-500')+'">'+x.l+'</span>';
+    }).join('')+'</div>';
+  },
+  timeStr: function(){
+    var now=new Date();
+    return now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0')+' '+String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+  },
+  popularRow: function(u){
+    return'<div class="flex items-center gap-3 py-3 px-1 border-b border-gray-200 cursor-pointer card-hover" onclick="window.location.href=\x27profile.html\x27">'+
+      '<div class="flex-shrink-0">'+this.rankIcon(u.rank)+'</div>'+
+      '<img src="'+u.photo+'" class="w-10 h-10 rounded-full object-cover border border-gray-100 flex-shrink-0"/>'+
+      '<div class="flex-1 min-w-0">'+
+        '<div class="flex items-center gap-1.5">'+
+          '<span class="text-sm font-bold text-gray-800 truncate max-w-[72px]">'+u.name+'</span>'+this.gb(u)+
+        '</div>'+
+        '<div class="flex items-center gap-2 text-[11px] text-gray-400 mt-0.5">'+
+          '<span>'+u.age+'岁</span><span>'+u.cons+'</span>'+
+        '</div>'+
+      '</div>'+
+      '<div class="flex-shrink-0 text-right">'+
+        '<div class="text-sm font-black text-brand-pink flex items-center gap-1 justify-end">🔥'+u.score.toLocaleString()+'</div>'+
+        '<div class="text-[10px] text-gray-400">人气值</div>'+
+      '</div>'+
+    '</div>';
+  },
+  giftRow: function(u){
+    return'<div class="py-3 px-1 border-b border-gray-200 cursor-pointer card-hover" onclick="window.location.href=\x27profile.html\x27">'+
+      '<div class="flex items-center gap-3">'+
+        '<div class="flex-shrink-0">'+this.rankIcon(u.rank)+'</div>'+
+        '<img src="'+u.photo+'" class="w-10 h-10 rounded-full object-cover border border-gray-100 flex-shrink-0"/>'+
+        '<div class="flex-1 min-w-0">'+
+          '<div class="flex items-center gap-1.5">'+
+            '<span class="text-sm font-bold text-gray-800 truncate max-w-[72px]">'+u.name+'</span>'+this.gb(u)+
+          '</div>'+
+          '<div class="flex items-center gap-2 text-[11px] text-gray-400 mt-0.5">'+
+            '<span>'+u.age+'岁</span><span>'+u.cons+'</span>'+
+          '</div>'+
+        '</div>'+
+        '<div class="flex-shrink-0 text-right">'+
+          '<div class="text-sm font-black text-brand-pink flex items-center gap-1 justify-end">🎁'+u.score.toLocaleString()+'</div>'+
+          '<div class="text-[10px] text-gray-400">人气值</div>'+
+        '</div>'+
+      '</div>'+
+      '<div class="mt-2 flex items-center gap-2 rounded-lg px-3 py-2" style="margin-left:34px;background:rgba(224,77,44,0.12);">'+
+        '<span class="text-[11px] text-gray-500">TA的榜一：</span>'+
+        '<span class="text-[11px] font-bold text-gray-700">'+u.patron+'</span>'+
+        '<span class="text-[10px] text-brand-pink underline cursor-pointer ml-auto" onclick="event.stopPropagation();window.location.href=\x27profile.html\x27">查看</span>'+
+      '</div>'+
+    '</div>';
+  },
+  kexueRow: function(u){
+    return'<div class="flex items-center gap-3 py-3 px-1 border-b border-gray-200 cursor-pointer card-hover" onclick="window.location.href=\x27profile.html\x27">'+
+      '<div class="flex-shrink-0">'+this.rankIcon(u.rank)+'</div>'+
+      '<img src="'+u.photo+'" class="w-10 h-10 rounded-full object-cover border border-gray-100 flex-shrink-0"/>'+
+      '<div class="flex-1 min-w-0">'+
+        '<div class="flex items-center gap-1.5">'+
+          '<span class="text-sm font-bold text-gray-800 truncate max-w-[72px]">'+u.name+'</span>'+this.gb(u)+
+        '</div>'+
+        '<div class="mt-0.5">'+
+          '<span class="text-[11px] px-2 py-0.5 rounded-full text-brand-pink font-medium" style="background:rgba(224,77,44,0.08);">'+u.title+'</span>'+
+        '</div>'+
+      '</div>'+
+      '<div class="flex-shrink-0 text-right">'+
+        '<div class="text-sm font-black text-brand-pink flex items-center gap-1 justify-end">📖'+(u.score>0?'+':'')+u.score.toLocaleString()+'</div>'+
+        '<div class="text-[10px] text-gray-400">嘑学分</div>'+
+      '</div>'+
+    '</div>';
+  },
+  listBody: function(){
+    var data=DATA[this.getKey()]||[],self=this;
+    var rows='';
+    if(this.m==='popular')rows=data.map(function(u){return self.popularRow(u)}).join('');
+    else if(this.m==='gift')rows=data.map(function(u){return self.giftRow(u)}).join('');
+    else if(this.m==='kexue')rows=data.map(function(u){return self.kexueRow(u)}).join('');
+    return'<div class="space-y-0">'+rows+'</div>';
+  },
+  topBar: function(){
+    var pt=this.periodToggle();
+    var sub=this.genderTabs()||this.pnTabs()||'';
+    return'<div class="flex items-center justify-between mb-3">'+pt+sub+'</div>';
+  },
+  timeLabel: function(){
+    var ts=this.timeStr();
+    var gl=this.m==='popular'?(this.sg==='m'?'·男':this.sg==='f'?'·女':'·总'):'';
+    var pl=this.p==='week'?'周排行':'总排行';
+    return'<div class="flex items-center justify-between mb-2 px-3 py-2 rounded-lg border border-gray-200 bg-gray-50/50"><span class="text-[11px] text-gray-400">更新时间：'+ts+'</span><span class="text-[11px] text-gray-500 font-medium">'+pl+gl+'</span></div>';
+  },
+  render: function(){
+    var ct=TITLE_MAP[this.m]||'';
+    document.getElementById('app').innerHTML=
+      '<div id="tab-bar" class="sticky top-0 z-30 bg-white px-4 pt-3 pb-0 shadow-sm">'+
+        '<div class="flex w-full border-b border-gray-100">'+this.mainTabs()+'</div>'+
+      '</div>'+
+      '<div class="px-4 pt-3 pb-2">'+
+        this.topBar()+
+        this.timeLabel()+
+        '<div class="bg-white rounded-2xl shadow-sm border border-gray-100 mt-1"><div class="px-3">'+this.listBody()+'</div></div>'+
+      '</div>';
+    window.Common.initIcons();
+  },
+  mainClick: function(key){
+    this.m=key;
+    if(key==='gift'){this.p='week';this.sg='';}
+    else if(key==='popular'){this.p='week';this.sg='all';}
+    else{this.p='week';this.sg='pos';}
+    this.render();
+  },
+  periodClick: function(key){
+    this.p=key;
+    if(this.m==='gift')this.sg='';
+    else if(this.m==='popular')this.sg='all';
+    else this.sg='pos';
+    this.render();
+  },
+  genderClick: function(key){this.sg=key;this.render();},
+  pnClick: function(key){this.sg=key;this.render();},
+};
+
+document.addEventListener('DOMContentLoaded',function(){View.render()});
+</script>
+</body>
+</html>

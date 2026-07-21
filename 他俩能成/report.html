@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>能成报告 - 他俩能成</title>
+<script src="lib/tailwind.min.js"></script>
+<script src="lib/lucide.min.js"></script>
+<link rel="stylesheet" href="style.css">
+<style>
+  html, body { height: 100%; overflow: hidden; }
+  body { background: #FFF5F3; }
+
+  /* ========== 加载页 ========== */
+  #loading-overlay {
+    position: fixed; inset: 0; z-index: 999;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: linear-gradient(160deg, #FF6B5B 0%, #E85D3A 30%, #C44569 70%, #8B2252 100%);
+  }
+  @keyframes reportBounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-14px); }
+  }
+  @keyframes loadingBarFill { from { width: 0%; } to { width: 100%; } }
+  @keyframes dotPulse {
+    0%, 100% { transform: scale(1); opacity: 0.4; }
+    50% { transform: scale(1.3); opacity: 1; }
+  }
+  .loading-dot { animation: dotPulse 1.5s ease-in-out infinite; }
+  .loading-dot:nth-child(2) { animation-delay: 0.25s; }
+  .loading-dot:nth-child(3) { animation-delay: 0.5s; }
+  .loading-bar-fill { animation: loadingBarFill 3s ease-in-out forwards; }
+
+  /* ========== 滚动容器 ========== */
+  #app {
+    height: 100vh; height: 100dvh;
+    overflow-y: scroll;
+    scroll-snap-type: y mandatory;
+    -webkit-overflow-scrolling: touch;
+    position: relative; z-index: 1;
+    scroll-behavior: smooth;
+  }
+  #app::-webkit-scrollbar { display: none; }
+
+  /* ========== Section 容器 ========== */
+  .report-section {
+    min-height: 100vh; min-height: 100dvh;
+    scroll-snap-align: start;
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center;
+    position: relative;
+    padding: 48px 20px 72px;
+    box-sizing: border-box;
+  }
+  .report-section .sec-inner { width: 100%; max-width: 420px; }
+
+  /* ========== 滚动提示 ========== */
+  @keyframes scrollHint {
+    0%, 100% { transform: translate(-50%, 0); opacity: 0.35; }
+    50% { transform: translate(-50%, 9px); opacity: 1; }
+  }
+  .scroll-hint {
+    position: absolute; bottom: 20px; left: 50%;
+    animation: scrollHint 2.4s ease-in-out infinite;
+    pointer-events: none; z-index: 2; color: #C8A098;
+  }
+  .report-section:last-child .scroll-hint { display: none; }
+
+  /* ========== 入场动画 ========== */
+  .anim-item { opacity: 0; }
+
+  @keyframes aFadeUp {
+    from { opacity:0; transform:translateY(36px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+  .revealed .anim-fade-up { animation: aFadeUp 0.9s ease-out forwards; }
+
+  @keyframes aScaleIn {
+    0%   { opacity:0; transform:scale(0.65); }
+    60%  { opacity:1; transform:scale(1.03); }
+    100% { opacity:1; transform:scale(1); }
+  }
+  .revealed .anim-scale-in { animation: aScaleIn 0.75s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+
+  @keyframes aPopNum {
+    0%   { opacity:0; transform:scale(2.5); }
+    50%  { opacity:1; transform:scale(0.88); }
+    70%  { transform:scale(1.05); }
+    100% { opacity:1; transform:scale(1); }
+  }
+  .revealed .anim-pop-num { animation: aPopNum 2.2s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+
+  @keyframes aSlideLeft {
+    from { opacity:0; transform:translateX(-52px); }
+    to   { opacity:1; transform:translateX(0); }
+  }
+  .revealed .anim-slide-left { animation: aSlideLeft 0.8s ease-out forwards; }
+
+  @keyframes aSlideRight {
+    from { opacity:0; transform:translateX(52px); }
+    to   { opacity:1; transform:translateX(0); }
+  }
+  .revealed .anim-slide-right { animation: aSlideRight 0.8s ease-out forwards; }
+
+  @keyframes aImgPop {
+    0%   { opacity:0; transform:scale(0.35); }
+    55%  { opacity:1; transform:scale(1.1); }
+    100% { opacity:1; transform:scale(1); }
+  }
+  .revealed .anim-img-pop { animation: aImgPop 0.65s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+
+  /* ========== 飘浮心形 ========== */
+  @keyframes floatHeart {
+    0%   { transform: translateY(0) scale(0.4); opacity: 0; }
+    15%  { opacity: 0.7; }
+    75%  { opacity: 0.4; }
+    100% { transform: translateY(-160px) scale(1.1); opacity: 0; }
+  }
+  .hearts-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; overflow: hidden; }
+  .hearts-container .fh { position: absolute; bottom: -10px; font-size: 18px; animation: floatHeart 5s ease-in-out infinite; }
+
+  /* ========== 组件 ========== */
+  .stat-num {
+    background: linear-gradient(135deg, #E85D3A, #C44569);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .stat-num-gold {
+    background: linear-gradient(135deg, #F4A460, #E8A040);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .rpt-card {
+    background: #FFFFFF; border-radius: 20px;
+    box-shadow: 0 4px 24px rgba(200,80,60,0.07);
+    border: 1px solid rgba(200,80,60,0.05);
+  }
+  .gold-badge {
+    background: linear-gradient(135deg, #F4A460, #E8A040);
+    color: #FFF; font-size: 10px; padding: 2px 8px; border-radius: 999px;
+    font-weight: 700; letter-spacing: 0.05em;
+  }
+
+  /* ========== 时间线 ========== */
+  .timeline-item {
+    position: relative; padding-left: 28px; padding-bottom: 40px;
+    border-left: 1.5px dashed #F0D5CD; margin-left: 13px;
+  }
+  .timeline-item:last-child { border-left-color: transparent; padding-bottom: 0; }
+  .timeline-dot {
+    position: absolute; left: -11px; top: 1px;
+    width: 20px; height: 20px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  /* ========== 标题 ========== */
+  .sec-title {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 20px; font-weight: 900; color: #3D1F1A;
+  }
+  .sec-sub { font-size: 13px; color: #B8A09A; margin-top: 4px; margin-bottom: 24px; }
+  .sec-head { margin-bottom: 6px; }
+
+  .stat-card { padding: 18px 12px 16px !important; }
+  .stat-card .stat-num,
+  .stat-card .stat-num-gold { font-size: 30px !important; }
+</style>
+</head>
+<body class="antialiased">
+
+<!-- 加载页 -->
+<div id="loading-overlay">
+  <img src="images/cheng.png" alt="" style="width:100px;height:auto;animation:reportBounce 1.4s ease-in-out infinite;">
+  <p style="color:#FFF;font-size:16px;font-weight:700;margin-top:20px;">正在为你生成能成缘分报告…</p>
+  <div style="display:flex;gap:8px;margin-top:14px;">
+    <span class="loading-dot" style="width:8px;height:8px;border-radius:50%;background:#FFF;"></span>
+    <span class="loading-dot" style="width:8px;height:8px;border-radius:50%;background:#FFF;"></span>
+    <span class="loading-dot" style="width:8px;height:8px;border-radius:50%;background:#FFF;"></span>
+  </div>
+  <div style="width:180px;height:3px;background:rgba(255,255,255,0.25);border-radius:2px;margin-top:18px;overflow:hidden;">
+    <div class="loading-bar-fill" style="height:100%;background:#FFF;border-radius:2px;width:0;"></div>
+  </div>
+</div>
+
+<div class="bg-decoration" style="z-index:0;">
+  <div class="bg-blob" style="background:#F8A090 !important;opacity:0.20;"></div>
+  <div class="bg-blob" style="background:#F5B8A8 !important;opacity:0.18;"></div>
+  <div class="bg-blob" style="background:#ED9A8A !important;opacity:0.14;"></div>
+  <div class="bg-blob" style="background:#FAD0C0 !important;opacity:0.16;"></div>
+  <div class="bg-blob" style="background:#F0A898 !important;opacity:0.12;"></div>
+</div>
+
+<div id="app"></div>
+
+<script src="common.js"></script>
+<script>
+(function(){
+  var D = window.AppData;
+
+  var MOCK = {
+    user: { name:'甜心小鹿',gender:'female',age:26,cons:'巨蟹座',uid:'10000135',photo:D.PHOTOS_F[0] },
+    joinDate: new Date(2026,0,15), reportDate: new Date(2026,6,17),
+    firstFollow:{ name:'阳光骑士',gender:'male',age:28,cons:'白羊座',photo:D.PHOTOS_M[0],date:'2026年1月18日' },
+    firstHeart: { name:'清风徐来',gender:'male',age:26,cons:'天秤座',photo:D.PHOTOS_M[1],date:'2026年1月20日' },
+    firstGift:  { name:'菜小宝',to:'阳光骑士',icon:'images/gift1.png',date:'2026年1月25日' },
+    sentFollows:18,sentHearts:47,sentGifts:12,
+    topHeartTo: { name:'阳光骑士',gender:'male',age:28,cons:'白羊座',photo:D.PHOTOS_M[0],count:12 },
+    topGiftTo:  { name:'清风徐来',gender:'male',age:26,cons:'天秤座',photo:D.PHOTOS_M[1],count:5 },
+    popularity:3286,recvFollows:23,recvHearts:56,recvGifts:18,
+    topHeartFrom:{ name:'北辰',gender:'male',age:29,cons:'摩羯座',photo:D.PHOTOS_M[2],count:15 },
+    topGiftFrom: { name:'大熊',gender:'male',age:31,cons:'射手座',photo:D.PHOTOS_M[3],count:8 },
+    mutualFollows:6,mutualHearts:4,mutual1314:6,
+    matchedUsers:[
+      { name:'阳光骑士',gender:'male',age:28,cons:'白羊座',photo:D.PHOTOS_M[0],days:65 },
+      { name:'清风徐来',gender:'male',age:26,cons:'天秤座',photo:D.PHOTOS_M[1],days:42 },
+      { name:'北辰',gender:'male',age:29,cons:'摩羯座',photo:D.PHOTOS_M[2],days:38 },
+      { name:'大熊',gender:'male',age:31,cons:'射手座',photo:D.PHOTOS_M[3],days:24 },
+      { name:'咖啡不加糖',gender:'male',age:28,cons:'金牛座',photo:D.PHOTOS_M[4],days:18 },
+      { name:'星河漫步',gender:'male',age:27,cons:'射手座',photo:D.PHOTOS_M[5],days:7 }
+    ],
+    family:[
+      { name:'浅笑安然',gender:'female',age:24,cons:'双子座',photo:D.PHOTOS_F[1] },
+      { name:'栀子花开',gender:'female',age:23,cons:'处女座',photo:D.PHOTOS_F[2] },
+      { name:'小兔软糖',gender:'female',age:22,cons:'双鱼座',photo:D.PHOTOS_F[3] }
+    ],
+    topShipper:{ name:'奶茶妹妹',gender:'female',age:25,cons:'狮子座',photo:D.PHOTOS_F[4],qianxian:15,zhugong:2 },
+    recommend:[
+      { name:'阳光骑士',gender:'male',age:28,cons:'白羊座',photo:D.PHOTOS_M[0] },
+      { name:'清风徐来',gender:'male',age:26,cons:'天秤座',photo:D.PHOTOS_M[1] },
+      { name:'追风少年',gender:'male',age:27,cons:'狮子座',photo:D.PHOTOS_M[6] }
+    ]
+  };
+  var joinDays = Math.floor((MOCK.reportDate - MOCK.joinDate)/(1000*60*60*24));
+
+  // ==== 修复版 ai(): extra 参数合并到同一个 style 属性 ====
+  function ai(cls, delay, extra) {
+    return 'anim-item '+cls+'" style="animation-delay:'+delay+'s;'+(extra||'')+'"';
+  }
+
+  // userRow 不带自己的 anim，由外层包裹. big=true 用于强调场景
+  function userRow(u, extra, big) {
+    var sz = big ? 'w-12 h-12' : 'w-10 h-10';
+    var nameCls = big ? 'text-base' : 'text-sm';
+    var infoCls = big ? 'text-sm' : 'text-xs';
+    return '<a href="profile.html" style="text-decoration:none;color:inherit;">'+
+      '<div class="flex items-center gap-3">'+
+      '<img src="'+u.photo+'" class="'+sz+' rounded-full object-cover" loading="lazy">'+
+      '<div class="flex-1 min-w-0"><div class="flex items-center gap-1.5">'+
+        '<span class="'+nameCls+' font-bold" style="color:#3D1F1A">'+u.name+'</span>'+
+        window.Common.gb(u.gender)+
+      '</div>'+
+      '<span class="'+infoCls+'" style="color:#8C6E67">'+u.age+'岁 · '+u.cons+'</span></div>'+
+      (extra||'')+
+    '</div></a>';
+  }
+
+  function scrollHintHtml() {
+    return '<span class="scroll-hint"><i data-lucide="chevrons-up" style="width:22px;height:22px;"></i></span>';
+  }
+
+  function sectionStart() { return '<div class="report-section">'; }
+
+  // ==== Section 1: 加入信息 ====
+  function sec1Html() {
+    var d = MOCK;
+    var ds = d.joinDate.getFullYear()+'年'+(d.joinDate.getMonth()+1)+'月'+d.joinDate.getDate()+'日';
+    return sectionStart()+
+      '<div class="sec-inner text-center">'+
+        '<img src="images/logo1.png" alt="他俩能成" class="'+ai('anim-fade-up',0,'max-width:170px;display:block;margin:0 auto 32px;')+'>'+
+        '<div class="rpt-card px-6 py-7 relative overflow-hidden">'+
+          '<div class="hearts-container">'+
+            '<span class="fh" style="left:12%;animation-delay:0s;">💕</span>'+
+            '<span class="fh" style="left:38%;animation-delay:1.6s;font-size:14px;">❤️</span>'+
+            '<span class="fh" style="left:58%;animation-delay:3.2s;">💗</span>'+
+            '<span class="fh" style="left:78%;animation-delay:1s;font-size:14px;">💖</span>'+
+            '<span class="fh" style="left:22%;animation-delay:4s;font-size:12px;">❤️</span>'+
+          '</div>'+
+          '<p class="stat-num text-3xl font-black" style="letter-spacing:0.02em;">'+ds+'</p>'+
+          '<p class="text-sm mt-1.5" style="color:#8C6E67;">这一天，你推开了缘分的大门</p>'+
+          '<div class="border-t border-dashed my-5" style="border-color:#F5E1DA;"></div>'+
+          '<div class="flex items-center justify-center gap-2 text-sm" style="color:#3D1F1A;">'+
+            '<i data-lucide="clock" class="w-4 h-4" style="color:#E85D3A;"></i>'+
+            '<span>已经加入 <b class="stat-num">'+joinDays+'</b> 天</span></div>'+
+          '<div class="flex items-center justify-center gap-2 text-sm mt-2.5" style="color:#3D1F1A;">'+
+            '<i data-lucide="fingerprint" class="w-4 h-4" style="color:#E85D3A;"></i>'+
+            '<span>能成ID：<b>'+d.user.uid+'</b></span></div>'+
+          '<p class="text-xs mt-4" style="color:#B8A09A;">能成世界，因你而更精彩 ✨</p>'+
+        '</div>'+
+      '</div>'+scrollHintHtml()+
+    '</div>';
+  }
+
+  // ==== Section 2: 缘起时刻 ====
+  function sec2Html() {
+    var d = MOCK;
+    return sectionStart()+
+      '<div class="sec-inner">'+
+        '<div class="sec-head '+ai('anim-fade-up',0)+'"><div class="sec-title"><i data-lucide="sparkles" style="width:20px;height:20px;color:#E85D3A;"></i>缘起时刻</div>'+
+        '<p class="sec-sub">每一段故事，都有一个美丽的开始</p></div>'+
+        '<div class="rpt-card px-5 py-7 '+ai('anim-fade-up',0.4)+'">'+
+          '<div class="timeline-item '+ai('anim-slide-left',0.8)+'">'+
+            '<div class="timeline-dot '+ai('anim-img-pop',0.95,'background:#FFF0EC;color:#E85D3A;')+'"><i data-lucide="bookmark" style="width:10px;height:10px;"></i></div>'+
+            '<span class="text-xs font-bold px-2 py-0.5 rounded-full" style="background:#FFF0EC;color:#E85D3A;">首次关注</span>'+
+            '<p class="text-xs mt-2 mb-1.5" style="color:#8C6E67;">你关注的第一个人</p>'+
+            userRow(d.firstFollow, '<span class="text-xs ml-auto" style="color:#B8A09A;">'+d.firstFollow.date+'</span>')+
+          '</div>'+
+          '<div class="timeline-item '+ai('anim-slide-left',1.2)+'">'+
+            '<div class="timeline-dot '+ai('anim-img-pop',1.35,'background:#FFEAE5;color:#E85D3A;')+'"><i data-lucide="heart" style="width:10px;height:10px;"></i></div>'+
+            '<span class="text-xs font-bold px-2 py-0.5 rounded-full" style="background:#FFEAE5;color:#E85D3A;">首次心动</span>'+
+            '<p class="text-xs mt-2 mb-1.5" style="color:#8C6E67;">你第一次心动的TA</p>'+
+            userRow(d.firstHeart, '<span class="text-xs ml-auto" style="color:#B8A09A;">'+d.firstHeart.date+'</span>')+
+          '</div>'+
+          '<div class="timeline-item '+ai('anim-slide-left',1.6)+'" style="border-left-color:transparent;padding-bottom:0;">'+
+            '<div class="timeline-dot '+ai('anim-img-pop',1.75,'background:#FFF8F0;color:#E8A040;')+'"><i data-lucide="gift" style="width:10px;height:10px;"></i></div>'+
+            '<span class="text-xs font-bold px-2 py-0.5 rounded-full" style="background:#FFF8F0;color:#E8A040;">首次送礼</span>'+
+            '<p class="text-xs mt-2 mb-1.5" style="color:#8C6E67;">你送出的第一份礼物</p>'+
+            '<div class="flex items-center gap-2.5 mt-2">'+
+              '<img src="'+d.firstGift.icon+'" style="width:34px;height:34px;border-radius:8px;">'+
+              '<div><span class="text-sm font-bold" style="color:#3D1F1A;">'+d.firstGift.name+'</span>'+
+                '<span class="text-xs ml-1" style="color:#8C6E67;">→ '+d.firstGift.to+'</span></div>'+
+              '<span class="text-xs ml-auto" style="color:#B8A09A;">'+d.firstGift.date+'</span>'+
+            '</div>'+
+          '</div>'+
+        '</div>'+
+      '</div>'+scrollHintHtml()+
+    '</div>';
+  }
+
+  // ==== Section 3: 我的付出 ====
+  function sec3Html() {
+    var d = MOCK;
+    return sectionStart()+
+      '<div class="sec-inner">'+
+        '<div class="sec-head '+ai('anim-fade-up',0)+'"><div class="sec-title"><i data-lucide="heart" style="width:20px;height:20px;color:#E85D3A;"></i>我的付出</div>'+
+        '<p class="sec-sub">你的每一次心动，都在悄悄改变着什么</p></div>'+
+        '<div class="grid grid-cols-3 gap-3.5 mb-5">'+
+          '<div class="rpt-card stat-card text-center '+ai('anim-scale-in',0.3,'background:#FFF5F2;')+'">'+
+            '<p class="stat-num font-black '+ai('anim-pop-num',0.9)+'">'+d.sentFollows+'</p>'+
+            '<p class="text-xs mt-1" style="color:#8C6E67;">关注送出</p></div>'+
+          '<div class="rpt-card stat-card text-center '+ai('anim-scale-in',0.7,'background:#FFF0EC;')+'">'+
+            '<p class="stat-num font-black '+ai('anim-pop-num',1.4)+'">'+d.sentHearts+'</p>'+
+            '<p class="text-xs mt-1" style="color:#8C6E67;">心动送出</p></div>'+
+          '<div class="rpt-card stat-card text-center '+ai('anim-scale-in',1.1,'background:#FFF8F3;')+'">'+
+            '<p class="stat-num-gold font-black '+ai('anim-pop-num',1.9)+'">'+d.sentGifts+'</p>'+
+            '<p class="text-xs mt-1" style="color:#8C6E67;">礼物送出</p></div>'+
+        '</div>'+
+        '<div class="rpt-card px-5 py-5 mb-2.5 '+ai('anim-slide-right',2.0)+'">'+
+          '<p class="text-sm font-bold mb-3" style="color:#B8A09A;">❤️ 心动最多给了 TA</p>'+
+          userRow(d.topHeartTo, '<span class="text-base font-black stat-num">'+d.topHeartTo.count+'次</span>', true)+
+        '</div>'+
+        '<div class="rpt-card px-5 py-5 '+ai('anim-slide-right',2.4)+'">'+
+          '<p class="text-sm font-bold mb-3" style="color:#B8A09A;">🎁 礼物最多给了 TA</p>'+
+          userRow(d.topGiftTo, '<span class="text-base font-black stat-num">'+d.topGiftTo.count+'份</span>', true)+
+        '</div>'+
+      '</div>'+scrollHintHtml()+
+    '</div>';
+  }
+
+  // ==== Section 4: 我的人气 ====
+  function sec4Html() {
+    var d = MOCK;
+    return sectionStart()+
+      '<div class="sec-inner">'+
+        '<div class="sec-head '+ai('anim-fade-up',0)+'"><div class="sec-title"><i data-lucide="flame" style="width:20px;height:20px;color:#E85D3A;"></i>我的人气</div>'+
+        '<p class="sec-sub">因为你足够好，所以值得被偏爱</p></div>'+
+        '<div class="rpt-card px-6 py-6 text-center mb-5 '+ai('anim-scale-in',0.26)+'">'+
+          '<p class="text-5xl font-black stat-num '+ai('anim-pop-num',0.7,'line-height:1.15;')+'">'+d.popularity.toLocaleString()+'</p>'+
+          '<p class="text-sm mt-1.5" style="color:#8C6E67;">🔥 人气值</p>'+
+        '</div>'+
+        '<div class="grid grid-cols-3 gap-3.5 mb-5">'+
+          '<div class="rpt-card stat-card text-center '+ai('anim-scale-in',1.2,'background:#FFF5F2;')+'">'+
+            '<p class="stat-num font-black '+ai('anim-pop-num',1.7)+'">'+d.recvFollows+'</p>'+
+            '<p class="text-xs mt-1" style="color:#8C6E67;">收到关注</p></div>'+
+          '<div class="rpt-card stat-card text-center '+ai('anim-scale-in',1.5,'background:#FFF0EC;')+'">'+
+            '<p class="stat-num font-black '+ai('anim-pop-num',2.1)+'">'+d.recvHearts+'</p>'+
+            '<p class="text-xs mt-1" style="color:#8C6E67;">收到心动</p></div>'+
+          '<div class="rpt-card stat-card text-center '+ai('anim-scale-in',1.8,'background:#FFF8F3;')+'">'+
+            '<p class="stat-num-gold font-black '+ai('anim-pop-num',2.5)+'">'+d.recvGifts+'</p>'+
+            '<p class="text-xs mt-1" style="color:#8C6E67;">收到礼物</p></div>'+
+        '</div>'+
+        '<div class="rpt-card px-5 py-5 mb-2.5 '+ai('anim-slide-right',2.8)+'">'+
+          '<p class="text-sm font-bold mb-3" style="color:#B8A09A;">💘 对我最心动的人</p>'+
+          userRow(d.topHeartFrom, '<span class="text-base font-black stat-num">'+d.topHeartFrom.count+'次</span>', true)+
+        '</div>'+
+        '<div class="rpt-card px-5 py-5 '+ai('anim-slide-right',3.3)+'">'+
+          '<p class="text-sm font-bold mb-3" style="color:#B8A09A;">🎁 送我礼物最多的人</p>'+
+          userRow(d.topGiftFrom, '<span class="text-base font-black stat-num">'+d.topGiftFrom.count+'份</span>', true)+
+        '</div>'+
+      '</div>'+scrollHintHtml()+
+    '</div>';
+  }
+
+  // ==== Section 5: 双向奔赴 ====
+  function sec5Html() {
+    var d = MOCK;
+    var mu = d.matchedUsers;
+    // 6 个用户每 3 个一组，横向 snap 滑动
+    var pages = [];
+    for (var i = 0; i < mu.length; i += 3) { pages.push(mu.slice(i, i+3)); }
+    var pageHtml = pages.map(function(pg){
+      return '<div class="flex-shrink-0 flex flex-col gap-2.5" style="width:92%;scroll-snap-align:start;">'+
+        pg.map(function(u){
+          return '<a href="profile.html" style="text-decoration:none;color:inherit;"><div class="rpt-card px-5 py-5">'+
+            '<div class="flex items-center gap-3.5">'+
+              '<img src="'+u.photo+'" class="w-12 h-12 rounded-full object-cover" loading="lazy">'+
+              '<div class="flex-1 min-w-0">'+
+                '<div class="flex items-center gap-1.5">'+
+                  '<span class="text-base font-bold" style="color:#3D1F1A;">'+u.name+'</span>'+window.Common.gb(u.gender)+
+                '</div>'+
+                '<span class="text-sm" style="color:#8C6E67;">'+u.age+'岁 · '+u.cons+'</span></div>'+
+              '<span class="text-xs font-bold px-2.5 py-1 rounded-full" style="background:#FFEAE5;color:#E85D3A;">已达1314 · '+u.days+'天</span>'+
+            '</div></div></a>';
+        }).join('')+
+      '</div>';
+    }).join('');
+    var dotsHtml = pages.map(function(_, i){
+      return '<span class="w-2 h-2 rounded-full transition-colors duration-300" style="background:'+(i===0?'#E85D3A':'#F0D5CD')+';"></span>';
+    }).join('');
+    var swiperId = 'swiper-sec5';
+    return sectionStart()+
+      '<div class="sec-inner">'+
+        '<div class="sec-head '+ai('anim-fade-up',0)+'"><div class="sec-title"><i data-lucide="heart-handshake" style="width:20px;height:20px;color:#E85D3A;"></i>双向奔赴</div>'+
+        '<p class="sec-sub">最美好的缘分，是双向的奔赴</p></div>'+
+        '<div class="grid grid-cols-3 gap-3.5 mb-4">'+
+          '<div class="rpt-card stat-card text-center '+ai('anim-scale-in',0.4,'background:#FFF5F2;')+'">'+
+            '<p class="stat-num font-black '+ai('anim-pop-num',0.7)+'">'+d.mutualFollows+'</p>'+
+            '<p class="text-xs mt-1" style="color:#8C6E67;">互相关注</p></div>'+
+          '<div class="rpt-card stat-card text-center '+ai('anim-scale-in',0.8,'background:#FFF0EC;')+'">'+
+            '<p class="stat-num font-black '+ai('anim-pop-num',1.2)+'">'+d.mutualHearts+'</p>'+
+            '<p class="text-xs mt-1" style="color:#8C6E67;">互相心动</p></div>'+
+          '<div class="rpt-card stat-card text-center '+ai('anim-scale-in',1.2,'background:linear-gradient(135deg,#FFF5F0,#FFE8DC);')+'">'+
+            '<p class="stat-num font-black '+ai('anim-pop-num',1.7)+'">'+d.mutual1314+'</p>'+
+            '<p class="text-xs mt-1" style="color:#8C6E67;">1314匹配</p></div>'+
+        '</div>'+
+        '<p class="text-xs mb-2.5 '+ai('anim-fade-up',1.6)+'" style="color:#B8A09A;">✨ 已达1314的TA</p>'+
+        '<div id="'+swiperId+'" class="overflow-x-auto no-scrollbar '+ai('anim-fade-up',1.85)+'" style="scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;padding-right:8%;">'+
+          '<div class="flex gap-3">'+pageHtml+'</div>'+
+        '</div>'+
+        (pages.length>1?'<div class="flex items-center justify-center gap-2 mt-3 '+ai('anim-fade-up',2.0)+'" id="'+swiperId+'-dots">'+dotsHtml+'</div>':'')+
+      '</div>'+scrollHintHtml()+
+    '</div>';
+  }
+
+  // ==== Section 6: 我的后援 ====
+  function sec6Html() {
+    var d = MOCK;
+    return sectionStart()+
+      '<div class="sec-inner">'+
+        '<div class="sec-head '+ai('anim-fade-up',0)+'"><div class="sec-title"><i data-lucide="users" style="width:20px;height:20px;color:#E85D3A;"></i>我的后援</div>'+
+        '<p class="sec-sub">你不是一个人在前行，身后有温暖的力量</p></div>'+
+        '<p class="text-xs font-bold mb-2.5 '+ai('anim-fade-up',0.3)+'" style="color:#8C6E67;">👨‍👩‍👧 我的亲友团 <span style="color:#E85D3A;">'+d.family.length+'</span> 人</p>'+
+        '<div class="flex gap-3.5 overflow-x-auto no-scrollbar pb-1 mb-5">'+
+          d.family.map(function(f,i){
+            return '<a href="my-family.html" style="text-decoration:none;color:inherit;"><div class="rpt-card px-4 py-4 text-center flex-shrink-0 '+ai('anim-scale-in',0.45+i*0.2,'min-width:88px;')+'">'+
+              '<img src="'+f.photo+'" class="w-14 h-14 rounded-full object-cover mx-auto" loading="lazy">'+
+              '<p class="text-xs font-bold mt-2" style="color:#3D1F1A;">'+f.name+'</p>'+
+              '<span class="inline-block text-xs px-2 py-0.5 rounded-full mt-1" style="background:#FFF0EC;color:#E85D3A;font-size:10px;">亲友</span>'+
+            '</div></a>';
+          }).join('')+
+        '</div>'+
+        '<p class="text-xs font-bold mb-2.5 '+ai('anim-fade-up',1.1)+'" style="color:#8C6E67;">🏆 最给力后援</p>'+
+        '<a href="profile.html" style="text-decoration:none;color:inherit;"><div class="rpt-card px-5 py-5 '+ai('anim-slide-left',1.3)+'">'+
+          '<div class="flex items-center gap-3.5">'+
+            '<div class="relative flex-shrink-0">'+
+              '<img src="'+d.topShipper.photo+'" class="w-16 h-16 rounded-full object-cover" loading="lazy">'+
+              '<span class="absolute -top-1 -right-1 gold-badge">🏆</span></div>'+
+            '<div class="flex-1 min-w-0">'+
+              '<div class="flex items-center gap-1.5 mb-1">'+
+                '<span class="text-base font-bold" style="color:#3D1F1A;">'+d.topShipper.name+'</span>'+
+                window.Common.gb(d.topShipper.gender)+
+                '<span class="gold-badge">最给力后援</span></div>'+
+              '<p class="text-xs" style="color:#8C6E67;">'+d.topShipper.age+'岁 · '+d.topShipper.cons+'</p>'+
+              '<div class="flex items-center gap-4 mt-2">'+
+                '<span class="text-xs" style="color:#8C6E67;">牵线 <b class="stat-num" style="font-size:16px;">'+d.topShipper.qianxian+'</b> 次</span>'+
+                '<span class="text-xs" style="color:#8C6E67;">助攻 <b class="stat-num" style="font-size:16px;">'+d.topShipper.zhugong+'</b> 次</span></div>'+
+              '<p class="text-xs mt-1.5" style="color:#B8A09A;">感谢TA为你的缘分操碎了心~ 💕</p>'+
+            '</div></div></div></a>'+
+      '</div>'+scrollHintHtml()+
+    '</div>';
+  }
+
+  // ==== 结束页 ====
+  function endingHtml() {
+    var d = MOCK;
+    return '<div class="report-section">'+
+      '<div class="sec-inner text-center">'+
+        '<img src="images/cheng.png" alt="" style="width:120px;display:block;margin:0 auto;">'+
+        '<div class="flex items-center justify-center gap-2 my-5 '+ai('anim-fade-up',0.35)+'">'+
+          '<span style="width:44px;height:1px;background:linear-gradient(90deg,transparent,#F0C0B0);"></span>'+
+          '<span style="font-size:13px;">💕</span>'+
+          '<span style="width:44px;height:1px;background:linear-gradient(90deg,#F0C0B0,transparent);"></span></div>'+
+        '<p class="text-xl font-black stat-num '+ai('anim-fade-up',0.55,'line-height:1.5;')+'">缘分还在继续…</p>'+
+        '<p class="text-sm mt-2.5 '+ai('anim-fade-up',0.7)+'" style="color:#8C6E67;">还有 <b class="stat-num">12</b> 位新朋友，正在等你认识</p>'+
+        '<div class="grid grid-cols-3 gap-3.5 mt-5 mb-5">'+
+          d.recommend.map(function(u,i){
+            return '<a href="profile.html" style="text-decoration:none;color:inherit;"><div class="rpt-card overflow-hidden '+ai('anim-scale-in',0.9+i*0.22)+'">'+
+              '<div class="photo-3x4 overflow-hidden"><img src="'+u.photo+'" class="w-full h-full object-cover" loading="lazy"></div>'+
+              '<div class="px-2.5 py-2.5">'+
+                '<p class="text-xs font-bold" style="color:#3D1F1A;">'+u.name+'</p>'+
+                '<div class="flex items-center justify-center gap-1 mt-1">'+window.Common.gb(u.gender)+'</div>'+
+                '<p class="text-xs mt-1" style="color:#B8A09A;">'+u.age+'岁 · '+u.cons+'</p></div></div></a>';
+          }).join('')+
+        '</div>'+
+        '<div class="'+ai('anim-fade-up',1.6)+'"><a href="interact.html" class="inline-block px-10 py-3.5 rounded-full text-white font-bold text-base shadow-xl card-hover" style="background:linear-gradient(135deg,#E85D3A,#C44569);box-shadow:0 8px 24px rgba(200,60,50,0.3);text-decoration:none;">去认识TA们 ❤️</a></div>'+
+        '<p class="text-xs mt-5 '+ai('anim-fade-up',1.85)+'" style="color:#C8B0A8;"><a href="index.html" style="color:#C8B0A8;text-decoration:underline;">返回首页</a></p>'+
+        '<p class="text-xs mt-3 '+ai('anim-fade-up',2.0)+'" style="color:#C8B0A8;">能成报告 · 生成于 2026年7月17日</p>'+
+      '</div>'+
+    '</div>';
+  }
+
+  // ==== 渲染 ====
+  function render() {
+    document.getElementById('app').innerHTML =
+      sec1Html()+sec2Html()+sec3Html()+sec4Html()+sec5Html()+sec6Html()+endingHtml();
+    window.Common.initIcons();
+    setTimeout(function(){ window.Common.initIcons(); }, 250);
+
+    // Section 5 双向奔赴的横向 swipe 圆点更新
+    var swiper = document.getElementById('swiper-sec5');
+    var dots = document.getElementById('swiper-sec5-dots');
+    if (swiper && dots) {
+      var dotEls = dots.querySelectorAll('span');
+      swiper.addEventListener('scroll', function(){
+        var idx = Math.round(swiper.scrollLeft / (swiper.scrollWidth * 0.46));
+        if (idx >= dotEls.length) idx = dotEls.length-1;
+        dotEls.forEach(function(d,i){ d.style.background = i===idx ? '#E85D3A' : '#F0D5CD'; });
+      });
+    }
+
+    var sections = document.querySelectorAll('.report-section');
+    // 首屏立即显示
+    if (sections[0]) { sections[0].classList.add('revealed'); }
+    var observer = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if (e.isIntersecting) {
+          e.target.classList.add('revealed');
+        } else if (e.boundingClientRect.bottom < window.innerHeight * 0.5) {
+          e.target.classList.remove('revealed');
+        }
+      });
+    }, { threshold: 0.10 });
+    sections.forEach(function(s){ observer.observe(s); });
+  }
+
+  render();
+
+  setTimeout(function(){
+    var overlay = document.getElementById('loading-overlay');
+    overlay.style.transition = 'opacity 0.6s ease';
+    overlay.style.opacity = '0';
+    setTimeout(function(){ overlay.remove(); }, 600);
+  }, 3000);
+})();
+</script>
+</body>
+</html>

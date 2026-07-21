@@ -1,0 +1,97 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/><title>我的礼物 - 他俩能成</title><script src="lib/tailwind.min.js"></script><script src="lib/lucide.min.js"></script><link rel="stylesheet" href="style.css"></head><body class="bg-white text-gray-900 antialiased pb-2">
+<div class="bg-decoration"><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div></div><div id="app" class="relative z-[1]"></div>
+
+<!-- 奖品兑换弹窗 -->
+<div id="coupon-popup" class="fixed inset-0 bg-black/40 z-[200] hidden items-center justify-center" onclick="window.Common.closePopup(event,'coupon-popup')">
+<div class="bg-white rounded-2xl p-5 mx-auto w-80 shadow-xl text-center" onclick="event.stopPropagation()">
+<div class="text-4xl mb-3">🎫</div>
+<div class="text-sm text-gray-700 mb-2">优惠券码</div>
+<div id="coupon-code" class="text-xl font-black text-brand-pink mb-1 tracking-wider">---</div><span class="text-xs text-brand-pink cursor-pointer underline" onclick="window.Common.showToast('已复制')">点击复制</span>
+<div id="coupon-desc" class="text-xs text-gray-500 mt-3"></div>
+<div class="mt-4 w-full py-2.5 rounded-xl bg-brand-pink text-white font-bold text-sm card-hover text-center cursor-pointer" onclick="window.Common.hidePopup('coupon-popup')">我知道了</div>
+</div></div>
+
+<div id="address-popup" class="fixed inset-0 bg-black/40 z-[200] hidden items-end justify-center" onclick="window.Common.closePopup(event,'address-popup')">
+<div class="bg-white w-full rounded-t-2xl max-h-[85vh] overflow-y-auto animate-slide-up" onclick="event.stopPropagation()">
+<div class="sticky top-0 bg-white z-10 flex items-center justify-between px-4 py-4 border-b border-gray-100 rounded-t-2xl"><span class="text-lg font-black text-gray-800">填写邮寄地址</span><span class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center cursor-pointer" onclick="window.Common.hidePopup('address-popup')"><i data-lucide="x" class="w-5 h-5 text-gray-500"></i></span></div>
+<div class="p-4 space-y-4"><div><label class="block text-sm font-bold text-gray-700 mb-2">收件人 <span class="text-brand-pink">*</span></label><input id="addr-name" class="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm bg-gray-50 focus:outline-none focus:border-brand-pink"/></div><div><label class="block text-sm font-bold text-gray-700 mb-2">手机号 <span class="text-brand-pink">*</span></label><input id="addr-tel" type="tel" class="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm bg-gray-50 focus:outline-none focus:border-brand-pink"/></div><div><label class="block text-sm font-bold text-gray-700 mb-2">详细地址 <span class="text-brand-pink">*</span></label><textarea id="addr-detail" rows="2" class="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm bg-gray-50 focus:outline-none focus:border-brand-pink resize-none"></textarea></div><span class="block text-center w-full py-3.5 rounded-2xl bg-gradient-to-tr from-brand-pink to-brand-orange text-white font-bold text-base shadow-lg shadow-brand-pink/20 card-hover cursor-pointer" onclick="submitAddress()">提交</span></div>
+</div></div>
+
+<script src="common.js"></script><script>
+var CONS=['白羊座','金牛座','双子座','巨蟹座','狮子座','处女座','天秤座','天蝎座','射手座','摩羯座','水瓶座','双鱼座'];
+var PHOTOS_M=['images/photo/male/crop.17.0.1224.1632.0.750.1000.jpg','images/photo/male/crop.0.0.1078.1438.0.750.1000.jpg','images/photo/male/crop.194.56.917.1222.0.750.1000.jpg'];
+var PHOTOS_F=['images/photo/female/crop.0.67.1079.1438.0.750.1000.jpg','images/photo/female/crop.0.61.723.964.0.750.1000.jpg','images/photo/female/crop.384.0.2304.3072.0.750.1000.jpg'];
+
+var sentGifts=[],receivedGifts=[];
+var GIFTS=[{icon:'images/gift1.png',name:'菜小宝'},{icon:'images/gift2.gif',name:'听小北-爱你'},{icon:'images/gift3.gif',name:'听小北-亲亲'}];
+var NM=['阳光骑士','清风徐来','北辰','追风少年','咖啡不加糖'];
+var NF=['甜心小鹿','浅笑安然','栀子花开','棉花糖','薄荷微光'];
+
+for(var i=0;i<6;i++){
+  var male=Math.random()>0.5;
+  var gi=Math.floor(Math.random()*GIFTS.length);
+  sentGifts.push({icon:GIFTS[gi].icon,name:GIFTS[gi].name,toName:male?NM[i%5]:NF[i%5],toPhoto:male?PHOTOS_M[i%3]:PHOTOS_F[i%3],time:'7月'+(10+Math.floor(Math.random()*20))+'日'});
+}
+for(var i=0;i<5;i++){
+  var male=Math.random()>0.5;
+  var gi=Math.floor(Math.random()*GIFTS.length);
+  receivedGifts.push({icon:GIFTS[gi].icon,name:GIFTS[gi].name,fromName:male?NM[(i+3)%5]:NF[(i+3)%5],fromPhoto:male?PHOTOS_M[(i+1)%3]:PHOTOS_F[(i+1)%3],time:'7月'+(8+Math.floor(Math.random()*20))+'日'});
+}
+
+var activeTab='received';
+
+function showCoupon(){
+  document.getElementById('coupon-code').innerHTML='DZ20260710X88';
+  document.getElementById('coupon-desc').innerHTML='在搭子计划小程序报名时输入券码，可获<b>5元</b>金额减免';
+  window.Common.showPopup('coupon-popup');
+}
+function submitAddress(){
+  var n=document.getElementById('addr-name').value.trim();
+  var t=document.getElementById('addr-tel').value.trim();
+  var a=document.getElementById('addr-detail').value.trim();
+  if(!n||!t||!a){window.Common.showToast('请填写完整地址信息');return}
+  window.Common.hidePopup('address-popup');
+  window.Common.showToast('地址提交成功，等待发货');
+}
+
+function render(){
+  var data=activeTab==='sent'?sentGifts:receivedGifts;
+
+  var filterBar='<div class="flex gap-2 pt-1 pb-2 px-0">'+
+    '<span onclick="activeTab=\x27received\x27;render()" class="px-3 py-1.5 text-xs rounded-full font-medium transition-all '+(activeTab==='received'?'bg-brand-pink text-white':'bg-gray-100 text-gray-500')+' cursor-pointer">我收到的</span>'+
+    '<span onclick="activeTab=\x27sent\x27;render()" class="px-3 py-1.5 text-xs rounded-full font-medium transition-all '+(activeTab==='sent'?'bg-brand-pink text-white':'bg-gray-100 text-gray-500')+' cursor-pointer">我送出的</span>'+
+  '</div>';
+
+  var rows=data.map(function(g){
+    var person=activeTab==='sent'?g.toName:g.fromName;
+    var personPhoto=activeTab==='sent'?g.toPhoto:g.fromPhoto;
+    var directionLabel=activeTab==='sent'?'To':'From';
+
+    return'<div class="flex items-center gap-3 px-4 py-4 border-b border-gray-50">'+
+      '<img src="'+g.icon+'" class="w-12 h-12 object-contain rounded-xl bg-gray-50 flex-shrink-0"/>'+
+      '<div class="flex-1 min-w-0">'+
+        '<div class="text-sm font-bold text-gray-800">'+g.name+'</div>'+
+        '<div class="flex items-center gap-1.5 text-[11px] text-gray-400 mt-0.5">'+
+          '<span>'+directionLabel+'</span>'+
+          '<img src="'+personPhoto+'" class="w-4 h-4 rounded-full object-cover"/>'+
+          '<span class="text-gray-600 font-medium">'+person+'</span>'+
+        '</div>'+
+        '<div class="text-[11px] text-gray-400 mt-0.5">'+g.time+'</div>'+
+      '</div>'+
+      '<span class="px-3 py-1.5 rounded-full bg-brand-pink/10 text-brand-pink text-xs font-bold card-hover cursor-pointer inline-block text-center flex-shrink-0" onclick="window.location.href=\x27profile.html\x27">去查看</span>'+
+    '</div>';
+  }).join('');
+
+  document.getElementById('app').innerHTML=
+    '<div class="sticky top-0 z-40 bg-white/95 backdrop-blur-md px-4 py-2.5 shadow-sm flex items-center"><i data-lucide="gift" class="w-3.5 h-3.5 text-brand-pink mr-2"></i><h1 class="text-sm font-bold text-gray-900">我的礼物</h1></div>'+
+    '<div class="px-4 pt-3 pb-6">'+
+      filterBar+
+      '<div class="bg-white rounded-2xl shadow-sm border border-gray-100">'+rows+'</div>'+
+      '<div class="text-center text-[10px] text-gray-400 mt-4">仅展示最近30天记录</div>'+
+    '</div>';
+  window.Common.initIcons();
+}
+
+document.addEventListener('DOMContentLoaded',function(){render()});
+</script>
+</body></html>
