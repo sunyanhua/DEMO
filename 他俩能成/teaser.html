@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>他俩能成 · 全新升级</title>
+    <script src="lib/tailwind.min.js"></script>
+    <script src="lib/lucide.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        @keyframes floatHeart {
+            0%   { transform: translateY(100vh) scale(0) rotate(0deg); opacity: 0; }
+            10%  { opacity: 0.9; }
+            90%  { opacity: 0.6; }
+            100% { transform: translateY(-10vh) scale(1.2) rotate(360deg); opacity: 0; }
+        }
+        @keyframes shimmer {
+            0%   { background-position: -200% center; }
+            100% { background-position: 200% center; }
+        }
+        @keyframes glowPulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(224,77,44,0.25), 0 0 60px rgba(224,77,44,0.08); }
+            50%      { box-shadow: 0 0 35px rgba(224,77,44,0.40), 0 0 90px rgba(224,77,44,0.15); }
+        }
+        @keyframes titleReveal {
+            from { opacity: 0; transform: translateY(24px); filter: blur(4px); }
+            to   { opacity: 1; transform: translateY(0); filter: blur(0); }
+        }
+        @keyframes rotateSlow {
+            from { transform: rotate(0deg); }
+            to   { transform: rotate(360deg); }
+        }
+        @keyframes skeletonShimmer {
+            0%   { background-position: -400px 0; }
+            100% { background-position: 400px 0; }
+        }
+        @keyframes logoFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+
+        /* ====== 拼图弹窗 ====== */
+        @keyframes confettiFall {
+            0%   { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+        }
+        @keyframes celebratePop {
+            0%   { transform: scale(0.3); opacity: 0; }
+            50%  { transform: scale(1.15); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes slotGlow {
+            0%, 100% { border-color: rgba(224,77,44,0.15); box-shadow: inset 0 0 0 0 rgba(224,77,44,0); }
+            50%      { border-color: rgba(224,77,44,0.35); box-shadow: inset 0 0 8px 2px rgba(224,77,44,0.08); }
+        }
+        @keyframes giftShake {
+            0%, 100% { transform: rotate(0deg); }
+            10% { transform: rotate(-8deg); }
+            20% { transform: rotate(8deg); }
+            30% { transform: rotate(-6deg); }
+            40% { transform: rotate(6deg); }
+            50% { transform: rotate(-3deg); }
+            60% { transform: rotate(3deg); }
+            70% { transform: rotate(-1deg); }
+            80% { transform: rotate(1deg); }
+            100% { transform: rotate(0deg); }
+        }
+
+        /* ====== 飘浮爱心容器 ====== */
+        .hearts-layer {
+            position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none; z-index: 10;
+            overflow: hidden;
+        }
+        .floating-heart {
+            position: absolute; font-size: 22px;
+            animation: floatHeart linear infinite; opacity: 0;
+        }
+
+        /* ====== 倒计时数字 ====== */
+        .countdown-digit {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 52px; height: 62px;
+            background: rgba(255,255,255,0.92);
+            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+            border-radius: 14px; font-size: 30px; font-weight: 800;
+            color: #e04d2c;
+            box-shadow: 0 4px 16px rgba(224,77,44,0.15);
+            animation: glowPulse 3s ease-in-out infinite;
+        }
+
+        /* ====== 流光文字 ====== */
+        .shimmer-text {
+            background: linear-gradient(90deg, #e04d2c 0%, #F06840 25%, #e04d2c 50%, #F06840 75%, #e04d2c 100%);
+            background-size: 200% auto;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: shimmer 2.5s linear infinite;
+        }
+
+        /* ====== 卡片入场 ====== */
+        .reveal-card {
+            opacity: 0; transform: translateY(40px);
+            transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+                        transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .reveal-card.visible { opacity: 1; transform: translateY(0); }
+
+        /* ====== 环形装饰 ====== */
+        .orbit-ring {
+            position: absolute;
+            border: 1.5px dashed rgba(224,77,44,0.18); border-radius: 50%;
+            animation: rotateSlow 28s linear infinite;
+        }
+
+        /* ====== 骨架屏闪烁 ====== */
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 37%, #f0f0f0 63%);
+            background-size: 400px 100%;
+            animation: skeletonShimmer 1.8s ease-in-out infinite;
+            border-radius: 6px;
+        }
+
+        /* ====== 页面结构预览卡片 ====== */
+        .page-mock {
+            background: #fff; border: 1px solid rgba(224,77,44,0.10);
+            border-radius: 14px; overflow: hidden;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.04);
+        }
+        .page-mock-title {
+            font-size: 10px; font-weight: 700; color: #999;
+            text-align: center; padding: 6px 0;
+            background: #fafafa; border-bottom: 1px solid #f3f3f3;
+        }
+
+        /* ====== 拼图弹窗样式 ====== */
+        #puzzleModal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 200;
+            background: rgba(0,0,0,0.55);
+            align-items: center; justify-content: center;
+            overflow-y: auto; -webkit-overflow-scrolling: touch;
+        }
+        #puzzleModal.hidden { display: none; }
+        #puzzleModal.flex { display: flex; }
+
+        .puzzle-dialog {
+            background: #fff; border-radius: 20px;
+            width: 92vw; max-width: 400px;
+            max-height: 92vh; overflow-y: auto;
+            padding: 20px 16px 24px;
+            position: relative;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.20);
+        }
+        .puzzle-board {
+            display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(3, 1fr);
+            gap: 3px;
+            width: 100%; max-width: 360px; margin: 0 auto;
+            aspect-ratio: 4 / 3;
+            background: rgba(224,77,44,0.06);
+            border-radius: 10px; padding: 4px;
+        }
+        .puzzle-slot {
+            aspect-ratio: 1;
+            border: 1.5px dashed rgba(224,77,44,0.20);
+            border-radius: 6px;
+            background: rgba(255,240,236,0.35);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative; overflow: hidden;
+        }
+        .puzzle-slot:hover {
+            border-color: rgba(224,77,44,0.45);
+            background: rgba(255,240,236,0.55);
+        }
+        .puzzle-slot.empty-slot {
+            animation: slotGlow 2.5s ease-in-out infinite;
+        }
+        .puzzle-slot.filled {
+            border-style: solid; border-color: rgba(224,77,44,0.12);
+            background: #fff;
+        }
+        .puzzle-slot.wrong {
+            border-color: #fca5a5 !important;
+            box-shadow: inset 0 0 6px rgba(239,68,68,0.15) !important;
+        }
+        .puzzle-slot .slot-piece {
+            width: 100%; height: 100%;
+            background-size: 400% 300%;
+            background-repeat: no-repeat;
+        }
+
+        /* 碎片托盘 */
+        .puzzle-tray {
+            display: grid; grid-template-columns: repeat(6, 1fr);
+            gap: 4px;
+            width: 100%; max-width: 360px; margin: 12px auto 0;
+        }
+        .puzzle-piece {
+            aspect-ratio: 1;
+            background-size: 400% 300%;
+            background-repeat: no-repeat;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.18s ease;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+            position: relative;
+        }
+        .puzzle-piece:active { transform: scale(0.94); }
+        .puzzle-piece.selected {
+            border-color: #e04d2c !important;
+            box-shadow: 0 0 0 3px rgba(224,77,44,0.25), 0 4px 12px rgba(224,77,44,0.20);
+            transform: scale(1.04);
+        }
+        .puzzle-piece.used {
+            opacity: 0.2; pointer-events: none;
+            transform: scale(0.9);
+        }
+
+        /* 拼图提示 */
+        .puzzle-hint {
+            text-align: center; font-size: 13px; font-weight: 600;
+            color: #e04d2c;
+            margin: 14px 0 6px;
+            padding: 8px 14px;
+            background: rgba(255,240,236,0.7);
+            border-radius: 10px;
+            animation: glowPulse 3s ease-in-out infinite;
+        }
+
+        /* ====== 庆祝画面 ====== */
+        #celebrateOverlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 250; pointer-events: none;
+            overflow: hidden;
+        }
+        .confetti {
+            position: absolute;
+            width: 10px; height: 10px;
+            border-radius: 2px;
+            animation: confettiFall linear forwards;
+        }
+        #celebrateDialog {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 260;
+            display: flex; align-items: center; justify-content: center;
+        }
+        #celebrateDialog.hidden { display: none; }
+
+        .celebrate-card {
+            background: #fff; border-radius: 20px;
+            width: 85vw; max-width: 340px; padding: 28px 20px 24px;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+            animation: celebratePop 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .celebrate-emoji {
+            font-size: 60px;
+            display: inline-block;
+            animation: giftShake 1.2s ease-in-out infinite;
+        }
+
+        @media (min-width: 640px) {
+            .countdown-digit { width: 64px; height: 76px; font-size: 36px; border-radius: 16px; }
+        }
+    </style>
+</head>
+<body class="bg-white text-gray-900 antialiased">
+
+    <!-- ========== 背景装饰 ========== -->
+    <div class="bg-decoration">
+        <div class="bg-blob"></div><div class="bg-blob"></div>
+        <div class="bg-blob"></div><div class="bg-blob"></div>
+        <div class="bg-blob"></div>
+    </div>
+
+    <!-- ========== 飘浮爱心层 ========== -->
+    <div class="hearts-layer" id="heartsLayer"></div>
+
+    <!-- ========== 主内容 ========== -->
+    <div id="app" class="relative z-[1]">
+
+        <!-- ====== 顶部渐变区域 ====== -->
+        <div class="top-section relative overflow-hidden" style="
+            background:
+                radial-gradient(ellipse 70% 50% at 30% 10%, rgba(240,104,64,0.30) 0%, transparent 60%),
+                radial-gradient(ellipse 55% 45% at 75% 5%, rgba(224,77,44,0.28) 0%, transparent 55%),
+                linear-gradient(180deg, #FABFAA 0%, rgba(250,191,170,0) 100%);
+            padding-top: 48px; padding-bottom: 36px;
+        ">
+
+            <div class="orbit-ring" style="width:300px;height:300px;top:-140px;right:-120px;"></div>
+            <div class="orbit-ring" style="width:200px;height:200px;bottom:-80px;left:-80px;animation-direction:reverse;animation-duration:22s;"></div>
+
+            <div class="flex justify-center mb-5" style="animation: titleReveal 0.8s ease-out forwards;">
+                <img src="images/logo1.png" alt="他俩能成"
+                     style="width:100px;height:100px;animation:logoFloat 3s ease-in-out infinite;filter:drop-shadow(0 8px 20px rgba(224,77,44,0.30));" />
+            </div>
+
+            <div class="text-center px-4" style="animation: titleReveal 0.8s 0.15s ease-out both;">
+                <p class="text-lg font-extrabold tracking-wider shimmer-text">全新升级 · 重装归来</p>
+                <p class="text-sm mt-3 px-2 leading-relaxed" style="color:rgba(196,62,32,0.75);">
+                    旧版 H5 即日起暂停服务<br />
+                    新版小程序将于 <strong style="color:#e04d2c;">2026 年七夕（8月19日）</strong> 正式上线
+                </p>
+            </div>
+
+            <div class="flex items-center justify-center gap-2.5 mt-6" style="animation: titleReveal 0.8s 0.3s ease-out both;">
+                <div class="flex flex-col items-center">
+                    <span class="countdown-digit" id="cd-days">00</span>
+                    <span class="text-xs mt-1.5 font-medium" style="color:rgba(196,62,32,0.7);">天</span>
+                </div>
+                <span class="text-2xl font-bold mt-[-14px]" style="color:#e04d2c;">:</span>
+                <div class="flex flex-col items-center">
+                    <span class="countdown-digit" id="cd-hours">00</span>
+                    <span class="text-xs mt-1.5 font-medium" style="color:rgba(196,62,32,0.7);">时</span>
+                </div>
+                <span class="text-2xl font-bold mt-[-14px]" style="color:#e04d2c;">:</span>
+                <div class="flex flex-col items-center">
+                    <span class="countdown-digit" id="cd-mins">00</span>
+                    <span class="text-xs mt-1.5 font-medium" style="color:rgba(196,62,32,0.7);">分</span>
+                </div>
+                <span class="text-2xl font-bold mt-[-14px]" style="color:#e04d2c;">:</span>
+                <div class="flex flex-col items-center">
+                    <span class="countdown-digit" id="cd-secs">00</span>
+                    <span class="text-xs mt-1.5 font-medium" style="color:rgba(196,62,32,0.7);">秒</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ====== 内容区 ====== -->
+        <div class="px-5 pb-24">
+
+            <div class="text-center py-6 reveal-card" data-delay="0">
+                <p class="text-sm leading-relaxed" style="color:#C43E20;">
+                    <span class="inline-block heartbeat mr-1">❤️</span>
+                    每一次相遇都值得等待，更好的我们，只为更好的你
+                </p>
+            </div>
+
+            <!-- ========== 卡片 1：小程序的三大优势 ========== -->
+            <div class="reveal-card mb-5" data-delay="100">
+                <div class="bg-white rounded-2xl p-5 border border-orange-100 shadow-sm">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 rounded-xl flex items-center justify-center"
+                             style="background:linear-gradient(135deg,#e04d2c,#F06840);">
+                            <i data-lucide="smartphone" class="w-5 h-5 text-white"></i>
+                        </div>
+                        <h3 class="text-lg font-bold" style="color:#e04d2c;">为什么是微信小程序？</h3>
+                    </div>
+                    <div class="grid grid-cols-3 gap-3">
+                        <div class="text-center">
+                            <div class="w-12 h-12 mx-auto mb-2 rounded-full flex items-center justify-center" style="background:#FFF0EC;">
+                                <i data-lucide="zap" class="w-6 h-6" style="color:#e04d2c;"></i>
+                            </div>
+                            <p class="text-xs font-semibold text-gray-800">即开即用</p>
+                            <p class="text-[10px] text-gray-500 mt-0.5">无需下载<br />微信直达</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="w-12 h-12 mx-auto mb-2 rounded-full flex items-center justify-center" style="background:#FFF0EC;">
+                                <i data-lucide="fingerprint" class="w-6 h-6" style="color:#e04d2c;"></i>
+                            </div>
+                            <p class="text-xs font-semibold text-gray-800">一键登录</p>
+                            <p class="text-[10px] text-gray-500 mt-0.5">微信授权<br />安全便捷</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="w-12 h-12 mx-auto mb-2 rounded-full flex items-center justify-center" style="background:#FFF0EC;">
+                                <i data-lucide="layers" class="w-6 h-6" style="color:#e04d2c;"></i>
+                            </div>
+                            <p class="text-xs font-semibold text-gray-800">顺滑体验</p>
+                            <p class="text-[10px] text-gray-500 mt-0.5">原生级流畅<br />丝滑交互</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========== 卡片 2：新版亮点 ========== -->
+            <div class="reveal-card mb-5" data-delay="200">
+                <div class="deco-card bg-white rounded-2xl p-5">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-xl flex items-center justify-center"
+                             style="background:linear-gradient(135deg,#e04d2c,#F06840);">
+                            <i data-lucide="sparkles" class="w-5 h-5 text-white"></i>
+                        </div>
+                        <h3 class="text-lg font-bold" style="color:#e04d2c;">新版亮点</h3>
+                    </div>
+
+                    <div class="flex items-start gap-3 mb-4 pb-4 border-b border-orange-50">
+                        <div class="w-8 h-8 rounded-lg flex-shrink-0 flex items-center justify-center mt-0.5"
+                             style="background:linear-gradient(135deg,#FFF0EC,#FFF5F2);">
+                            <span class="text-lg">📦</span>
+                        </div>
+                        <div>
+                            <p class="text-sm font-bold text-gray-800">数据完整迁移，一键激活</p>
+                            <p class="text-xs text-gray-500 mt-1 leading-relaxed">
+                                旧版 H5 所有用户资料、匹配记录、互动数据<strong style="color:#e04d2c;">完整保留</strong>。
+                                小程序首次打开即自动识别老用户，微信一键激活账号，<strong style="color:#e04d2c;">秒级恢复</strong>所有历史。
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start gap-3 mb-4 pb-4 border-b border-orange-50">
+                        <div class="w-8 h-8 rounded-lg flex-shrink-0 flex items-center justify-center mt-0.5"
+                             style="background:linear-gradient(135deg,#FFF0EC,#FFF5F2);">
+                            <span class="text-lg">💌</span>
+                        </div>
+                        <div>
+                            <p class="text-sm font-bold text-gray-800">老用户专属 · 心动报告</p>
+                            <p class="text-xs text-gray-500 mt-1 leading-relaxed">
+                                上线后将为你生成专属<strong style="color:#e04d2c;">心动报告</strong>——
+                                谁曾为你心动、你和谁互道了"能成"、谁在默默关注你……
+                                一份涵盖你所有互动记忆的<strong style="color:#e04d2c;">缘分总结</strong>，只属于你的牵线回忆录。
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start gap-3 mb-4 pb-4 border-b border-orange-50">
+                        <div class="w-8 h-8 rounded-lg flex-shrink-0 flex items-center justify-center mt-0.5"
+                             style="background:linear-gradient(135deg,#FFF0EC,#FFF5F2);">
+                            <span class="text-lg">💬</span>
+                        </div>
+                        <div>
+                            <p class="text-sm font-bold text-gray-800">互动升级，沟通零距离</p>
+                            <p class="text-xs text-gray-500 mt-1 leading-relaxed">
+                                全新<strong style="color:#e04d2c;">私信聊天</strong>功能上线，心动了就直接聊；
+                                <strong style="color:#e04d2c;">个人中心</strong>全面重构，资料编辑、互动记录、我的牵线一目了然。
+                                从相遇到相识，每一步都更加自然顺畅。
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start gap-3">
+                        <div class="w-8 h-8 rounded-lg flex-shrink-0 flex items-center justify-center mt-0.5"
+                             style="background:linear-gradient(135deg,#FFF0EC,#FFF5F2);">
+                            <span class="text-lg">🎉</span>
+                        </div>
+                        <div>
+                            <p class="text-sm font-bold text-gray-800">线下活动全面升级</p>
+                            <p class="text-xs text-gray-500 mt-1 leading-relaxed">
+                                更丰富的<strong style="color:#e04d2c;">线下主题活动</strong>：周末野餐会、桌游之夜、户外徒步、主题派对……
+                                线上匹配 + 线下邂逅，<strong style="color:#e04d2c;">让缘分不止于屏幕</strong>。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========== 卡片 3：主要页面骨架预览 ========== -->
+            <div class="reveal-card mb-5" data-delay="300">
+                <h3 class="text-xs font-semibold text-gray-400 text-center mb-3 uppercase tracking-wider">新版页面抢先看</h3>
+
+                <div class="grid grid-cols-3 gap-3 mb-3">
+                    <div class="page-mock">
+                        <div class="page-mock-title">首页</div>
+                        <div class="p-2 space-y-1.5">
+                            <div class="skeleton h-14 rounded-lg" style="width:100%;"></div>
+                            <div class="flex gap-1">
+                                <div class="skeleton h-6 rounded-full flex-1"></div>
+                                <div class="skeleton h-6 rounded-full flex-1"></div>
+                                <div class="skeleton h-6 rounded-full flex-1"></div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-1">
+                                <div class="skeleton h-16 rounded-lg"></div>
+                                <div class="skeleton h-16 rounded-lg"></div>
+                            </div>
+                        </div>
+                        <div class="flex justify-around pt-1 pb-2 border-t border-gray-100">
+                            <div class="skeleton h-5 w-5 rounded"></div><div class="skeleton h-5 w-5 rounded"></div>
+                            <div class="skeleton h-7 w-7 rounded-full"></div>
+                            <div class="skeleton h-5 w-5 rounded"></div><div class="skeleton h-5 w-5 rounded"></div>
+                        </div>
+                    </div>
+                    <div class="page-mock">
+                        <div class="page-mock-title">缘分速配</div>
+                        <div class="p-2 space-y-1.5">
+                            <div class="skeleton h-24 rounded-xl" style="width:100%;"></div>
+                            <div class="skeleton h-3 rounded w-2/3 mx-auto"></div>
+                            <div class="skeleton h-3 rounded w-1/2 mx-auto"></div>
+                            <div class="flex justify-center gap-3 mt-1">
+                                <div class="skeleton h-8 w-8 rounded-full"></div>
+                                <div class="skeleton h-10 w-10 rounded-full"></div>
+                                <div class="skeleton h-8 w-8 rounded-full"></div>
+                            </div>
+                        </div>
+                        <div class="flex justify-around pt-1 pb-2 border-t border-gray-100">
+                            <div class="skeleton h-5 w-5 rounded"></div><div class="skeleton h-5 w-5 rounded"></div>
+                            <div class="skeleton h-7 w-7 rounded-full"></div>
+                            <div class="skeleton h-5 w-5 rounded"></div><div class="skeleton h-5 w-5 rounded"></div>
+                        </div>
+                    </div>
+                    <div class="page-mock">
+                        <div class="page-mock-title">牵线配对</div>
+                        <div class="p-2 space-y-1.5">
+                            <div class="skeleton h-4 rounded w-2/3 mx-auto"></div>
+                            <div class="flex gap-1">
+                                <div class="skeleton h-20 rounded-xl flex-1"></div>
+                                <div class="flex items-center"><span style="font-size:14px;color:#e04d2c;">❤️</span></div>
+                                <div class="skeleton h-20 rounded-xl flex-1"></div>
+                            </div>
+                            <div class="flex gap-1">
+                                <div class="skeleton h-7 rounded-full flex-1"></div>
+                                <div class="skeleton h-7 rounded-full flex-1"></div>
+                            </div>
+                        </div>
+                        <div class="flex justify-around pt-1 pb-2 border-t border-gray-100">
+                            <div class="skeleton h-5 w-5 rounded"></div><div class="skeleton h-5 w-5 rounded"></div>
+                            <div class="skeleton h-7 w-7 rounded-full"></div>
+                            <div class="skeleton h-5 w-5 rounded"></div><div class="skeleton h-5 w-5 rounded"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-3">
+                    <div class="page-mock">
+                        <div class="page-mock-title">消息 · 私信</div>
+                        <div class="p-2 space-y-1.5">
+                            <div class="flex gap-1">
+                                <div class="skeleton h-5 rounded-full flex-1"></div>
+                                <div class="skeleton h-5 rounded-full flex-1"></div>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <div class="skeleton h-7 w-7 rounded-full flex-shrink-0"></div>
+                                <div class="flex-1 space-y-1">
+                                    <div class="skeleton h-2.5 rounded w-1/2"></div>
+                                    <div class="skeleton h-2 rounded w-3/4"></div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <div class="skeleton h-7 w-7 rounded-full flex-shrink-0"></div>
+                                <div class="flex-1 space-y-1">
+                                    <div class="skeleton h-2.5 rounded w-2/5"></div>
+                                    <div class="skeleton h-2 rounded w-2/3"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex justify-around pt-1 pb-2 border-t border-gray-100">
+                            <div class="skeleton h-5 w-5 rounded"></div><div class="skeleton h-5 w-5 rounded"></div>
+                            <div class="skeleton h-7 w-7 rounded-full"></div>
+                            <div class="skeleton h-5 w-5 rounded"></div><div class="skeleton h-5 w-5 rounded"></div>
+                        </div>
+                    </div>
+                    <div class="page-mock">
+                        <div class="page-mock-title">个人中心</div>
+                        <div class="p-2 space-y-1.5">
+                            <div class="flex items-center gap-1.5">
+                                <div class="skeleton h-9 w-9 rounded-full flex-shrink-0"></div>
+                                <div class="flex-1">
+                                    <div class="skeleton h-3 rounded w-1/2 mb-1"></div>
+                                    <div class="skeleton h-2 rounded w-2/3"></div>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-3 gap-1">
+                                <div class="skeleton h-8 rounded-lg"></div>
+                                <div class="skeleton h-8 rounded-lg"></div>
+                                <div class="skeleton h-8 rounded-lg"></div>
+                            </div>
+                            <div class="skeleton h-2.5 rounded w-full"></div>
+                            <div class="skeleton h-2.5 rounded w-full"></div>
+                            <div class="skeleton h-2.5 rounded w-full"></div>
+                        </div>
+                        <div class="flex justify-around pt-1 pb-2 border-t border-gray-100">
+                            <div class="skeleton h-5 w-5 rounded"></div><div class="skeleton h-5 w-5 rounded"></div>
+                            <div class="skeleton h-7 w-7 rounded-full"></div>
+                            <div class="skeleton h-5 w-5 rounded"></div><div class="skeleton h-5 w-5 rounded"></div>
+                        </div>
+                    </div>
+                    <div class="page-mock">
+                        <div class="page-mock-title">个人主页</div>
+                        <div class="p-2 space-y-1.5">
+                            <div class="skeleton h-14 rounded-lg w-full"></div>
+                            <div class="flex justify-center -mt-4">
+                                <div class="skeleton h-10 w-10 rounded-full"></div>
+                            </div>
+                            <div class="skeleton h-3 rounded w-1/3 mx-auto"></div>
+                            <div class="skeleton h-2 rounded w-2/3 mx-auto"></div>
+                            <div class="grid grid-cols-3 gap-1">
+                                <div class="skeleton h-6 rounded-lg"></div>
+                                <div class="skeleton h-6 rounded-lg"></div>
+                                <div class="skeleton h-6 rounded-lg"></div>
+                            </div>
+                        </div>
+                        <div class="flex justify-around pt-1 pb-2 border-t border-gray-100">
+                            <div class="skeleton h-5 w-5 rounded"></div><div class="skeleton h-5 w-5 rounded"></div>
+                            <div class="skeleton h-7 w-7 rounded-full"></div>
+                            <div class="skeleton h-5 w-5 rounded"></div><div class="skeleton h-5 w-5 rounded"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <p class="text-[10px] text-gray-400 text-center mt-3">以上为结构预览，实际效果以上线版本为准</p>
+            </div>
+
+            <!-- ========== 卡片 4：AI 红娘预告 ========== -->
+            <div class="reveal-card mb-5" data-delay="400">
+                <div class="relative overflow-hidden rounded-2xl p-5"
+                     style="background:linear-gradient(135deg,rgba(224,77,44,0.06),rgba(240,104,64,0.04));border:1px solid rgba(224,77,44,0.12);">
+                    <div class="absolute top-0 right-0 opacity-8" style="font-size:80px;transform:rotate(15deg) translate(10%,-25%);">🤖</div>
+                    <div class="flex items-center gap-3 mb-3 relative z-[1]">
+                        <div class="w-10 h-10 rounded-xl flex items-center justify-center"
+                             style="background:linear-gradient(135deg,#C43E20,#e04d2c);">
+                            <i data-lucide="bot" class="w-5 h-5 text-white"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold" style="color:#e04d2c;">AI 红娘 · 即将到来</h3>
+                            <span class="text-[10px] px-2 py-0.5 rounded-full text-white font-medium"
+                                  style="background:linear-gradient(90deg,#e04d2c,#F06840);">Coming Soon</span>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-700 leading-relaxed relative z-[1]">
+                        未来的"他俩能成"将引入<strong style="color:#e04d2c;"> AI 红娘</strong>。
+                        基于大数据与智能算法，深度分析你的性格、兴趣、价值观——
+                        不再大海捞针，让合适的人，<strong style="color:#e04d2c;">主动找到你</strong>。
+                    </p>
+                    <div class="flex items-center gap-4 mt-4 relative z-[1]">
+                        <div class="flex-1 text-center">
+                            <p class="text-2xl font-black" style="color:#e04d2c;">🧠</p>
+                            <p class="text-[11px] text-gray-500 mt-1">性格匹配</p>
+                        </div>
+                        <div class="flex-1 text-center">
+                            <p class="text-2xl font-black" style="color:#e04d2c;">🎯</p>
+                            <p class="text-[11px] text-gray-500 mt-1">精准推荐</p>
+                        </div>
+                        <div class="flex-1 text-center">
+                            <p class="text-2xl font-black" style="color:#e04d2c;">💬</p>
+                            <p class="text-[11px] text-gray-500 mt-1">智能破冰</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========== 底部：七夕发布强调 + 按钮 ========== -->
+            <div class="text-center py-6 reveal-card" data-delay="500">
+                <div class="inline-block px-8 py-4 rounded-2xl" style="background:linear-gradient(135deg,rgba(224,77,44,0.06),rgba(240,104,64,0.04));border:1px solid rgba(224,77,44,0.10);">
+                    <p class="text-sm text-gray-500 mb-2">旧版 H5 已停止服务 · 所有数据已安全封存</p>
+                    <p class="text-2xl font-black shimmer-text">8 月 19 日（七夕）</p>
+                    <p class="text-lg font-bold mt-1" style="color:#C43E20;">全新小程序正式上线</p>
+                    <p class="text-xs text-gray-400 mt-2">数据一键激活 · 心动报告同步发布</p>
+                </div>
+
+                <!-- 赢取礼物按钮 -->
+                <div class="mt-5">
+                    <div class="inline-flex items-center gap-2 px-6 py-3 rounded-full text-white font-bold text-sm cursor-pointer card-hover"
+                         style="background:linear-gradient(135deg,#F59E0B,#F06840);box-shadow:0 6px 22px rgba(245,158,11,0.32);"
+                         onclick="openPuzzle()">
+                        <span style="font-size:16px;">🎁</span>
+                        赢取限定版欢迎礼物
+                    </div>
+                </div>
+
+                <!-- 上线提醒按钮 -->
+                <div class="mt-3">
+                    <div class="inline-flex items-center gap-2 px-6 py-3 rounded-full text-white font-bold text-sm cursor-pointer card-hover"
+                         style="background:linear-gradient(135deg,#e04d2c,#F06840);box-shadow:0 6px 22px rgba(224,77,44,0.28);"
+                         onclick="window.Common.showToast('感谢关注！七夕见 ❤️')">
+                        <i data-lucide="bell" class="w-4 h-4"></i>
+                        上线提醒我
+                    </div>
+                </div>
+
+                <p class="text-[10px] text-gray-400 mt-4">
+                    关注"他俩能成"公众号，第一时间获取上线通知
+                </p>
+                <p class="text-xs mt-5" style="color:rgba(196,62,32,0.55);">
+                    敬请期待，七夕见 ❤️
+                </p>
+            </div>
+
+        </div>
+    </div><!-- /app -->
+
+    <!-- ========== 拼图弹窗 ========== -->
+    <div id="puzzleModal" class="hidden" onclick="closePuzzle(event)">
+        <div class="puzzle-dialog" onclick="event.stopPropagation()">
+            <!-- 关闭按钮 -->
+            <div class="flex justify-end mb-2">
+                <span class="cursor-pointer p-1.5 rounded-full hover:bg-gray-100 transition-colors"
+                      onclick="closePuzzleDirect()">
+                    <i data-lucide="x" class="w-5 h-5 text-gray-400"></i>
+                </span>
+            </div>
+
+            <!-- 提示语 -->
+            <div class="text-center mb-4 px-2">
+                <p class="text-sm font-bold" style="color:#e04d2c;">🎁 赢取限定版欢迎礼物</p>
+                <p class="text-xs text-gray-500 mt-2 leading-relaxed">
+                    完成爱心拼图，您将可以在新版上线后为心仪的TA<br />送上一份他俩能成小程序上线的限定版礼物。
+                </p>
+            </div>
+
+            <!-- 拼图板 -->
+            <div class="puzzle-board" id="puzzleBoard"></div>
+
+            <p class="puzzle-hint">👆 先从下方选中碎片，再点击上方拼图区放入</p>
+
+            <!-- 碎片托盘 -->
+            <div class="puzzle-tray" id="puzzleTray"></div>
+
+            <!-- 重置按钮 -->
+            <div class="text-center mt-4">
+                <span class="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-medium text-gray-500 cursor-pointer card-hover border border-gray-200"
+                      onclick="resetPuzzle()">
+                    <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+                    重新打乱
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== 庆祝画面 ========== -->
+    <div id="celebrateOverlay"></div>
+    <div id="celebrateDialog" class="hidden">
+        <div class="celebrate-card" onclick="event.stopPropagation()">
+            <div class="celebrate-emoji">🎁</div>
+            <p class="text-xl font-black mt-4" style="color:#e04d2c;">恭喜您！</p>
+            <p class="text-sm text-gray-700 mt-2 leading-relaxed">
+                已成功完成爱心拼图<br />
+                <strong style="color:#e04d2c;">您已赢取限定版欢迎礼物</strong>
+            </p>
+            <p class="text-xs text-gray-400 mt-2">
+                新版上线后，我们将为您推送礼物领取通知
+            </p>
+            <div class="mt-5">
+                <span class="inline-flex items-center gap-2 px-6 py-2.5 rounded-full text-white font-bold text-sm cursor-pointer card-hover"
+                     style="background:linear-gradient(135deg,#e04d2c,#F06840);box-shadow:0 4px 16px rgba(224,77,44,0.25);"
+                     onclick="closeCelebrate()">
+                    太棒了！
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <script src="common.js"></script>
+    <script>
+    (function() {
+
+        // ========== 0. 全局图标初始化 ==========
+        function initIcons() {
+            if (typeof window.Common !== 'undefined' && window.Common.initIcons) {
+                window.Common.initIcons();
+            } else if (typeof lucide !== 'undefined') {
+                try { lucide.createIcons(); } catch(e) {}
+            }
+        }
+
+        // ========== 1. 飘浮爱心 ==========
+        (function spawnHearts() {
+            var layer = document.getElementById('heartsLayer');
+            if (!layer) return;
+            var hearts = ['❤️', '💕', '💖', '💗', '💝', '✨', '🌸', '💐'];
+
+            function addHeart() {
+                var span = document.createElement('span');
+                span.className = 'floating-heart';
+                span.textContent = hearts[Math.floor(Math.random() * hearts.length)];
+                span.style.left = Math.random() * 95 + '%';
+                span.style.fontSize = (16 + Math.random() * 18) + 'px';
+                span.style.animationDuration = (6 + Math.random() * 8) + 's';
+                span.style.animationDelay = Math.random() * 2 + 's';
+                layer.appendChild(span);
+                setTimeout(function() { span.remove(); }, 10000);
+            }
+
+            for (var i = 0; i < 14; i++) {
+                setTimeout(addHeart, i * 400);
+            }
+            setInterval(addHeart, 2200);
+        })();
+
+        // ========== 2. 倒计时 ==========
+        (function countdown() {
+            var TARGET = new Date('2026-08-19T00:00:00+08:00').getTime();
+
+            function pad(n) { return n < 10 ? '0' + n : '' + n; }
+
+            function tick() {
+                var now = Date.now();
+                var diff = Math.max(0, TARGET - now);
+                var totalSec = Math.floor(diff / 1000);
+                var days  = Math.floor(totalSec / 86400);
+                var hours = Math.floor((totalSec % 86400) / 3600);
+                var mins  = Math.floor((totalSec % 3600) / 60);
+                var secs  = totalSec % 60;
+
+                var cdDays  = document.getElementById('cd-days');
+                var cdHours = document.getElementById('cd-hours');
+                var cdMins  = document.getElementById('cd-mins');
+                var cdSecs  = document.getElementById('cd-secs');
+
+                if (cdDays)  cdDays.textContent  = pad(days);
+                if (cdHours) cdHours.textContent = pad(hours);
+                if (cdMins)  cdMins.textContent  = pad(mins);
+                if (cdSecs)  cdSecs.textContent  = pad(secs);
+
+                if (diff <= 0 && cdDays) {
+                    cdDays.textContent = cdHours.textContent = cdMins.textContent = cdSecs.textContent = '🎉';
+                }
+            }
+
+            tick();
+            setInterval(tick, 1000);
+        })();
+
+        // ========== 3. 滚动入场动画 ==========
+        (function revealObserver() {
+            var cards = document.querySelectorAll('.reveal-card');
+
+            if (!('IntersectionObserver' in window)) {
+                cards.forEach(function(c) { c.classList.add('visible'); });
+                return;
+            }
+
+            var observer = new IntersectionObserver(function(entries) {
+                entries.forEach(function(entry) {
+                    if (entry.isIntersecting) {
+                        var delay = parseInt(entry.target.getAttribute('data-delay')) || 0;
+                        setTimeout(function() {
+                            entry.target.classList.add('visible');
+                        }, delay);
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.15, rootMargin: '0px 0px -30px 0px' });
+
+            cards.forEach(function(c) { observer.observe(c); });
+        })();
+
+        initIcons();
+
+        // ======================================================
+        //   拼图游戏
+        // ======================================================
+        var PUZZLE_COLS = 4;
+        var PUZZLE_ROWS = 3;
+        var PUZZLE_TOTAL = PUZZLE_COLS * PUZZLE_ROWS; // 12 片
+        var selectedPiece = null;  // 当前选中的碎片 index
+        var boardState = [];       // boardState[slotIndex] = pieceIndex | null
+        var pieceUsed = [];        // pieceUsed[pieceIndex] = true | false
+
+        function openPuzzle() {
+            buildPuzzle();
+            var modal = document.getElementById('puzzleModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.style.overflow = 'hidden';
+            initIcons();
+        }
+
+        function closePuzzle(event) {
+            if (event && event.target !== document.getElementById('puzzleModal')) return;
+            closePuzzleDirect();
+        }
+        function closePuzzleDirect() {
+            var modal = document.getElementById('puzzleModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            document.body.style.overflow = '';
+            selectedPiece = null;
+        }
+
+        function buildPuzzle() {
+            selectedPiece = null;
+            boardState = new Array(PUZZLE_TOTAL).fill(null);
+            pieceUsed  = new Array(PUZZLE_TOTAL).fill(false);
+
+            renderBoard();
+            renderTray();
+        }
+
+        function getBgPos(pieceIndex) {
+            var col = pieceIndex % PUZZLE_COLS;
+            var row = Math.floor(pieceIndex / PUZZLE_COLS);
+            var x = (col / (PUZZLE_COLS - 1)) * 100;
+            var y = (row / (PUZZLE_ROWS - 1)) * 100;
+            return x.toFixed(1) + '% ' + y.toFixed(1) + '%';
+        }
+
+        function pieceStyle(idx) {
+            return 'background-image:url(images/puzzle.png);background-size:400% 300%;background-position:' + getBgPos(idx) + ';';
+        }
+
+        function renderBoard() {
+            var board = document.getElementById('puzzleBoard');
+            var html = '';
+            for (var i = 0; i < PUZZLE_TOTAL; i++) {
+                var slotClass = 'puzzle-slot';
+                if (boardState[i] !== null) {
+                    slotClass += ' filled';
+                } else {
+                    slotClass += ' empty-slot';
+                }
+                html += '<div class="' + slotClass + '" data-slot="' + i + '" onclick="placePiece(' + i + ')">';
+                if (boardState[i] !== null) {
+                    html += '<div class="slot-piece" style="' + pieceStyle(boardState[i]) + '"></div>';
+                }
+                html += '</div>';
+            }
+            board.innerHTML = html;
+        }
+
+        function renderTray() {
+            var tray = document.getElementById('puzzleTray');
+
+            // 首次渲染时打乱顺序
+            if (!tray._shuffled) {
+                tray._shuffled = true;
+                tray._order = shuffleArray(makeRange(PUZZLE_TOTAL));
+            }
+
+            var html = '';
+            for (var i = 0; i < tray._order.length; i++) {
+                var idx = tray._order[i];
+                var cls = 'puzzle-piece';
+                if (selectedPiece === idx) cls += ' selected';
+                if (pieceUsed[idx]) cls += ' used';
+                html += '<div class="' + cls + '" style="' + pieceStyle(idx) + '" data-piece="' + idx + '" onclick="selectPiece(event, ' + idx + ')"></div>';
+            }
+            tray.innerHTML = html;
+        }
+
+        function shuffleArray(arr) {
+            var a = arr.slice();
+            for (var i = a.length - 1; i > 0; i--) {
+                var j = Math.floor(Math.random() * (i + 1));
+                var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+            }
+            return a;
+        }
+
+        function makeRange(n) {
+            var arr = [];
+            for (var i = 0; i < n; i++) arr.push(i);
+            return arr;
+        }
+
+        // --- 交互 ---
+        function selectPiece(event, pieceIndex) {
+            event.stopPropagation();
+            if (pieceUsed[pieceIndex]) return;
+
+            if (selectedPiece === pieceIndex) {
+                // 取消选中
+                selectedPiece = null;
+            } else {
+                selectedPiece = pieceIndex;
+            }
+            renderTray();
+        }
+
+        function placePiece(slotIndex) {
+            // 如果已填充 → 取出放回托盘
+            if (boardState[slotIndex] !== null) {
+                var oldPiece = boardState[slotIndex];
+                boardState[slotIndex] = null;
+                pieceUsed[oldPiece] = false;
+                selectedPiece = null;
+                renderBoard();
+                renderTray();
+                return;
+            }
+
+            // 如果没选中碎片 → 忽略
+            if (selectedPiece === null) return;
+
+            // 放入
+            boardState[slotIndex] = selectedPiece;
+            pieceUsed[selectedPiece] = true;
+            selectedPiece = null;
+
+            renderBoard();
+            renderTray();
+
+            // 检查是否全部正确
+            checkComplete();
+        }
+
+        function checkComplete() {
+            var allFilled = true;
+            for (var i = 0; i < boardState.length; i++) {
+                if (boardState[i] === null) { allFilled = false; break; }
+            }
+            if (!allFilled) return;
+
+            // 检查每个位置是否放对（pieceIndex === slotIndex）
+            var allCorrect = true;
+            for (var j = 0; j < boardState.length; j++) {
+                if (boardState[j] !== j) { allCorrect = false; break; }
+            }
+
+            if (allCorrect) {
+                setTimeout(showCelebrate, 400);
+            } else {
+                // 全部放满但位置不对 → 抖动提示，2 秒后自动复位
+                markWrongSlots();
+                setTimeout(function() {
+                    resetPuzzleKeepShuffle();
+                }, 1500);
+            }
+        }
+
+        function markWrongSlots() {
+            var slots = document.querySelectorAll('.puzzle-slot');
+            for (var i = 0; i < slots.length; i++) {
+                if (boardState[i] !== null && boardState[i] !== i) {
+                    slots[i].classList.add('wrong');
+                }
+            }
+            var hint = document.querySelector('.puzzle-hint');
+            if (hint) {
+                hint.textContent = '有些位置不对，正在自动复位……';
+                hint.style.color = '#e04d2c';
+            }
+        }
+
+        function resetPuzzle() {
+            var tray = document.getElementById('puzzleTray');
+            tray._order = shuffleArray(makeRange(PUZZLE_TOTAL));
+            selectedPiece = null;
+            boardState = new Array(PUZZLE_TOTAL).fill(null);
+            pieceUsed  = new Array(PUZZLE_TOTAL).fill(false);
+            renderBoard();
+            renderTray();
+
+            var hint = document.querySelector('.puzzle-hint');
+            if (hint) {
+                hint.textContent = '👆 先从下方选中碎片，再点击上方拼图区放入';
+                hint.style.color = '#999';
+            }
+        }
+
+        function resetPuzzleKeepShuffle() {
+            // 清空棋盘但保留碎片顺序不变
+            selectedPiece = null;
+            boardState = new Array(PUZZLE_TOTAL).fill(null);
+            pieceUsed  = new Array(PUZZLE_TOTAL).fill(false);
+            renderBoard();
+            renderTray();
+
+            var hint = document.querySelector('.puzzle-hint');
+            if (hint) {
+                hint.textContent = '👆 先从下方选中碎片，再点击上方拼图区放入';
+                hint.style.color = '#999';
+            }
+        }
+
+        // --- 庆祝 ---
+        function showCelebrate() {
+            // 关闭拼图弹窗
+            closePuzzleDirect();
+
+            // 发射 confetti
+            spawnConfetti();
+
+            // 显示庆祝弹窗
+            var dialog = document.getElementById('celebrateDialog');
+            dialog.classList.remove('hidden');
+        }
+
+        function closeCelebrate() {
+            var dialog = document.getElementById('celebrateDialog');
+            dialog.classList.add('hidden');
+            // 清除 confetti
+            var overlay = document.getElementById('celebrateOverlay');
+            overlay.innerHTML = '';
+        }
+
+        function spawnConfetti() {
+            var overlay = document.getElementById('celebrateOverlay');
+            overlay.innerHTML = '';
+            var colors = ['#e04d2c','#F06840','#F59E0B','#FFD700','#FF6B6B','#FF9A9E','#FABFAA','#FFF0EC','#C43E20','#FFA07A','#FF6347','#FFB6C1'];
+            var shapes = ['square','circle'];
+
+            for (var i = 0; i < 80; i++) {
+                var el = document.createElement('div');
+                el.className = 'confetti';
+                el.style.left = Math.random() * 100 + '%';
+                el.style.top = -(Math.random() * 20) + 'px';
+                el.style.width = (6 + Math.random() * 10) + 'px';
+                el.style.height = (6 + Math.random() * 10) + 'px';
+                el.style.background = colors[Math.floor(Math.random() * colors.length)];
+                el.style.animationDuration = (2 + Math.random() * 3) + 's';
+                el.style.animationDelay = Math.random() * 1.2 + 's';
+                if (shapes[Math.floor(Math.random() * 2)] === 'circle') {
+                    el.style.borderRadius = '50%';
+                }
+                overlay.appendChild(el);
+            }
+
+            // 清理
+            setTimeout(function() {
+                overlay.innerHTML = '';
+            }, 5000);
+        }
+
+        // 暴露到全局
+        window.openPuzzle = openPuzzle;
+        window.closePuzzle = closePuzzle;
+        window.closePuzzleDirect = closePuzzleDirect;
+        window.selectPiece = selectPiece;
+        window.placePiece = placePiece;
+        window.resetPuzzle = resetPuzzle;
+        window.closeCelebrate = closeCelebrate;
+
+    })();
+    </script>
+</body>
+</html>
