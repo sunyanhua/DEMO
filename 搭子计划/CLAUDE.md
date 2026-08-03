@@ -145,6 +145,7 @@
 | `tree-growth.html` | 关系树 | 功能页 |
 | `activity-manage.html` | 活动管理（发布者） | 管理页 |
 | `activity-participants.html` | 活动参与者列表 | 列表页 |
+| `autumn2026.html` | 🍂 秋季专题"秋天的第一个搭子" | 专题页 |
 | `style.css` | 全局自定义样式 | 资源 |
 | `common.js` | 公共函数库 | 资源 |
 | `data.js` | 全局 mock 数据 | 资源 |
