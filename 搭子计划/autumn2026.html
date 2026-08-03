@@ -195,46 +195,31 @@
                 id: 'c1',
                 title: '满50减20',
                 subtitle: '秋季活动通用',
-                discount: '20',
-                condition: '满50可用',
-                tag: '限时抢',
-                tagColor: '#ee4d16'
+                discount: '20'
             },
             {
                 id: 'c2',
                 title: '满100减40',
                 subtitle: '户外活动专享',
-                discount: '40',
-                condition: '满100可用',
-                tag: '热门',
-                tagColor: '#f59e0b'
+                discount: '40'
             },
             {
                 id: 'c3',
-                title: '新用户专享',
-                subtitle: '首单立减15元',
-                discount: '15',
-                condition: '无门槛',
-                tag: '新人',
-                tagColor: '#00C853'
+                title: '无门槛',
+                subtitle: '新人特惠',
+                discount: '15'
             },
             {
                 id: 'c4',
                 title: '满200减80',
                 subtitle: '旅行活动可用',
-                discount: '80',
-                condition: '满200可用',
-                tag: '大额',
-                tagColor: '#FF4081'
+                discount: '80'
             },
             {
                 id: 'c5',
                 title: '满30减10',
                 subtitle: '饭搭子专属',
-                discount: '10',
-                condition: '满30可用',
-                tag: '专属',
-                tagColor: '#7B1FA2'
+                discount: '10'
             }
         ];
 
@@ -460,13 +445,11 @@
             renderCouponSection() {
                 var couponsHtml = autumnCoupons.map(function(coupon) {
                     return `
-                    <div class="flex-shrink-0 w-40 coupon-card rounded-xl overflow-hidden cursor-pointer active:scale-95 transition-transform"
+                    <div class="flex-shrink-0 w-40 coupon-card rounded-xl overflow-hidden cursor-pointer active:scale-95 transition-transform border border-amber-200"
                          onclick="window.Common.showToast('优惠券已领取！')">
                         <!-- 上半部分 -->
-                        <div class="p-3 text-center relative" style="background: linear-gradient(135deg, #fffcdd 0%, #fef9c3 100%);">
-                            <span class="absolute top-2 left-2 text-[9px] font-bold text-white px-1.5 py-0.5 rounded-full"
-                                  style="background: ${coupon.tagColor};">${coupon.tag}</span>
-                            <div class="mt-2">
+                        <div class="p-3 text-center" style="background: linear-gradient(135deg, #fffcdd 0%, #fef9c3 100%);">
+                            <div class="mt-1">
                                 <span class="text-3xl font-black" style="color: #ee4d16;">¥${coupon.discount}</span>
                             </div>
                             <div class="text-xs font-bold text-gray-700 mt-1">${coupon.title}</div>
@@ -477,8 +460,9 @@
                         </div>
                         <!-- 下半部分 -->
                         <div class="px-3 py-2 text-center bg-white">
-                            <p class="text-[10px] text-gray-400">${coupon.subtitle}</p>
-                            <p class="text-[10px] font-medium mt-0.5" style="color: #ee4d16;">${coupon.condition}</p>
+                            <p class="text-[11px] text-gray-500">${coupon.subtitle}</p>
+                            <button class="mt-2 w-16 py-1.5 text-white text-xs font-bold rounded-full mx-auto block"
+                                    style="background: linear-gradient(135deg, #fccf2c, #ee4d16);">领取</button>
                         </div>
                     </div>
                     `;
@@ -577,10 +561,6 @@
                                     <span class="text-xs text-gray-500 truncate max-w-[80px]">${activity.organizer.name}</span>
                                 </div>
                                 <div class="flex items-center gap-3">
-                                    <div class="flex items-center text-xs text-gray-400">
-                                        <i data-lucide="users" class="w-3.5 h-3.5 mr-1"></i>
-                                        <span>${activity.currentParticipants}/${activity.maxParticipants}</span>
-                                    </div>
                                     <button class="flex items-center gap-1 px-4 py-1.5 rounded-full text-sm transition-colors ${btnClass}"
                                             style="${btnStyle}">
                                         ${isFull ? '已满' : '去报名'}
