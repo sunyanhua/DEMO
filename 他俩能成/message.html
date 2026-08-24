@@ -43,6 +43,8 @@ var chats=[
 
 var sysView=false;
 
+var subscribed=Math.random()<0.5; // 消息订阅状态：每次进入随机显示已订阅/未订阅
+
 function notifRow(n){
   var dot=n.unread?'<span class="absolute top-0.5 right-0.5 w-2 h-2 bg-red-500 rounded-full"></span>':'';
   return'<div class="p-4 bg-white mb-2 rounded-lg shadow-sm mx-4 mt-2">'+
@@ -79,6 +81,56 @@ function catHtml(){
   }).join('');
 }
 
+function subscribeCardHtml(){
+  var badge=subscribed
+    ?'<span class="text-xs font-bold px-2 py-0.5 rounded-full bg-brand-pink-light text-brand-pink">已订阅</span>'
+    :'<span class="text-xs font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">未订阅</span>';
+  return'<div class="flex items-center gap-3 p-4 bg-white mb-2 rounded-lg shadow-sm mx-4 mt-2 cursor-pointer card-hover" onclick="showSubscribePopup()">'+
+    '<div class="p-2 rounded-full bg-brand-pink/10 text-brand-pink">'+
+      '<i data-lucide="bell-ring" class="w-4 h-4"></i>'+
+    '</div>'+
+    '<span class="flex-1 text-sm text-gray-700 font-bold">消息订阅</span>'+
+    badge+
+  '</div>';
+}
+
+function showSubscribePopup(){
+  var old=document.getElementById('subscribe-popup');
+  if(old)old.remove();
+  var btn=subscribed
+    ?'<div class="w-full py-2.5 rounded-xl bg-gray-100 text-gray-600 font-bold text-sm card-hover cursor-pointer text-center" onclick="doUnsubscribe()">取消订阅</div>'
+    :'<div class="w-full py-2.5 rounded-xl bg-gradient-to-tr from-brand-pink to-brand-orange text-white font-bold text-sm card-hover cursor-pointer text-center" onclick="doSubscribe()">订阅</div>';
+  document.body.insertAdjacentHTML('beforeend',
+    '<div id="subscribe-popup" class="fixed inset-0 bg-black/40 z-[200] hidden items-center justify-center" onclick="window.Common.closePopup(event,\'subscribe-popup\')">'+
+      '<div class="bg-white rounded-2xl p-5 mx-auto w-80 shadow-xl" onclick="event.stopPropagation()">'+
+        '<div class="flex items-center justify-between mb-3">'+
+          '<span class="text-base font-black text-gray-800">🔔 消息订阅</span>'+
+          '<span class="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center cursor-pointer" onclick="window.Common.hidePopup(\'subscribe-popup\')"><i data-lucide="x" class="w-4 h-4 text-gray-500"></i></span>'+
+        '</div>'+
+        '<div class="text-sm text-gray-600 leading-relaxed space-y-2 mb-4">'+
+          '<p>订阅后，您将第一时间收到平台推送的<b class="text-gray-800">精彩活动提醒</b>与<b class="text-gray-800">重要缘分动态</b>，不错过每一次心动机会与配对进展。</p>'+
+          '<p>消息订阅完全免费，您可以根据个人需要<b class="text-brand-pink">随时取消订阅</b>。</p>'+
+        '</div>'+
+        btn+
+      '</div>'+
+    '</div>');
+  window.Common.showPopup('subscribe-popup');
+}
+
+function doSubscribe(){
+  subscribed=true;
+  window.Common.hidePopup('subscribe-popup');
+  window.Common.showToast('订阅成功，精彩活动不错过');
+  render();
+}
+
+function doUnsubscribe(){
+  subscribed=false;
+  window.Common.hidePopup('subscribe-popup');
+  window.Common.showToast('已取消订阅');
+  render();
+}
+
 function chatListHtml(){
   return chats.map(function(c){
     var unreadBadge=c.unread>0?'<span class="text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full bg-red-500 absolute -top-1 -right-1 border border-white">'+c.unread+'</span>':'';
@@ -108,7 +160,7 @@ function render(){
   }else if(activeTab==='chat'){
     inner='<div class="bg-white">'+chatListHtml()+'</div>';
   }else{
-    inner='<div class="pb-4">'+catHtml()+'</div>';
+    inner='<div class="pb-4">'+subscribeCardHtml()+catHtml()+'</div>';
   }
 
   document.getElementById('app').innerHTML=
