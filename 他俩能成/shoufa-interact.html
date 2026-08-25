@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>他俩能成 - 首发有约·在线互动</title>
+    <script src="lib/tailwind.min.js"></script>
+    <script src="lib/lucide.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-white text-gray-900 antialiased pb-24">
+
+    <div class="bg-decoration">
+        <div class="bg-blob"></div><div class="bg-blob"></div>
+        <div class="bg-blob"></div><div class="bg-blob"></div>
+        <div class="bg-blob"></div>
+    </div>
+
+    <div id="app" class="relative z-[1]"></div>
+
+    <!-- 图片放大弹窗 -->
+    <div id="image-zoom-overlay" class="fixed inset-0 bg-black/80 z-[200] hidden items-center justify-center" onclick="window.Common.hidePopup('image-zoom-overlay')">
+        <img id="image-zoom-img" src="" class="max-w-[95vw] max-h-[90vh] object-contain rounded-xl" onclick="event.stopPropagation()" />
+    </div>
+
+    <!-- 留言弹窗遮罩 -->
+    <div id="modal-overlay" class="fixed inset-0 bg-black/40 z-[100] hidden flex items-end justify-center" onclick="closeModal(event)">
+        <div id="modal-content" class="bg-white w-full rounded-t-2xl max-h-[85vh] overflow-y-auto animate-slide-up" onclick="event.stopPropagation()">
+            <div class="sticky top-0 bg-white z-10 flex items-center justify-between px-4 py-4 border-b border-gray-100 rounded-t-2xl">
+                <span class="text-lg font-black text-gray-800">我要留言</span>
+                <span onclick="closeModal()" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
+                    <i data-lucide="x" class="w-5 h-5 text-gray-500"></i>
+                </span>
+            </div>
+            <form id="submit-form" class="p-4 space-y-4" onsubmit="handleSubmit(event)">
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">留言内容 <span class="text-brand-pink">*</span></label>
+                    <textarea id="post-content" required rows="4" placeholder="写下你想说的话..." class="block cursor-pointer w-full px-4 py-3 rounded-xl border border-gray-200 text-sm bg-gray-50 focus:outline-none focus:border-brand-pink resize-none"></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">配图上传</label>
+                    <div class="flex gap-2 flex-wrap" id="image-preview-area">
+                        <label class="w-20 h-20 rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer hover:border-brand-pink transition-colors">
+                            <i data-lucide="plus" class="w-6 h-6 text-gray-400"></i>
+                            <input type="file" accept="image/*" multiple class="hidden" onchange="handleImageSelect(event)" />
+                        </label>
+                    </div>
+                </div>
+                <button type="submit" class="w-full py-3.5 rounded-2xl bg-gradient-to-tr from-brand-pink to-brand-orange text-white font-bold text-base shadow-lg shadow-brand-pink/20 card-hover">
+                    提交留言
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script src="common.js"></script>
+    <script>
+        // ========== 弹窗系统 ==========
+        function openModal() { window.Common.showPopup('modal-overlay'); }
+        function closeModal(e) { window.Common.closePopup(e, 'modal-overlay'); }
+        function showImageZoom(src) { document.getElementById('image-zoom-img').src = src; window.Common.showPopup('image-zoom-overlay'); }
+
+        let selectedImages = [];
+        let selectedImageUrls = [];
+        function handleImageSelect(event) {
+            const files = Array.from(event.target.files);
+            const area = document.getElementById('image-preview-area');
+            files.forEach((file, idx) => {
+                if (selectedImages.length >= 9) return;
+                selectedImages.push(file);
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    selectedImageUrls.push(e.target.result);
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'preview-img-wrapper relative w-20 h-20 rounded-xl overflow-hidden';
+                    wrapper.innerHTML = `
+                        <img src="${e.target.result}" class="w-full h-full object-cover" />
+                        <span type="button" class="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-black/50 text-white flex items-center justify-center" onclick="removeImage(this, ${selectedImages.length - 1})">
+                            <i data-lucide="x" class="w-3 h-3"></i>
+                        </span>`;
+                    area.insertBefore(wrapper, area.lastElementChild);
+                    window.Common.initIcons();
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+        function removeImage(btn, idx) {
+            selectedImages.splice(idx, 1);
+            btn.closest('.preview-img-wrapper').remove();
+        }
+
+        function handleSubmit(e) {
+            e.preventDefault();
+            const content = document.getElementById('post-content').value.trim();
+            if (!content) { window.Common.showToast('请输入留言内容'); return; }
+            window.Common.showToast('留言成功，待审核后展示');
+            prependPost({ content, images: selectedImageUrls.slice() });
+            selectedImages = [];
+            selectedImageUrls = [];
+            document.getElementById('submit-form').reset();
+            document.querySelectorAll('.preview-img-wrapper').forEach(w => w.remove());
+            window.Common.hidePopup('modal-overlay');
+        }
+
+        // ========== Mock 留言数据 ==========
+        const POSTS = [
+            {
+                id: 1,
+                user: { name: '阳光骑士', avatar: 'images/photo/male/crop.0.0.1078.1438.0.750.1000.jpg' },
+                time: '3 小时前',
+                content: '我们单位好几个人都报名首发有约首期活动了！期待周六和大家见面，先来混个脸熟~',
+                images: ['images/photo/male/crop.0.237.1080.1440.0.750.1000.jpg'],
+                status: '已通过审核',
+                statusClass: 'bg-green-50 text-green-600',
+                likes: 28, liked: false,
+            },
+            {
+                id: 2,
+                user: { name: '甜心小鹿', avatar: 'images/photo/female/crop.0.67.1079.1438.0.750.1000.jpg' },
+                time: '5 小时前',
+                content: '请问活动现场停车方便吗？第一次去北京广播电视台，有点路痴哈哈~',
+                images: [],
+                status: '已通过审核',
+                statusClass: 'bg-green-50 text-green-600',
+                likes: 15, liked: true,
+            },
+            {
+                id: 3,
+                user: { name: '追风少年', avatar: 'images/photo/male/crop.0.875.2143.2857.0.750.1000.jpg' },
+                time: '8 小时前',
+                content: '有周六从海淀出发的小伙伴吗？可以顺路拼个车，评论区举个手！🚗',
+                images: ['images/photo/male/crop.1033.0.3000.4000.0.750.1000.jpg', 'images/photo/male/crop.0.501.960.1280.0.750.1000.jpg'],
+                status: '已通过审核',
+                statusClass: 'bg-green-50 text-green-600',
+                likes: 41, liked: false,
+            },
+            {
+                id: 4,
+                user: { name: '浅笑安然', avatar: 'images/photo/female/crop.384.0.2304.3072.0.750.1000.jpg' },
+                time: '昨天 18:15',
+                content: '首发有约的破冰环节是什么形式呀？社恐人士表示想提前做点心理建设……',
+                images: [],
+                status: '已通过审核',
+                statusClass: 'bg-green-50 text-green-600',
+                likes: 33, liked: false,
+            },
+            {
+                id: 5,
+                user: { name: '咖啡不加糖', avatar: 'images/photo/male/crop.0.0.1773.2364.0.750.1000.jpg' },
+                time: '2 天前',
+                content: '听说这次活动有才艺展示环节，会弹吉他的朋友举个手，我们可以组个临时乐队🎸',
+                images: [],
+                status: '已通过审核',
+                statusClass: 'bg-green-50 text-green-600',
+                likes: 52, liked: true,
+            },
+            {
+                id: 6,
+                user: { name: '栀子花开', avatar: 'images/photo/female/crop.0.0.2267.3023.0.750.1000.jpg' },
+                time: '2 天前',
+                content: '单位工会通知的这次活动，已经提交单位证明啦，审核速度很快，点赞平台~',
+                images: ['images/photo/female/crop.0.479.2160.2880.0.750.1000.jpg'],
+                status: '已通过审核',
+                statusClass: 'bg-green-50 text-green-600',
+                likes: 66, liked: false,
+            },
+        ];
+
+        // 新留言置顶
+        function prependPost(p) {
+            POSTS.unshift({
+                id: Date.now(),
+                user: { name: '我', avatar: 'images/logo.png' },
+                time: '刚刚',
+                content: p.content,
+                images: p.images,
+                status: '待审核',
+                statusClass: 'bg-yellow-50 text-yellow-600',
+                likes: 0, liked: false,
+            });
+            const feed = document.getElementById('feed-list');
+            feed.innerHTML = renderFeed();
+            window.Common.initIcons();
+        }
+
+        // ========== 点赞 ==========
+        function toggleLike(postId) {
+            const post = POSTS.find(p => p.id === postId);
+            if (!post) return;
+            post.liked = !post.liked;
+            post.likes += post.liked ? 1 : -1;
+            const heartEl = document.getElementById(`heart-${postId}`);
+            const countEl = document.getElementById(`like-count-${postId}`);
+            if (post.liked) {
+                heartEl.classList.add('text-brand-pink', 'fill-brand-pink');
+                heartEl.classList.remove('text-gray-400');
+            } else {
+                heartEl.classList.remove('text-brand-pink', 'fill-brand-pink');
+                heartEl.classList.add('text-gray-400');
+            }
+            countEl.textContent = post.likes;
+        }
+
+        // ========== 渲染 ==========
+        function renderFeed() {
+            return POSTS.map(p => `
+            <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 fade-in">
+                <!-- 用户信息行 -->
+                <div class="flex items-start gap-3 mb-3">
+                    <img src="${p.user.avatar}" class="w-10 h-10 rounded-full object-cover border border-gray-100 flex-shrink-0 bg-gray-50" />
+                    <div class="flex-1 min-w-0">
+                        <span class="text-[15px] font-bold text-gray-800 block truncate">${p.user.name}</span>
+                        <span class="text-[11px] text-gray-400 mt-0.5">${p.time}</span>
+                    </div>
+                </div>
+                <!-- 内容区 -->
+                <div class="mb-3">
+                    <p class="text-sm text-gray-700 leading-relaxed">${p.content}</p>
+                    ${p.images.length > 0 ? `
+                    <div class="flex gap-2 mt-2 flex-wrap">
+                        ${p.images.map(img => `<img src="${img}" class="w-24 h-24 rounded-xl object-cover cursor-pointer" onclick="showImageZoom('${img}')" />`).join('')}
+                    </div>` : ''}
+                </div>
+                <!-- 状态 + 点赞 -->
+                <div class="flex items-center justify-between pt-2 border-t border-gray-50">
+                    <span class="text-[11px] px-2 py-0.5 rounded-full font-medium ${p.statusClass}">${p.status}</span>
+                    <span onclick="toggleLike(${p.id})" class="flex items-center gap-1.5 text-xs cursor-pointer">
+                        <i id="heart-${p.id}" data-lucide="heart" class="w-4 h-4 ${p.liked ? 'text-brand-pink fill-brand-pink' : 'text-gray-400'}" stroke-width="${p.liked ? 2.5 : 2}"></i>
+                        <span id="like-count-${p.id}" class="text-gray-500 font-medium">${p.likes}</span>
+                    </span>
+                </div>
+            </div>
+            `).join('');
+        }
+
+        function render() {
+            document.getElementById('app').innerHTML = `
+                <!-- 顶部区域 -->
+                <div class="top-section">
+                    <div class="px-4 pt-3">
+                        <h2 class="text-lg font-black text-gray-800 flex items-center gap-1.5">
+                            <span class="text-brand-pink">💬</span>在线互动
+                        </h2>
+                    </div>
+                </div>
+                <div class="rounded-top"></div>
+                <!-- 留言列表 -->
+                <div class="content-section px-4 pt-4 pb-6">
+                    <div id="feed-list" class="space-y-3">
+                        ${renderFeed()}
+                    </div>
+                </div>
+            `;
+            window.Common.initIcons();
+        }
+
+        // 浮动留言按钮注入
+        function injectFloatingBtn() {
+            const btn = document.createElement('div');
+            btn.id = 'floating-submit';
+            btn.className = 'fixed bottom-6 left-1/2 -translate-x-1/2 z-40 px-6 py-3 rounded-full bg-gradient-to-tr from-brand-pink to-brand-orange text-white font-bold text-sm shadow-xl shadow-brand-pink/30 card-hover cursor-pointer flex items-center gap-2';
+            btn.innerHTML = '<i data-lucide="edit-3" class="w-4 h-4"></i>我要留言';
+            btn.onclick = openModal;
+            document.body.appendChild(btn);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            render();
+            injectFloatingBtn();
+            window.Common.initIcons();
+        });
+    </script>
+
+</body>
+</html>

@@ -148,6 +148,8 @@
 | `broadcast.html` | 广播节目（投稿+抽奖） |
 | `chaoyang.html` | 朝阳相伴专区（介绍+活动+申请加入） |
 | `qingai.html` | 青爱团专区（介绍+活动+申请加入） |
+| `shoufa.html` | 首发有约专区（banner+首发活动+用户榜+申请加入） |
+| `shoufa-interact.html` | 首发有约在线互动（留言板+我要留言） |
 | `activity.html` | 活动列表（筛选：全部/朝阳相伴/青爱团） |
 | `activity-detail.html` | 活动详情+报名 |
 | `ranking.html` | 排行榜（人气榜/礼物榜/牵线榜） |

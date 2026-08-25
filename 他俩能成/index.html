@@ -167,17 +167,23 @@
                     { icon: 'images/icon_tougao.png',  label: '广播节目', href: 'broadcast.html' },
                     { icon: 'images/icon_chaoyang.png', label: '朝阳相伴', href: 'chaoyang.html' },
                     { icon: 'images/icon_qingai.png',   label: '青爱团', href: 'qingai.html' },
+                    { icon: '💌',                       label: '首发有约', href: 'shoufa.html' },
                     { icon: 'images/icon_bangdan.png',  label: '榜单', href: 'ranking.html' },
                 ];
-                const items = btns.map(b => `
+                const items = btns.map(b => {
+                    const iconHtml = b.icon.indexOf('images/') === 0
+                        ? `<img src="${b.icon}" alt="${b.label}" class="w-9 h-9 object-contain" />`
+                        : `<span class="text-[26px] leading-none">${b.icon}</span>`;
+                    return `
                     <div class="flex flex-col items-center gap-1.5 cursor-pointer card-hover" onclick="window.location.href='${b.href}'">
-                        <div class="w-[68px] h-[68px] rounded-2xl bg-white flex items-center justify-center border border-orange-100/80" style="box-shadow:0 1px 3px rgba(0,0,0,0.04);">
-                            <img src="${b.icon}" alt="${b.label}" class="w-10 h-10 object-contain" />
+                        <div class="w-16 h-16 rounded-2xl bg-white flex items-center justify-center border border-orange-100/80" style="box-shadow:0 1px 3px rgba(0,0,0,0.04);">
+                            ${iconHtml}
                         </div>
                         <span class="text-xs text-gray-600 font-medium">${b.label}</span>
                     </div>
-                `).join('');
-                return `<div class="px-6 py-2"><div class="flex justify-between items-start">${items}</div></div>`;
+                `;
+                }).join('');
+                return `<div class="px-4 py-2"><div class="flex justify-between items-start">${items}</div></div>`;
             },
 
             tabBar() {
