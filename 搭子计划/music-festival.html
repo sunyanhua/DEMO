@@ -118,17 +118,6 @@
             border-radius: 16px 16px 16px 4px;
         }
 
-        /* 匹配成功弹幕 */
-        @keyframes confetti-fall {
-            0% { transform: translateY(-10px) rotate(0deg); opacity: 1; }
-            100% { transform: translateY(120px) rotate(360deg); opacity: 0; }
-        }
-        .confetti {
-            position: absolute;
-            top: 0;
-            animation: confetti-fall 2.4s ease-in infinite;
-        }
-
         .poster-frame {
             background: linear-gradient(160deg, #0f1424 0%, #1b2440 100%);
             padding: 10px;
@@ -207,42 +196,85 @@
 
         // 需求类别（音乐节现场陌生人联系场景）
         var NEED_CATEGORIES = [
-            { id: 'support',   label: '应援交换', icon: 'gift',             desc: '换应援物、手幅、周边' },
-            { id: 'food',      label: '美食打卡', icon: 'utensils-crossed', desc: '一起扫遍现场美食摊位' },
-            { id: 'photo',     label: '帮拍大片', icon: 'camera',           desc: '互相拍出音乐节大片' },
-            { id: 'frontrow',  label: '前排占位', icon: 'tent',             desc: '轮流排队，冲刺前排' },
-            { id: 'carpool',   label: '拼车同行', icon: 'car',              desc: '往返拼车，一路同频' },
-            { id: 'rave',      label: '一起蹦迪', icon: 'music-2',          desc: '舞台下一起合唱蹦迪' },
-            { id: 'gear',      label: '装备互借', icon: 'backpack',         desc: '充电宝、折叠凳、防晒' },
-            { id: 'merch',     label: '周边拼单', icon: 'shopping-bag',     desc: '拼官方周边和专辑' }
+            { id: 'support',    label: '应援交换', icon: 'gift',             desc: '换应援物、手幅、周边' },
+            { id: 'food',       label: '美食打卡', icon: 'utensils-crossed', desc: '一起扫遍现场美食摊位' },
+            { id: 'photo',      label: '帮拍大片', icon: 'camera',           desc: '互相拍出音乐节大片' },
+            { id: 'care',       label: '走心互助', icon: 'hand-heart',       desc: '互相照应，帮带个东西' },
+            { id: 'carpool',    label: '拼车同行', icon: 'car',              desc: '往返拼车，一路同频' },
+            { id: 'afterparty', label: '节后攒局', icon: 'party-popper',     desc: '散场后约饭复盘、续摊' },
+            { id: 'gear',       label: '装备互借', icon: 'backpack',         desc: '充电宝、折叠凳、防晒' },
+            { id: 'merch',      label: '周边拼单', icon: 'shopping-bag',     desc: '拼官方周边和专辑' }
         ];
 
-        // 同担选项
-        var FANDOMS = [
-            '陈楚生', '大鹏', '黄子弘凡', 'ONER', '门尼', '揽佬', '奔赴少年CIIU',
-            '万能青年旅店', '二手玫瑰', '回春丹', '于适', '老狼', '盘尼西林', '无'
-        ];
+        // 单次匹配返回的搭子数量
+        var MATCH_COUNT = 4;
 
         // 可匹配的现场搭子池
         var BUDDY_POOL = [
-            { id: 'mf1', name: '粥粥爱吃鱼', gender: '女', age: 24, fandom: '万能青年旅店', category: 'support',  time: '13:00 - 19:00', seat: 'A区 内场',  tags: ['同担', '拍照', '干饭'], intro: '第三次来运河音乐节，万青的歌单我全会唱！', avatarUrl: 'https://picsum.photos/100/100?random=20' },
-            { id: 'mf2', name: '运河边的吉他手', gender: '男', age: 27, fandom: '二手玫瑰', category: 'rave', time: '15:00 - 22:00', seat: 'B区 前排', tags: ['老乐迷', '会吉他'], intro: '二手玫瑰十年老粉，现场气氛组担当。', avatarUrl: 'https://picsum.photos/100/100?random=21' },
-            { id: 'mf3', name: '小满不吃辣', gender: '女', age: 23, fandom: '陈楚生', category: 'food', time: '11:00 - 18:00', seat: '美食区', tags: ['美食家', '拍照'], intro: '音乐节美食地图已经做好攻略，跟我走不踩雷。', avatarUrl: 'https://picsum.photos/100/100?random=22' },
-            { id: 'mf4', name: '前排钉子户', gender: '男', age: 25, fandom: '回春丹', category: 'frontrow', time: '10:00 - 20:00', seat: 'A区 第一排', tags: ['占位', '体力好'], intro: '每场音乐节都在第一排，占位经验拉满。', avatarUrl: 'https://picsum.photos/100/100?random=23' },
-            { id: 'mf5', name: '阿梨', gender: '女', age: 22, fandom: '黄子弘凡', category: 'photo', time: '14:00 - 20:00', seat: 'C区 看台', tags: ['人像摄影', '富士党'], intro: '带相机帮你拍音乐节大片，出片率超高！', avatarUrl: 'https://picsum.photos/100/100?random=24' },
-            { id: 'mf6', name: '老狼头号歌迷', gender: '男', age: 31, fandom: '老狼', category: 'carpool', time: '12:00 - 21:00', seat: 'D区', tags: ['自驾', '老狼'], intro: '从市区开车去运河，顺路可以捎上你。', avatarUrl: 'https://picsum.photos/100/100?random=25' },
-            { id: 'mf7', name: '盘尼西林针不戳', gender: '男', age: 26, fandom: '盘尼西林', category: 'gear', time: '13:00 - 19:00', seat: 'B区 中场', tags: ['装备党', '野餐垫'], intro: '野餐垫、折叠凳、充电宝都带齐了，缺啥找我要。', avatarUrl: 'https://picsum.photos/100/100?random=26' },
-            { id: 'mf8', name: 'ONER后援会小队长', gender: '女', age: 21, fandom: 'ONER', category: 'support', time: '10:30 - 21:00', seat: 'A区 左翼', tags: ['应援', '手幅', '站姐'], intro: '手幅应援物管够，欢迎来换！', avatarUrl: 'https://picsum.photos/100/100?random=27' },
-            { id: 'mf9', name: '二手玫瑰不是花', gender: '女', age: 28, fandom: '二手玫瑰', category: 'merch', time: '15:00 - 22:00', seat: '周边区', tags: ['周边控', '拼单'], intro: '专辑周边拼单找我就对了，便宜不少。', avatarUrl: 'https://picsum.photos/100/100?random=28' },
-            { id: 'mf10', name: '运河散步员', gender: '男', age: 24, fandom: '无', category: 'rave', time: '16:00 - 22:00', seat: '草坪区', tags: ['氛围组', '好相处'], intro: '不听固定乐队，纯来感受氛围，蹦就完了。', avatarUrl: 'https://picsum.photos/100/100?random=29' }
+            { id: 'mf1', name: '粥粥爱吃鱼', gender: '女', age: 24, category: 'support',    tags: ['拍照', '干饭'], intro: '第三次来运河音乐节，现场攻略我门儿清！', avatarUrl: 'https://picsum.photos/100/100?random=20' },
+            { id: 'mf2', name: '运河边的吉他手', gender: '男', age: 27, category: 'afterparty', tags: ['老乐迷', '会吉他'], intro: '散场后组局约饭复盘，现场气氛组担当。', avatarUrl: 'https://picsum.photos/100/100?random=21' },
+            { id: 'mf3', name: '小满不吃辣', gender: '女', age: 23, category: 'food',       tags: ['美食家', '拍照'], intro: '音乐节美食地图已经做好攻略，跟我走不踩雷。', avatarUrl: 'https://picsum.photos/100/100?random=22' },
+            { id: 'mf4', name: '前排钉子户', gender: '男', age: 25, category: 'care',       tags: ['热心肠', '体力好'], intro: '现场百事通，帮带东西、互相照应，靠谱。', avatarUrl: 'https://picsum.photos/100/100?random=23' },
+            { id: 'mf5', name: '阿梨', gender: '女', age: 22, category: 'photo',      tags: ['人像摄影', '富士党'], intro: '带相机帮你拍音乐节大片，出片率超高！', avatarUrl: 'https://picsum.photos/100/100?random=24' },
+            { id: 'mf6', name: '老狼头号歌迷', gender: '男', age: 31, category: 'carpool',    tags: ['自驾'], intro: '从市区开车去运河，顺路可以捎上你。', avatarUrl: 'https://picsum.photos/100/100?random=25' },
+            { id: 'mf7', name: '盘尼西林针不戳', gender: '男', age: 26, category: 'gear',      tags: ['装备党', '野餐垫'], intro: '野餐垫、折叠凳、充电宝都带齐了，缺啥找我要。', avatarUrl: 'https://picsum.photos/100/100?random=26' },
+            { id: 'mf8', name: 'ONER后援会小队长', gender: '女', age: 21, category: 'support',   tags: ['应援', '手幅', '站姐'], intro: '手幅应援物管够，欢迎来换！', avatarUrl: 'https://picsum.photos/100/100?random=27' },
+            { id: 'mf9', name: '二手玫瑰不是花', gender: '女', age: 28, category: 'merch',      tags: ['周边控', '拼单'], intro: '专辑周边拼单找我就对了，便宜不少。', avatarUrl: 'https://picsum.photos/100/100?random=28' },
+            { id: 'mf10', name: '运河散步员', gender: '男', age: 24, category: 'afterparty', tags: ['氛围组', '好相处'], intro: '蹦完别急着走，一起宵夜续摊攒个局！', avatarUrl: 'https://picsum.photos/100/100?random=29' },
+            { id: 'mf11', name: '小鹿乱撞', gender: '女', age: 23, category: 'support', tags: ['应援', '手幅'], intro: '自制应援手幅超多，欢迎来交换！', avatarUrl: 'https://picsum.photos/100/100?random=30' },
+            { id: 'mf12', name: '干饭不积极', gender: '男', age: 26, category: 'food', tags: ['吃货', '探店'], intro: '美食区排队路线已规划好，跟我吃就对了。', avatarUrl: 'https://picsum.photos/100/100?random=31' },
+            { id: 'mf13', name: '富士山下', gender: '女', age: 25, category: 'photo', tags: ['摄影', '胶片'], intro: '胶片机出片，帮你拍出复古质感大片。', avatarUrl: 'https://picsum.photos/100/100?random=32' },
+            { id: 'mf14', name: '暖心学姐', gender: '女', age: 27, category: 'care', tags: ['热心', '互助'], intro: '第一次来的朋友别慌，缺啥少啥喊我。', avatarUrl: 'https://picsum.photos/100/100?random=33' },
+            { id: 'mf15', name: '运河顺风车', gender: '男', age: 29, category: 'carpool', tags: ['自驾', '顺路'], intro: '市区往返运河，后排还有两个空位。', avatarUrl: 'https://picsum.photos/100/100?random=34' },
+            { id: 'mf16', name: '装备大师兄', gender: '男', age: 24, category: 'gear', tags: ['充电宝', '野餐垫'], intro: '移动电源、折叠椅全套，缺装备找我。', avatarUrl: 'https://picsum.photos/100/100?random=35' },
+            { id: 'mf17', name: '拼单小能手', gender: '女', age: 22, category: 'merch', tags: ['拼单', '周边'], intro: '官方周边拼单差人，一起上车更划算。', avatarUrl: 'https://picsum.photos/100/100?random=36' }
         ];
 
-        // 音浪广场预置动态（music_new.png ~ music_new3.png）
+        // 数组洗牌（匹配结果随机化）
+        function shuffle(arr) {
+            var list = arr.slice();
+            for (var i = list.length - 1; i > 0; i--) {
+                var j = Math.floor(Math.random() * (i + 1));
+                var tmp = list[i]; list[i] = list[j]; list[j] = tmp;
+            }
+            return list;
+        }
+
+        // 旧分类 id → 新分类 id（前排占位→走心互助、一起蹦迪→节后攒局）
+        var LEGACY_CATEGORY_MAP = { frontrow: 'care', rave: 'afterparty' };
+
+        // 需求类别 id → 显示名（未知 id 兜底为"其他"）
+        function categoryLabel(id) {
+            var c = NEED_CATEGORIES.find(function (cat) { return cat.id === id; });
+            return c ? c.label : '其他';
+        }
+
+        // 音浪广场预置动态（海报放在第 0/3/6/9 位，与照片纵向交错且左右错落）
         var FEED_POSTS = [
-            { id: 'fp1', name: '摇滚小野', avatar: 'https://picsum.photos/100/100?random=61', text: '现场太炸了！我的海报已经上大屏，谁懂啊！！', image: 'music_new.png',  likes: 328, comments: 45, time: '10分钟前' },
-            { id: 'fp2', name: '运河边的民谣客', avatar: 'https://picsum.photos/100/100?random=62', text: '运河的风配上万青的歌，绝了。海报已登屏📸', image: 'music_new1.png', likes: 256, comments: 32, time: '32分钟前' },
-            { id: 'fp3', name: '老狼头号歌迷', avatar: 'https://picsum.photos/100/100?random=63', text: '同担速来A区集合！我的海报上大屏啦！', image: 'music_new2.png', likes: 189, comments: 27, time: '1小时前' },
-            { id: 'fp4', name: '二手玫瑰不是花', avatar: 'https://picsum.photos/100/100?random=64', text: '宝贝儿们，今晚大屏见！', image: 'music_new3.png', likes: 401, comments: 88, time: '2小时前' }
+            { id: 'fp1', name: '摇滚小野', avatar: 'https://picsum.photos/100/100?random=61', text: '现场太炸了！我的海报已经上大屏，谁懂啊！！', image: 'music_new.png', likes: 328, comments: 45, time: '10分钟前', onScreen: true },
+            { id: 'fp5', name: '阿梨', avatar: 'https://picsum.photos/100/100?random=65', text: '富士直出！现场的晚霞和舞台美到失语', image: 'https://picsum.photos/seed/mf-fp5/400/520', likes: 156, comments: 21, time: '25分钟前', onScreen: false },
+            { id: 'fp6', name: '小满不吃辣', avatar: 'https://picsum.photos/100/100?random=66', text: '美食区打卡完毕，冰粉烤肠都好吃，冲！', image: 'https://picsum.photos/seed/mf-fp6/400/300', likes: 98, comments: 14, time: '50分钟前', onScreen: false },
+            { id: 'fp2', name: '运河边的民谣客', avatar: 'https://picsum.photos/100/100?random=62', text: '运河的风配上万青的歌，绝了。海报已登屏📸', image: 'music_new1.png', likes: 256, comments: 32, time: '1小时前', onScreen: true },
+            { id: 'fp7', name: '粥粥爱吃鱼', avatar: 'https://picsum.photos/100/100?random=67', text: '应援物交换摊开张啦，快来A区找我换手幅！', image: 'https://picsum.photos/seed/mf-fp7/400/560', likes: 212, comments: 33, time: '1小时前', onScreen: false },
+            { id: 'fp8', name: '盘尼西林针不戳', avatar: 'https://picsum.photos/100/100?random=68', text: '野餐垫一铺，中场休息区就是我们的', image: 'https://picsum.photos/seed/mf-fp8/400/450', likes: 134, comments: 18, time: '1小时前', onScreen: false },
+            { id: 'fp3', name: '老狼头号歌迷', avatar: 'https://picsum.photos/100/100?random=63', text: '速来A区集合！我的海报上大屏啦！', image: 'music_new2.png', likes: 189, comments: 27, time: '2小时前', onScreen: true },
+            { id: 'fp9', name: '运河散步员', avatar: 'https://picsum.photos/100/100?random=69', text: '运河边吹风等安可，这一刻太治愈了', image: 'https://picsum.photos/seed/mf-fp9/400/320', likes: 87, comments: 9, time: '2小时前', onScreen: false },
+            { id: 'fp10', name: 'ONER后援会小队长', avatar: 'https://picsum.photos/100/100?random=70', text: '灯牌就位！今晚一起为ONER打call！', image: 'https://picsum.photos/seed/mf-fp10/400/500', likes: 267, comments: 41, time: '2小时前', onScreen: false },
+            { id: 'fp4', name: '二手玫瑰不是花', avatar: 'https://picsum.photos/100/100?random=64', text: '宝贝儿们，今晚大屏见！', image: 'music_new3.png', likes: 401, comments: 88, time: '2小时前', onScreen: true }
+        ];
+
+        // 发动态"自动生成"文案池（与大运河音乐节相关）
+        var AUTO_TEXTS = [
+            '大运河音乐节，我来啦！现场见~',
+            '运河边的风，和今晚的歌，都是我的菜！',
+            '我的海报上大屏了，谁懂啊！！',
+            '音乐节气氛拉满，今晚不虚此行！',
+            '和搭子们一起蹦到散场，快乐加倍！',
+            '运河之夜，音浪不停！',
+            '现场太炸了，嗓子已哑，快乐加倍！',
+            '今晚的大运河，属于音乐和快乐！',
+            '万人大合唱，感动到哭！',
+            '大屏候选池，冲鸭！'
         ];
 
         // 母版列表（第 1 张为正式母版，其余为占位）
@@ -259,14 +291,63 @@
         var state = loadState();
 
         function loadState() {
-            var defaults = { buddy: null, partner: null, chat: [], poster: { status: 'none', shared: false, sharedText: '' } };
+            var defaults = { posts: [], chats: {}, feedPosts: [], idCardUploaded: false, poster: { status: 'none', shared: false, sharedText: '' } };
             try {
                 var saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
                 var result = Object.assign({}, defaults, saved || {});
-                // 已匹配的搭子资料实时从搭子池刷新头像（旧版本状态里可能没有头像字段）
-                if (result.partner) {
-                    var fresh = BUDDY_POOL.find(function (b) { return b.id === result.partner.id; });
-                    if (fresh) result.partner = Object.assign({}, result.partner, { avatarUrl: fresh.avatarUrl });
+                // 旧版本状态迁移（buddy/partner/chat → posts/chats）
+                if (saved && saved.buddy && !saved.posts) {
+                    var oldPartner = result.partner || null;
+                    result.posts = [{
+                        id: 'p-legacy',
+                        category: LEGACY_CATEGORY_MAP[result.buddy.category] || result.buddy.category,
+                        message: result.buddy.message,
+                        time: '',
+                        matches: oldPartner ? [cleanMatch(oldPartner)] : []
+                    }];
+                    result.chats = oldPartner ? { [oldPartner.id]: result.chat || [] } : {};
+                    delete result.buddy;
+                    delete result.partner;
+                    delete result.chat;
+                }
+                // 匹配搭子资料实时从搭子池刷新头像（旧版本状态里可能没有头像字段）
+                if (Array.isArray(result.posts)) {
+                    result.posts = result.posts.map(function (p) {
+                        if (!p || !Array.isArray(p.matches)) return p;
+                        return Object.assign({}, p, {
+                            matches: p.matches.map(function (m) {
+                                if (!m || !m.id) return m;
+                                var fresh = BUDDY_POOL.find(function (b) { return b.id === m.id; });
+                                return fresh ? Object.assign({}, m, { avatarUrl: fresh.avatarUrl }) : m;
+                            })
+                        });
+                    });
+                }
+                // 旧版海报分享 → 动态列表
+                if (!Array.isArray(result.feedPosts)) result.feedPosts = [];
+                if (!result.feedPosts.length && result.poster && result.poster.shared) {
+                    result.feedPosts = [{
+                        id: 'feed-legacy',
+                        image: 'music_new.png',
+                        text: result.poster.sharedText || '',
+                        onScreen: true,
+                        time: '刚刚',
+                        likes: 66,
+                        comments: 12
+                    }];
+                }
+                // 旧版聊天 key（仅搭子 id）→ 新版（需求id:搭子id）
+                if (result.chats && !Array.isArray(result.chats)) {
+                    var remapped = {};
+                    Object.keys(result.chats).forEach(function (key) {
+                        if (key.indexOf(':') > -1) { remapped[key] = result.chats[key]; return; }
+                        result.posts.forEach(function (p) {
+                            if ((p.matches || []).some(function (m) { return m.id === key; })) {
+                                remapped[p.id + ':' + key] = result.chats[key];
+                            }
+                        });
+                    });
+                    result.chats = remapped;
                 }
                 return result;
             } catch (e) {
@@ -274,9 +355,23 @@
             }
         }
 
+        // 清理旧版搭子字段（同担/在场时间/座位/匹配度已下线）
+        function cleanMatch(m) {
+            return {
+                id: m.id, name: m.name, gender: m.gender, age: m.age,
+                category: LEGACY_CATEGORY_MAP[m.category] || m.category,
+                tags: m.tags || [], intro: m.intro, avatarUrl: m.avatarUrl
+            };
+        }
+
         function saveState(patch) {
             state = Object.assign({}, state, patch);
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+            } catch (e) {
+                // 存储配额不足时提示用户，避免静默失败
+                if (window.Common) window.Common.showToast('本地存储已满，图片可能无法保存');
+            }
         }
 
         // 用户输入内容 HTML 转义，防止注入
@@ -296,6 +391,11 @@
             selectedTemplateId: 0,
             pickedImage: null,       // 用户自选的上传图（默认使用 music_userphoto.jpg）
             feedLiked: {},           // 动态点赞状态（会话内）
+            isDraftingPost: false,   // 是否处于"再发一条"的填写状态
+            activePostId: null,      // 当前查看的需求 id（仅会话内）
+            chatPartnerKey: null,    // 当前私聊线程 key（需求id:搭子id）
+            matchingInProgress: false, // 匹配动画期间防止重复提交
+            publishDraft: null,      // 发动态弹窗草稿
 
             // ---------- Banner ----------
             renderBanner() {
@@ -365,7 +465,7 @@
                             ${isActive ? 'style="background: linear-gradient(135deg, #f3c146, #f7b733); color:#4a3504; box-shadow: 0 2px 10px rgba(243,193,70,0.4);"' : ''}>
                         <i data-lucide="${tab.icon}" class="w-4 h-4"></i>
                         ${tab.label}
-                        ${tab.id === 'feed' && state.poster.shared ? '<span class="w-1.5 h-1.5 rounded-full bg-red-500 inline-block"></span>' : ''}
+                        ${tab.id === 'feed' && state.feedPosts.length ? '<span class="w-1.5 h-1.5 rounded-full bg-red-500 inline-block"></span>' : ''}
                     </button>
                     `;
                 }).join('');
@@ -383,6 +483,8 @@
 
             switchTab(id) {
                 this.activeTab = id;
+                // 离开搭个伴时退出草稿态，回来时展示已发布需求列表
+                if (id !== 'buddy') this.isDraftingPost = false;
                 this.render();
             },
 
@@ -399,9 +501,8 @@
 
             // ---------- 功能一：搭个伴 ----------
             renderBuddyTab() {
-                if (state.buddy && state.partner) {
-                    return this.renderMatchedView();
-                }
+                if (this.isDraftingPost) return this.renderBuddyForm();
+                if (state.posts.length > 0) return this.renderPostsView();
                 return this.renderBuddyForm();
             },
 
@@ -417,22 +518,14 @@
                     `;
                 }).join('');
 
-                var fandomChips = FANDOMS.map((f) => {
-                    var picked = this.buddyDraft && this.buddyDraft.fandoms.indexOf(f) > -1;
-                    return `
-                    <button onclick="MusicFestivalView.pickFandom('${f}')"
-                            class="px-3 py-1.5 rounded-full text-xs font-medium border transition-all duration-150 ${picked ? 'bg-festival-sky text-white border-festival-sky shadow-sm' : 'bg-white text-gray-600 border-gray-200'}">
-                        ${f}
-                    </button>
-                    `;
-                }).join('');
-
-                var hourOptions = this.buildTimeOptions();
-                var fromOptions = hourOptions.map((h) => '<option value="' + h + '">' + h + '</option>').join('');
-                var toOptions = fromOptions;
-
                 return `
                 <div class="px-4 pt-1.5 pb-4">
+                    ${state.posts.length > 0 ? `
+                    <button onclick="MusicFestivalView.backToPosts()" class="flex items-center gap-1 text-xs text-gray-500 mb-2 active:opacity-70">
+                        <i data-lucide="chevron-left" class="w-3.5 h-3.5"></i>
+                        返回我的需求
+                    </button>` : ''}
+
                     <!-- 表单卡片 -->
                     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
                         <div class="flex items-center gap-2 mb-3 flex-wrap">
@@ -447,26 +540,6 @@
                         <div class="mb-4">
                             <label class="text-xs font-bold text-gray-500 mb-2 block">需求类别 <span class="text-gray-400 font-normal">（选一个）</span></label>
                             <div class="grid grid-cols-4 gap-2">${categoryChips}</div>
-                        </div>
-
-                        <!-- 同担 -->
-                        <div class="mb-4">
-                            <label class="text-xs font-bold text-gray-500 mb-2 block">同担 <span class="text-gray-400 font-normal">（最多选 3 个）</span></label>
-                            <div class="flex flex-wrap gap-2">${fandomChips}</div>
-                        </div>
-
-                        <!-- 在场时间 -->
-                        <div class="mb-4">
-                            <label class="text-xs font-bold text-gray-500 mb-2 block">在场时间</label>
-                            <div class="flex items-center gap-2">
-                                <select id="buddyTimeFrom" class="flex-1 border border-gray-200 rounded-xl px-3 py-2.5 text-sm bg-white outline-none focus:border-festival-gold">
-                                    ${fromOptions}
-                                </select>
-                                <span class="text-gray-400 text-sm">到</span>
-                                <select id="buddyTimeTo" class="flex-1 border border-gray-200 rounded-xl px-3 py-2.5 text-sm bg-white outline-none focus:border-festival-gold">
-                                    ${toOptions}
-                                </select>
-                            </div>
                         </div>
 
                         <!-- 个人留言 -->
@@ -486,99 +559,152 @@
                                 立即匹配搭子
                             </span>
                         </button>
-                        <p class="text-center text-[10px] text-gray-400 mt-2">系统将根据你的需求自动匹配一位同场同频的搭子</p>
+                        <p class="text-center text-[10px] text-gray-400 mt-2">系统将根据你的需求为你匹配多位同场搭子</p>
                     </div>
                 </div>
                 `;
             },
 
-            // 已结为搭子视图（我的需求 + 搭子资料卡）
-            renderMatchedView() {
-                var b = state.buddy;
-                var p = state.partner;
-                var cat = NEED_CATEGORIES.find((c) => c.id === b.category) || { label: b.category };
+            // 已发布需求视图（我的需求 + 需求切换 + 匹配结果列表）
+            renderPostsView() {
+                var post = this.activePost();
+                var matches = post.matches || [];
+
+                var switcherHtml = state.posts.length > 1 ? `
+                    <div class="flex gap-2 overflow-x-auto no-scrollbar mb-3">
+                        ${state.posts.map((p, i) => {
+                            var active = p.id === post.id;
+                            return `
+                            <button data-id="${escapeHtml(p.id)}" onclick="MusicFestivalView.switchPost(this.dataset.id)"
+                                    class="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-bold border transition-all duration-150 whitespace-nowrap ${active ? 'border-festival-gold bg-amber-50 text-amber-700' : 'border-gray-200 bg-white text-gray-500'}">
+                                需求${i + 1} · ${categoryLabel(p.category)}
+                            </button>`;
+                        }).join('')}
+                    </div>` : '';
+
+                var matchCards = matches.map((m) => this.renderMatchCard(m)).join('');
 
                 return `
                 <div class="px-4 pt-1.5 pb-4 space-y-4">
                     <!-- 我的需求卡 -->
                     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
-                        <div class="flex items-center justify-between mb-3 flex-wrap gap-x-2 gap-y-1">
-                            <h3 class="font-black text-gray-900 text-sm whitespace-nowrap shrink-0">我的搭子需求</h3>
-                            <button onclick="MusicFestivalView.resetBuddy()" class="text-[10px] text-gray-400 underline whitespace-nowrap shrink-0">重新填写</button>
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="font-black text-gray-900 text-sm whitespace-nowrap shrink-0">我的需求</h3>
+                            <button onclick="MusicFestivalView.postAnother()"
+                                    class="text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1 active:scale-95 transition-transform shrink-0"
+                                    style="background: linear-gradient(135deg, #f3c146, #f7b733); color:#4a3504; box-shadow: 0 2px 8px rgba(243,193,70,0.35);">
+                                <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                                再发一条
+                            </button>
                         </div>
+
+                        ${switcherHtml}
+
                         <div class="space-y-2 text-sm">
                             <div class="flex items-center gap-2">
                                 <span class="text-[10px] font-bold text-white px-2 py-0.5 rounded-md whitespace-nowrap shrink-0" style="background:#d4a017;">需求类别</span>
-                                <span class="text-gray-700">${cat.label}</span>
-                            </div>
-                            <div class="flex items-center gap-2 flex-wrap">
-                                <span class="text-[10px] font-bold text-white px-2 py-0.5 rounded-md whitespace-nowrap shrink-0" style="background:#2b8fd6;">同&#12288;&#12288;担</span>
-                                ${b.fandoms.map((f) => '<span class="text-gray-700 whitespace-nowrap">' + escapeHtml(f) + '</span>').join('<span class="text-gray-300">·</span>')}
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <span class="text-[10px] font-bold text-white px-2 py-0.5 rounded-md whitespace-nowrap shrink-0" style="background:#00A99D;">在场时间</span>
-                                <span class="text-gray-700">${b.timeFrom} - ${b.timeTo}</span>
+                                <span class="text-gray-700">${categoryLabel(post.category)}</span>
+                                ${post.time ? '<span class="ml-auto text-[10px] text-gray-300 whitespace-nowrap">' + escapeHtml(post.time) + ' 发布</span>' : ''}
                             </div>
                             <div class="flex items-start gap-2">
                                 <span class="text-[10px] font-bold text-white px-2 py-0.5 rounded-md mt-0.5 whitespace-nowrap shrink-0" style="background:#7B1FA2;">留&#12288;&#12288;言</span>
-                                <span class="text-gray-600 leading-relaxed">${escapeHtml(b.message)}</span>
+                                <span class="text-gray-600 leading-relaxed">${escapeHtml(post.message)}</span>
                             </div>
                         </div>
                     </div>
 
-                    <!-- 搭子资料卡 -->
-                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                        <div class="h-10" style="background: linear-gradient(135deg, #f3c146, #5ac1fb);"></div>
-                        <div class="p-4 pt-5">
-                            <div class="flex items-center gap-3 -mt-10">
-                                <img src="${p.avatarUrl}" class="w-16 h-16 flex-shrink-0 rounded-full border-4 border-white shadow-md object-cover"/>
-                                <div class="flex-1 pt-6 min-w-0">
-                                    <div class="flex items-center gap-1.5 flex-wrap">
-                                        <h3 class="font-black text-gray-900 whitespace-nowrap">${p.name}</h3>
-                                        <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full whitespace-nowrap" style="background: linear-gradient(135deg, #f3c146, #f7b733); color: #4a3504;">匹配度 ${p.matchRate}%</span>
-                                        <span class="text-[10px] text-gray-500 whitespace-nowrap">${p.gender} · ${p.age}岁</span>
-                                        <i data-lucide="badge-check" class="w-3.5 h-3.5 text-festival-sky"></i>
-                                    </div>
-                                    <p class="text-[11px] text-gray-400">${p.seat}</p>
-                                </div>
+                    <!-- 匹配结果列表 -->
+                    <div>
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="p-1.5 rounded-lg flex-shrink-0" style="background: rgba(90,193,251,0.18);">
+                                <i data-lucide="users" class="w-4 h-4" style="color:#0b7fc4;"></i>
                             </div>
-
-                            <div class="flex flex-wrap gap-1.5 mt-3">
-                                <span class="tag-festival-sky text-[10px] px-2 py-0.5 rounded-full font-medium">同担 ${p.fandom}</span>
-                                <span class="tag-festival text-[10px] px-2 py-0.5 rounded-full font-medium">在场 ${p.time}</span>
-                                ${(p.tags || []).map((t) => '<span class="text-[10px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">' + t + '</span>').join('')}
-                            </div>
-
-                            <p class="text-sm text-gray-500 leading-relaxed mt-3 bg-gray-50 rounded-xl p-3">"${p.intro}"</p>
-
-                            <button onclick="MusicFestivalView.openChat()"
-                                    class="w-full mt-4 py-3 rounded-xl text-white font-black text-sm active:scale-95 transition-transform flex items-center justify-center gap-2"
-                                    style="background: linear-gradient(135deg, #5ac1fb, #2b8fd6); box-shadow: 0 4px 15px rgba(90,193,251,0.4);">
-                                <i data-lucide="message-circle" class="w-4 h-4"></i>
-                                和 TA 聊天
-                            </button>
+                            <h3 class="font-black text-gray-900 text-sm">为你找到 ${matches.length} 位搭子</h3>
+                            <span class="text-[10px] text-gray-400">选一位开聊吧</span>
                         </div>
+                        ${matchCards || `
+                        <div class="text-center text-gray-400 text-xs py-6">
+                            <div class="mb-2">暂时没有匹配结果</div>
+                            <button onclick="MusicFestivalView.rematchPost()"
+                                    class="text-xs font-bold px-4 py-2 rounded-full border border-festival-gold active:scale-95 transition-transform"
+                                    style="color:#a97b0a; background: rgba(243,193,70,0.08);">
+                                重新匹配
+                            </button>
+                        </div>`}
                     </div>
                 </div>
                 `;
             },
 
-            buildTimeOptions() {
-                var list = [];
-                for (var h = 8; h < 24; h++) {
-                    list.push((h < 10 ? '0' + h : h) + ':00');
-                    list.push((h < 10 ? '0' + h : h) + ':30');
-                }
-                list.push('24:00');
-                return list;
+            // 单个搭子匹配结果卡片（标注搭子自身的需求类别）
+            renderMatchCard(m) {
+                return `
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-3">
+                    <div class="flex items-center gap-3">
+                        <img src="${escapeHtml(m.avatarUrl)}" class="w-14 h-14 flex-shrink-0 rounded-full border-2 border-white shadow-md object-cover"/>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-1.5 flex-wrap">
+                                <span class="font-black text-gray-900 whitespace-nowrap">${escapeHtml(m.name)}</span>
+                                <i data-lucide="badge-check" class="w-3.5 h-3.5 text-festival-sky"></i>
+                                <span class="text-[10px] text-gray-500 whitespace-nowrap">${escapeHtml(m.gender)} · ${escapeHtml(m.age)}岁</span>
+                            </div>
+                            <div class="flex flex-wrap gap-1.5 mt-1.5">
+                                <span class="tag-festival-sky text-[10px] px-2 py-0.5 rounded-full font-medium">${categoryLabel(m.category)}</span>
+                                ${(m.tags || []).map((t) => '<span class="text-[10px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">' + escapeHtml(t) + '</span>').join('')}
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-500 leading-relaxed mt-3 bg-gray-50 rounded-xl p-3">"${escapeHtml(m.intro)}"</p>
+                    <button data-id="${escapeHtml(m.id)}" onclick="MusicFestivalView.openChat(this.dataset.id)"
+                            class="w-full mt-3 py-2.5 rounded-xl text-white font-black text-sm active:scale-95 transition-transform flex items-center justify-center gap-2"
+                            style="background: linear-gradient(135deg, #5ac1fb, #f3c146); box-shadow: 0 4px 15px rgba(243,193,70,0.4);">
+                        <i data-lucide="message-circle" class="w-4 h-4"></i>
+                        和 TA 聊天
+                    </button>
+                </div>
+                `;
+            },
+
+            // 再发一条：进入填写表单（保留已有需求与草稿内容）
+            postAnother() {
+                this.isDraftingPost = true;
+                this.render();
+            },
+
+            // 表单返回：回到已发布需求视图
+            backToPosts() {
+                this.isDraftingPost = false;
+                this.render();
+            },
+
+            // 切换查看某条需求及其匹配结果（仅会话内记录，不写入存储）
+            switchPost(id) {
+                this.activePostId = id;
+                this.render();
+            },
+
+            // 当前查看的需求（兜底取第一条）
+            activePost() {
+                return state.posts.find((p) => p.id === this.activePostId) || state.posts[0];
+            },
+
+            // 重新匹配当前需求（无匹配结果时兜底）
+            rematchPost() {
+                var post = this.activePost();
+                var matches = this.matchPartners();
+                var posts = state.posts.map(function (p) {
+                    return p.id === post.id ? Object.assign({}, p, { matches: matches }) : p;
+                });
+                saveState({ posts: posts });
+                this.render();
+                window.Common.showToast('已为你找到 ' + matches.length + ' 位搭子');
             },
 
             // 表单草稿（预置演示内容）
             initBuddyDraft() {
                 this.buddyDraft = {
                     category: 'support',
-                    fandoms: ['万能青年旅店', '二手玫瑰'],
-                    message: '第一次来大运河音乐节，想找同担一起蹦！带上应援棒一起冲前排！'
+                    message: '第一次来大运河音乐节，想找个搭子一起吃吃喝喝、拍照蹦迪！'
                 };
             },
 
@@ -587,70 +713,47 @@
                 this.render();
             },
 
-            pickFandom(f) {
-                var list = this.buddyDraft.fandoms.slice();
-                var idx = list.indexOf(f);
-                if (idx > -1) {
-                    list.splice(idx, 1);
-                } else if (list.length < 3) {
-                    list.push(f);
-                } else {
-                    window.Common.showToast('最多选择 3 个同担');
-                    return;
-                }
-                this.buddyDraft.fandoms = list;
-                this.render();
-            },
-
             submitBuddyForm() {
-                var timeFrom = document.getElementById('buddyTimeFrom').value;
-                var timeTo = document.getElementById('buddyTimeTo').value;
+                if (this.matchingInProgress) return;
+
                 var message = document.getElementById('buddyMessage').value.trim();
 
                 if (!this.buddyDraft.category) { window.Common.showToast('请选择需求类别'); return; }
-                if (this.buddyDraft.fandoms.length === 0) { window.Common.showToast('请选择至少一个同担'); return; }
-                if (timeTo <= timeFrom) { window.Common.showToast('结束时间要晚于开始时间哦'); return; }
                 if (!message) { window.Common.showToast('写句留言介绍一下自己吧'); return; }
 
                 // 匹配中动画
+                this.matchingInProgress = true;
                 this.showMatchingOverlay();
 
                 var view = this;
                 setTimeout(function () {
-                    var partner = view.matchPartner();
+                    var matches = view.matchPartners();
                     view.hideMatchingOverlay();
+                    view.matchingInProgress = false;
 
-                    saveState({
-                        buddy: {
-                            category: view.buddyDraft.category,
-                            fandoms: view.buddyDraft.fandoms.slice(),
-                            timeFrom: timeFrom,
-                            timeTo: timeTo,
-                            message: message
-                        },
-                        partner: partner,
-                        chat: [
-                            { isMe: false, text: '哈喽！我是你的搭子「' + partner.name + '」，音乐节现场见！', time: view.nowTime() },
-                            { isMe: false, text: '我也是' + partner.fandom + '的歌迷，到时候一起应援呀！', time: view.nowTime() }
-                        ]
-                    });
+                    var post = {
+                        id: 'p' + Date.now(),
+                        category: view.buddyDraft.category,
+                        message: message,
+                        time: view.nowTime(),
+                        matches: matches
+                    };
+                    saveState({ posts: state.posts.concat([post]) });
+                    view.activePostId = post.id;
+                    view.isDraftingPost = false;
+                    view.initBuddyDraft();
                     view.render();
-                    view.showMatchModal(partner);
+                    window.Common.showToast('已为你找到 ' + matches.length + ' 位搭子，选一位开聊吧');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
                 }, 1600);
             },
 
-            // 匹配逻辑：优先同担，其次同需求类别
-            matchPartner() {
-                var draft = this.buddyDraft;
-                var primaryFandom = draft.fandoms[0];
-
-                var sameFandom = BUDDY_POOL.filter((b) => b.fandom === primaryFandom);
-                var pool = sameFandom.length > 0 ? sameFandom : BUDDY_POOL.filter((b) => b.category === draft.category);
-                if (pool.length === 0) pool = BUDDY_POOL;
-
-                var partner = Object.assign({}, pool[Math.floor(Math.random() * pool.length)]);
-                partner.matchRate = 88 + Math.floor(Math.random() * 12); // 88 - 99
-                return partner;
+            // 匹配逻辑：优先同需求类别，不足时从其余搭子补齐
+            matchPartners() {
+                var cat = this.buddyDraft.category;
+                var sameCat = shuffle(BUDDY_POOL.filter((b) => b.category === cat));
+                var others = shuffle(BUDDY_POOL.filter((b) => b.category !== cat));
+                return sameCat.concat(others).slice(0, MATCH_COUNT).map((b) => Object.assign({}, b));
             },
 
             showMatchingOverlay() {
@@ -661,7 +764,7 @@
                 overlay.innerHTML = `
                     <div class="ai-ring w-14 h-14 rounded-full mb-5"></div>
                     <div class="text-white font-bold text-lg ai-bounce">正在为你匹配搭子…</div>
-                    <div class="text-white/50 text-xs mt-2">根据同担 · 需求类别 · 在场时间智能匹配</div>
+                    <div class="text-white/50 text-xs mt-2">根据需求类别智能匹配 · 稍后揭晓多位搭子</div>
                 `;
                 document.body.appendChild(overlay);
                 window.Common.initIcons();
@@ -672,106 +775,50 @@
                 if (overlay) overlay.remove();
             },
 
-            // 匹配成功弹窗
-            showMatchModal(partner) {
-                var overlay = document.createElement('div');
-                overlay.id = 'matchModal';
-                overlay.className = 'fixed inset-0 z-[250] flex items-end justify-center fade-in';
-                overlay.style.background = 'rgba(0,0,0,0.45)';
-                overlay.innerHTML = `
-                    <div class="bg-white w-full max-w-md rounded-t-3xl p-5 pb-8 animate-slide-up relative">
-                        <span class="confetti text-lg" style="left:12%; animation-delay:0s;">🎉</span>
-                        <span class="confetti text-sm" style="left:30%; animation-delay:0.4s;">🎊</span>
-                        <span class="confetti text-base" style="left:55%; animation-delay:0.8s;">✨</span>
-                        <span class="confetti text-sm" style="left:75%; animation-delay:1.2s;">🎉</span>
-                        <span class="confetti text-lg" style="left:88%; animation-delay:0.2s;">🎊</span>
-
-                        <div class="text-center pt-4">
-                            <div class="text-4xl mb-2">🤝</div>
-                            <h3 class="text-xl font-black text-gray-900">你已经和 TA 结为搭子！</h3>
-                            <p class="text-xs text-gray-400 mt-1">根据你的需求，系统为你匹配了同场同频的 TA</p>
-                        </div>
-
-                        <!-- 对方资料卡片 -->
-                        <div class="mt-4 rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                            <div class="h-10" style="background: linear-gradient(135deg, #5ac1fb, #f3c146);"></div>
-                            <div class="p-4">
-                                <div class="flex items-center gap-3 -mt-10">
-                                    <img src="${partner.avatarUrl}" class="w-14 h-14 flex-shrink-0 rounded-full border-4 border-white shadow-md object-cover"/>
-                                    <div class="pt-5 min-w-0">
-                                        <div class="flex items-center gap-1.5 flex-wrap">
-                                            <span class="font-black text-gray-900 whitespace-nowrap">${partner.name}</span>
-                                            <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full whitespace-nowrap" style="background: linear-gradient(135deg, #f3c146, #f7b733); color: #4a3504;">匹配度 ${partner.matchRate}%</span>
-                                            <span class="text-[10px] text-gray-500 whitespace-nowrap">${partner.gender} · ${partner.age}岁</span>
-                                        </div>
-                                        <p class="text-[11px] text-gray-400">${partner.seat}</p>
-                                    </div>
-                                </div>
-                                <div class="flex flex-wrap gap-1.5 mt-3">
-                                    <span class="tag-festival-sky text-[10px] px-2 py-0.5 rounded-full font-medium">同担 ${partner.fandom}</span>
-                                    <span class="tag-festival text-[10px] px-2 py-0.5 rounded-full font-medium">在场 ${partner.time}</span>
-                                    ${(partner.tags || []).map((t) => '<span class="text-[10px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">' + t + '</span>').join('')}
-                                </div>
-                                <p class="text-sm text-gray-500 leading-relaxed mt-3 bg-gray-50 rounded-xl p-3">"${partner.intro}"</p>
-                            </div>
-                        </div>
-
-                        <div class="flex gap-3 mt-5">
-                            <button onclick="MusicFestivalView.closeMatchModal()"
-                                    class="flex-1 py-3 rounded-xl border border-gray-200 text-gray-600 font-bold text-sm active:scale-95 transition-transform">
-                                先逛逛
-                            </button>
-                            <button onclick="MusicFestivalView.closeMatchModal(); MusicFestivalView.openChat();"
-                                    class="flex-[1.4] py-3 rounded-xl text-white font-black text-sm active:scale-95 transition-transform flex items-center justify-center gap-2"
-                                    style="background: linear-gradient(135deg, #5ac1fb, #2b8fd6); box-shadow: 0 4px 15px rgba(90,193,251,0.4);">
-                                <i data-lucide="message-circle" class="w-4 h-4"></i>
-                                立即聊天
-                            </button>
-                        </div>
-                    </div>
-                `;
-                document.body.appendChild(overlay);
-                window.Common.initIcons();
-
-                overlay.addEventListener('click', (e) => {
-                    if (e.target === overlay) this.closeMatchModal();
-                });
-            },
-
-            closeMatchModal() {
-                var modal = document.getElementById('matchModal');
-                if (modal) modal.remove();
-            },
-
-            resetBuddy() {
-                saveState({ buddy: null, partner: null, chat: [] });
-                this.initBuddyDraft();
-                this.render();
-                window.Common.showToast('已重置，可以重新填写需求啦');
-            },
-
             // ---------- 私聊 ----------
-            openChat() {
+            // 聊天页头部（标注搭子自身的需求类别）
+            chatHeaderHtml(p) {
+                return `
+                    <div class="flex items-center gap-2 px-3 py-3 bg-white/85 backdrop-blur-md border-b border-gray-100">
+                        <button onclick="MusicFestivalView.closeChat()" class="p-1.5 -ml-1 rounded-full active:bg-gray-100">
+                            <i data-lucide="chevron-left" class="w-6 h-6 text-gray-600"></i>
+                        </button>
+                        <img src="${escapeHtml(p.avatarUrl)}" class="w-9 h-9 rounded-full object-cover border border-gray-200"/>
+                        <div class="flex-1 min-w-0">
+                            <div class="font-bold text-sm text-gray-900 flex items-center gap-1 whitespace-nowrap">
+                                ${escapeHtml(p.name)}
+                                <i data-lucide="badge-check" class="w-3.5 h-3.5 text-festival-sky flex-shrink-0"></i>
+                            </div>
+                            <div class="text-[10px] text-gray-400 truncate">${categoryLabel(p.category)}搭子 · ${escapeHtml(p.gender)} · ${escapeHtml(p.age)}岁</div>
+                        </div>
+                    </div>`;
+            },
+
+            // 向指定聊天线程追加一条消息（key = 需求id:搭子id）
+            appendChat(chatKey, msg) {
+                var list = (state.chats[chatKey] || []).concat([msg]);
+                saveState({ chats: Object.assign({}, state.chats, { [chatKey]: list }) });
+            },
+
+            openChat(partnerId) {
+                if (document.getElementById('festivalChat')) return;
+
+                var post = this.activePost();
+                var p = (post.matches || []).find((m) => m.id === partnerId);
+                if (!p) return;
+                this.chatPartnerKey = post.id + ':' + p.id;
+
+                // 首次打开时，对方先来一句打招呼
+                if (!state.chats[this.chatPartnerKey] || !state.chats[this.chatPartnerKey].length) {
+                    this.appendChat(this.chatPartnerKey, { isMe: false, text: '哈喽！我是你的搭子「' + p.name + '」，音乐节现场见！', time: this.nowTime() });
+                }
+
                 var chat = document.createElement('div');
                 chat.id = 'festivalChat';
                 chat.className = 'fixed inset-0 z-[400] flex flex-col fade-in';
                 chat.style.background = 'linear-gradient(180deg, #dfefff 0%, #ecf7ff 40%, #fef8e8 100%)';
 
-                var p = state.partner;
-                chat.innerHTML = `
-                    <div class="flex items-center gap-2 px-3 py-3 bg-white/85 backdrop-blur-md border-b border-gray-100">
-                        <button onclick="MusicFestivalView.closeChat()" class="p-1.5 -ml-1 rounded-full active:bg-gray-100">
-                            <i data-lucide="chevron-left" class="w-6 h-6 text-gray-600"></i>
-                        </button>
-                        <img src="${p.avatarUrl}" class="w-9 h-9 rounded-full object-cover border border-gray-200"/>
-                        <div class="flex-1 min-w-0">
-                            <div class="font-bold text-sm text-gray-900 flex items-center gap-1 whitespace-nowrap">
-                                ${p.name}
-                                <i data-lucide="badge-check" class="w-3.5 h-3.5 text-festival-sky flex-shrink-0"></i>
-                            </div>
-                            <div class="text-[10px] text-gray-400 truncate">同担 ${p.fandom} · 在场 ${p.time}</div>
-                        </div>
-                    </div>
+                chat.innerHTML = this.chatHeaderHtml(p) + `
                     <div id="chatMessages" class="flex-1 overflow-y-auto px-4 py-4 space-y-3"></div>
                     <div class="px-3 pb-3 pt-2 bg-white/85 backdrop-blur-md border-t border-gray-100">
                         <div class="flex items-center gap-2">
@@ -798,16 +845,17 @@
             },
 
             closeChat() {
+                // 聊天层挂在 body 上，关闭时主界面无需重建
                 var chat = document.getElementById('festivalChat');
                 if (chat) chat.remove();
-                this.render();
             },
 
             renderChatMessages() {
                 var box = document.getElementById('chatMessages');
                 if (!box) return;
 
-                var html = state.chat.map((m) => {
+                var list = state.chats[this.chatPartnerKey] || [];
+                var html = list.map((m) => {
                     return m.isMe
                         ? '<div class="flex justify-end"><div class="chat-bubble-me max-w-[75%] px-3.5 py-2.5 text-sm leading-relaxed shadow-sm">' + escapeHtml(m.text) + '</div></div>'
                         : '<div class="flex justify-start"><div class="chat-bubble-other max-w-[75%] px-3.5 py-2.5 text-sm leading-relaxed text-gray-700 shadow-sm border border-gray-100">' + escapeHtml(m.text) + '</div></div>';
@@ -821,8 +869,8 @@
                 var text = (input.value || '').trim();
                 if (!text) return;
 
-                var newChat = state.chat.concat([{ isMe: true, text: text, time: this.nowTime() }]);
-                saveState({ chat: newChat });
+                var chatKey = this.chatPartnerKey;
+                this.appendChat(chatKey, { isMe: true, text: text, time: this.nowTime() });
                 input.value = '';
                 this.renderChatMessages();
 
@@ -836,11 +884,11 @@
                         '好呀，到时候一起冲前排！',
                         '我带了应援棒，分你一根！',
                         '没问题，运河边集合！',
-                        '我也超喜欢' + state.partner.fandom + '的歌！',
-                        '到时候我提前到，给你占位置~'
+                        '我提前到，到时候喊你~',
+                        '这就安排上！'
                     ];
                     var reply = replies[Math.floor(Math.random() * replies.length)];
-                    saveState({ chat: state.chat.concat([{ isMe: false, text: reply, time: view.nowTime() }]) });
+                    view.appendChat(chatKey, { isMe: false, text: reply, time: view.nowTime() });
                     view.renderChatMessages();
                 }, 900);
             },
@@ -1089,11 +1137,11 @@
 
                         <div class="flex items-center justify-center gap-2 text-xs text-gray-500 mt-3">
                             <i data-lucide="monitor-up" class="w-3.5 h-3.5 text-festival-sky"></i>
-                            你的海报已进入现场大屏候选池
+                            你的海报已生成，分享后有机会登上大屏
                         </div>
 
                         <div class="flex gap-3 mt-4">
-                            <button onclick="MusicFestivalView.openShareModal()"
+                            <button onclick="MusicFestivalView.goShare()"
                                     class="flex-1 py-3.5 rounded-xl font-black text-sm active:scale-95 transition-transform flex items-center justify-center gap-2 ${shared ? 'bg-gray-100 text-gray-400 cursor-default' : 'text-white'}"
                                     style="${shared ? '' : 'background: linear-gradient(135deg, #f3c146, #f7b733); box-shadow: 0 4px 15px rgba(243,193,70,0.4);'}">
                                 <i data-lucide="${shared ? 'check' : 'share-2'}" class="w-4 h-4"></i>
@@ -1139,107 +1187,294 @@
                 window.Common.showToast('海报已保存到本地');
             },
 
-            // 分享弹窗
-            openShareModal() {
-                if (state.poster.shared) return;
+            // 去分享：跳到音浪广场并直接调起发布窗口（默认用我的海报）
+            goShare() {
+                if (state.poster.status !== 'done') return;
+                if (state.poster.shared) return; // 已分享过，不再重复拉起
+                this.switchTab('feed');
+                this.initPublishDraft({ image: 'music_new.png', imageType: 'poster' });
+                this.openPublishModal();
+            },
+
+            // ---------- 发动态 ----------
+            initPublishDraft(preset) {
+                this.publishDraft = Object.assign({ image: null, imageType: null, text: '', onScreen: true, idCard: null }, preset || {});
+            },
+
+            openPublishModal() {
+                if (document.getElementById('publishModal')) return;
+                if (!this.publishDraft) this.initPublishDraft();
 
                 var overlay = document.createElement('div');
-                overlay.id = 'shareModal';
-                overlay.className = 'fixed inset-0 z-[250] flex items-end justify-center fade-in';
+                overlay.id = 'publishModal';
+                // z-[90]：高于页面内容（z-40），低于 Toast（z-[100]），保证校验提示可见
+                overlay.className = 'fixed inset-0 z-[90] flex items-end justify-center fade-in';
                 overlay.style.background = 'rgba(0,0,0,0.45)';
-                overlay.innerHTML = `
-                    <div class="bg-white w-full max-w-md rounded-t-3xl p-5 pb-8 animate-slide-up">
-                        <div class="flex items-center justify-between mb-4">
-                            <h3 class="text-lg font-black text-gray-900 whitespace-nowrap">分享动态</h3>
-                            <button onclick="MusicFestivalView.closeShareModal()" class="p-1 rounded-full active:bg-gray-100 shrink-0">
-                                <i data-lucide="x" class="w-5 h-5 text-gray-400"></i>
-                            </button>
-                        </div>
-
-                        <div class="flex gap-3 mb-4">
-                            <img src="music_new.png" class="w-24 h-16 rounded-lg object-cover border border-gray-100"/>
-                            <textarea id="shareText" maxlength="100" rows="3"
-                                      class="flex-1 border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-festival-gold resize-none"
-                                      placeholder="说点什么…">大运河音乐节，我来啦！现场见~</textarea>
-                        </div>
-                        <div class="text-right text-[10px] text-gray-400 -mt-2 mb-3"><span id="shareTextCount">0</span>/100</div>
-
-                        <!-- 统一话题 -->
-                        <div class="flex items-center gap-2 bg-gradient-to-r from-amber-50 to-sky-50 rounded-xl px-3 py-2.5 border border-amber-100/60">
-                            <i data-lucide="hash" class="w-4 h-4 text-festival-gold"></i>
-                            <span class="text-sm font-bold" style="color:#d4a017;">${FESTIVAL_TOPIC}</span>
-                            <span class="ml-auto text-[10px] text-gray-400">发布自动带上话题</span>
-                        </div>
-
-                        <button onclick="MusicFestivalView.publishShare()"
-                                class="w-full mt-4 py-3.5 rounded-xl text-white font-black text-sm active:scale-95 transition-transform"
-                                style="background: linear-gradient(135deg, #f3c146, #f7b733); box-shadow: 0 4px 15px rgba(243,193,70,0.4);">
-                            发布动态
-                        </button>
-                    </div>
-                `;
+                overlay.innerHTML = '<div id="publishSheet" class="bg-white w-full max-w-md rounded-t-3xl p-5 pb-8 animate-slide-up max-h-[90vh] overflow-y-auto"></div>';
                 document.body.appendChild(overlay);
-                window.Common.initIcons();
 
-                var textarea = document.getElementById('shareText');
-                var counter = document.getElementById('shareTextCount');
-                var updateCount = function () { counter.textContent = textarea.value.length; };
-                updateCount();
-                textarea.addEventListener('input', updateCount);
+                this.renderPublishModalContent();
 
                 overlay.addEventListener('click', (e) => {
-                    if (e.target === overlay) this.closeShareModal();
+                    if (e.target === overlay) this.closePublishModal();
                 });
             },
 
-            closeShareModal() {
-                var modal = document.getElementById('shareModal');
+            closePublishModal() {
+                var modal = document.getElementById('publishModal');
                 if (modal) modal.remove();
             },
 
-            publishShare() {
-                var text = (document.getElementById('shareText').value || '').trim();
-                if (!text) { window.Common.showToast('写点内容再发布吧'); return; }
+            renderPublishModalContent() {
+                var sheet = document.getElementById('publishSheet');
+                if (!sheet) return;
 
-                saveState({
-                    poster: Object.assign({}, state.poster, { shared: true, sharedText: text })
+                var d = this.publishDraft;
+                var posterDone = state.poster.status === 'done';
+                var idCardUploaded = !!state.idCardUploaded;
+
+                var preview = d.image
+                    ? '<img src="' + escapeHtml(d.image) + '" class="w-full h-28 object-cover rounded-xl border border-gray-100"/>'
+                    : '<div class="w-full h-28 rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 flex flex-col items-center justify-center text-gray-300"><i data-lucide="image" class="w-6 h-6 mb-1"></i><span class="text-[10px]">选择一张图片</span></div>';
+
+                var idCardSection = '';
+                if (d.onScreen) {
+                    if (idCardUploaded) {
+                        idCardSection = `
+                        <div class="flex items-center gap-2 bg-green-50 rounded-xl px-3 py-2.5 border border-green-100 mb-4">
+                            <i data-lucide="badge-check" class="w-4 h-4 text-green-500 shrink-0"></i>
+                            <span class="text-xs text-green-700 font-medium">已完成实名登记，无需重复上传</span>
+                        </div>`;
+                    } else {
+                        idCardSection = `
+                        <div class="mb-4">
+                            <label class="text-xs font-bold text-gray-500 mb-2 block">身份证照片</label>
+                            <div class="flex items-center gap-3">
+                                ${d.idCard ? '<img src="' + escapeHtml(d.idCard) + '" class="w-14 h-10 rounded-lg object-cover border border-gray-200 flex-shrink-0"/>' : '<div class="w-14 h-10 rounded-lg border-2 border-dashed border-gray-200 bg-gray-50 flex-shrink-0"></div>'}
+                                <button onclick="document.getElementById('idCardInput').click()"
+                                        class="flex-1 py-2.5 rounded-xl border border-festival-gold text-sm font-bold active:scale-95 transition-transform"
+                                        style="color:#a97b0a; background: rgba(243,193,70,0.08);">
+                                    ${d.idCard ? '重新上传' : '上传身份证照片'}
+                                </button>
+                            </div>
+                            <p class="text-[10px] text-gray-400 mt-2">根据安保要求，上大屏需进行实名登记</p>
+                            <input type="file" id="idCardInput" accept="image/*" class="hidden" onchange="MusicFestivalView.pickIdCardImage(this)"/>
+                        </div>`;
+                    }
+                }
+
+                sheet.innerHTML = `
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-black text-gray-900 whitespace-nowrap">发动态</h3>
+                        <button onclick="MusicFestivalView.closePublishModal()" class="p-1 rounded-full active:bg-gray-100 shrink-0">
+                            <i data-lucide="x" class="w-5 h-5 text-gray-400"></i>
+                        </button>
+                    </div>
+
+                    <!-- 图片 -->
+                    <div class="mb-4">
+                        <label class="text-xs font-bold text-gray-500 mb-2 block">图片</label>
+                        ${preview}
+                        <div class="flex gap-2 mt-2">
+                            <button onclick="MusicFestivalView.pickPosterImage()"
+                                    class="flex-1 py-2.5 rounded-xl text-sm font-bold border transition-all duration-150 active:scale-95 ${d.imageType === 'poster' ? 'border-festival-gold text-amber-700' : 'border-gray-200 text-gray-600 bg-white'} ${posterDone ? '' : 'opacity-40'}">
+                                🖼 用我的海报
+                            </button>
+                            <button onclick="document.getElementById('publishFileInput').click()"
+                                    class="flex-1 py-2.5 rounded-xl text-sm font-bold border transition-all duration-150 active:scale-95 ${d.imageType === 'upload' ? 'border-festival-gold text-amber-700' : 'border-gray-200 text-gray-600 bg-white'}">
+                                📷 上传照片
+                            </button>
+                        </div>
+                        <input type="file" id="publishFileInput" accept="image/*" class="hidden" onchange="MusicFestivalView.pickFeedImage(this)"/>
+                    </div>
+
+                    <!-- 内容 -->
+                    <div class="mb-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="text-xs font-bold text-gray-500">内容</label>
+                            <button onclick="MusicFestivalView.autoGenerateText()"
+                                    class="text-[11px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 active:scale-95 transition-transform"
+                                    style="background: rgba(243,193,70,0.18); color:#a97b0a;">
+                                <i data-lucide="wand-sparkles" class="w-3 h-3"></i>
+                                自动生成
+                            </button>
+                        </div>
+                        <textarea id="publishText" maxlength="100" rows="3"
+                                  class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-festival-gold resize-none"
+                                  placeholder="分享你在音乐节的现场瞬间…">${escapeHtml(d.text || '')}</textarea>
+                        <div class="text-right text-[10px] text-gray-400 mt-1"><span id="publishTextCount">0</span>/100</div>
+                    </div>
+
+                    <!-- 上大屏 -->
+                    <div class="flex items-center justify-between bg-gradient-to-r from-amber-50 to-sky-50 rounded-xl px-3 py-2.5 border border-amber-100/60 mb-4">
+                        <div>
+                            <div class="text-sm font-bold text-gray-800">上大屏</div>
+                            <div class="text-[10px] text-gray-400">发布后进入现场大屏候选池</div>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer shrink-0">
+                            <input type="checkbox" class="sr-only" ${d.onScreen ? 'checked' : ''} onchange="MusicFestivalView.toggleOnScreen(this.checked)"/>
+                            <div class="w-10 h-6 rounded-full transition-colors duration-200 ${d.onScreen ? 'bg-festival-gold' : 'bg-gray-200'}"></div>
+                            <div class="absolute w-5 h-5 rounded-full bg-white shadow transition-transform duration-200 ${d.onScreen ? 'translate-x-4' : ''}"></div>
+                        </label>
+                    </div>
+
+                    ${idCardSection}
+
+                    <button onclick="MusicFestivalView.publishFeedPost()"
+                            class="w-full py-3.5 rounded-xl text-white font-black text-sm active:scale-95 transition-transform"
+                            style="background: linear-gradient(135deg, #f3c146, #f7b733); box-shadow: 0 4px 15px rgba(243,193,70,0.4);">
+                        发布
+                    </button>
+                `;
+                window.Common.initIcons();
+
+                // 内容输入同步到草稿 + 字数统计（重渲染后恢复焦点与光标，避免打断输入）
+                var prevTextarea = document.getElementById('publishText');
+                var restoreFocus = prevTextarea && document.activeElement === prevTextarea;
+                var caret = restoreFocus ? prevTextarea.selectionStart : null;
+
+                var textarea = document.getElementById('publishText');
+                var counter = document.getElementById('publishTextCount');
+                var view = this;
+                var updateCount = function () {
+                    counter.textContent = textarea.value.length;
+                    view.publishDraft.text = textarea.value;
+                };
+                updateCount();
+                textarea.addEventListener('input', updateCount);
+
+                if (restoreFocus) {
+                    textarea.focus();
+                    if (caret !== null) textarea.setSelectionRange(caret, caret);
+                }
+            },
+
+            pickPosterImage() {
+                if (state.poster.status !== 'done') {
+                    window.Common.showToast('先去海报工坊生成你的专属海报吧');
+                    return;
+                }
+                this.publishDraft.image = 'music_new.png';
+                this.publishDraft.imageType = 'poster';
+                this.renderPublishModalContent();
+            },
+
+            // 图片压缩：等比缩放并转 JPEG，控制本地存储体积
+            compressImage(file, maxWidth, callback) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    var img = new Image();
+                    img.onload = function () {
+                        var scale = Math.min(1, maxWidth / img.width);
+                        var canvas = document.createElement('canvas');
+                        canvas.width = Math.max(1, Math.round(img.width * scale));
+                        canvas.height = Math.max(1, Math.round(img.height * scale));
+                        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+                        callback(canvas.toDataURL('image/jpeg', 0.85));
+                    };
+                    img.onerror = function () { window.Common.showToast('图片读取失败，请换一张试试'); };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            },
+
+            pickFeedImage(input) {
+                var file = input.files && input.files[0];
+                input.value = ''; // 先清空，拒绝后再次选择同一文件也能触发 change
+                if (!file) return;
+                if (file.size > 8 * 1024 * 1024) { window.Common.showToast('图片太大啦，请选择 8MB 以内的图片'); return; }
+
+                var view = this;
+                this.compressImage(file, 1080, function (dataUrl) {
+                    view.publishDraft.image = dataUrl;
+                    view.publishDraft.imageType = 'upload';
+                    view.renderPublishModalContent();
+                    window.Common.showToast('图片已选择');
                 });
-                this.closeShareModal();
+            },
+
+            pickIdCardImage(input) {
+                var file = input.files && input.files[0];
+                input.value = '';
+                if (!file) return;
+                if (file.size > 8 * 1024 * 1024) { window.Common.showToast('图片太大啦，请选择 8MB 以内的图片'); return; }
+
+                var view = this;
+                this.compressImage(file, 800, function (dataUrl) {
+                    view.publishDraft.idCard = dataUrl;
+                    view.renderPublishModalContent();
+                });
+            },
+
+            autoGenerateText() {
+                var sentence = AUTO_TEXTS[Math.floor(Math.random() * AUTO_TEXTS.length)];
+                this.publishDraft.text = sentence;
+                var textarea = document.getElementById('publishText');
+                var counter = document.getElementById('publishTextCount');
+                if (textarea) {
+                    textarea.value = sentence;
+                    if (counter) counter.textContent = sentence.length;
+                }
+                window.Common.showToast('✨ 文案已生成');
+            },
+
+            toggleOnScreen(checked) {
+                this.publishDraft.onScreen = checked;
+                this.renderPublishModalContent();
+            },
+
+            publishFeedPost() {
+                var text = (document.getElementById('publishText').value || '').trim();
+                var d = this.publishDraft;
+
+                if (!d.image) { window.Common.showToast('请选择一张图片'); return; }
+                if (!text) { window.Common.showToast('写点内容再发布吧'); return; }
+                if (d.onScreen && !state.idCardUploaded && !d.idCard) {
+                    window.Common.showToast('上大屏需先上传身份证照片完成实名登记');
+                    return;
+                }
+
+                var post = { id: 'feed' + Date.now(), image: d.image, text: text, onScreen: d.onScreen, time: '刚刚', likes: 0, comments: 0 };
+                var patch = { feedPosts: [post].concat(state.feedPosts) };
+                if (d.idCard) patch.idCardUploaded = true;
+                if (d.imageType === 'poster') {
+                    patch.poster = Object.assign({}, state.poster, { shared: true, sharedText: text });
+                }
+                saveState(patch);
+
+                this.publishDraft = null; // 清空草稿，避免下次打开残留内容误发重复动态
+                this.closePublishModal();
                 window.Common.showToast('发布成功！已同步到音浪广场');
-                this.switchTab('feed');
+                this.render();
             },
 
             // ---------- 功能三：音浪广场 ----------
             renderFeedTab() {
-                // 动态列表（我的动态分享后置顶，各条之间用分割线分隔）
+                // 动态瀑布流（我的动态在前，与项目动态页同款双列瀑布流）
+                var me = window.GlobalData && window.GlobalData.user ? window.GlobalData.user : { name: '我' };
                 var posts = [];
 
-                if (state.poster.shared) {
-                    var me = window.GlobalData && window.GlobalData.user ? window.GlobalData.user : { name: '我' };
-                    posts.push(this.renderFeedPost({
-                        id: 'mine',
+                state.feedPosts.forEach(function (p) {
+                    posts.push(this.renderFeedCard(Object.assign({}, p, {
                         name: me.name,
                         avatar: 'music_userphoto.jpg', // 使用本地用户照片
-                        text: escapeHtml(state.poster.sharedText),
-                        image: 'music_new.png',
-                        likes: 66,
-                        comments: 12,
-                        time: '刚刚',
                         isMine: true
-                    }));
-                }
-
-                FEED_POSTS.forEach(function (p) {
-                    posts.push(this.renderFeedPost(Object.assign({}, p, {
-                        text: p.text,
-                        isMine: false
                     })));
                 }, this);
 
-                var postsHtml = posts.join('<div class="border-t border-gray-100"></div>');
+                FEED_POSTS.forEach(function (p) {
+                    posts.push(this.renderFeedCard(Object.assign({}, p, { isMine: false })));
+                }, this);
+
+                // 左右交替分列，让同类图片（如四张海报）错落排布在两侧
+                var leftColumn = [];
+                var rightColumn = [];
+                posts.forEach(function (html, i) {
+                    (i % 2 === 0 ? leftColumn : rightColumn).push(html);
+                });
 
                 return `
-                <div class="px-4 pt-1.5 pb-4">
+                <div class="px-4 pt-1.5 pb-28">
                     <!-- 音浪广场白色卡片区 -->
                     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                         <!-- 卡片头部（与搭个伴/海报工坊一致） -->
@@ -1250,71 +1485,89 @@
                                 </div>
                                 <div class="min-w-0">
                                     <h3 class="font-black text-gray-900 whitespace-nowrap">音浪广场</h3>
-                                    <p class="text-[11px] text-gray-400">大屏直击 · 大家分享的音乐节海报动态</p>
+                                    <p class="text-[11px] text-gray-400">大屏直击 · 大家分享的音乐节现场动态</p>
                                 </div>
                             </div>
                         </div>
 
                         <!-- 话题横幅 -->
-                        <div class="px-3 pb-1">
+                        <div class="px-3 pb-3">
                             <div class="rounded-xl overflow-hidden relative" style="background: linear-gradient(135deg, #f3c146, #f7b733);">
                                 <div class="absolute -right-4 -top-6 text-6xl opacity-20">🎸</div>
                                 <div class="p-4 relative">
                                     <div class="text-white font-black text-base">${FESTIVAL_TOPIC}</div>
-                                    <div class="text-white/80 text-xs mt-1">${this.feedTopicCount()} 人正在参与 · 已有 ${FEED_POSTS.length + (state.poster.shared ? 1 : 0)} 张海报登上大屏</div>
+                                    <div class="text-white/80 text-xs mt-1">${this.feedTopicCount()} 人正在参与 · 已有 ${this.screenCount()} 条内容登上大屏</div>
                                 </div>
                             </div>
                         </div>
-
-                        <div class="border-t border-gray-100"></div>
-
-                        ${postsHtml}
                     </div>
 
-                    <div class="text-center text-gray-400 text-xs pt-3 pb-4">—— 音浪不停，现场见 🎶 ——</div>
+                    <!-- 动态瀑布流（双列左右交替错落，图片原比例） -->
+                    <div class="flex gap-3 mt-3 items-start">
+                        <div class="flex-1 min-w-0">${leftColumn.join('')}</div>
+                        <div class="flex-1 min-w-0">${rightColumn.join('')}</div>
+                    </div>
+
+                    <div class="text-center text-gray-400 text-xs pt-2">—— 音浪不停，现场见 🎶 ——</div>
                 </div>
+
+                <!-- 悬浮发动态按钮 -->
+                <button onclick="MusicFestivalView.openPublishModal()"
+                        class="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 px-6 py-3 rounded-full text-white font-black text-sm flex items-center gap-1.5 active:scale-95 transition-transform whitespace-nowrap"
+                        style="background: linear-gradient(135deg, #f3c146, #f7b733); box-shadow: 0 6px 20px rgba(243,193,70,0.5);">
+                    <i data-lucide="plus" class="w-4 h-4"></i>
+                    发动态
+                </button>
                 `;
             },
 
             feedTopicCount() {
                 var base = 1286;
-                return (base + (state.poster.shared ? 1 : 0)).toLocaleString();
+                return (base + state.feedPosts.length).toLocaleString();
             },
 
-            renderFeedPost(post) {
+            screenCount() {
+                var presets = FEED_POSTS.filter((p) => p.onScreen).length;
+                var mine = state.feedPosts.filter((p) => p.onScreen).length;
+                return presets + mine;
+            },
+
+            // 单条动态瀑布流卡片（同项目动态页样式）
+            renderFeedCard(post) {
                 var liked = !!this.feedLiked[post.id];
                 var likeCount = post.likes + (liked ? 1 : 0);
 
                 return `
-                <div>
-                    ${post.isMine ? '<div class="px-4 pt-3"><span class="tag-festival text-[10px] px-2 py-0.5 rounded-full font-bold">我的动态</span></div>' : ''}
-                    <div class="p-4 ${post.isMine ? 'pt-2' : ''}">
-                        <div class="flex items-center gap-2.5">
-                            <img src="${post.avatar}" class="w-9 h-9 rounded-full object-cover border border-gray-100"/>
-                            <div class="flex-1">
-                                <div class="text-sm font-bold text-gray-900">${post.name}</div>
-                                <div class="text-[10px] text-gray-400">${post.time}</div>
-                            </div>
-                            <span class="text-[10px] text-gray-300">大屏候选 ⭐</span>
+                <div class="mb-3 bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
+                    <div class="relative">
+                        <img src="${escapeHtml(post.image)}" class="w-full h-auto object-cover"
+                             onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"/>
+                        <!-- 图片加载失败时的占位 -->
+                        <div class="hidden flex-col items-center justify-center w-full" style="aspect-ratio: 4/3; background: linear-gradient(135deg, #f3c146, #5ac1fb);">
+                            <span class="text-2xl mb-1">🎵</span>
+                            <span class="text-white text-xs font-bold">大运河音乐节</span>
                         </div>
-                        <p class="text-sm text-gray-700 leading-relaxed mt-3">${post.text} <span class="text-festival-sky font-medium whitespace-nowrap">${FESTIVAL_TOPIC}</span></p>
+                        ${post.onScreen ? '<span class="absolute top-2 right-2 text-[9px] font-bold px-1.5 py-0.5 rounded-full" style="background: rgba(243,193,70,0.92); color:#4a3504;">大屏候选 ⭐</span>' : ''}
+                        ${post.isMine ? '<span class="absolute top-2 left-2 text-[9px] font-bold px-1.5 py-0.5 rounded-full text-white bg-black/40">我的动态</span>' : ''}
                     </div>
-                    <img src="${post.image}" class="w-full" style="aspect-ratio: 1000/561; object-fit: cover;"
-                         onerror="this.style.background='linear-gradient(135deg,#f3c146,#5ac1fb)';"/>
-                    <div class="px-4 py-3 flex items-center gap-5 text-gray-400 text-xs">
-                        <button onclick="MusicFestivalView.toggleLike('${post.id}')" class="flex items-center gap-1.5 active:scale-90 transition-transform ${liked ? 'text-red-500' : ''}">
-                            <i data-lucide="heart" class="w-4 h-4 ${liked ? 'fill-red-500' : ''}"></i>
-                            ${likeCount}
-                        </button>
-                        <span class="flex items-center gap-1.5">
-                            <i data-lucide="message-circle" class="w-4 h-4"></i>
-                            ${post.comments}
-                        </span>
-                        <span class="flex items-center gap-1.5">
-                            <i data-lucide="share-2" class="w-4 h-4"></i>
-                            分享
-                        </span>
-                        <span class="ml-auto text-[10px] ${liked ? 'text-red-400' : 'text-gray-300'}">${liked ? '已赞' : '点赞'}</span>
+                    <div class="p-2.5">
+                        <p class="text-[13px] text-gray-800 leading-snug mb-2">${escapeHtml(post.text)} <span class="text-festival-sky font-medium">${FESTIVAL_TOPIC}</span></p>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-1.5 overflow-hidden">
+                                <img src="${escapeHtml(post.avatar)}" class="w-5 h-5 rounded-full border border-gray-100 flex-shrink-0 object-cover"/>
+                                <span class="text-[10px] text-gray-500 truncate">${escapeHtml(post.name)}</span>
+                            </div>
+                            <div class="flex items-center gap-2.5 text-gray-400 shrink-0">
+                                <button data-id="${escapeHtml(post.id)}" onclick="MusicFestivalView.toggleLike(this.dataset.id)" class="flex items-center gap-0.5 active:scale-90 transition-transform ${liked ? 'text-red-500' : ''}">
+                                    <i data-lucide="heart" class="w-3 h-3 ${liked ? 'fill-red-500' : ''}"></i>
+                                    <span class="text-[10px]">${likeCount}</span>
+                                </button>
+                                <span class="flex items-center gap-0.5">
+                                    <i data-lucide="message-circle" class="w-3 h-3"></i>
+                                    <span class="text-[10px]">${post.comments}</span>
+                                </span>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 `;
@@ -1374,20 +1627,10 @@
                 if (window.Common) window.Common.initIcons();
 
                 // 表单预置内容（输入实时同步到草稿，切换分类重渲染时不丢失）
-                if (this.activeTab === 'buddy' && !state.buddy) {
-                    var from = document.getElementById('buddyTimeFrom');
-                    var to = document.getElementById('buddyTimeTo');
+                if (this.activeTab === 'buddy' && (this.isDraftingPost || state.posts.length === 0)) {
                     var msg = document.getElementById('buddyMessage');
                     var view = this;
 
-                    if (from) {
-                        from.value = this.buddyDraft.timeFrom || '14:00';
-                        from.addEventListener('change', function () { view.buddyDraft.timeFrom = from.value; });
-                    }
-                    if (to) {
-                        to.value = this.buddyDraft.timeTo || '18:00';
-                        to.addEventListener('change', function () { view.buddyDraft.timeTo = to.value; });
-                    }
                     if (msg) {
                         msg.value = this.buddyDraft.message;
                         msg.addEventListener('input', function () { view.buddyDraft.message = msg.value; });
