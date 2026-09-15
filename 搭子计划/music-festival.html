@@ -76,15 +76,15 @@
             border: 1px solid rgba(90, 193, 251, 0.5);
         }
 
-        /* 母版 coverflow 3D */
+        /* 母版 coverflow 3D（两侧允许超出卡片，由弹窗边缘裁切） */
         .carousel-stage { perspective: 1100px; }
         .carousel-item {
             position: absolute;
             left: 50%;
             top: 0;
-            margin-left: -144px; /* w-72 / 2 */
-            width: 288px;
-            height: 162px;
+            margin-left: -116px; /* 232px / 2 */
+            width: 232px;
+            height: 130px;
             transition: transform 0.45s cubic-bezier(0.22, 0.9, 0.35, 1), opacity 0.45s ease;
             cursor: pointer;
         }
@@ -276,20 +276,23 @@
         // 统一话题
         var FESTIVAL_TOPIC = '#大运河音乐节现场见';
 
-        // 需求类别（音乐节现场陌生人联系场景）
+        // 需求类别（音乐节现场陌生人联系场景），placeholder 为对应留言示例提示
         var NEED_CATEGORIES = [
-            { id: 'support',    label: '应援交换', icon: 'gift',             desc: '换应援物、手幅、周边' },
-            { id: 'food',       label: '美食打卡', icon: 'utensils-crossed', desc: '一起扫遍现场美食摊位' },
-            { id: 'photo',      label: '帮拍大片', icon: 'camera',           desc: '互相拍出音乐节大片' },
-            { id: 'care',       label: '走心互助', icon: 'hand-heart',       desc: '互相照应，帮带个东西' },
-            { id: 'carpool',    label: '拼车同行', icon: 'car',              desc: '往返拼车，一路同频' },
-            { id: 'afterparty', label: '节后攒局', icon: 'party-popper',     desc: '散场后约饭复盘、续摊' },
-            { id: 'gear',       label: '装备互借', icon: 'backpack',         desc: '充电宝、折叠凳、防晒' },
-            { id: 'merch',      label: '周边拼单', icon: 'shopping-bag',     desc: '拼官方周边和专辑' }
+            { id: 'support',    label: '应援交换', icon: 'gift',             desc: '换应援物、手幅、周边', placeholder: '比如：我有自制手幅想交换，欢迎同担来找我~' },
+            { id: 'food',       label: '美食打卡', icon: 'utensils-crossed', desc: '一起扫遍现场美食摊位', placeholder: '比如：美食区打卡搭子集合，一起扫遍摊位不踩雷！' },
+            { id: 'photo',      label: '帮拍大片', icon: 'camera',           desc: '互相拍出音乐节大片', placeholder: '比如：我带相机，帮你拍音乐节大片，出片率超高！' },
+            { id: 'care',       label: '走心互助', icon: 'hand-heart',       desc: '互相照应，帮带个东西', placeholder: '比如：互相照应，帮带充电宝、占个位~' },
+            { id: 'carpool',    label: '拼车同行', icon: 'car',              desc: '往返拼车，一路同频', placeholder: '比如：拼车往返运河，顺路可捎上你~' },
+            { id: 'afterparty', label: '节后攒局', icon: 'party-popper',     desc: '散场后约饭复盘、续摊', placeholder: '比如：散场后约饭复盘，续摊攒个局！' },
+            { id: 'gear',       label: '装备互借', icon: 'backpack',         desc: '充电宝、折叠凳、防晒', placeholder: '比如：折叠凳、野餐垫、充电宝，缺啥找我要~' },
+            { id: 'merch',      label: '周边拼单', icon: 'shopping-bag',     desc: '拼官方周边和专辑', placeholder: '比如：官方周边拼单差人，一起上车更划算！' }
         ];
 
         // 单次匹配返回的搭子数量
         var MATCH_COUNT = 4;
+
+        // AI 合照合成模拟时长（约 1 分钟）
+        var AI_PHOTO_DURATION = 60 * 1000;
 
         // 可匹配的现场搭子池
         var BUDDY_POOL = [
@@ -331,28 +334,28 @@
             return c ? c.label : '其他';
         }
 
-        // 音浪广场预置动态（海报放在第 0/3/6/9 位，与照片纵向交错且左右错落）
+        // 上大屏预置动态（合照放在第 0/3/6/9 位，与照片纵向交错且左右错落）
         var FEED_POSTS = [
-            { id: 'fp1', name: '摇滚小野', avatar: 'https://picsum.photos/100/100?random=61', text: '现场太炸了！我的海报已经上大屏，谁懂啊！！', image: 'music_new.png', likes: 328, comments: 45, time: '10分钟前', onScreen: true },
+            { id: 'fp1', name: '摇滚小野', avatar: 'https://picsum.photos/100/100?random=61', text: '现场太炸了！我的AI合照已经上大屏，谁懂啊！！', image: 'music_new.png', likes: 328, comments: 45, time: '10分钟前', onScreen: true },
             { id: 'fp5', name: '阿梨', avatar: 'https://picsum.photos/100/100?random=65', text: '富士直出！现场的晚霞和舞台美到失语', image: 'https://picsum.photos/seed/mf-fp5/400/520', likes: 156, comments: 21, time: '25分钟前', onScreen: false },
             { id: 'fp6', name: '小满不吃辣', avatar: 'https://picsum.photos/100/100?random=66', text: '美食区打卡完毕，冰粉烤肠都好吃，冲！', image: 'https://picsum.photos/seed/mf-fp6/400/300', likes: 98, comments: 14, time: '50分钟前', onScreen: false },
-            { id: 'fp2', name: '运河边的民谣客', avatar: 'https://picsum.photos/100/100?random=62', text: '运河的风配上万青的歌，绝了。海报已登屏📸', image: 'music_new1.png', likes: 256, comments: 32, time: '1小时前', onScreen: true },
+            { id: 'fp2', name: '运河边的民谣客', avatar: 'https://picsum.photos/100/100?random=62', text: '运河的风配上万青的歌，绝了。合照已登屏📸', image: 'music_new1.png', likes: 256, comments: 32, time: '1小时前', onScreen: true },
             { id: 'fp7', name: '粥粥爱吃鱼', avatar: 'https://picsum.photos/100/100?random=67', text: '应援物交换摊开张啦，快来A区找我换手幅！', image: 'https://picsum.photos/seed/mf-fp7/400/560', likes: 212, comments: 33, time: '1小时前', onScreen: false },
             { id: 'fp8', name: '盘尼西林针不戳', avatar: 'https://picsum.photos/100/100?random=68', text: '野餐垫一铺，中场休息区就是我们的', image: 'https://picsum.photos/seed/mf-fp8/400/450', likes: 134, comments: 18, time: '1小时前', onScreen: false },
-            { id: 'fp3', name: '老狼头号歌迷', avatar: 'https://picsum.photos/100/100?random=63', text: '速来A区集合！我的海报上大屏啦！', image: 'music_new2.png', likes: 189, comments: 27, time: '2小时前', onScreen: true },
+            { id: 'fp3', name: '老狼头号歌迷', avatar: 'https://picsum.photos/100/100?random=63', text: '速来A区集合！我的AI合照上大屏啦！', image: 'music_new2.png', likes: 189, comments: 27, time: '2小时前', onScreen: true },
             { id: 'fp9', name: '运河散步员', avatar: 'https://picsum.photos/100/100?random=69', text: '运河边吹风等安可，这一刻太治愈了', image: 'https://picsum.photos/seed/mf-fp9/400/320', likes: 87, comments: 9, time: '2小时前', onScreen: false },
             { id: 'fp10', name: 'ONER后援会小队长', avatar: 'https://picsum.photos/100/100?random=70', text: '灯牌就位！今晚一起为ONER打call！', image: 'https://picsum.photos/seed/mf-fp10/400/500', likes: 267, comments: 41, time: '2小时前', onScreen: false },
             { id: 'fp4', name: '二手玫瑰不是花', avatar: 'https://picsum.photos/100/100?random=64', text: '宝贝儿们，今晚大屏见！', image: 'music_new3.png', likes: 401, comments: 88, time: '2小时前', onScreen: true }
         ];
 
-        // 发动态"自动生成"文案池（与大运河音乐节相关）
+        // 上大屏"自动生成"文案池（与大运河音乐节相关）
         var AUTO_TEXTS = [
             '大运河音乐节，我来啦！现场见~',
             '运河边的风，和今晚的歌，都是我的菜！',
-            '我的海报上大屏了，谁懂啊！！',
+            '我的AI合照上大屏了，谁懂啊！！',
             '音乐节气氛拉满，今晚不虚此行！',
             '和搭子们一起蹦到散场，快乐加倍！',
-            '运河之夜，音浪不停！',
+            '运河之夜，快乐不停！',
             '现场太炸了，嗓子已哑，快乐加倍！',
             '今晚的大运河，属于音乐和快乐！',
             '万人大合唱，感动到哭！',
@@ -405,7 +408,7 @@
                         });
                     });
                 }
-                // 旧版海报分享 → 动态列表
+                // 旧版合照分享 → 动态列表
                 if (!Array.isArray(result.feedPosts)) result.feedPosts = [];
                 if (!result.feedPosts.length && result.poster && result.poster.shared) {
                     result.feedPosts = [{
@@ -473,13 +476,17 @@
             selectedTemplateId: 0,
             pickedImage: null,       // 用户自选的上传图（默认使用 music_userphoto.jpg）
             feedLiked: {},           // 动态点赞状态（会话内）
+            feedFilter: 'latest',    // 上大屏筛选：latest 最新（默认，全部）/ featured 精选 / mine 我的（仅自己发布）
             isDraftingPost: false,   // 是否处于"再发一条"的填写状态
             activePostId: null,      // 当前查看的需求 id（仅会话内）
+            editingPostId: null,     // 正在编辑留言的需求 id（仅会话内）
             chatPartnerKey: null,    // 当前私聊线程 key（需求id:搭子id）
             matchingInProgress: false, // 匹配动画期间防止重复提交
-            publishDraft: null,      // 发动态弹窗草稿
+            publishDraft: null,      // 上大屏弹窗草稿
             welcomeCollapsed: false,   // 欢迎区收起（仅会话内，刷新后重新展开）
-            passportConfirming: false, // 护照弹窗内的领取确认步骤
+            passportRedeeming: false,  // 护照弹窗内的核销领取步骤（出示二维码）
+            hintClickCount: 0,         // 领取提示文案连续点击计数
+            hintLastClickTime: 0,
             pendingEnterTimer: null,   // 欢迎区收起动画结束前的待执行切换定时器
 
             // ---------- Banner（含欢迎区，波浪始终在最底部） ----------
@@ -514,7 +521,7 @@
                         <h1 class="text-2xl font-black shimmer-festival">大运河音乐节 · 搭子集结</h1>
                         <p class="text-sm text-gray-600 mt-1.5 flex items-center justify-center gap-2">
                             <span class="inline-block w-2.5 h-2.5 rounded-full" style="background:#f3c146;"></span>
-                            来现场，搭个伴
+                            来现场，找搭子
                             <span class="inline-block w-2.5 h-2.5 rounded-full" style="background:#5ac1fb;"></span>
                         </p>
                     </div>
@@ -540,9 +547,8 @@
             // ---------- TAB 切换 ----------
             renderTabs() {
                 var tabs = [
-                    { id: 'feed',   label: '音浪广场', icon: 'radio' },
-                    { id: 'poster', label: '海报工坊', icon: 'wand-sparkles' },
-                    { id: 'buddy', label: '搭个伴',   icon: 'heart-handshake' }
+                    { id: 'feed',   label: '上大屏', icon: 'radio' },
+                    { id: 'buddy', label: '找搭子',   icon: 'heart-handshake' }
                 ];
                 var activeIdx = tabs.findIndex((tab) => tab.id === this.activeTab);
 
@@ -563,8 +569,8 @@
                     `;
                 }).join('');
 
-                // 金色滑块初始位置与激活 TAB 对齐（容器 p-1 + 2 个 gap-1 共 16px 偏移）
-                var sliderStyle = 'left: calc(4px + ' + activeIdx + ' * ((100% - 16px) / 3 + 4px)); width: calc((100% - 16px) / 3);';
+                // 金色滑块初始位置与激活 TAB 对齐（容器 p-1 + 1 个 gap-1 共 12px 偏移）
+                var sliderStyle = 'left: calc(4px + ' + activeIdx + ' * ((100% - 12px) / 2 + 4px)); width: calc((100% - 12px) / 2);';
 
                 return `
                 <div id="festivalTabBar" class="sticky top-0 z-40 transition-all duration-200">
@@ -585,7 +591,7 @@
                 if (!slider || !bar) return;
 
                 var buttons = bar.querySelectorAll('button');
-                var tabIds = ['feed', 'poster', 'buddy'];
+                var tabIds = ['feed', 'buddy'];
                 var fromIdx = tabIds.indexOf(prevId);
                 var toIdx = tabIds.indexOf(this.activeTab);
                 if (fromIdx < 0 || toIdx < 0 || fromIdx === toIdx) return;
@@ -604,9 +610,9 @@
                 slider.style.width = toBtn.offsetWidth + 'px';
             },
 
-            // ---------- 发动态按钮显隐切换 ----------
+            // ---------- 上大屏按钮显隐切换 ----------
 
-            // 卡片右上角发动态入口滚出视口顶部后，底部悬浮发动态按钮才出现
+            // 卡片右上角上大屏入口滚出视口顶部后，底部悬浮上大屏按钮才出现
             updateFabPosition() {
                 var fab = document.getElementById('publishFab');
                 var anchor = document.getElementById('publishAnchor');
@@ -632,7 +638,7 @@
                 }
                 var prevId = this.activeTab;
                 this.activeTab = id;
-                // 离开搭个伴时退出草稿态，回来时展示已发布需求列表
+                // 离开找搭子时退出草稿态，回来时展示已发布需求列表
                 if (id !== 'buddy') this.isDraftingPost = false;
                 this.render();
                 if (prevId !== id) this.animateTabSlider(prevId);
@@ -651,7 +657,7 @@
 
             // ---------- 欢迎区 & 好运护照 ----------
 
-            // 任务完成判定：发动态 / 合成海报 / 发布搭子需求，任一即可
+            // 任务完成判定：上大屏 / 找搭子 / AI合照，任一即可
             hasCompletedTask() {
                 return state.feedPosts.length > 0 || state.poster.status === 'done' || state.posts.length > 0;
             },
@@ -675,9 +681,8 @@
 
             renderWelcome() {
                 var plays = [
-                    { id: 'feed',   icon: 'radio',           name: '音浪广场', desc: '现场动态刷不停，你的分享有机会登上大屏', color: '#d4a017', bg: 'rgba(243,193,70,0.15)' },
-                    { id: 'poster', icon: 'wand-sparkles',   name: '海报工坊', desc: 'AI 合成你的专属音乐节海报，分享后有机会登上大屏', color: '#0b7fc4', bg: 'rgba(90,193,251,0.15)' },
-                    { id: 'buddy',  icon: 'heart-handshake', name: '搭个伴',   desc: '发布需求匹配同场搭子，一起蹦迪拍照干饭', color: '#d6336c', bg: 'rgba(255,64,129,0.12)' }
+                    { id: 'feed',  icon: 'radio',           name: '上大屏', desc: '分享现场瞬间，你的内容有机会登上大屏', color: '#d4a017', bg: 'rgba(243,193,70,0.15)' },
+                    { id: 'buddy', icon: 'heart-handshake', name: '找搭子', desc: '发布找搭子需求，匹配同场搭子，一起蹦迪拍照干饭', color: '#d6336c', bg: 'rgba(255,64,129,0.12)' }
                 ];
 
                 var cardsHtml = plays.map((play) => `
@@ -700,21 +705,20 @@
                         <div class="welcome-collapsible-inner">
                             <div class="text-center pt-1 pb-3">
                                 <h2 class="text-base font-black text-gray-800">欢迎来到大运河音乐节 🎵</h2>
-                                <p class="text-xs text-gray-500 mt-1">三种玩法，随你开场</p>
                             </div>
                             <div class="space-y-2.5">${cardsHtml}</div>
                         </div>
                     </div>
-                    <div class="pt-3 pb-3 flex justify-center">${this.renderPassportButton()}</div>
+                    <div class="pt-3 pb-3 flex justify-center gap-3 flex-wrap">${this.renderPassportButton()}${this.renderAiPhotoButton()}</div>
                 </div>
                 `;
             },
 
-            // 收起后保留在 TAB 栏上方的护照按钮行（与欢迎区底部间距一致，避免重建时跳动）
-            renderPassportRow() {
+            // 收起后保留在 TAB 栏上方的按钮行（与欢迎区底部间距一致，避免重建时跳动）
+            renderActionRow() {
                 return `
                 <div class="px-4 pt-1">
-                    <div class="pt-3 pb-3 flex justify-center">${this.renderPassportButton()}</div>
+                    <div class="pt-3 pb-3 flex justify-center gap-3 flex-wrap">${this.renderPassportButton()}${this.renderAiPhotoButton()}</div>
                 </div>
                 `;
             },
@@ -754,10 +758,81 @@
                 `;
             },
 
+            renderAiPhotoButton() {
+                var status = state.poster.status;
+                var suffix = '';
+                if (status === 'generating') {
+                    suffix = '<i data-lucide="loader-circle" class="w-4 h-4 animate-spin"></i>';
+                } else if (status === 'done') {
+                    suffix = '<span class="text-sm">✅</span>';
+                }
+                return `
+                <button onclick="MusicFestivalView.openAiPhotoModal()"
+                        class="flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-white border border-festival-sky font-bold text-sm active:scale-95 transition-transform shadow-sm"
+                        style="color:#0b7fc4;">
+                    <i data-lucide="users" class="w-4 h-4"></i>
+                    我的AI合照
+                    ${suffix}
+                </button>
+                `;
+            },
+
+            // ---------- 我的AI合照弹窗（原海报工坊） ----------
+            openAiPhotoModal() {
+                if (document.getElementById('aiPhotoModal')) return;
+
+                var overlay = document.createElement('div');
+                overlay.id = 'aiPhotoModal';
+                overlay.className = 'fixed inset-0 z-[200] flex items-center justify-center p-4 fade-in';
+                overlay.style.background = 'rgba(15, 20, 36, 0.72)';
+                overlay.innerHTML = '<div id="aiPhotoSheet" class="w-full max-w-md max-h-[90vh] overflow-y-auto no-scrollbar"></div>';
+                document.body.appendChild(overlay);
+                this.renderAiPhotoModalContent();
+
+                overlay.addEventListener('click', function (e) {
+                    if (e.target === overlay) MusicFestivalView.closeAiPhotoModal();
+                });
+            },
+
+            closeAiPhotoModal() {
+                var modal = document.getElementById('aiPhotoModal');
+                if (modal) modal.remove();
+            },
+
+            // 弹窗内容：生成 / 合成中 / 成品三种视图（图标/标题/介绍在卡片内），顶部仅保留关闭按钮
+            // 外层（弹出动画 + 关闭按钮）只在打开时创建一次，切换内容不重建，避免闪烁
+            renderAiPhotoModalContent() {
+                var sheet = document.getElementById('aiPhotoSheet');
+                if (!sheet) return;
+
+                var content = state.poster.status === 'done'
+                    ? this.renderPosterResult()
+                    : (state.poster.status === 'generating' ? this.renderPosterGenerating() : this.renderPosterMaker());
+
+                var inner = document.getElementById('aiPhotoInner');
+                if (!inner) {
+                    sheet.innerHTML = `
+                    <div class="animate-passport-pop">
+                        <div class="flex justify-end mb-2 px-1">
+                            <button onclick="MusicFestivalView.closeAiPhotoModal()" class="p-1.5 rounded-full bg-white/10 active:bg-white/20">
+                                <i data-lucide="x" class="w-5 h-5 text-white/80"></i>
+                            </button>
+                        </div>
+                        <div id="aiPhotoInner"></div>
+                    </div>
+                    `;
+                    inner = document.getElementById('aiPhotoInner');
+                }
+                inner.innerHTML = content;
+                window.Common.initIcons();
+                if (state.poster.status !== 'done' && state.poster.status !== 'generating') this.bindCarouselDrag();
+            },
+
             // ---------- 好运护照弹窗 ----------
             openPassportModal() {
                 if (document.getElementById('passportModal')) return;
-                this.passportConfirming = false;
+                this.passportRedeeming = false;
+                this.hintClickCount = 0;
 
                 var overlay = document.createElement('div');
                 overlay.id = 'passportModal';
@@ -779,26 +854,31 @@
 
             renderPassportTasks() {
                 var tasks = [
-                    { icon: 'message-square',   name: '发表动态',       tab: 'feed',   done: state.feedPosts.length > 0 },
-                    { icon: 'wand-sparkles',    name: '合成海报',       tab: 'poster', done: state.poster.status === 'done' },
-                    { icon: 'heart-handshake',  name: '发布找搭子需求', tab: 'buddy',  done: state.posts.length > 0 }
+                    { icon: 'monitor-up',       name: '上大屏', tab: 'feed',   done: state.feedPosts.length > 0,            desc: '发布现场动态，让你的瞬间直通大屏' },
+                    { icon: 'heart-handshake',  name: '找搭子', tab: 'buddy',  done: state.posts.length > 0,               desc: '发布找搭子需求，匹配同场搭子' },
+                    { icon: 'wand-sparkles',    name: 'AI合照', tab: 'poster', done: state.poster.status === 'done',      desc: '生成你的专属AI合照' }
                 ];
                 return tasks.map((t) => `
                     <div ${t.done ? '' : `onclick="MusicFestivalView.goDoTask('${t.tab}')"`}
-                         class="flex items-center gap-3 rounded-xl px-3.5 py-3 mb-2 ${t.done ? '' : 'cursor-pointer active:opacity-70'}"
+                         class="rounded-xl px-3.5 py-3 mb-2 ${t.done ? '' : 'cursor-pointer active:opacity-70'}"
                          style="background: rgba(255,255,255,0.72); border: 1px solid rgba(243,193,70,0.3);">
-                        <i data-lucide="${t.icon}" class="w-4 h-4 flex-shrink-0" style="color:${t.done ? '#d4a017' : 'rgba(169,123,10,0.45)'};"></i>
-                        <span class="text-xs font-medium flex-1" style="color:${t.done ? '#7a5b0e' : 'rgba(169,123,10,0.65)'};">${t.name}</span>
-                        ${t.done
-                            ? '<i data-lucide="badge-check" class="w-4 h-4 flex-shrink-0" style="color:#d4a017;"></i>'
-                            : '<i data-lucide="chevron-right" class="w-4 h-4 flex-shrink-0" style="color:#d4a017;"></i>'}
+                        <div class="flex items-center gap-3">
+                            <i data-lucide="${t.icon}" class="w-4 h-4 flex-shrink-0" style="color:${t.done ? '#d4a017' : 'rgba(169,123,10,0.45)'};"></i>
+                            <span class="text-xs font-bold flex-1" style="color:${t.done ? '#7a5b0e' : 'rgba(169,123,10,0.65)'};">${t.name}</span>
+                            ${t.done
+                                ? '<i data-lucide="badge-check" class="w-4 h-4 flex-shrink-0" style="color:#d4a017;"></i>'
+                                : '<i data-lucide="chevron-right" class="w-4 h-4 flex-shrink-0" style="color:#d4a017;"></i>'}
+                        </div>
+                        <p class="text-[10px] mt-1 ml-7" style="color: rgba(169,123,10,0.55);">${t.desc}</p>
                     </div>
                 `).join('');
             },
 
             // 从护照弹窗去完成对应任务：关闭弹窗，并按欢迎区玩法卡片相同的方式切换 TAB
+            // （我的AI合照任务改为打开AI合照弹窗）
             goDoTask(tabId) {
                 this.closePassportModal();
+                if (tabId === 'poster') { this.openAiPhotoModal(); return; }
                 this.enterPlay(tabId);
             },
 
@@ -839,24 +919,25 @@
                         </button>
                     </div>
                     `;
-                } else if (this.passportConfirming) {
+                } else if (this.passportRedeeming) {
                     body = `
-                    <div class="relative text-center py-3">
-                        <div class="text-3xl mb-2">🤝</div>
-                        <div class="font-black text-base" style="color:#8a6a1a;">确认领取</div>
-                        <p class="text-xs mt-2 leading-relaxed" style="color:#9a7a2b;">确认一下：你已经领到好运护照了吗？</p>
-                        <div class="flex gap-3 mt-5">
-                            <button onclick="MusicFestivalView.cancelCollectPassport()"
-                                    class="flex-1 py-3 rounded-xl text-sm font-bold active:scale-95 transition-transform"
-                                    style="background: rgba(255,255,255,0.7); border: 1px solid rgba(243,193,70,0.5); color:#a97b0a;">
-                                取消
-                            </button>
-                            <button onclick="MusicFestivalView.submitCollectPassport()"
-                                    class="flex-1 py-3 rounded-xl text-sm font-black active:scale-95 transition-transform"
-                                    style="background: linear-gradient(135deg, #f3c146, #f7b733); color:#4a3504;">
-                                确定领取
-                            </button>
+                    <div class="relative flex flex-col items-center text-center py-1">
+                        <div class="font-black text-base" style="color:#8a6a1a;">核销领取</div>
+                        <p class="text-xs mt-1.5 leading-relaxed" style="color:#9a7a2b;">凭此二维码到大运河南区市集护照领取点核销</p>
+                        <div class="mt-4 bg-white rounded-2xl p-3 border" style="border-color: rgba(243,193,70,0.6);">
+                            <div class="w-44 h-44">${this.renderQrCodeSvg()}</div>
                         </div>
+                        <div id="passportCollectHint" onclick="MusicFestivalView.countCollectHintClick()"
+                             class="mt-3 text-xs font-bold underline underline-offset-2 cursor-pointer select-none"
+                             style="color:#a97b0a;">
+                            请到护照领取点出示给工作人员
+                        </div>
+                        <button onclick="MusicFestivalView.backFromRedeem()"
+                                class="w-full mt-3 py-3 rounded-xl text-sm font-black active:scale-95 transition-transform flex items-center justify-center gap-1.5"
+                                style="background: linear-gradient(135deg, #f3c146, #f7b733); color:#4a3504; box-shadow: 0 4px 15px rgba(243,193,70,0.4);">
+                            <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                            返回
+                        </button>
                     </div>
                     `;
                 } else if (this.hasCompletedTask()) {
@@ -866,11 +947,24 @@
                         <div class="font-black text-base" style="color:#8a6a1a;">任务完成，好运出发！</div>
                         <p class="text-xs mt-1.5 leading-relaxed" style="color:#9a7a2b;">现在就去大运河南区市集领取好运护照，参加现场趣味游戏，抽取幸运奖品！</p>
                     </div>
-                    ${this.renderPassportTasks()}
-                    <button onclick="MusicFestivalView.confirmCollectPassport()"
+
+                    <!-- 领取指引：领取点 + 小地图图标 -->
+                    <div class="relative mb-4 rounded-xl px-3.5 py-3 flex items-center gap-3"
+                         style="background: rgba(255,255,255,0.72); border: 1px solid rgba(243,193,70,0.3);">
+                        <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style="background: rgba(90,193,251,0.18);">
+                            <i data-lucide="map-pin" class="w-5 h-5" style="color:#0b7fc4;"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="text-xs font-bold" style="color:#7a5b0e;">护照领取点 · 大运河南区市集</div>
+                            <div class="text-[10px] mt-0.5" style="color:#9a7a2b;">现场找「好运护照服务站」，工作人员会帮你核销</div>
+                        </div>
+                        <i data-lucide="map" class="w-5 h-5 flex-shrink-0" style="color:#0b7fc4;"></i>
+                    </div>
+
+                    <button onclick="MusicFestivalView.startPassportRedeem()"
                             class="w-full mt-3 py-3 rounded-xl text-sm font-black active:scale-95 transition-transform"
                             style="background: linear-gradient(135deg, #f3c146, #f7b733); color:#4a3504; box-shadow: 0 4px 15px rgba(243,193,70,0.4);">
-                        我已领取
+                        核销领取
                     </button>
                     `;
                 } else {
@@ -878,7 +972,7 @@
                     <div class="relative text-center mb-4">
                         <div class="text-3xl mb-2">🎫</div>
                         <div class="font-black text-base" style="color:#8a6a1a;">好运护照 · 领取说明</div>
-                        <p class="text-xs mt-1.5 leading-relaxed" style="color:#9a7a2b;">完成任意一个任务（发动态 / 合成海报 / 发布找搭子需求），即可前往大运河音乐节南区市集现场领取好运护照，现场趣味游戏 + 幸运抽奖，就等你来！</p>
+                        <p class="text-xs mt-1.5 leading-relaxed" style="color:#9a7a2b;">完成任意一个任务（上大屏 / 找搭子 / AI合照），即可前往大运河音乐节南区市集现场领取好运护照，现场趣味游戏 + 幸运抽奖，就等你来！</p>
                     </div>
                     ${this.renderPassportTasks()}
                     <div class="text-center text-[10px] mt-3" style="color: rgba(169,123,10,0.5);">完成任务后，再回来领取你的好运护照哦</div>
@@ -912,19 +1006,57 @@
                 window.Common.initIcons();
             },
 
-            confirmCollectPassport() {
-                this.passportConfirming = true;
+            // 伪二维码（演示用）：三个定位角 + 固定种子点阵
+            renderQrCodeSvg() {
+                var size = 21;
+                var seed = 20260914;
+                function rnd() { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; }
+
+                var rects = '';
+                for (var r = 0; r < size; r++) {
+                    for (var c = 0; c < size; c++) {
+                        var inFinder = (r < 7 && c < 7) || (r < 7 && c >= size - 7) || (r >= size - 7 && c < 7);
+                        if (inFinder) continue;
+                        if (rnd() > 0.55) rects += '<rect x="' + c + '" y="' + r + '" width="1" height="1" fill="#1b2440"/>';
+                    }
+                }
+                var finder = function (x, y) {
+                    return '<rect x="' + x + '" y="' + y + '" width="7" height="7" fill="#1b2440"/>'
+                        + '<rect x="' + (x + 1) + '" y="' + (y + 1) + '" width="5" height="5" fill="#ffffff"/>'
+                        + '<rect x="' + (x + 2) + '" y="' + (y + 2) + '" width="3" height="3" fill="#1b2440"/>';
+                };
+                return '<svg viewBox="0 0 21 21" class="w-full h-full">'
+                    + finder(0, 0) + finder(14, 0) + finder(0, 14) + rects + '</svg>';
+            },
+
+            // 进入核销步骤：展示领取二维码
+            startPassportRedeem() {
+                this.passportRedeeming = true;
                 this.renderPassportModalContent();
             },
 
-            cancelCollectPassport() {
-                this.passportConfirming = false;
+            // 核销步骤返回上一步（领取指引）
+            backFromRedeem() {
+                this.passportRedeeming = false;
+                this.hintClickCount = 0;
                 this.renderPassportModalContent();
+            },
+
+            // 领取提示文案连续点击三下 → 执行领取完成
+            countCollectHintClick() {
+                var now = Date.now();
+                if (now - this.hintLastClickTime > 1000) this.hintClickCount = 0; // 超过 1 秒未点击则重新计数
+                this.hintLastClickTime = now;
+                this.hintClickCount += 1;
+                if (this.hintClickCount >= 3) {
+                    this.hintClickCount = 0;
+                    this.submitCollectPassport();
+                }
             },
 
             submitCollectPassport() {
                 saveState({ passport: Object.assign({}, state.passport, { collected: true }) });
-                this.passportConfirming = false;
+                this.passportRedeeming = false;
                 // 弹窗直接切换为盖章护照样式即为反馈（Toast z-100 会被弹窗 z-200 遮挡）
                 this.renderPassportModalContent();
                 this.render(); // 同步更新 TAB 栏上方按钮的领取状态
@@ -934,22 +1066,103 @@
             resetPassportDemo() {
                 saveState({
                     posts: [], chats: [], feedPosts: [],
-                    poster: Object.assign({}, state.poster, { status: 'none', shared: false, sharedText: '' }),
+                    poster: Object.assign({}, state.poster, { status: 'none', shared: false, sharedText: '', startedAt: 0 }),
                     passport: { collected: false }
                 });
                 this.feedLiked = {};
                 this.activePostId = null;
                 this.isDraftingPost = false;
-                this.passportConfirming = false;
+                this.passportRedeeming = false;
                 this.renderPassportModalContent(); // 弹窗回到领取说明态
                 this.render(); // 页面按钮回到普通态
             },
 
-            // ---------- 功能一：搭个伴 ----------
+            // ---------- 功能一：找搭子 ----------
             renderBuddyTab() {
                 if (this.isDraftingPost) return this.renderBuddyForm();
                 if (state.posts.length > 0) return this.renderPostsView();
-                return this.renderBuddyForm();
+                return this.renderBuddyExplore(); // 未发布需求：随机搭子抢先看
+            },
+
+            // 未发布需求时的探索视图：随机展示 4 位不同需求的现场搭子
+            renderBuddyExplore() {
+                var catIds = shuffle(NEED_CATEGORIES.map(function (c) { return c.id; }));
+                var picks = [];
+                for (var i = 0; i < catIds.length && picks.length < 4; i++) {
+                    var pool = shuffle(BUDDY_POOL.filter(function (b) { return b.category === catIds[i]; }));
+                    if (pool.length) picks.push(pool[0]);
+                }
+
+                return `
+                <div class="px-4 pt-1.5 pb-4">
+                    <!-- 抢先看卡片头部 + 右上角发需求入口 -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
+                        <div class="flex items-center gap-2">
+                            <div class="p-1.5 rounded-lg flex-shrink-0" style="background: rgba(243,193,70,0.18);">
+                                <i data-lucide="heart-handshake" class="w-4 h-4" style="color:#d4a017;"></i>
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <h3 class="font-black text-gray-900 whitespace-nowrap">现场搭子抢先看</h3>
+                                <p class="text-[11px] text-gray-400 truncate">以下为部分找搭子信息，发布你的需求匹配更多</p>
+                            </div>
+                            <button onclick="MusicFestivalView.openBuddyForm()"
+                                    class="flex-shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold border border-white active:scale-95 transition-transform"
+                                    style="background: linear-gradient(135deg, #f3c146, #f7b733); color:#4a3504; box-shadow: 0 2px 8px rgba(243,193,70,0.4);">
+                                <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                                发需求
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="mt-3 space-y-3">
+                        ${picks.map((b) => this.renderBuddyExploreCard(b)).join('')}
+                    </div>
+
+                    <button onclick="MusicFestivalView.goPublishRequest()"
+                            class="w-full mt-3 py-3 rounded-xl text-sm font-bold border border-festival-gold active:scale-95 transition-transform"
+                            style="color:#a97b0a; background: rgba(243,193,70,0.08);">
+                        更多
+                    </button>
+                </div>
+                `;
+            },
+
+            renderBuddyExploreCard(b) {
+                return `
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
+                    <div class="flex items-center gap-3">
+                        <img src="${escapeHtml(b.avatarUrl)}" class="w-14 h-14 flex-shrink-0 rounded-full border-2 border-white shadow-md object-cover"
+                             onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"/>
+                        <div class="w-14 h-14 flex-shrink-0 rounded-full border-2 border-white shadow-md hidden items-center justify-center text-lg font-black text-white"
+                             style="background: linear-gradient(135deg, #f3c146, #5ac1fb);">${escapeHtml(b.name.charAt(0))}</div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-1.5 flex-wrap">
+                                <span class="font-black text-gray-900 whitespace-nowrap">${escapeHtml(b.name)}</span>
+                                <i data-lucide="badge-check" class="w-3.5 h-3.5 text-festival-sky"></i>
+                                <span class="text-[10px] text-gray-500 whitespace-nowrap">${escapeHtml(b.gender)} · ${escapeHtml(b.age)}岁</span>
+                            </div>
+                            <div class="flex flex-wrap gap-1.5 mt-1.5">
+                                <span class="tag-festival-sky text-[10px] px-2 py-0.5 rounded-full font-medium">${categoryLabel(b.category)}</span>
+                                ${(b.tags || []).map((t) => '<span class="text-[10px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">' + escapeHtml(t) + '</span>').join('')}
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-500 leading-relaxed mt-3 bg-gray-50 rounded-xl p-3">"${escapeHtml(b.intro)}"</p>
+                </div>
+                `;
+            },
+
+            // 更多：提示并回到发布需求界面
+            goPublishRequest() {
+                window.Common.showToast('请发布你的需求，解锁更多同场搭子');
+                this.isDraftingPost = true;
+                this.render();
+            },
+
+            // 右上角发需求按钮：直接打开发布需求表单
+            openBuddyForm() {
+                this.isDraftingPost = true;
+                this.render();
             },
 
             renderBuddyForm() {
@@ -978,7 +1191,7 @@
                             <div class="p-1.5 rounded-lg flex-shrink-0" style="background: rgba(243,193,70,0.18);">
                                 <i data-lucide="clipboard-list" class="w-4 h-4" style="color:#d4a017;"></i>
                             </div>
-                            <h3 class="font-black text-gray-900 whitespace-nowrap shrink-0">发布搭子需求</h3>
+                            <h3 class="font-black text-gray-900 whitespace-nowrap shrink-0">发布找搭子需求</h3>
                             <span class="tag-festival text-[10px] px-2 py-0.5 rounded-full font-medium whitespace-nowrap shrink-0">现场结伴</span>
                         </div>
 
@@ -993,7 +1206,7 @@
                             <label class="text-xs font-bold text-gray-500 mb-2 block">个人留言 <span class="text-gray-400 font-normal">（100 字以内）</span></label>
                             <textarea id="buddyMessage" maxlength="100" rows="3"
                                       class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm bg-white outline-none focus:border-festival-gold resize-none"
-                                      placeholder="说说你想找什么样的搭子~"></textarea>
+                                      placeholder="${escapeHtml(this.buddyMessagePlaceholder())}"></textarea>
                             <div class="text-right text-[10px] text-gray-400 mt-1"><span id="buddyMessageCount">0</span>/100</div>
                         </div>
 
@@ -1054,7 +1267,34 @@
                             </div>
                             <div class="flex items-start gap-2">
                                 <span class="text-[10px] font-bold text-white px-2 py-0.5 rounded-md mt-0.5 whitespace-nowrap shrink-0" style="background:#7B1FA2;">留&#12288;&#12288;言</span>
-                                <span class="text-gray-600 leading-relaxed">${escapeHtml(post.message)}</span>
+                                ${this.editingPostId === post.id ? `
+                                <div class="flex-1 min-w-0">
+                                    <textarea id="editMessage" maxlength="100" rows="3"
+                                              class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm bg-white outline-none focus:border-festival-gold resize-none">${escapeHtml(post.message)}</textarea>
+                                    <div class="flex items-center justify-between mt-1.5">
+                                        <span class="text-[10px] text-gray-400"><span id="editMessageCount">0</span>/100</span>
+                                        <div class="flex gap-2">
+                                            <button onclick="MusicFestivalView.cancelEditPost()"
+                                                    class="text-xs font-bold px-3 py-1.5 rounded-full border border-gray-200 text-gray-500 active:scale-95 transition-transform">
+                                                取消
+                                            </button>
+                                            <button onclick="MusicFestivalView.saveEditPost()"
+                                                    class="text-xs font-bold px-3 py-1.5 rounded-full active:scale-95 transition-transform"
+                                                    style="background: linear-gradient(135deg, #f3c146, #f7b733); color:#4a3504;">
+                                                保存
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>` : `
+                                <div class="flex-1 min-w-0">
+                                    <span class="text-gray-600 leading-relaxed">${escapeHtml(post.message)}</span>
+                                    <button onclick="MusicFestivalView.editPost('${post.id}')"
+                                            class="mt-1 flex items-center gap-1 text-[10px] font-medium active:opacity-70"
+                                            style="color:#0b7fc4;">
+                                        <i data-lucide="pencil" class="w-3 h-3"></i>
+                                        编辑留言
+                                    </button>
+                                </div>`}
                             </div>
                         </div>
                     </div>
@@ -1087,7 +1327,10 @@
                 return `
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-3">
                     <div class="flex items-center gap-3">
-                        <img src="${escapeHtml(m.avatarUrl)}" class="w-14 h-14 flex-shrink-0 rounded-full border-2 border-white shadow-md object-cover"/>
+                        <img src="${escapeHtml(m.avatarUrl)}" class="w-14 h-14 flex-shrink-0 rounded-full border-2 border-white shadow-md object-cover"
+                             onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"/>
+                        <div class="w-14 h-14 flex-shrink-0 rounded-full border-2 border-white shadow-md hidden items-center justify-center text-lg font-black text-white"
+                             style="background: linear-gradient(135deg, #f3c146, #5ac1fb);">${escapeHtml(m.name.charAt(0))}</div>
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center gap-1.5 flex-wrap">
                                 <span class="font-black text-gray-900 whitespace-nowrap">${escapeHtml(m.name)}</span>
@@ -1129,6 +1372,33 @@
                 this.render();
             },
 
+            // 编辑已发布需求的留言（会话内状态，保存后写入存储）
+            editPost(id) {
+                this.editingPostId = id;
+                this.render();
+            },
+
+            cancelEditPost() {
+                this.editingPostId = null;
+                this.render();
+            },
+
+            saveEditPost() {
+                var el = document.getElementById('editMessage');
+                if (!el) return;
+                var msg = el.value.trim();
+                if (!msg) { window.Common.showToast('留言不能为空'); return; }
+
+                var editingId = this.editingPostId;
+                var posts = state.posts.map(function (p) {
+                    return p.id === editingId ? Object.assign({}, p, { message: msg }) : p;
+                });
+                saveState({ posts: posts });
+                this.editingPostId = null;
+                this.render();
+                window.Common.showToast('留言已更新');
+            },
+
             // 当前查看的需求（兜底取第一条）
             activePost() {
                 return state.posts.find((p) => p.id === this.activePostId) || state.posts[0];
@@ -1146,17 +1416,23 @@
                 window.Common.showToast('已为你找到 ' + matches.length + ' 位搭子');
             },
 
-            // 表单草稿（预置演示内容）
+            // 表单草稿（默认留言为空，placeholder 按需求类别切换提示）
             initBuddyDraft() {
                 this.buddyDraft = {
                     category: 'support',
-                    message: '第一次来大运河音乐节，想找个搭子一起吃吃喝喝、拍照蹦迪！'
+                    message: ''
                 };
             },
 
             pickCategory(id) {
                 this.buddyDraft.category = id;
                 this.render();
+            },
+
+            // 当前需求类别对应的留言示例提示
+            buddyMessagePlaceholder() {
+                var cat = NEED_CATEGORIES.find(function (c) { return c.id === this.buddyDraft.category; }, this);
+                return cat && cat.placeholder ? cat.placeholder : '说说你想找什么样的搭子~';
             },
 
             submitBuddyForm() {
@@ -1229,7 +1505,10 @@
                         <button onclick="MusicFestivalView.closeChat()" class="p-1.5 -ml-1 rounded-full active:bg-gray-100">
                             <i data-lucide="chevron-left" class="w-6 h-6 text-gray-600"></i>
                         </button>
-                        <img src="${escapeHtml(p.avatarUrl)}" class="w-9 h-9 rounded-full object-cover border border-gray-200"/>
+                        <img src="${escapeHtml(p.avatarUrl)}" class="w-9 h-9 rounded-full object-cover border border-gray-200"
+                             onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"/>
+                        <div class="w-9 h-9 rounded-full border border-gray-200 hidden items-center justify-center text-sm font-black text-white flex-shrink-0"
+                             style="background: linear-gradient(135deg, #f3c146, #5ac1fb);">${escapeHtml(p.name.charAt(0))}</div>
                         <div class="flex-1 min-w-0">
                             <div class="font-bold text-sm text-gray-900 flex items-center gap-1 whitespace-nowrap">
                                 ${escapeHtml(p.name)}
@@ -1346,21 +1625,14 @@
                 return (h < 10 ? '0' + h : h) + ':' + (m < 10 ? '0' + m : m);
             },
 
-            // ---------- 功能二：海报工坊 ----------
-            renderPosterTab() {
-                if (state.poster.status === 'done') {
-                    return this.renderPosterResult();
-                }
-                return this.renderPosterMaker();
-            },
-
+            // ---------- 功能二：我的AI合照（弹窗内展示） ----------
             renderPosterMaker() {
                 var templatesHtml = TEMPLATES.map((t, i) => {
                     var offset = i - this.centerIndex;
                     var abs = Math.abs(offset);
                     var zIndex = 10 - abs;
                     var opacity = abs >= 3 ? 0 : (abs === 2 ? 0.45 : 1);
-                    var transform = 'translateX(' + (offset * 96) + 'px) translateZ(' + (-abs * 90) + 'px) rotateY(' + (offset * -30) + 'deg)';
+                    var transform = 'translateX(' + (offset * 72) + 'px) translateZ(' + (-abs * 75) + 'px) rotateY(' + (offset * -28) + 'deg)';
                     return `
                     <div class="carousel-item" data-idx="${i}"
                          style="z-index:${zIndex}; opacity:${opacity}; transform:${transform};"
@@ -1376,26 +1648,26 @@
 
                 return `
                 <div class="px-4 pt-1.5 pb-4">
-                    <!-- 海报工坊工作区卡片（参考搭个伴表单卡片样式） -->
+                    <!-- AI 合照工作区卡片（母版可超出卡片，由弹窗边缘裁切） -->
                     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
-                        <!-- 头部排版与音浪广场一致：图标 + 上下排列的标题与介绍 -->
+                        <!-- 头部：图标 + 标题与介绍 -->
                         <div class="flex items-center gap-2 mb-3">
                             <div class="p-1.5 rounded-lg flex-shrink-0" style="background: rgba(90,193,251,0.18);">
-                                <i data-lucide="wand-sparkles" class="w-4 h-4" style="color:#0b7fc4;"></i>
+                                <i data-lucide="users" class="w-4 h-4" style="color:#0b7fc4;"></i>
                             </div>
                             <div class="min-w-0">
-                                <h3 class="font-black text-gray-900 whitespace-nowrap">海报工坊</h3>
-                                <p class="text-[11px] text-gray-400">合成你的大运河音乐节海报，有机会登上现场大屏</p>
+                                <h3 class="font-black text-gray-900 whitespace-nowrap">我的AI合照</h3>
+                                <p class="text-[11px] text-gray-400">AI 合成你的大运河音乐节合照，有机会登上现场大屏</p>
                             </div>
                         </div>
 
                         <!-- 母版选择 -->
                         <div class="mb-4">
                             <div class="flex items-center justify-between mb-2">
-                                <label class="text-xs font-bold text-gray-500">选择海报母版</label>
+                                <label class="text-xs font-bold text-gray-500">选择合照母版</label>
                                 <span class="text-[10px] text-gray-400">左右滑动立体切换</span>
                             </div>
-                            <div id="carouselStage" class="carousel-stage relative h-[170px] overflow-visible select-none" style="touch-action: pan-y;">
+                            <div id="carouselStage" class="carousel-stage relative h-[150px] overflow-visible select-none" style="touch-action: pan-y;">
                                 ${templatesHtml}
                             </div>
                             <div class="flex items-center justify-center gap-3 mt-4">
@@ -1427,23 +1699,44 @@
                                             class="w-full py-2.5 rounded-xl text-white font-bold text-sm active:scale-95 transition-transform flex items-center justify-center gap-2"
                                             style="background: linear-gradient(135deg, #5ac1fb, #2b8fd6); box-shadow: 0 3px 12px rgba(90,193,251,0.35);">
                                         <i data-lucide="image-plus" class="w-4 h-4"></i>
-                                        上图
+                                        做同款
                                     </button>
-                                    <p class="text-[10px] text-gray-400 mt-2 leading-relaxed">默认使用你的现场照（演示图），点击上图可更换</p>
+                                    <p class="text-[10px] text-gray-400 mt-2 leading-relaxed">默认使用你的现场照（演示图），点做同款可更换</p>
                                 </div>
                                 <input type="file" id="posterFileInput" accept="image/*" class="hidden" onchange="MusicFestivalView.onPickImage(this)"/>
                             </div>
                         </div>
 
                         <button onclick="MusicFestivalView.submitPoster()"
-                                class="btn-pulse-festival w-full py-3.5 rounded-xl text-white font-black text-base active:scale-95 transition-transform"
+                                class="btn-pulse-festival w-full py-3 rounded-xl text-white font-black text-base active:scale-95 transition-transform"
                                 style="background: linear-gradient(135deg, #f3c146, #f7b733); box-shadow: 0 4px 15px rgba(243,193,70,0.45);">
-                            <span class="flex items-center justify-center gap-2">
-                                <i data-lucide="sparkles" class="w-4 h-4"></i>
-                                生成我的海报
+                            <span class="flex flex-col items-center justify-center leading-tight">
+                                <span class="flex items-center justify-center gap-2">
+                                    <i data-lucide="sparkles" class="w-4 h-4"></i>
+                                    生成我的合照
+                                </span>
+                                <span class="text-[10px] font-medium opacity-90 mt-0.5">每人仅有一次合成机会</span>
                             </span>
                         </button>
-                        <p class="text-center text-[10px] text-gray-400 mt-2">每人仅有一次合成机会，生成后海报将保留在你的页面</p>
+                    </div>
+                </div>
+                `;
+            },
+
+            // 合成中提示视图（约 1 分钟，用户可关闭弹窗先去逛其他页面）
+            renderPosterGenerating() {
+                return `
+                <div class="px-4 pt-1.5 pb-4">
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                        <div class="flex flex-col items-center text-center py-3">
+                            <div class="relative w-14 h-14 mb-4">
+                                <div class="ai-ring w-14 h-14 rounded-full"></div>
+                                <div class="absolute inset-0 flex items-center justify-center text-2xl ai-bounce">🎵</div>
+                            </div>
+                            <div class="font-black text-base text-gray-900">魔法合成中，你的专属合照马上出炉 ✨</div>
+                            <p class="text-xs text-gray-500 mt-2 leading-relaxed">合成大约需要 1 分钟，你可以先逛逛其他页面，一会儿回来看你的美照</p>
+                            <p class="text-[10px] text-gray-400 mt-3">关掉弹窗也没关系，首页按钮上的小转圈会替你盯着</p>
+                        </div>
                     </div>
                 </div>
                 `;
@@ -1453,14 +1746,14 @@
                 if (this.recentDrag) return;
                 this.selectedTemplateId = i;
                 this.centerIndex = i;
-                this.render();
+                this.renderAiPhotoModalContent();
             },
 
             moveCarousel(dir) {
                 var next = (this.centerIndex + dir + TEMPLATES.length) % TEMPLATES.length;
                 this.centerIndex = next;
                 this.selectedTemplateId = next;
-                this.render();
+                this.renderAiPhotoModalContent();
             },
 
             onPickImage(input) {
@@ -1481,117 +1774,80 @@
 
             submitPoster() {
                 if (state.poster.status === 'done') {
-                    window.Common.showToast('每人仅有一次合成机会，你的海报已生成');
+                    window.Common.showToast('每人仅有一次合成机会，你的AI合照已生成');
                     return;
                 }
-                this.showAiOverlay();
-            },
-
-            // AI 合成动画（约 3.5 秒）
-            showAiOverlay() {
-                var steps = [
-                    { icon: 'scan-face', text: '正在识别你的照片…' },
-                    { icon: 'layout-template', text: '匹配母版风格…' },
-                    { icon: 'sparkles', text: 'AI 融合渲染中…' },
-                    { icon: 'image', text: '生成专属海报…' }
-                ];
-
-                var overlay = document.createElement('div');
-                overlay.id = 'aiOverlay';
-                overlay.className = 'fixed inset-0 z-[300] flex flex-col items-center justify-center fade-in';
-                overlay.style.background = 'rgba(15, 20, 36, 0.9)';
-                overlay.innerHTML = `
-                    <div class="relative mb-8">
-                        <div class="ai-ring w-20 h-20 rounded-full"></div>
-                        <div class="absolute inset-0 flex items-center justify-center text-2xl ai-bounce">🎵</div>
-                    </div>
-                    <div id="aiStepText" class="text-white font-bold text-base ai-bounce">正在识别你的照片…</div>
-                    <div class="w-56 h-1.5 bg-white/15 rounded-full mt-6 overflow-hidden">
-                        <div id="aiProgressBar" class="h-full rounded-full" style="width:0%; background: linear-gradient(90deg, #f3c146, #5ac1fb); transition: width .2s ease;"></div>
-                    </div>
-                    <div id="aiProgressText" class="text-white/50 text-xs mt-2">0%</div>
-                `;
-                document.body.appendChild(overlay);
-                window.Common.initIcons();
-
-                var progress = 0;
-                var stepIdx = 0;
-                var view = this;
-
-                var timer = setInterval(function () {
-                    progress += 2 + Math.random() * 5;
-                    if (progress >= 100) progress = 100;
-
-                    var bar = document.getElementById('aiProgressBar');
-                    var pctText = document.getElementById('aiProgressText');
-                    if (bar) bar.style.width = progress + '%';
-                    if (pctText) pctText.textContent = Math.floor(progress) + '%';
-
-                    var newStep = Math.min(steps.length - 1, Math.floor(progress / (100 / steps.length)));
-                    if (newStep !== stepIdx) {
-                        stepIdx = newStep;
-                        var stepText = document.getElementById('aiStepText');
-                        if (stepText) stepText.textContent = steps[stepIdx].text;
-                    }
-
-                    if (progress >= 100) {
-                        clearInterval(timer);
-                        setTimeout(function () {
-                            view.finishPoster();
-                        }, 500);
-                    }
-                }, 120);
-            },
-
-            finishPoster() {
-                var overlay = document.getElementById('aiOverlay');
-                if (overlay) overlay.remove();
-
+                if (state.poster.status === 'generating') {
+                    window.Common.showToast('合照正在合成中，稍等一会儿哦');
+                    return;
+                }
+                // 开始异步合成（约 1 分钟），不出动画，界面内展示加载提示
                 saveState({
-                    poster: Object.assign({}, state.poster, { status: 'done' })
+                    poster: Object.assign({}, state.poster, { status: 'generating', startedAt: Date.now() })
                 });
                 this.render();
-                window.Common.showToast('🎉 海报合成成功！');
+                this.renderAiPhotoModalContent(); // 弹窗内切换为合成中提示
+            },
+
+            // 合成完成轮询：到时间后自动切为成品（定时器 + 各渲染入口兜底）
+            checkPosterDone() {
+                if (state.poster.status !== 'generating') return;
+                if (Date.now() - (state.poster.startedAt || 0) < AI_PHOTO_DURATION) return;
+
+                saveState({
+                    poster: Object.assign({}, state.poster, { status: 'done', startedAt: 0 })
+                });
+                this.render();
+                this.renderAiPhotoModalContent(); // 弹窗开着则直接切到成品
+                // 若从发布弹窗的"用我的AI合照"入口过来，合成完成后自动选上合照
+                if (document.getElementById('publishModal')) {
+                    this.publishDraft.image = 'music_new.png';
+                    this.publishDraft.imageType = 'poster';
+                    this.renderPublishModalContent();
+                }
+                if (!document.getElementById('aiPhotoModal')) {
+                    window.Common.showToast('🎉 AI合照合成完成，快去看看你的美照吧');
+                }
             },
 
             renderPosterResult() {
                 var shared = state.poster.shared;
                 return `
                 <div class="px-4 pt-1.5 pb-4">
-                    <!-- 海报工坊结果卡片（与生成态同款白色卡片） -->
+                    <!-- AI 合照结果卡片（与生成态同款白色卡片） -->
                     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
-                        <!-- 头部排版与音浪广场一致：图标 + 上下排列的标题与介绍 -->
+                        <!-- 头部：图标 + 标题与介绍 -->
                         <div class="flex items-center gap-2 mb-3">
                             <div class="p-1.5 rounded-lg flex-shrink-0" style="background: rgba(90,193,251,0.18);">
-                                <i data-lucide="wand-sparkles" class="w-4 h-4" style="color:#0b7fc4;"></i>
+                                <i data-lucide="users" class="w-4 h-4" style="color:#0b7fc4;"></i>
                             </div>
                             <div class="min-w-0">
-                                <h3 class="font-black text-gray-900 whitespace-nowrap">海报工坊</h3>
-                                <p class="text-[11px] text-gray-400">合成你的大运河音乐节海报，有机会登上现场大屏</p>
+                                <h3 class="font-black text-gray-900 whitespace-nowrap">我的AI合照</h3>
+                                <p class="text-[11px] text-gray-400">AI 合成你的大运河音乐节合照，有机会登上现场大屏</p>
                             </div>
                         </div>
 
-                        <!-- 成品海报 -->
+                        <!-- 成品合照 -->
                         <div class="poster-frame shadow-xl">
                             <img src="music_new.png" class="w-full rounded-xl" style="aspect-ratio: 1000/561; object-fit: cover;"
                                  onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"/>
                             <div class="hidden flex-col items-center justify-center rounded-xl" style="aspect-ratio: 1000/561; background: linear-gradient(135deg, #f3c146, #5ac1fb);">
                                 <span class="text-3xl mb-1">🎵</span>
-                                <span class="text-white text-sm font-bold">大运河音乐节 · 专属海报</span>
+                                <span class="text-white text-sm font-bold">大运河音乐节 · 专属AI合照</span>
                             </div>
                         </div>
 
                         <div class="flex items-center justify-center gap-2 text-xs text-gray-500 mt-3">
                             <i data-lucide="monitor-up" class="w-3.5 h-3.5 text-festival-sky"></i>
-                            你的海报已生成，分享后有机会登上大屏
+                            你的AI合照已生成，分享后有机会登上大屏
                         </div>
 
                         <div class="flex gap-3 mt-4">
                             <button onclick="MusicFestivalView.goShare()"
                                     class="flex-1 py-3.5 rounded-xl font-black text-sm active:scale-95 transition-transform flex items-center justify-center gap-2 ${shared ? 'bg-gray-100 text-gray-400 cursor-default' : 'text-white'}"
                                     style="${shared ? '' : 'background: linear-gradient(135deg, #f3c146, #f7b733); box-shadow: 0 4px 15px rgba(243,193,70,0.4);'}">
-                                <i data-lucide="${shared ? 'check' : 'share-2'}" class="w-4 h-4"></i>
-                                ${shared ? '已分享' : '去分享'}
+                                <i data-lucide="${shared ? 'check' : 'monitor-up'}" class="w-4 h-4"></i>
+                                ${shared ? '已上大屏' : '上大屏'}
                             </button>
                             <button onclick="MusicFestivalView.savePoster()"
                                     class="flex-1 py-3.5 rounded-xl text-white font-black text-sm active:scale-95 transition-transform flex items-center justify-center gap-2"
@@ -1600,49 +1856,49 @@
                                 保存
                             </button>
                         </div>
-                        <p class="text-center text-[10px] text-gray-400 mt-2">海报合成后永久保留在界面，随时可以保存</p>
+                        <p class="text-center text-[10px] text-gray-400 mt-2">合照合成后永久保留，随时可以保存</p>
 
-                        <!-- 重新合成入口（卡片最下方） -->
+                        <!-- 重新合成入口（演示用，一行小字） -->
                         <button onclick="MusicFestivalView.resetPoster()"
-                                class="w-full mt-3 py-2.5 rounded-xl border border-festival-gold text-sm font-bold active:scale-95 transition-transform flex items-center justify-center gap-1.5"
-                                style="color: #a97b0a; background: rgba(243,193,70,0.08);">
-                            <i data-lucide="refresh-ccw" class="w-3.5 h-3.5"></i>
-                            重新合成
+                                class="w-full mt-3 py-1 text-center text-[10px] text-gray-400 underline underline-offset-2 active:opacity-70">
+                            重新合成（仅演示版可使用）
                         </button>
                     </div>
                 </div>
                 `;
             },
 
-            // 重新合成：回到海报生成界面
+            // 重新合成：回到AI合照生成界面
             resetPoster() {
                 saveState({
-                    poster: Object.assign({}, state.poster, { status: 'none', shared: false, sharedText: '' })
+                    poster: Object.assign({}, state.poster, { status: 'none', shared: false, sharedText: '', startedAt: 0 })
                 });
                 this.render();
-                window.Common.showToast('已进入海报合成界面');
+                this.renderAiPhotoModalContent();
+                window.Common.showToast('已进入AI合照合成界面');
             },
 
             savePoster() {
                 var a = document.createElement('a');
                 a.href = 'music_new.png';
-                a.download = '大运河音乐节-我的海报.png';
+                a.download = '大运河音乐节-我的AI合照.png';
                 document.body.appendChild(a);
                 a.click();
                 a.remove();
-                window.Common.showToast('海报已保存到本地');
+                window.Common.showToast('合照已保存到本地');
             },
 
-            // 去分享：跳到音浪广场并直接调起发布窗口（默认用我的海报）
+            // 上大屏：关闭弹窗，直接调起发布窗口（默认用我的合照）
             goShare() {
                 if (state.poster.status !== 'done') return;
                 if (state.poster.shared) return; // 已分享过，不再重复拉起
+                this.closeAiPhotoModal();
                 this.switchTab('feed');
                 this.initPublishDraft({ image: 'music_new.png', imageType: 'poster' });
                 this.openPublishModal();
             },
 
-            // ---------- 发动态 ----------
+            // ---------- 上大屏 ----------
             initPublishDraft(preset) {
                 this.publishDraft = Object.assign({ image: null, imageType: null, text: '', onScreen: true, idCard: null }, preset || {});
             },
@@ -1676,7 +1932,6 @@
                 if (!sheet) return;
 
                 var d = this.publishDraft;
-                var posterDone = state.poster.status === 'done';
                 var idCardUploaded = !!state.idCardUploaded;
 
                 var preview = d.image
@@ -1711,7 +1966,7 @@
 
                 sheet.innerHTML = `
                     <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-lg font-black text-gray-900 whitespace-nowrap">发动态</h3>
+                        <h3 class="text-lg font-black text-gray-900 whitespace-nowrap">上大屏</h3>
                         <button onclick="MusicFestivalView.closePublishModal()" class="p-1 rounded-full active:bg-gray-100 shrink-0">
                             <i data-lucide="x" class="w-5 h-5 text-gray-400"></i>
                         </button>
@@ -1723,8 +1978,8 @@
                         ${preview}
                         <div class="flex gap-2 mt-2">
                             <button onclick="MusicFestivalView.pickPosterImage()"
-                                    class="flex-1 py-2.5 rounded-xl text-sm font-bold border transition-all duration-150 active:scale-95 ${d.imageType === 'poster' ? 'border-festival-gold text-amber-700' : 'border-gray-200 text-gray-600 bg-white'} ${posterDone ? '' : 'opacity-40'}">
-                                🖼 用我的海报
+                                    class="flex-1 py-2.5 rounded-xl text-sm font-bold border transition-all duration-150 active:scale-95 ${d.imageType === 'poster' ? 'border-festival-gold text-amber-700' : 'border-gray-200 text-gray-600 bg-white'}">
+                                🖼 用我的AI合照
                             </button>
                             <button onclick="document.getElementById('publishFileInput').click()"
                                     class="flex-1 py-2.5 rounded-xl text-sm font-bold border transition-all duration-150 active:scale-95 ${d.imageType === 'upload' ? 'border-festival-gold text-amber-700' : 'border-gray-200 text-gray-600 bg-white'}">
@@ -1737,7 +1992,7 @@
                     <!-- 内容 -->
                     <div class="mb-4">
                         <div class="flex items-center justify-between mb-2">
-                            <label class="text-xs font-bold text-gray-500">内容</label>
+                            <label class="text-xs font-bold text-gray-500">我的心情</label>
                             <button onclick="MusicFestivalView.autoGenerateText()"
                                     class="text-[11px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 active:scale-95 transition-transform"
                                     style="background: rgba(243,193,70,0.18); color:#a97b0a;">
@@ -1747,14 +2002,14 @@
                         </div>
                         <textarea id="publishText" maxlength="100" rows="3"
                                   class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-festival-gold resize-none"
-                                  placeholder="分享你在音乐节的现场瞬间…">${escapeHtml(d.text || '')}</textarea>
+                                  placeholder="说说你此刻的心情…">${escapeHtml(d.text || '')}</textarea>
                         <div class="text-right text-[10px] text-gray-400 mt-1"><span id="publishTextCount">0</span>/100</div>
                     </div>
 
                     <!-- 上大屏 -->
                     <div class="flex items-center justify-between bg-gradient-to-r from-amber-50 to-sky-50 rounded-xl px-3 py-2.5 border border-amber-100/60 mb-4">
                         <div>
-                            <div class="text-sm font-bold text-gray-800">上大屏</div>
+                            <div class="text-sm font-bold text-gray-800">大屏候选</div>
                             <div class="text-[10px] text-gray-400">发布后进入现场大屏候选池</div>
                         </div>
                         <label class="relative inline-flex items-center cursor-pointer shrink-0">
@@ -1797,7 +2052,8 @@
 
             pickPosterImage() {
                 if (state.poster.status !== 'done') {
-                    window.Common.showToast('先去海报工坊生成你的专属海报吧');
+                    // 还没有合照：直接打开我的AI合照弹窗去生成（发布弹窗保留在底层，生成后自动选上）
+                    this.openAiPhotoModal();
                     return;
                 }
                 this.publishDraft.image = 'music_new.png';
@@ -1890,54 +2146,153 @@
 
                 this.publishDraft = null; // 清空草稿，避免下次打开残留内容误发重复动态
                 this.closePublishModal();
-                window.Common.showToast('发布成功！已同步到音浪广场');
                 this.render();
+                this.showPublishSuccessSheet(); // 发布成功：去分享 / 领护照 双入口
             },
 
-            // ---------- 功能三：音浪广场 ----------
+            // ---------- 发布成功提示（去分享 / 领护照） ----------
+            showPublishSuccessSheet() {
+                if (document.getElementById('publishSuccessSheet')) return;
+
+                var overlay = document.createElement('div');
+                overlay.id = 'publishSuccessSheet';
+                overlay.className = 'fixed inset-0 z-[95] flex items-end justify-center fade-in';
+                overlay.style.background = 'rgba(0,0,0,0.45)';
+                overlay.innerHTML = `
+                <div class="bg-white w-full max-w-md rounded-t-3xl p-5 pb-8 animate-slide-up">
+                    <div class="flex items-center justify-between mb-1">
+                        <h3 class="text-lg font-black text-gray-900">🎉 发布成功</h3>
+                        <button onclick="MusicFestivalView.closePublishSuccessSheet()" class="p-1 rounded-full active:bg-gray-100 shrink-0">
+                            <i data-lucide="x" class="w-5 h-5 text-gray-400"></i>
+                        </button>
+                    </div>
+                    <p class="text-xs text-gray-400 mb-4">你的内容已进入大屏候选池，接下来？</p>
+
+                    <div class="flex gap-3">
+                        <!-- 去分享 -->
+                        <button onclick="MusicFestivalView.goMomentDetail()"
+                                class="flex-1 rounded-2xl p-4 text-left border active:scale-[0.98] transition-transform"
+                                style="border-color: rgba(90,193,251,0.5); background: linear-gradient(160deg, #f0f9ff, #e3f4ff);">
+                            <div class="w-9 h-9 rounded-xl flex items-center justify-center mb-2" style="background: rgba(90,193,251,0.18);">
+                                <i data-lucide="share-2" class="w-5 h-5" style="color:#0b7fc4;"></i>
+                            </div>
+                            <div class="font-black text-sm text-gray-900">去分享</div>
+                            <p class="text-[10px] text-gray-500 mt-1 leading-snug">看看你的现场动态长啥样，转发给搭子们</p>
+                        </button>
+
+                        <!-- 领护照 -->
+                        <button onclick="MusicFestivalView.goCollectFromShare()"
+                                class="flex-1 rounded-2xl p-4 text-left border active:scale-[0.98] transition-transform"
+                                style="border-color: rgba(243,193,70,0.5); background: linear-gradient(160deg, #fffdf4, #fdf3cd);">
+                            <div class="w-9 h-9 rounded-xl flex items-center justify-center mb-2" style="background: rgba(243,193,70,0.22);">
+                                <i data-lucide="book-marked" class="w-5 h-5" style="color:#d4a017;"></i>
+                            </div>
+                            <div class="font-black text-sm text-gray-900">领护照</div>
+                            <p class="text-[10px] text-gray-500 mt-1 leading-snug">任务已完成，好运护照等你领走</p>
+                        </button>
+                    </div>
+                </div>
+                `;
+                document.body.appendChild(overlay);
+                window.Common.initIcons();
+
+                overlay.addEventListener('click', function (e) {
+                    if (e.target === overlay) MusicFestivalView.closePublishSuccessSheet();
+                });
+            },
+
+            closePublishSuccessSheet() {
+                var sheet = document.getElementById('publishSuccessSheet');
+                if (sheet) sheet.remove();
+            },
+
+            // 跳转到主站动态详情页（演示统一跳 mo1）
+            goMomentDetail() {
+                window.location.href = 'moment.html?id=mo1';
+            },
+
+            // 领护照：已领取则不弹护照弹窗，仅提示
+            goCollectFromShare() {
+                this.closePublishSuccessSheet();
+                if (state.passport.collected) {
+                    window.Common.showToast('好运护照已领取，去南区市集参加游戏吧');
+                    return;
+                }
+                this.openPassportModal();
+            },
+
+            // ---------- 功能三：上大屏 ----------
             renderFeedTab() {
                 // 动态瀑布流（我的动态在前，与项目动态页同款双列瀑布流）
                 var me = window.GlobalData && window.GlobalData.user ? window.GlobalData.user : { name: '我' };
                 var posts = [];
 
-                state.feedPosts.forEach(function (p) {
-                    posts.push(this.renderFeedCard(Object.assign({}, p, {
-                        name: me.name,
-                        avatar: 'music_userphoto.jpg', // 使用本地用户照片
-                        isMine: true
-                    })));
-                }, this);
+                var collectMine = function () {
+                    state.feedPosts.forEach(function (p) {
+                        posts.push(this.renderFeedCard(Object.assign({}, p, {
+                            name: me.name,
+                            avatar: 'music_userphoto.jpg', // 使用本地用户照片
+                            isMine: true
+                        })));
+                    }, this);
+                };
 
-                FEED_POSTS.forEach(function (p) {
-                    posts.push(this.renderFeedCard(Object.assign({}, p, { isMine: false })));
-                }, this);
+                // 最新 = 我的 + 预置动态（时间新→旧）；精选 = 官方精选；我的 = 仅自己发布
+                if (this.feedFilter !== 'featured') {
+                    collectMine.call(this);
+                }
+                if (this.feedFilter !== 'mine') {
+                    FEED_POSTS.forEach(function (p) {
+                        posts.push(this.renderFeedCard(Object.assign({}, p, { isMine: false })));
+                    }, this);
+                }
 
-                // 左右交替分列，让同类图片（如四张海报）错落排布在两侧
+                // 左右交替分列，让同类图片（如四张合照）错落排布在两侧
                 var leftColumn = [];
                 var rightColumn = [];
                 posts.forEach(function (html, i) {
                     (i % 2 === 0 ? leftColumn : rightColumn).push(html);
                 });
 
+                // 最新 / 精选 / 我的 筛选
+                var filterChips = ['latest', 'featured', 'mine'].map(function (id) {
+                    var active = this.feedFilter === id;
+                    var label = id === 'latest' ? '最新' : (id === 'featured' ? '精选' : '我的');
+                    return `
+                    <button onclick="MusicFestivalView.setFeedFilter('${id}')"
+                            class="px-5 py-1.5 rounded-full text-xs font-bold transition-all duration-150 active:scale-95 ${active ? '' : 'bg-white border border-gray-200 text-gray-500'}"
+                            style="${active ? 'background: linear-gradient(135deg, #f3c146, #f7b733); color:#4a3504; box-shadow: 0 2px 8px rgba(243,193,70,0.35);' : ''}">
+                        ${label}
+                    </button>`;
+                }, this).join('');
+
+                var waterfallHtml = posts.length === 0
+                    ? '<div class="mt-6 text-center text-gray-400 text-xs py-8">还没有发布过内容，点上大屏卡片发一条吧</div>'
+                    : `
+                    <div class="flex gap-3 mt-3 items-start">
+                        <div class="flex-1 min-w-0">${leftColumn.join('')}</div>
+                        <div class="flex-1 min-w-0">${rightColumn.join('')}</div>
+                    </div>`;
+
                 return `
                 <div class="px-4 pt-1.5 pb-28">
-                    <!-- 音浪广场白色卡片区 -->
-                    <div id="feedCardZone" class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                        <!-- 卡片头部（与搭个伴/海报工坊一致）+ 右上角发动态入口 -->
+                    <!-- 上大屏白色卡片区（整卡点击打开发布弹窗） -->
+                    <div id="feedCardZone" class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden cursor-pointer active:opacity-90" onclick="MusicFestivalView.openPublishModal()">
+                        <!-- 卡片头部 + 右上角上大屏入口 -->
                         <div class="p-4 pb-2">
                             <div class="flex items-center gap-2">
                                 <div class="p-1.5 rounded-lg flex-shrink-0" style="background: rgba(243,193,70,0.18);">
                                     <i data-lucide="radio" class="w-4 h-4" style="color:#d4a017;"></i>
                                 </div>
                                 <div class="min-w-0 flex-1">
-                                    <h3 class="font-black text-gray-900 whitespace-nowrap">音浪广场</h3>
-                                    <p class="text-[11px] text-gray-400 truncate">大屏直击 · 大家分享的音乐节现场动态</p>
+                                    <h3 class="font-black text-gray-900 whitespace-nowrap">上大屏</h3>
+                                    <p class="text-[11px] text-gray-400 truncate">大屏直击 · 大家的现场瞬间都有机会上大屏</p>
                                 </div>
                                 <button id="publishAnchor" onclick="MusicFestivalView.openPublishModal()"
                                         class="flex-shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold border border-white active:scale-95 transition-transform"
                                         style="background: linear-gradient(135deg, #f3c146, #f7b733); color:#4a3504; box-shadow: 0 2px 8px rgba(243,193,70,0.4);">
                                     <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-                                    发动态
+                                    上大屏
                                 </button>
                             </div>
                         </div>
@@ -1954,21 +2309,21 @@
                         </div>
                     </div>
 
-                    <!-- 动态瀑布流（双列左右交替错落，图片原比例） -->
-                    <div class="flex gap-3 mt-3 items-start">
-                        <div class="flex-1 min-w-0">${leftColumn.join('')}</div>
-                        <div class="flex-1 min-w-0">${rightColumn.join('')}</div>
-                    </div>
+                    <!-- 最新 / 精选 / 我的 筛选 -->
+                    <div class="flex gap-2 mt-3">${filterChips}</div>
 
-                    <div class="text-center text-gray-400 text-xs pt-2">—— 音浪不停，现场见 🎶 ——</div>
+                    <!-- 动态瀑布流（双列左右交替错落，图片原比例） -->
+                    ${waterfallHtml}
+
+                    <div class="text-center text-gray-400 text-xs pt-2">—— 现场大屏见 🎶 ——</div>
                 </div>
 
-                <!-- 底部悬浮发动态按钮：仅当卡片右上角入口滚出视口后才出现 -->
+                <!-- 底部悬浮上大屏按钮：仅当卡片右上角入口滚出视口后才出现 -->
                 <button id="publishFab" onclick="MusicFestivalView.openPublishModal()"
                         class="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 px-6 py-3 rounded-full text-white font-black text-sm flex items-center gap-1.5 active:scale-95 transition-transform whitespace-nowrap border-2 border-white"
                         style="display:none; background: linear-gradient(135deg, #f3c146, #f7b733); box-shadow: 0 6px 20px rgba(243,193,70,0.5);">
                     <i data-lucide="plus" class="w-4 h-4"></i>
-                    发动态
+                    上大屏
                 </button>
                 `;
             },
@@ -1991,7 +2346,7 @@
 
                 return `
                 <div class="mb-3 bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
-                    <div class="relative">
+                    <div class="relative cursor-pointer active:opacity-80" onclick="MusicFestivalView.goMomentDetail()">
                         <img src="${escapeHtml(post.image)}" class="w-full h-auto object-cover"
                              onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"/>
                         <!-- 图片加载失败时的占位 -->
@@ -2003,10 +2358,13 @@
                         ${post.isMine ? '<span class="absolute top-2 left-2 text-[9px] font-bold px-1.5 py-0.5 rounded-full text-white bg-black/40">我的动态</span>' : ''}
                     </div>
                     <div class="p-2.5">
-                        <p class="text-[13px] text-gray-800 leading-snug mb-2">${escapeHtml(post.text)} <span class="text-festival-sky font-medium">${FESTIVAL_TOPIC}</span></p>
+                        <p class="text-[13px] text-gray-800 leading-snug mb-2 cursor-pointer active:opacity-80" onclick="MusicFestivalView.goMomentDetail()">${escapeHtml(post.text)} <span class="text-festival-sky font-medium">${FESTIVAL_TOPIC}</span></p>
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-1.5 overflow-hidden">
-                                <img src="${escapeHtml(post.avatar)}" class="w-5 h-5 rounded-full border border-gray-100 flex-shrink-0 object-cover"/>
+                                <img src="${escapeHtml(post.avatar)}" class="w-5 h-5 rounded-full border border-gray-100 flex-shrink-0 object-cover"
+                                     onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"/>
+                                <div class="w-5 h-5 rounded-full border border-gray-100 flex-shrink-0 hidden items-center justify-center text-[10px] font-black text-white"
+                                     style="background: linear-gradient(135deg, #f3c146, #5ac1fb);">${escapeHtml(post.name.charAt(0))}</div>
                                 <span class="text-[10px] text-gray-500 truncate">${escapeHtml(post.name)}</span>
                             </div>
                             <div class="flex items-center gap-2.5 text-gray-400 shrink-0">
@@ -2027,6 +2385,11 @@
 
             toggleLike(id) {
                 this.feedLiked = Object.assign({}, this.feedLiked, { [id]: !this.feedLiked[id] });
+                this.render();
+            },
+
+            setFeedFilter(id) {
+                this.feedFilter = id;
                 this.render();
             },
 
@@ -2067,12 +2430,10 @@
             // ---------- 主渲染 ----------
             render() {
                 var app = document.getElementById('app');
-                var tabContent = this.activeTab === 'buddy'
-                    ? this.renderBuddyTab()
-                    : (this.activeTab === 'poster' ? this.renderPosterTab() : this.renderFeedTab());
+                var tabContent = this.activeTab === 'buddy' ? this.renderBuddyTab() : this.renderFeedTab();
 
-                // 欢迎区收起后，仅保留护照按钮行（仍位于波浪上方、TAB 栏之上）
-                var welcomeHtml = this.welcomeCollapsed ? this.renderPassportRow() : this.renderWelcome();
+                // 欢迎区收起后，仅保留护照 + AI 合照按钮行（仍位于波浪上方、TAB 栏之上）
+                var welcomeHtml = this.welcomeCollapsed ? this.renderActionRow() : this.renderWelcome();
 
                 app.innerHTML =
                     this.renderBanner(welcomeHtml) +
@@ -2081,7 +2442,7 @@
 
                 if (window.Common) window.Common.initIcons();
 
-                // 发动态悬浮按钮显隐校正（feed 页渲染后立即执行）
+                // 上大屏悬浮按钮显隐校正（feed 页渲染后立即执行）
                 if (this.activeTab === 'feed') this.updateFabPosition();
 
                 // 表单预置内容（输入实时同步到草稿，切换分类重渲染时不丢失）
@@ -2097,9 +2458,19 @@
                     }
                 }
 
-                if (this.activeTab === 'poster' && state.poster.status !== 'done') {
-                    this.bindCarouselDrag();
+                // 留言编辑态：字数统计 + 输入同步
+                if (this.activeTab === 'buddy' && this.editingPostId) {
+                    var editMsg = document.getElementById('editMessage');
+                    if (editMsg) {
+                        var editCnt = document.getElementById('editMessageCount');
+                        if (editCnt) editCnt.textContent = editMsg.value.length;
+                        editMsg.addEventListener('input', function () {
+                            var cntEl = document.getElementById('editMessageCount');
+                            if (cntEl) cntEl.textContent = editMsg.value.length;
+                        });
+                    }
                 }
+
             }
         };
 
@@ -2110,6 +2481,8 @@
             MusicFestivalView.render();
             MusicFestivalView.bindTabSticky();
             MusicFestivalView.bindFabClamp();
+            // AI 合照合成轮询：到时间自动切换为成品
+            setInterval(function () { MusicFestivalView.checkPosterDone(); }, 2000);
         });
     </script>
 </body>
