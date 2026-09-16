@@ -288,6 +288,12 @@
             { id: 'merch',      label: '周边拼单', icon: 'shopping-bag',     desc: '拼官方周边和专辑', placeholder: '比如：官方周边拼单差人，一起上车更划算！' }
         ];
 
+        // 现场分区（我的位置单选必填）
+        var LOCATION_OPTIONS = ['SVIP区', 'VIP区', 'A区', 'B区'];
+
+        // 我担名单（多选非必填）
+        var IDOL_OPTIONS = ['陈楚生', '大鹏', '黄子弘凡', 'ONER', '门尼', '揽佬', '奔赴少年CIIU', '万能青年旅店', '二手玫瑰', '回春丹', '于适', '老狼', '盘尼西林', 'A公馆', '性格缺失'];
+
         // 单次匹配返回的搭子数量
         var MATCH_COUNT = 4;
 
@@ -480,6 +486,7 @@
             isDraftingPost: false,   // 是否处于"再发一条"的填写状态
             activePostId: null,      // 当前查看的需求 id（仅会话内）
             editingPostId: null,     // 正在编辑留言的需求 id（仅会话内）
+            editDraft: null,         // 编辑中的位置/我担草稿
             chatPartnerKey: null,    // 当前私聊线程 key（需求id:搭子id）
             matchingInProgress: false, // 匹配动画期间防止重复提交
             publishDraft: null,      // 上大屏弹窗草稿
@@ -1143,13 +1150,25 @@
                             </div>
                             <div class="flex flex-wrap gap-1.5 mt-1.5">
                                 <span class="tag-festival-sky text-[10px] px-2 py-0.5 rounded-full font-medium">${categoryLabel(b.category)}</span>
-                                ${(b.tags || []).map((t) => '<span class="text-[10px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">' + escapeHtml(t) + '</span>').join('')}
                             </div>
                         </div>
                     </div>
                     <p class="text-sm text-gray-500 leading-relaxed mt-3 bg-gray-50 rounded-xl p-3">"${escapeHtml(b.intro)}"</p>
+                    <button onclick="MusicFestivalView.contactFromExplore()"
+                            class="w-full mt-3 py-2.5 rounded-xl text-white font-black text-sm active:scale-95 transition-transform flex items-center justify-center gap-2"
+                            style="background: linear-gradient(135deg, #5ac1fb, #f3c146); box-shadow: 0 4px 15px rgba(243,193,70,0.4);">
+                        <i data-lucide="message-circle" class="w-4 h-4"></i>
+                        联系TA
+                    </button>
                 </div>
                 `;
+            },
+
+            // 抢先看联系TA：需先发布需求
+            contactFromExplore() {
+                window.Common.showToast('先发布你的需求，就能和 TA 开聊啦');
+                this.isDraftingPost = true;
+                this.render();
             },
 
             // 更多：提示并回到发布需求界面
@@ -1177,6 +1196,28 @@
                     `;
                 }).join('');
 
+                var locationChips = LOCATION_OPTIONS.map((loc) => {
+                    var active = this.buddyDraft.location === loc;
+                    return `
+                    <button onclick="MusicFestivalView.pickLocation('${loc}')"
+                            class="px-3.5 py-1.5 rounded-full text-xs font-bold border transition-all duration-150 active:scale-95 ${active ? '' : 'border-gray-200 bg-white text-gray-500'}"
+                            style="${active ? 'background: linear-gradient(135deg, #f3c146, #f7b733); color:#4a3504; box-shadow: 0 2px 8px rgba(243,193,70,0.35);' : ''}">
+                        ${loc}
+                    </button>
+                    `;
+                }).join('');
+
+                var idolChips = IDOL_OPTIONS.map((name) => {
+                    var active = (this.buddyDraft.idols || []).indexOf(name) > -1;
+                    return `
+                    <button onclick="MusicFestivalView.toggleIdol('${name}')"
+                            class="px-3 py-1.5 rounded-full text-[11px] font-medium border transition-all duration-150 active:scale-95 ${active ? 'border-festival-gold text-amber-700' : 'border-gray-200 bg-white text-gray-500'}"
+                            style="${active ? 'background: rgba(243,193,70,0.15);' : ''}">
+                        ${name}
+                    </button>
+                    `;
+                }).join('');
+
                 return `
                 <div class="px-4 pt-1.5 pb-4">
                     ${state.posts.length > 0 ? `
@@ -1199,6 +1240,18 @@
                         <div class="mb-4">
                             <label class="text-xs font-bold text-gray-500 mb-2 block">需求类别 <span class="text-gray-400 font-normal">（选一个）</span></label>
                             <div class="grid grid-cols-4 gap-2">${categoryChips}</div>
+                        </div>
+
+                        <!-- 我的位置（单选必填） -->
+                        <div class="mb-4">
+                            <label class="text-xs font-bold text-gray-500 mb-2 block">我的位置 <span class="text-red-400 font-normal">（必选）</span></label>
+                            <div class="flex flex-wrap gap-2">${locationChips}</div>
+                        </div>
+
+                        <!-- 我担（多选非必填） -->
+                        <div class="mb-4">
+                            <label class="text-xs font-bold text-gray-500 mb-2 block">我&#12288;&#12288;担 <span class="text-gray-400 font-normal">（可多选，选填）</span></label>
+                            <div class="flex flex-wrap gap-1.5">${idolChips}</div>
                         </div>
 
                         <!-- 个人留言 -->
@@ -1228,6 +1281,29 @@
             renderPostsView() {
                 var post = this.activePost();
                 var matches = post.matches || [];
+
+                // 编辑态：我的位置 / 我担 选择器
+                var editLocationChips = LOCATION_OPTIONS.map((loc) => {
+                    var active = this.editDraft && this.editDraft.location === loc;
+                    return `
+                    <button onclick="MusicFestivalView.pickEditLocation('${loc}')"
+                            class="px-3.5 py-1.5 rounded-full text-xs font-bold border transition-all duration-150 active:scale-95 ${active ? '' : 'border-gray-200 bg-white text-gray-500'}"
+                            style="${active ? 'background: linear-gradient(135deg, #f3c146, #f7b733); color:#4a3504; box-shadow: 0 2px 8px rgba(243,193,70,0.35);' : ''}">
+                        ${loc}
+                    </button>
+                    `;
+                }).join('');
+
+                var editIdolChips = IDOL_OPTIONS.map((name) => {
+                    var active = (this.editDraft && this.editDraft.idols ? this.editDraft.idols : []).indexOf(name) > -1;
+                    return `
+                    <button onclick="MusicFestivalView.toggleEditIdol('${name}')"
+                            class="px-3 py-1.5 rounded-full text-[11px] font-medium border transition-all duration-150 active:scale-95 ${active ? 'border-festival-gold text-amber-700' : 'border-gray-200 bg-white text-gray-500'}"
+                            style="${active ? 'background: rgba(243,193,70,0.15);' : ''}">
+                        ${name}
+                    </button>
+                    `;
+                }).join('');
 
                 var switcherHtml = state.posts.length > 1 ? `
                     <div class="flex gap-2 overflow-x-auto no-scrollbar mb-3">
@@ -1259,33 +1335,54 @@
 
                         ${switcherHtml}
 
+                        ${this.editingPostId === post.id ? `
+                        <!-- 编辑态：位置 / 我担 / 留言 均可修改 -->
+                        <div class="space-y-3">
+                            <div>
+                                <label class="text-xs font-bold text-gray-500 mb-2 block">我的位置 <span class="text-red-400 font-normal">（必选）</span></label>
+                                <div class="flex flex-wrap gap-2">${editLocationChips}</div>
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold text-gray-500 mb-2 block">我&#12288;&#12288;担 <span class="text-gray-400 font-normal">（可多选，选填）</span></label>
+                                <div class="flex flex-wrap gap-1.5">${editIdolChips}</div>
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold text-gray-500 mb-2 block">留言 <span class="text-gray-400 font-normal">（100 字以内）</span></label>
+                                <textarea id="editMessage" maxlength="100" rows="3"
+                                          class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm bg-white outline-none focus:border-festival-gold resize-none">${escapeHtml(post.message)}</textarea>
+                                <div class="flex items-center justify-between mt-1.5">
+                                    <span class="text-[10px] text-gray-400"><span id="editMessageCount">0</span>/100</span>
+                                    <div class="flex gap-2">
+                                        <button onclick="MusicFestivalView.cancelEditPost()"
+                                                class="text-xs font-bold px-3 py-1.5 rounded-full border border-gray-200 text-gray-500 active:scale-95 transition-transform">
+                                            取消
+                                        </button>
+                                        <button onclick="MusicFestivalView.saveEditPost()"
+                                                class="text-xs font-bold px-3 py-1.5 rounded-full active:scale-95 transition-transform"
+                                                style="background: linear-gradient(135deg, #f3c146, #f7b733); color:#4a3504;">
+                                            保存
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>` : `
+                        <!-- 静态预览：需求类别 / 我的位置 / 我担 / 留言 -->
                         <div class="space-y-2 text-sm">
                             <div class="flex items-center gap-2">
                                 <span class="text-[10px] font-bold text-white px-2 py-0.5 rounded-md whitespace-nowrap shrink-0" style="background:#d4a017;">需求类别</span>
                                 <span class="text-gray-700">${categoryLabel(post.category)}</span>
                                 ${post.time ? '<span class="ml-auto text-[10px] text-gray-300 whitespace-nowrap">' + escapeHtml(post.time) + ' 发布</span>' : ''}
                             </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-[10px] font-bold text-white px-2 py-0.5 rounded-md whitespace-nowrap shrink-0" style="background:#0b7fc4;">我的位置</span>
+                                <span class="text-gray-700">${escapeHtml(post.location || '未填写')}</span>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <span class="text-[10px] font-bold text-white px-2 py-0.5 rounded-md mt-0.5 whitespace-nowrap shrink-0" style="background:#d6336c;">我&#12288;&#12288;担</span>
+                                <span class="text-gray-600 leading-relaxed">${post.idols && post.idols.length ? escapeHtml(post.idols.join('、')) : '未填写'}</span>
+                            </div>
                             <div class="flex items-start gap-2">
                                 <span class="text-[10px] font-bold text-white px-2 py-0.5 rounded-md mt-0.5 whitespace-nowrap shrink-0" style="background:#7B1FA2;">留&#12288;&#12288;言</span>
-                                ${this.editingPostId === post.id ? `
-                                <div class="flex-1 min-w-0">
-                                    <textarea id="editMessage" maxlength="100" rows="3"
-                                              class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm bg-white outline-none focus:border-festival-gold resize-none">${escapeHtml(post.message)}</textarea>
-                                    <div class="flex items-center justify-between mt-1.5">
-                                        <span class="text-[10px] text-gray-400"><span id="editMessageCount">0</span>/100</span>
-                                        <div class="flex gap-2">
-                                            <button onclick="MusicFestivalView.cancelEditPost()"
-                                                    class="text-xs font-bold px-3 py-1.5 rounded-full border border-gray-200 text-gray-500 active:scale-95 transition-transform">
-                                                取消
-                                            </button>
-                                            <button onclick="MusicFestivalView.saveEditPost()"
-                                                    class="text-xs font-bold px-3 py-1.5 rounded-full active:scale-95 transition-transform"
-                                                    style="background: linear-gradient(135deg, #f3c146, #f7b733); color:#4a3504;">
-                                                保存
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>` : `
                                 <div class="flex-1 min-w-0">
                                     <span class="text-gray-600 leading-relaxed">${escapeHtml(post.message)}</span>
                                     <button onclick="MusicFestivalView.editPost('${post.id}')"
@@ -1294,9 +1391,9 @@
                                         <i data-lucide="pencil" class="w-3 h-3"></i>
                                         编辑留言
                                     </button>
-                                </div>`}
+                                </div>
                             </div>
-                        </div>
+                        </div>`}
                     </div>
 
                     <!-- 匹配结果列表 -->
@@ -1339,7 +1436,8 @@
                             </div>
                             <div class="flex flex-wrap gap-1.5 mt-1.5">
                                 <span class="tag-festival-sky text-[10px] px-2 py-0.5 rounded-full font-medium">${categoryLabel(m.category)}</span>
-                                ${(m.tags || []).map((t) => '<span class="text-[10px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">' + escapeHtml(t) + '</span>').join('')}
+                                ${m.location ? '<span class="text-[10px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">' + escapeHtml(m.location) + '</span>' : ''}
+                                ${(m.idols || []).map((t) => '<span class="text-[10px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">' + escapeHtml(t) + '</span>').join('')}
                             </div>
                         </div>
                     </div>
@@ -1372,14 +1470,37 @@
                 this.render();
             },
 
-            // 编辑已发布需求的留言（会话内状态，保存后写入存储）
+            // 编辑已发布需求（位置/我担/留言均可改，会话内状态，保存后写入存储）
             editPost(id) {
+                var post = state.posts.find(function (p) { return p.id === id; });
                 this.editingPostId = id;
+                this.editDraft = {
+                    location: post ? (post.location || '') : '',
+                    idols: (post && post.idols ? post.idols : []).slice()
+                };
                 this.render();
             },
 
             cancelEditPost() {
                 this.editingPostId = null;
+                this.editDraft = null;
+                this.render();
+            },
+
+            // 编辑态：我的位置（单选）
+            pickEditLocation(loc) {
+                if (!this.editDraft) return;
+                this.editDraft.location = loc;
+                this.render();
+            },
+
+            // 编辑态：我担（多选切换）
+            toggleEditIdol(name) {
+                if (!this.editDraft) return;
+                var list = this.editDraft.idols || [];
+                this.editDraft.idols = list.indexOf(name) > -1
+                    ? list.filter(function (x) { return x !== name; })
+                    : list.concat([name]);
                 this.render();
             },
 
@@ -1388,15 +1509,22 @@
                 if (!el) return;
                 var msg = el.value.trim();
                 if (!msg) { window.Common.showToast('留言不能为空'); return; }
+                if (!this.editDraft || !this.editDraft.location) { window.Common.showToast('请选择我的位置'); return; }
 
                 var editingId = this.editingPostId;
+                var draft = this.editDraft;
                 var posts = state.posts.map(function (p) {
-                    return p.id === editingId ? Object.assign({}, p, { message: msg }) : p;
+                    return p.id === editingId ? Object.assign({}, p, {
+                        message: msg,
+                        location: draft.location,
+                        idols: draft.idols.slice()
+                    }) : p;
                 });
                 saveState({ posts: posts });
                 this.editingPostId = null;
+                this.editDraft = null;
                 this.render();
-                window.Common.showToast('留言已更新');
+                window.Common.showToast('已保存');
             },
 
             // 当前查看的需求（兜底取第一条）
@@ -1420,12 +1548,29 @@
             initBuddyDraft() {
                 this.buddyDraft = {
                     category: 'support',
+                    location: '',
+                    idols: [],
                     message: ''
                 };
             },
 
             pickCategory(id) {
                 this.buddyDraft.category = id;
+                this.render();
+            },
+
+            // 我的位置（单选）
+            pickLocation(loc) {
+                this.buddyDraft.location = loc;
+                this.render();
+            },
+
+            // 我担（多选切换）
+            toggleIdol(name) {
+                var list = this.buddyDraft.idols || [];
+                this.buddyDraft.idols = list.indexOf(name) > -1
+                    ? list.filter(function (x) { return x !== name; })
+                    : list.concat([name]);
                 this.render();
             },
 
@@ -1441,6 +1586,7 @@
                 var message = document.getElementById('buddyMessage').value.trim();
 
                 if (!this.buddyDraft.category) { window.Common.showToast('请选择需求类别'); return; }
+                if (!this.buddyDraft.location) { window.Common.showToast('请选择我的位置'); return; }
                 if (!message) { window.Common.showToast('写句留言介绍一下自己吧'); return; }
 
                 // 匹配中动画
@@ -1456,6 +1602,8 @@
                     var post = {
                         id: 'p' + Date.now(),
                         category: view.buddyDraft.category,
+                        location: view.buddyDraft.location,
+                        idols: (view.buddyDraft.idols || []).slice(),
                         message: message,
                         time: view.nowTime(),
                         matches: matches
@@ -1470,12 +1618,15 @@
                 }, 1600);
             },
 
-            // 匹配逻辑：优先同需求类别，不足时从其余搭子补齐
+            // 匹配逻辑：优先同需求类别，不足时从其余搭子补齐；随机附上现场位置与 1-2 位我担标签
             matchPartners() {
                 var cat = this.buddyDraft.category;
                 var sameCat = shuffle(BUDDY_POOL.filter((b) => b.category === cat));
                 var others = shuffle(BUDDY_POOL.filter((b) => b.category !== cat));
-                return sameCat.concat(others).slice(0, MATCH_COUNT).map((b) => Object.assign({}, b));
+                return sameCat.concat(others).slice(0, MATCH_COUNT).map((b) => Object.assign({}, b, {
+                    location: LOCATION_OPTIONS[Math.floor(Math.random() * LOCATION_OPTIONS.length)],
+                    idols: shuffle(IDOL_OPTIONS).slice(0, 1 + Math.floor(Math.random() * 2))
+                }));
             },
 
             showMatchingOverlay() {
