@@ -38,13 +38,6 @@
             100% { transform: translateY(110vh) rotate(720deg); opacity: 0.5; }
         }
 
-        /* 横幅小元素浮动 */
-        @keyframes promo-float {
-            0%, 100% { transform: translateY(0) rotate(-6deg); }
-            50% { transform: translateY(-10px) rotate(6deg); }
-        }
-        .promo-float { animation: promo-float 3s ease-in-out infinite; }
-
         /* 弹窗滑入 / 弹出 */
         @keyframes slideUpPromo {
             from { transform: translateY(100%); }
@@ -57,12 +50,36 @@
         }
         .animate-promo-pop { animation: promo-pop 0.38s cubic-bezier(0.22, 0.9, 0.35, 1); }
 
-        /* 任务标签 */
-        .tag-promo {
-            background: linear-gradient(135deg, #fff4e0, #fdeec4);
-            color: #c26200;
-            border: 1px solid rgba(255, 107, 0, 0.3);
+        /* 找搭子匹配动画环 */
+        .promo-ring {
+            border: 4px solid rgba(255, 107, 0, 0.2);
+            border-top-color: #FF6B00;
+            border-right-color: #FFB300;
+            border-radius: 9999px;
+            animation: promo-ring-spin 1.1s linear infinite;
         }
+        @keyframes promo-ring-spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 聊天气泡 */
+        .chat-bubble-me {
+            background: linear-gradient(135deg, #FF6B00, #FFB300);
+            color: #ffffff;
+            border-radius: 16px 16px 4px 16px;
+        }
+        .chat-bubble-other {
+            background: #ffffff;
+            border-radius: 16px 16px 16px 4px;
+        }
+
+        /* 活动说明展开动画 */
+        @keyframes promo-reveal {
+            0% { opacity: 0; transform: translateY(-6px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        .animate-promo-reveal { animation: promo-reveal 0.3s ease; }
 
         /* 领奖印章 */
         .promo-stamp {
@@ -145,16 +162,82 @@
                 .replace(/'/g, '&#39;');
         }
 
-        // 奖品清单
-        var PRIZES = [
-            { id: 'p1', icon: '🎁', name: '新人见面礼包', desc: '帆布袋 + 贴纸 + 好运签，见者有份' },
-            { id: 'p2', icon: '☕', name: '咖啡双人券', desc: '现场咖啡车任选两杯，和搭子碰个杯' },
-            { id: 'p3', icon: '🎫', name: '音乐节门票抽奖券', desc: '抽取大运河音乐节门票，下一站现场见' },
-            { id: 'p4', icon: '🧸', name: '搭子周边公仔', desc: '限量搭子 IP 公仔，软fufu抱回家' }
+        // 本场任务（静态展示）
+        var FIELD_TASKS = [
+            { icon: '📕', name: '社牛打卡', desc: '拍下现场美照发小红书，带上话题 #搭子计划见面有礼' },
+            { icon: '📸', name: '合拍好运', desc: '和现场任意搭子合拍一张，朋友圈晒出你们的好运瞬间' }
         ];
 
         // 彩带颜色池
         var CONFETTI_COLORS = ['#FF6B00', '#FFD000', '#42A5F5', '#00C853', '#FF4081', '#00A99D', '#7B1FA2', '#f3c146'];
+
+        // ===== 找搭子：需求类型（下拉框选项）=====
+        var BUDDY_CATEGORIES = [
+            { id: 'photo',    label: '拍照搭子', icon: 'camera',           desc: '互相拍照打卡', placeholder: '比如：我带相机，帮你拍出氛围感大片！' },
+            { id: 'checkin',  label: '打卡搭子', icon: 'map-pin',          desc: '一起打卡集章', placeholder: '比如：集章路线我熟，一起把章盖满！' },
+            { id: 'food',     label: '干饭搭子', icon: 'utensils-crossed', desc: '活动结束约个饭', placeholder: '比如：散场别走，一起约个饭复盘！' },
+            { id: 'lucky',    label: '抽奖搭子', icon: 'ticket',           desc: '一起排队抽大奖', placeholder: '比如：抽奖区一起排队，蹲个大奖！' },
+            { id: 'groupbuy', label: '拼单搭子', icon: 'shopping-bag',     desc: '拼周边、拼套餐', placeholder: '比如：周边拼单差人，一起上车更划算！' },
+            { id: 'stroll',   label: '遛弯搭子', icon: 'footprints',       desc: '一起逛逛现场', placeholder: '比如：一个人逛太无聊，边逛边聊~' }
+        ];
+
+        // MBTI 类型
+        var MBTI_OPTIONS = ['INFP', 'INFJ', 'INTP', 'INTJ', 'ENFP', 'ENFJ', 'ENTP', 'ENTJ', 'ISFP', 'ISFJ', 'ISTP', 'ISTJ', 'ESFP', 'ESFJ', 'ESTP', 'ESTJ'];
+
+        // 现场搭子池
+        var BUDDY_POOL = [
+            { id: 'gp1', name: '阿橘', gender: '女', age: 23, category: 'photo', tags: ['富士党'], intro: '带相机来现场，帮你拍出氛围感大片。', avatarUrl: 'https://picsum.photos/100/100?random=41' },
+            { id: 'gp2', name: '老王', gender: '男', age: 28, category: 'food', tags: ['干饭人'], intro: '活动结束别走，一起约个饭复盘！', avatarUrl: 'https://picsum.photos/100/100?random=42' },
+            { id: 'gp3', name: '小满', gender: '女', age: 24, category: 'checkin', tags: ['集章狂魔'], intro: '集章路线我已摸清，跟我走全盖到。', avatarUrl: 'https://picsum.photos/100/100?random=43' },
+            { id: 'gp4', name: '大飞', gender: '男', age: 26, category: 'lucky', tags: ['欧气'], intro: '抽奖区排队有门道，一起蹲个大奖！', avatarUrl: 'https://picsum.photos/100/100?random=44' },
+            { id: 'gp5', name: '甜甜', gender: '女', age: 22, category: 'groupbuy', tags: ['会砍价'], intro: '周边拼单差人，一起上车更划算。', avatarUrl: 'https://picsum.photos/100/100?random=45' },
+            { id: 'gp6', name: '阿泽', gender: '男', age: 25, category: 'stroll', tags: ['话痨'], intro: '一个人逛太无聊，找个搭子边逛边聊。', avatarUrl: 'https://picsum.photos/100/100?random=46' },
+            { id: 'gp7', name: '米粒', gender: '女', age: 23, category: 'food', tags: ['探店'], intro: '附近好吃的我门儿清，散场跟我吃。', avatarUrl: 'https://picsum.photos/100/100?random=47' },
+            { id: 'gp8', name: '老猫', gender: '男', age: 29, category: 'photo', tags: ['单反'], intro: '单反出片，帮你拍现场大片。', avatarUrl: 'https://picsum.photos/100/100?random=48' }
+        ];
+
+        var MATCH_COUNT = 4;
+
+        var CHAT_REPLIES = ['哈哈哈好呀！', '那必须的！', '我也这么想！', '没问题，现场见！', '好嘞，到时候喊你~', '安排上了！'];
+
+        // 数组洗牌
+        function shuffle(arr) {
+            var list = arr.slice();
+            for (var i = list.length - 1; i > 0; i--) {
+                var j = Math.floor(Math.random() * (i + 1));
+                var tmp = list[i]; list[i] = list[j]; list[j] = tmp;
+            }
+            return list;
+        }
+
+        function categoryLabel(id) {
+            var c = BUDDY_CATEGORIES.find(function (cat) { return cat.id === id; });
+            return c ? c.label : '其他';
+        }
+
+        // ===== 找搭子状态（localStorage 持久化）=====
+        var BUDDY_STORAGE_KEY = 'groundPromoBuddy.v1';
+
+        var buddyState = loadBuddyState();
+
+        function loadBuddyState() {
+            var defaults = { posts: [], chats: {} };
+            try {
+                var saved = JSON.parse(localStorage.getItem(BUDDY_STORAGE_KEY));
+                return Object.assign({}, defaults, saved || {});
+            } catch (e) {
+                return defaults;
+            }
+        }
+
+        function saveBuddyState(patch) {
+            buddyState = Object.assign({}, buddyState, patch);
+            try {
+                localStorage.setItem(BUDDY_STORAGE_KEY, JSON.stringify(buddyState));
+            } catch (e) {
+                if (window.Common) window.Common.showToast('本地存储已满，数据可能无法保存');
+            }
+        }
 
         // 伪二维码（演示用）
         function renderQrCodeSvg() {
@@ -184,12 +267,20 @@
             // 会话内状态
             authModalOpen: false,     // 手机号授权弹窗
             authPhone: '',            // 授权弹窗内的手机号输入
-            subscribeOpen: false,     // 关注订阅二维码弹窗
             redeemOpen: false,        // 核销领奖弹窗
             redeemDoneView: false,    // 领奖弹窗内的已领奖态
-            prizeModalId: null,       // 查看的奖品弹窗 id
             redeemClickCount: 0,
             redeemLastClickTime: 0,
+            subscribeClickCount: 0,   // 订阅二维码双击计数（触屏不支持 dblclick，用快速连点模拟）
+            subscribeLastClickTime: 0,
+            explainOpen: false,       // 活动说明展开状态（默认收起）
+            buddyView: 'explore',     // 找搭子视图：explore 抢先看 / form 表单 / posts 已发布
+            buddyDraft: { category: '', mbti: '', message: '' },
+            activePostId: null,
+            editingPostId: null,
+            buddyEditDraft: null,
+            chatPartnerKey: null,
+            matchingInProgress: false,
 
             taskDone() {
                 return state.phoneAuthorized && state.subscribed;
@@ -199,162 +290,722 @@
             render() {
                 var app = document.getElementById('app');
 
-                // 任务卡
-                var taskCard = `
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
-                    <div class="flex items-center gap-2 mb-2">
-                        <div class="p-1.5 rounded-lg flex-shrink-0" style="background: rgba(255,107,0,0.12);">
-                            <i data-lucide="sparkles" class="w-4 h-4" style="color:#FF6B00;"></i>
-                        </div>
-                        <h3 class="font-black text-gray-900 whitespace-nowrap">好运双响炮</h3>
-                        <span class="tag-promo text-[10px] px-2 py-0.5 rounded-full font-medium ml-auto">必做任务</span>
+                var baseTaskHtml = this.taskDone() ? `
+                <div class="mt-3 flex items-center gap-2 bg-green-50 rounded-xl px-3 py-2.5 border border-green-100">
+                    <i data-lucide="badge-check" class="w-4 h-4 text-green-500 shrink-0"></i>
+                    <span class="text-base text-green-700 font-bold">基础任务已完成</span>
+                </div>` : `
+                <button onclick="GroundPromoView.openAuthModal()"
+                        class="mt-3 px-6 py-1.5 rounded-full text-white font-black text-base active:scale-95 transition-transform inline-flex items-center"
+                        style="background: linear-gradient(135deg, #FF6B00, #FFB300); box-shadow: 0 4px 15px rgba(255,107,0,0.4);">
+                    马上完成
+                </button>`;
+
+                var fieldTasksHtml = FIELD_TASKS.map((t) => `
+                <div>
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-xl leading-none">${t.icon}</span>
+                        <span class="text-base font-bold text-gray-800">${t.name}</span>
                     </div>
-                    <p class="text-xs text-gray-500 leading-relaxed">两步把好运拉满：手机号注册 + 关注公众号订阅，完成后解锁见面礼！</p>
-
-                    <!-- 任务步骤 -->
-                    <div class="flex flex-wrap gap-1.5 mt-3">
-                        <span class="text-[10px] px-2 py-0.5 rounded-full ${state.phoneAuthorized ? 'bg-green-50 text-green-600' : 'bg-gray-100 text-gray-500'}">① 手机号注册 ${state.phoneAuthorized ? '✓' : '○'}</span>
-                        <span class="text-[10px] px-2 py-0.5 rounded-full ${state.subscribed ? 'bg-green-50 text-green-600' : 'bg-gray-100 text-gray-500'}">② 关注订阅 ${state.subscribed ? '✓' : '○'}</span>
-                    </div>
-
-                    ${this.taskDone() ? `
-                    <div class="mt-3 flex items-center gap-2 bg-green-50 rounded-xl px-3 py-2.5 border border-green-100">
-                        <i data-lucide="badge-check" class="w-4 h-4 text-green-500 shrink-0"></i>
-                        <span class="text-xs text-green-700 font-bold">任务已完成，见面礼解锁！</span>
-                    </div>` : `
-                    <button onclick="GroundPromoView.openAuthModal()"
-                            class="w-full mt-3 py-3.5 rounded-xl text-white font-black text-base active:scale-95 transition-transform"
-                            style="background: linear-gradient(135deg, #FF6B00, #FFB300); box-shadow: 0 4px 15px rgba(255,107,0,0.4);">
-                        立即参与
-                    </button>`}
-                </div>
-                `;
-
-                // 核销领奖卡
-                var rewarded = state.rewarded;
-                var redeemCard = `
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
-                    <div class="flex items-center gap-2 mb-2">
-                        <div class="p-1.5 rounded-lg flex-shrink-0" style="background: rgba(255,208,0,0.15);">
-                            <i data-lucide="gift" class="w-4 h-4" style="color:#d4a017;"></i>
-                        </div>
-                        <h3 class="font-black text-gray-900 whitespace-nowrap">核销领奖</h3>
-                    </div>
-                    <p class="text-xs text-gray-500 leading-relaxed">${rewarded ? '奖品已到手，好运已开箱！' : '完成任务后，凭核销码到工作人员处领奖'}</p>
-                    ${rewarded ? `
-                    <div class="mt-3 flex items-center gap-2 bg-gray-50 rounded-xl px-3 py-2.5">
-                        <i data-lucide="stamp" class="w-4 h-4 text-gray-400 shrink-0"></i>
-                        <span class="text-xs text-gray-500 font-bold">已领奖</span>
-                    </div>` : `
-                    <button onclick="GroundPromoView.openRedeemModal()"
-                            class="w-full mt-3 py-3.5 rounded-xl font-black text-base active:scale-95 transition-transform ${this.taskDone() ? 'text-white' : 'bg-gray-100 text-gray-400'}"
-                            style="${this.taskDone() ? 'background: linear-gradient(135deg, #FFD000, #FFB300); color:#5c4300; box-shadow: 0 4px 15px rgba(255,208,0,0.4);' : ''}">
-                        出示核销码领奖
-                    </button>`}
-                </div>
-                `;
-
-                // 奖品卡
-                var prizeCards = PRIZES.map((p) => `
-                <button onclick="GroundPromoView.openPrizeModal('${p.id}')"
-                        class="flex items-center gap-3 bg-white rounded-2xl border border-gray-100 shadow-sm p-3.5 text-left active:scale-[0.98] transition-transform">
-                    <span class="text-3xl">${p.icon}</span>
-                    <div class="flex-1 min-w-0">
-                        <div class="font-black text-sm text-gray-900">${p.name}</div>
-                        <div class="text-[11px] text-gray-500 mt-0.5">${p.desc}</div>
-                    </div>
-                    <i data-lucide="chevron-right" class="w-4 h-4 text-gray-300 flex-shrink-0"></i>
-                </button>
-                `).join('');
-
-                // 活动规则
-                var rules = [
-                    '现场扫码进入本页，完成「好运双响炮」任务（手机号注册 + 关注公众号订阅）',
-                    '任务完成后，凭核销码到工作人员处核销领奖，每人限领一次',
-                    '奖品数量有限，先到先得，领完即止',
-                    '本活动解释权归搭子计划所有'
-                ];
-                var rulesHtml = rules.map((r, i) => `
-                <div class="flex items-start gap-2">
-                    <span class="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black text-white flex-shrink-0 mt-0.5" style="background:#FF6B00;">${i + 1}</span>
-                    <span class="text-xs text-gray-600 leading-relaxed">${r}</span>
+                    <div class="text-base text-gray-500 mt-0.5 leading-snug">${t.desc}</div>
                 </div>
                 `).join('');
+
+                // 核销领奖
+                var redeemHtml = state.rewarded ? `
+                <div class="mt-3 flex items-center gap-2 bg-gray-50 rounded-xl px-3 py-2.5">
+                    <i data-lucide="stamp" class="w-4 h-4 text-gray-400 shrink-0"></i>
+                    <span class="text-base text-gray-500 font-bold">已领奖</span>
+                </div>` : `
+                <button onclick="GroundPromoView.openRedeemModal()"
+                        class="w-full mt-3 py-3.5 rounded-xl font-black text-xl active:scale-95 transition-transform ${this.taskDone() ? '' : 'bg-gray-100 text-gray-400'}"
+                        style="${this.taskDone() ? 'background: linear-gradient(135deg, #FFD000, #FFB300); color:#5c4300; box-shadow: 0 4px 15px rgba(255,208,0,0.4);' : ''}">
+                    出示核销码领奖
+                </button>`;
 
                 app.innerHTML = `
                 <main>
-                    <!-- 活动 Banner -->
-                    <div class="relative w-full overflow-hidden" style="background: linear-gradient(160deg, #FF8A00 0%, #FFB300 55%, #FFD54F 100%);">
-                        <div class="absolute -left-6 top-8 text-6xl opacity-25 promo-float">🎁</div>
-                        <div class="absolute -right-4 top-20 text-5xl opacity-25 promo-float" style="animation-delay: 1.2s;">🎉</div>
-                        <div class="px-6 py-10 text-center relative">
-                            <div class="text-[11px] tracking-[0.3em] text-white/85 font-bold mb-2">搭子计划 · 地推专场</div>
-                            <h1 class="text-3xl font-black text-white drop-shadow-lg">见面有礼，好运双响</h1>
-                            <p class="text-white/85 text-xs mt-2">注册 + 订阅，见面礼拿到手软！</p>
-                        </div>
+                    <!-- 活动 Banner（静态图，无动效） -->
+                    <img src="ground-promo-banner.svg" alt="搭子计划 · 见面有礼"
+                         class="w-full h-auto block"
+                         onerror="this.style.display='none';this.nextElementSibling.style.display='block';" />
+                    <div class="hidden w-full" style="aspect-ratio: 750/360; background: linear-gradient(160deg, #FF8A00, #FFB300 55%, #FFD54F);"></div>
 
-                        <!-- 底部波浪过渡 -->
-                        <div class="relative h-8 -mb-px">
-                            <svg viewBox="0 0 1440 60" class="absolute bottom-0 w-full h-full" preserveAspectRatio="none">
-                                <path d="M0,28 C240,8 480,48 720,32 C960,16 1200,6 1440,26 L1440,60 L0,60 Z" fill="#fff4e0"/>
-                            </svg>
-                        </div>
-                    </div>
-
-                    <!-- 活动信息卡 -->
-                    <div class="px-4 pt-1.5">
-                        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
-                            <h2 class="font-black text-lg text-gray-900">搭子计划 · 见面有礼</h2>
-                            <p class="text-xs text-gray-500 mt-1 leading-relaxed">来现场玩「好运双响炮」，注册订阅两步走，见面礼人人有份，还有机会抽音乐节门票！</p>
-                            <div class="flex flex-wrap gap-1.5 mt-3">
-                                <span class="text-[10px] px-2 py-0.5 rounded-full bg-orange-50 text-orange-600">📍 运河广场 · 东区入口</span>
-                                <span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-50 text-amber-600">🕐 9.18 - 9.20 全天</span>
-                                <span class="text-[10px] px-2 py-0.5 rounded-full bg-sky-50 text-sky-600">👥 现场参与</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 必做任务 -->
-                    <div class="px-4 pt-3 space-y-3">
-                        ${taskCard}
-                        ${redeemCard}
-                    </div>
-
-                    <!-- 奖品查看 -->
-                    <div class="px-4 pt-3">
-                        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
-                            <div class="flex items-center gap-2 mb-3">
-                                <div class="p-1.5 rounded-lg flex-shrink-0" style="background: rgba(255,64,129,0.12);">
-                                    <i data-lucide="trophy" class="w-4 h-4" style="color:#FF4081;"></i>
-                                </div>
-                                <h3 class="font-black text-gray-900 whitespace-nowrap">奖品查看</h3>
-                                <span class="text-[10px] text-gray-400 ml-auto">点击查看详情</span>
-                            </div>
-                            <div class="grid grid-cols-1 gap-2.5">
-                                ${prizeCards}
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 活动规则 -->
+                    <!-- 主卡片：活动标题 / 时间 / 基础任务 / 核销领奖 -->
                     <div class="px-4 pt-3 pb-24">
                         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
-                            <div class="flex items-center gap-2 mb-3">
-                                <div class="p-1.5 rounded-lg flex-shrink-0" style="background: rgba(66,165,245,0.12);">
-                                    <i data-lucide="scroll-text" class="w-4 h-4" style="color:#42A5F5;"></i>
+                            <h1 class="text-2xl font-black text-gray-900">搭子计划 · 见面有礼</h1>
+                            <p class="text-base text-gray-400 mt-1">🕐 活动时间：9.18 - 9.20 全天</p>
+
+                            <!-- 基础任务（独立包裹） -->
+                            <div class="mt-4 border-t border-gray-200 pt-4">
+                                <div class="rounded-2xl px-3.5 py-3.5" style="background: #fafafa; border: 1px solid #f3f4f6;">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style="background: rgba(255,107,0,0.12);">
+                                            <i data-lucide="target" class="w-4 h-4" style="color:#FF6B00;"></i>
+                                        </div>
+                                        <h3 class="font-black text-gray-900 text-lg whitespace-nowrap">基础任务</h3>
+                                        <div class="flex-1 h-px" style="background: #e5e7eb;"></div>
+                                        <span class="text-sm text-gray-400 whitespace-nowrap">必做</span>
+                                    </div>
+                                    <p class="text-base text-gray-500 mt-2">注册 + 订阅，两步轻松搞定！</p>
+                                    ${baseTaskHtml}
                                 </div>
-                                <h3 class="font-black text-gray-900 whitespace-nowrap">活动规则</h3>
                             </div>
-                            <div class="space-y-2.5">
-                                ${rulesHtml}
+
+                            <!-- 本场任务（独立包裹） -->
+                            <div class="mt-3">
+                                <div class="rounded-2xl px-3.5 py-3.5" style="background: #fafafa; border: 1px solid #f3f4f6;">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style="background: rgba(255,107,0,0.12);">
+                                            <i data-lucide="party-popper" class="w-4 h-4" style="color:#FF6B00;"></i>
+                                        </div>
+                                        <h3 class="font-black text-gray-900 text-lg whitespace-nowrap">本场任务</h3>
+                                        <div class="flex-1 h-px" style="background: #e5e7eb;"></div>
+                                        <span class="text-sm text-gray-400 whitespace-nowrap">现场玩法</span>
+                                    </div>
+                                    <div class="space-y-2.5 mt-3">${fieldTasksHtml}</div>
+                                </div>
+                            </div>
+
+                            <!-- 核销领奖 -->
+                            <div class="mt-5 border-t border-gray-200 pt-4">
+                                <h3 class="font-black text-gray-900 text-xl">核销领奖</h3>
+                                <p class="text-base text-gray-500 mt-1">完成以上任务即可领取搭子计划精美见面礼！</p>
+                                ${redeemHtml}
+                                <button onclick="GroundPromoView.resetPromoDemo()"
+                                        class="w-full mt-2 py-1 text-center text-base text-gray-400 underline underline-offset-2 active:opacity-70">
+                                    重置（仅演示版使用）
+                                </button>
                             </div>
                         </div>
+
+                        <!-- 活动说明（默认收起，点击展开/收起） -->
+                        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mt-3">
+                            <div class="flex items-center gap-2 cursor-pointer select-none" onclick="GroundPromoView.toggleExplain()">
+                                <div class="p-1.5 rounded-lg flex-shrink-0" style="background: rgba(255,107,0,0.12);">
+                                    <i data-lucide="book-open" class="w-4 h-4" style="color:#FF6B00;"></i>
+                                </div>
+                                <h3 class="font-black text-gray-900 whitespace-nowrap text-xl">活动说明</h3>
+                                <i data-lucide="chevron-down" class="w-5 h-5 text-gray-400 ml-auto transition-transform duration-300 ${this.explainOpen ? 'rotate-180' : ''}"></i>
+                            </div>
+                            ${this.explainOpen ? `
+                            <div class="space-y-3 text-base text-gray-600 leading-relaxed mt-3 animate-promo-reveal">
+                                <p>本场为参与任务的小伙伴准备了丰厚的见面礼：完成注册 + 订阅基础任务并现场核销后，即可领取「新人见面礼包」（帆布袋、贴纸、好运签），还能拿到「咖啡双人券」，和搭子在现场咖啡车碰个杯；完成全部任务还可参与「大运河音乐节门票」抽奖，现场更有限量「搭子周边公仔」等你抱回家。</p>
+                                <p>活动规则：① 现场扫码进入本页，完成注册 + 订阅基础任务；② 任务完成后凭核销码到工作人员处核销领奖，每人限领一次；③ 奖品数量有限，先到先得，领完即止；④ 本活动最终解释权归搭子计划所有。</p>
+                            </div>` : ''}
+                        </div>
+
+                        <!-- 找搭子 -->
+                        ${this.renderBuddySection()}
                     </div>
                 </main>
-                <footer class="text-center text-[10px] text-gray-400 pb-8 pt-2">搭子计划 · 地推活动页（DEMO 演示，数据保存在本地浏览器）</footer>
+                <footer class="text-center text-sm text-gray-400 pb-8 pt-2">搭子计划 · 地推活动页（DEMO 演示，数据保存在本地浏览器）</footer>
                 `;
 
                 if (window.Common) window.Common.initIcons();
+
+                // 找搭子表单输入绑定
+                if (this.buddyView === 'form') {
+                    var bmsg = document.getElementById('buddyMessage');
+                    if (bmsg) {
+                        bmsg.value = this.buddyDraft.message;
+                        bmsg.addEventListener('input', function () {
+                            GroundPromoView.buddyDraft.message = bmsg.value;
+                            var cnt = document.getElementById('buddyMessageCount');
+                            if (cnt) cnt.textContent = bmsg.value.length;
+                        });
+                        var bcnt = document.getElementById('buddyMessageCount');
+                        if (bcnt) bcnt.textContent = bmsg.value.length;
+                    }
+                }
+
+                // 找搭子需求编辑态绑定
+                if (this.buddyView === 'posts' && this.editingPostId) {
+                    var emsg = document.getElementById('editMessage');
+                    if (emsg) {
+                        var ecnt = document.getElementById('editMessageCount');
+                        if (ecnt) ecnt.textContent = emsg.value.length;
+                        emsg.addEventListener('input', function () {
+                            var cntEl = document.getElementById('editMessageCount');
+                            if (cntEl) cntEl.textContent = emsg.value.length;
+                        });
+                    }
+                }
+            },
+
+            // ---------- 活动说明折叠 ----------
+            toggleExplain() {
+                this.explainOpen = !this.explainOpen;
+                this.render();
+            },
+
+            // ---------- 找搭子 ----------
+            renderBuddySection() {
+                var content = this.buddyView === 'form'
+                    ? this.renderBuddyForm()
+                    : (this.buddyView === 'posts' ? this.renderBuddyPosts() : this.renderBuddyExplore());
+
+                return `
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mt-3">
+                    <div class="flex items-center gap-2 mb-3">
+                        <div class="p-1.5 rounded-lg flex-shrink-0" style="background: rgba(255,64,129,0.12);">
+                            <i data-lucide="heart-handshake" class="w-4 h-4" style="color:#FF4081;"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <h3 class="font-black text-gray-900 whitespace-nowrap text-xl">现场找搭子</h3>
+                            <p class="text-sm text-gray-400">发布需求匹配同场搭子，一起玩更热闹</p>
+                        </div>
+                    </div>
+                    ${content}
+                </div>
+                `;
+            },
+
+            // 未发布需求：随机搭子抢先看
+            renderBuddyExplore() {
+                var catIds = shuffle(BUDDY_CATEGORIES.map(function (c) { return c.id; }));
+                var picks = [];
+                for (var i = 0; i < catIds.length && picks.length < 4; i++) {
+                    var pool = shuffle(BUDDY_POOL.filter(function (b) { return b.category === catIds[i]; }));
+                    if (pool.length) picks.push(pool[0]);
+                }
+
+                return `
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-base text-gray-500">随机抽取 4 位同场搭子抢先看</span>
+                    <button onclick="GroundPromoView.openBuddyForm()"
+                            class="flex-shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-bold border border-white active:scale-95 transition-transform"
+                            style="background: linear-gradient(135deg, #FF6B00, #FFB300); color:#ffffff;">
+                        <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                        发需求
+                    </button>
+                </div>
+                <div class="space-y-3">${picks.map((b) => this.renderBuddyCard(b)).join('')}</div>
+                <button onclick="GroundPromoView.goPublishRequest()"
+                        class="w-full mt-3 py-3 rounded-xl text-base font-bold border active:scale-95 transition-transform"
+                        style="color:#c26200; border-color: rgba(255,107,0,0.4); background: rgba(255,107,0,0.06);">
+                    更多
+                </button>
+                `;
+            },
+
+            renderBuddyCard(b) {
+                return `
+                <div class="rounded-2xl px-3.5 py-3.5" style="background: #fafafa; border: 1px solid #f3f4f6;">
+                    <div class="flex items-center gap-3">
+                        <img src="${escapeHtml(b.avatarUrl)}" class="w-14 h-14 flex-shrink-0 rounded-full border-2 border-white shadow-md object-cover"
+                             onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"/>
+                        <div class="w-14 h-14 flex-shrink-0 rounded-full border-2 border-white shadow-md hidden items-center justify-center text-xl font-black text-white"
+                             style="background: linear-gradient(135deg, #FF6B00, #FFB300);">${escapeHtml(b.name.charAt(0))}</div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-1.5 flex-wrap">
+                                <span class="font-black text-gray-900 whitespace-nowrap text-base">${escapeHtml(b.name)}</span>
+                                <i data-lucide="badge-check" class="w-3.5 h-3.5 text-brand-blue"></i>
+                                <span class="text-sm text-gray-500 whitespace-nowrap">${escapeHtml(b.gender)} · ${escapeHtml(b.age)}岁</span>
+                            </div>
+                            <div class="flex flex-wrap gap-1.5 mt-1.5">
+                                <span class="text-sm px-2 py-0.5 rounded-full font-medium" style="background: rgba(255,107,0,0.1); color:#c26200;">${categoryLabel(b.category)}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-base text-gray-500 leading-relaxed mt-3 rounded-xl p-3" style="background: #ffffff;">"${escapeHtml(b.intro)}"</p>
+                    <button onclick="GroundPromoView.contactFromExplore()"
+                            class="w-full mt-3 py-2.5 rounded-xl text-white font-black text-base active:scale-95 transition-transform flex items-center justify-center gap-2"
+                            style="background: linear-gradient(135deg, #FF6B00, #FFB300); box-shadow: 0 4px 15px rgba(255,107,0,0.4);">
+                        <i data-lucide="message-circle" class="w-4 h-4"></i>
+                        联系TA
+                    </button>
+                </div>
+                `;
+            },
+
+            renderBuddyForm() {
+                var catOptions = BUDDY_CATEGORIES.map((c) => `
+                    <option value="${c.id}" ${this.buddyDraft.category === c.id ? 'selected' : ''}>${c.label} · ${c.desc}</option>
+                `).join('');
+                var mbtiOptions = MBTI_OPTIONS.map((t) => `
+                    <option value="${t}" ${this.buddyDraft.mbti === t ? 'selected' : ''}>${t}</option>
+                `).join('');
+
+                return `
+                <div>
+                    ${buddyState.posts.length > 0 ? `
+                    <button onclick="GroundPromoView.backToPosts()" class="flex items-center gap-1 text-sm text-gray-500 mb-2 active:opacity-70">
+                        <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                        返回我的需求
+                    </button>` : ''}
+
+                    <div class="rounded-2xl px-3.5 py-3.5" style="background: #fafafa; border: 1px solid #f3f4f6;">
+                        <label class="text-base font-bold text-gray-500 mb-2 block">需求类型 <span class="text-red-400 font-normal">（必选）</span></label>
+                        <select id="buddyCategorySelect" onchange="GroundPromoView.pickBuddyCategory(this.value)"
+                                class="w-full border border-gray-200 rounded-xl px-3 py-3 text-base bg-white outline-none focus:border-brand-orange mb-4">
+                            <option value="">请选择需求类型</option>
+                            ${catOptions}
+                        </select>
+
+                        <label class="text-base font-bold text-gray-500 mb-2 block">我的MBTI <span class="text-gray-400 font-normal">（选填）</span></label>
+                        <select id="buddyMbtiSelect" onchange="GroundPromoView.pickBuddyMbti(this.value)"
+                                class="w-full border border-gray-200 rounded-xl px-3 py-3 text-base bg-white outline-none focus:border-brand-orange mb-4">
+                            <option value="">请选择（选填）</option>
+                            ${mbtiOptions}
+                        </select>
+
+                        <label class="text-base font-bold text-gray-500 mb-2 block">个人留言 <span class="text-gray-400 font-normal">（100 字以内）</span></label>
+                        <textarea id="buddyMessage" maxlength="100" rows="3"
+                                  class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-base bg-white outline-none focus:border-brand-orange resize-none"
+                                  placeholder="${escapeHtml(this.buddyMessagePlaceholder())}"></textarea>
+                        <div class="text-right text-sm text-gray-400 mt-1"><span id="buddyMessageCount">0</span>/100</div>
+
+                        <button onclick="GroundPromoView.submitBuddyForm()"
+                                class="w-full mt-3 py-3.5 rounded-xl text-white font-black text-lg active:scale-95 transition-transform"
+                                style="background: linear-gradient(135deg, #FF6B00, #FFB300); box-shadow: 0 4px 15px rgba(255,107,0,0.4);">
+                            立即匹配搭子
+                        </button>
+                    </div>
+                </div>
+                `;
+            },
+
+            buddyMessagePlaceholder() {
+                var cat = BUDDY_CATEGORIES.find(function (c) { return c.id === this.buddyDraft.category; }, this);
+                return cat && cat.placeholder ? cat.placeholder : '说说你想找什么样的搭子~';
+            },
+
+            // 已发布需求视图
+            renderBuddyPosts() {
+                var post = this.activePost();
+                var matches = post.matches || [];
+
+                var switcherHtml = buddyState.posts.length > 1 ? `
+                    <div class="flex gap-2 overflow-x-auto no-scrollbar mb-3">
+                        ${buddyState.posts.map((p, i) => {
+                            var active = p.id === post.id;
+                            return `
+                            <button data-id="${escapeHtml(p.id)}" onclick="GroundPromoView.switchPost(this.dataset.id)"
+                                    class="flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-bold border transition-all duration-150 whitespace-nowrap ${active ? '' : 'border-gray-200 bg-white text-gray-500'}"
+                                    style="${active ? 'background: linear-gradient(135deg, #FF6B00, #FFB300); color:#ffffff;' : ''}">
+                                需求${i + 1} · ${categoryLabel(p.category)}
+                            </button>`;
+                        }).join('')}
+                    </div>` : '';
+
+                // 编辑态下拉框
+                var editCatOptions = BUDDY_CATEGORIES.map((c) => `
+                    <option value="${c.id}" ${this.buddyEditDraft && this.buddyEditDraft.category === c.id ? 'selected' : ''}>${c.label} · ${c.desc}</option>
+                `).join('');
+                var editMbtiOptions = MBTI_OPTIONS.map((t) => `
+                    <option value="${t}" ${this.buddyEditDraft && this.buddyEditDraft.mbti === t ? 'selected' : ''}>${t}</option>
+                `).join('');
+
+                return `
+                <div class="space-y-3">
+                    <!-- 我的需求卡 -->
+                    <div class="rounded-2xl px-3.5 py-3.5" style="background: #fafafa; border: 1px solid #f3f4f6;">
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="font-black text-gray-900 text-base whitespace-nowrap shrink-0">我的需求</h3>
+                            <div class="flex items-center gap-2 shrink-0">
+                                ${this.editingPostId === post.id ? '' : `
+                                <button onclick="GroundPromoView.editPost('${post.id}')"
+                                        class="text-sm font-bold px-3 py-1.5 rounded-full border border-gray-200 text-gray-500 bg-white flex items-center gap-1 active:scale-95 transition-transform">
+                                    <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                                    编辑
+                                </button>`}
+                                <button onclick="GroundPromoView.openBuddyForm()"
+                                        class="text-sm font-bold px-3 py-1.5 rounded-full flex items-center gap-1 active:scale-95 transition-transform text-white"
+                                        style="background: linear-gradient(135deg, #FF6B00, #FFB300);">
+                                    <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                                    再发一条
+                                </button>
+                            </div>
+                        </div>
+
+                        ${switcherHtml}
+
+                        ${this.editingPostId === post.id ? `
+                        <!-- 编辑态 -->
+                        <div class="space-y-3">
+                            <div>
+                                <label class="text-base font-bold text-gray-500 mb-2 block">需求类型 <span class="text-red-400 font-normal">（必选）</span></label>
+                                <select id="editCategorySelect" onchange="GroundPromoView.pickEditCategory(this.value)"
+                                        class="w-full border border-gray-200 rounded-xl px-3 py-3 text-base bg-white outline-none focus:border-brand-orange">
+                                    <option value="">请选择需求类型</option>
+                                    ${editCatOptions}
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-base font-bold text-gray-500 mb-2 block">我的MBTI <span class="text-gray-400 font-normal">（选填）</span></label>
+                                <select id="editMbtiSelect" onchange="GroundPromoView.pickEditMbti(this.value)"
+                                        class="w-full border border-gray-200 rounded-xl px-3 py-3 text-base bg-white outline-none focus:border-brand-orange">
+                                    <option value="">请选择（选填）</option>
+                                    ${editMbtiOptions}
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-base font-bold text-gray-500 mb-2 block">留言 <span class="text-gray-400 font-normal">（100 字以内）</span></label>
+                                <textarea id="editMessage" maxlength="100" rows="3"
+                                          class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-base bg-white outline-none focus:border-brand-orange resize-none">${escapeHtml(post.message)}</textarea>
+                                <div class="flex items-center justify-between mt-1.5">
+                                    <span class="text-sm text-gray-400"><span id="editMessageCount">0</span>/100</span>
+                                    <div class="flex gap-2">
+                                        <button onclick="GroundPromoView.cancelEditPost()"
+                                                class="text-sm font-bold px-3 py-1.5 rounded-full border border-gray-200 text-gray-500 active:scale-95 transition-transform">
+                                            取消
+                                        </button>
+                                        <button onclick="GroundPromoView.saveEditPost()"
+                                                class="text-sm font-bold px-3 py-1.5 rounded-full text-white active:scale-95 transition-transform"
+                                                style="background: linear-gradient(135deg, #FF6B00, #FFB300);">
+                                            保存
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>` : `
+                        <!-- 静态预览 -->
+                        <div class="space-y-2 text-base">
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm font-bold text-white px-2 py-0.5 rounded-md whitespace-nowrap shrink-0" style="background:#FF6B00;">需求类型</span>
+                                <span class="text-gray-700">${categoryLabel(post.category)}</span>
+                                ${post.time ? '<span class="ml-auto text-sm text-gray-300 whitespace-nowrap">' + escapeHtml(post.time) + ' 发布</span>' : ''}
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm font-bold text-white px-2 py-0.5 rounded-md whitespace-nowrap shrink-0" style="background:#42A5F5;">我的MBTI</span>
+                                <span class="text-gray-700">${escapeHtml(post.mbti || '未填写')}</span>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <span class="text-sm font-bold text-white px-2 py-0.5 rounded-md mt-0.5 whitespace-nowrap shrink-0" style="background:#7B1FA2;">留&#12288;&#12288;言</span>
+                                <span class="text-gray-600 leading-relaxed">${escapeHtml(post.message)}</span>
+                            </div>
+                        </div>`}
+                    </div>
+
+                    <!-- 匹配结果 -->
+                    <div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <div class="p-1.5 rounded-lg flex-shrink-0" style="background: rgba(255,64,129,0.12);">
+                                <i data-lucide="users" class="w-4 h-4" style="color:#FF4081;"></i>
+                            </div>
+                            <h3 class="font-black text-gray-900 text-base">为你找到 ${matches.length} 位搭子</h3>
+                            <span class="text-sm text-gray-400">选一位开聊吧</span>
+                        </div>
+                        ${matches.map((m) => this.renderMatchCard(m)).join('') || `
+                        <div class="text-center text-gray-400 text-sm py-6">
+                            <div class="mb-2">暂时没有匹配结果</div>
+                            <button onclick="GroundPromoView.rematchPost()"
+                                    class="text-sm font-bold px-4 py-2 rounded-full border active:scale-95 transition-transform"
+                                    style="color:#c26200; border-color: rgba(255,107,0,0.4); background: rgba(255,107,0,0.06);">
+                                重新匹配
+                            </button>
+                        </div>`}
+                    </div>
+                </div>
+                `;
+            },
+
+            renderMatchCard(m) {
+                return `
+                <div class="rounded-2xl px-3.5 py-3.5 mb-3" style="background: #fafafa; border: 1px solid #f3f4f6;">
+                    <div class="flex items-center gap-3">
+                        <img src="${escapeHtml(m.avatarUrl)}" class="w-14 h-14 flex-shrink-0 rounded-full border-2 border-white shadow-md object-cover"
+                             onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"/>
+                        <div class="w-14 h-14 flex-shrink-0 rounded-full border-2 border-white shadow-md hidden items-center justify-center text-xl font-black text-white"
+                             style="background: linear-gradient(135deg, #FF6B00, #FFB300);">${escapeHtml(m.name.charAt(0))}</div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-1.5 flex-wrap">
+                                <span class="font-black text-gray-900 whitespace-nowrap text-base">${escapeHtml(m.name)}</span>
+                                <i data-lucide="badge-check" class="w-3.5 h-3.5 text-brand-blue"></i>
+                                <span class="text-sm text-gray-500 whitespace-nowrap">${escapeHtml(m.gender)} · ${escapeHtml(m.age)}岁</span>
+                            </div>
+                            <div class="flex flex-wrap gap-1.5 mt-1.5">
+                                <span class="text-sm px-2 py-0.5 rounded-full font-medium" style="background: rgba(255,107,0,0.1); color:#c26200;">${categoryLabel(m.category)}</span>
+                                ${m.mbti ? '<span class="text-sm px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">' + escapeHtml(m.mbti) + '</span>' : ''}
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-base text-gray-500 leading-relaxed mt-3 rounded-xl p-3" style="background: #ffffff;">"${escapeHtml(m.intro)}"</p>
+                    <button data-id="${escapeHtml(m.id)}" onclick="GroundPromoView.openChat(this.dataset.id)"
+                            class="w-full mt-3 py-2.5 rounded-xl text-white font-black text-base active:scale-95 transition-transform flex items-center justify-center gap-2"
+                            style="background: linear-gradient(135deg, #FF6B00, #FFB300); box-shadow: 0 4px 15px rgba(255,107,0,0.4);">
+                        <i data-lucide="message-circle" class="w-4 h-4"></i>
+                        和 TA 聊天
+                    </button>
+                </div>
+                `;
+            },
+
+            pickBuddyCategory(id) {
+                this.buddyDraft.category = id;
+                this.render();
+            },
+
+            pickBuddyMbti(id) {
+                this.buddyDraft.mbti = id;
+                this.render();
+            },
+
+            pickEditCategory(id) {
+                if (!this.buddyEditDraft) return;
+                this.buddyEditDraft.category = id;
+                this.render();
+            },
+
+            pickEditMbti(id) {
+                if (!this.buddyEditDraft) return;
+                this.buddyEditDraft.mbti = id;
+                this.render();
+            },
+
+            openBuddyForm() {
+                this.buddyView = 'form';
+                this.editingPostId = null;
+                this.render();
+            },
+
+            goPublishRequest() {
+                window.Common.showToast('请发布你的需求，解锁更多同场搭子');
+                this.buddyView = 'form';
+                this.render();
+            },
+
+            contactFromExplore() {
+                window.Common.showToast('先发布你的需求，就能和 TA 开聊啦');
+                this.buddyView = 'form';
+                this.render();
+            },
+
+            backToPosts() {
+                this.buddyView = 'posts';
+                this.editingPostId = null;
+                this.render();
+            },
+
+            activePost() {
+                return buddyState.posts.find(function (p) { return p.id === this.activePostId; }, this) || buddyState.posts[0];
+            },
+
+            switchPost(id) {
+                this.activePostId = id;
+                this.render();
+            },
+
+            rematchPost() {
+                var post = this.activePost();
+                var matches = this.matchPartners();
+                var posts = buddyState.posts.map(function (p) {
+                    return p.id === post.id ? Object.assign({}, p, { matches: matches }) : p;
+                });
+                saveBuddyState({ posts: posts });
+                this.render();
+                window.Common.showToast('已为你找到 ' + matches.length + ' 位搭子');
+            },
+
+            submitBuddyForm() {
+                if (this.matchingInProgress) return;
+                var message = (document.getElementById('buddyMessage') ? document.getElementById('buddyMessage').value : '').trim();
+
+                if (!this.buddyDraft.category) { window.Common.showToast('请选择需求类型'); return; }
+                if (!message) { window.Common.showToast('写句留言介绍一下自己吧'); return; }
+
+                this.matchingInProgress = true;
+                this.showMatchingOverlay();
+
+                var view = this;
+                setTimeout(function () {
+                    var matches = view.matchPartners();
+                    view.hideMatchingOverlay();
+                    view.matchingInProgress = false;
+
+                    var post = {
+                        id: 'gp' + Date.now(),
+                        category: view.buddyDraft.category,
+                        mbti: view.buddyDraft.mbti,
+                        message: message,
+                        time: view.nowTime(),
+                        matches: matches
+                    };
+                    saveBuddyState({ posts: buddyState.posts.concat([post]) });
+                    view.activePostId = post.id;
+                    view.buddyView = 'posts';
+                    view.buddyDraft = { category: '', mbti: '', message: '' };
+                    view.render();
+                    window.Common.showToast('已为你找到 ' + matches.length + ' 位搭子，选一位开聊吧');
+                    window.scrollTo({ top: document.getElementById('app').scrollHeight, behavior: 'smooth' });
+                }, 1400);
+            },
+
+            // 匹配逻辑：优先同需求类型，随机附上 MBTI 标签
+            matchPartners() {
+                var cat = this.buddyDraft.category;
+                var sameCat = shuffle(BUDDY_POOL.filter(function (b) { return b.category === cat; }));
+                var others = shuffle(BUDDY_POOL.filter(function (b) { return b.category !== cat; }));
+                return sameCat.concat(others).slice(0, MATCH_COUNT).map(function (b) {
+                    return Object.assign({}, b, { mbti: MBTI_OPTIONS[Math.floor(Math.random() * MBTI_OPTIONS.length)] });
+                });
+            },
+
+            showMatchingOverlay() {
+                var overlay = document.createElement('div');
+                overlay.id = 'matchingOverlay';
+                overlay.className = 'fixed inset-0 z-[300] flex flex-col items-center justify-center fade-in';
+                overlay.style.background = 'rgba(0,0,0,0.7)';
+                overlay.innerHTML = `
+                    <div class="promo-ring w-14 h-14 mb-5"></div>
+                    <div class="text-white font-bold text-xl">正在为你匹配搭子…</div>
+                    <div class="text-white/60 text-base mt-2">根据需求类型智能匹配 · 稍后揭晓</div>
+                `;
+                document.body.appendChild(overlay);
+                window.Common.initIcons();
+            },
+
+            hideMatchingOverlay() {
+                var overlay = document.getElementById('matchingOverlay');
+                if (overlay) overlay.remove();
+            },
+
+            // 编辑已发布需求
+            editPost(id) {
+                var post = buddyState.posts.find(function (p) { return p.id === id; });
+                this.editingPostId = id;
+                this.buddyEditDraft = {
+                    category: post ? (post.category || '') : '',
+                    mbti: post ? (post.mbti || '') : ''
+                };
+                this.render();
+            },
+
+            cancelEditPost() {
+                this.editingPostId = null;
+                this.buddyEditDraft = null;
+                this.render();
+            },
+
+            saveEditPost() {
+                var el = document.getElementById('editMessage');
+                if (!el) return;
+                var msg = el.value.trim();
+                if (!msg) { window.Common.showToast('留言不能为空'); return; }
+                if (!this.buddyEditDraft || !this.buddyEditDraft.category) { window.Common.showToast('请选择需求类型'); return; }
+
+                var editingId = this.editingPostId;
+                var draft = this.buddyEditDraft;
+                var posts = buddyState.posts.map(function (p) {
+                    return p.id === editingId ? Object.assign({}, p, {
+                        message: msg,
+                        category: draft.category,
+                        mbti: draft.mbti
+                    }) : p;
+                });
+                saveBuddyState({ posts: posts });
+                this.editingPostId = null;
+                this.buddyEditDraft = null;
+                this.render();
+                window.Common.showToast('已保存');
+            },
+
+            // ---------- 私聊 ----------
+            appendChat(chatKey, msg) {
+                var list = (buddyState.chats[chatKey] || []).concat([msg]);
+                saveBuddyState({ chats: Object.assign({}, buddyState.chats, { [chatKey]: list }) });
+            },
+
+            openChat(partnerId) {
+                if (document.getElementById('promoChat')) return;
+                var post = this.activePost();
+                var p = (post.matches || []).find(function (m) { return m.id === partnerId; });
+                if (!p) return;
+                this.chatPartnerKey = post.id + ':' + p.id;
+
+                if (!buddyState.chats[this.chatPartnerKey] || !buddyState.chats[this.chatPartnerKey].length) {
+                    this.appendChat(this.chatPartnerKey, { isMe: false, text: '哈喽！我是你的搭子「' + p.name + '」，活动见！', time: this.nowTime() });
+                }
+
+                var chat = document.createElement('div');
+                chat.id = 'promoChat';
+                chat.className = 'fixed inset-0 z-[400] flex flex-col fade-in';
+                chat.style.background = 'linear-gradient(180deg, #fff4e0 0%, #fff9ec 40%, #fff3d6 100%)';
+                chat.innerHTML = `
+                    <div class="flex items-center gap-2 px-3 py-3 bg-white/85 backdrop-blur-md border-b border-gray-100">
+                        <button onclick="GroundPromoView.closeChat()" class="p-1.5 -ml-1 rounded-full active:bg-gray-100">
+                            <i data-lucide="chevron-left" class="w-6 h-6 text-gray-600"></i>
+                        </button>
+                        <img src="${escapeHtml(p.avatarUrl)}" class="w-9 h-9 rounded-full object-cover border border-gray-200"
+                             onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"/>
+                        <div class="w-9 h-9 rounded-full border border-gray-200 hidden items-center justify-center text-base font-black text-white flex-shrink-0"
+                             style="background: linear-gradient(135deg, #FF6B00, #FFB300);">${escapeHtml(p.name.charAt(0))}</div>
+                        <div class="flex-1 min-w-0">
+                            <div class="font-bold text-base text-gray-900 flex items-center gap-1 whitespace-nowrap">
+                                ${escapeHtml(p.name)}
+                                <i data-lucide="badge-check" class="w-3.5 h-3.5 text-brand-blue flex-shrink-0"></i>
+                            </div>
+                            <div class="text-sm text-gray-400 truncate">${categoryLabel(p.category)}搭子 · ${escapeHtml(p.gender)} · ${escapeHtml(p.age)}岁</div>
+                        </div>
+                    </div>
+                    <div id="chatMessages" class="flex-1 overflow-y-auto px-4 py-4 space-y-3"></div>
+                    <div class="px-3 pb-3 pt-2 bg-white/85 backdrop-blur-md border-t border-gray-100">
+                        <div class="flex items-center gap-2">
+                            <input id="chatInput" type="text" maxlength="100" placeholder="和 TA 聊聊活动…"
+                                   class="flex-1 border border-gray-200 rounded-full px-4 py-2.5 text-base bg-white outline-none focus:border-brand-orange"/>
+                            <button onclick="GroundPromoView.sendMessage()"
+                                    class="w-10 h-10 rounded-full text-white flex items-center justify-center active:scale-90 transition-transform"
+                                    style="background: linear-gradient(135deg, #FF6B00, #FFB300);">
+                                <i data-lucide="send" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(chat);
+                window.Common.initIcons();
+
+                this.renderChatMessages();
+
+                var input = document.getElementById('chatInput');
+                input.addEventListener('keydown', function (e) {
+                    if (e.key === 'Enter') GroundPromoView.sendMessage();
+                });
+                setTimeout(function () { input.focus(); }, 200);
+            },
+
+            closeChat() {
+                var chat = document.getElementById('promoChat');
+                if (chat) chat.remove();
+            },
+
+            renderChatMessages() {
+                var box = document.getElementById('chatMessages');
+                if (!box) return;
+                var list = buddyState.chats[this.chatPartnerKey] || [];
+                var html = list.map(function (m) {
+                    return m.isMe
+                        ? '<div class="flex justify-end"><div class="chat-bubble-me max-w-[75%] px-3.5 py-2.5 text-base leading-relaxed shadow-sm">' + escapeHtml(m.text) + '</div></div>'
+                        : '<div class="flex justify-start"><div class="chat-bubble-other max-w-[75%] px-3.5 py-2.5 text-base leading-relaxed text-gray-700 shadow-sm border border-gray-100">' + escapeHtml(m.text) + '</div></div>';
+                }).join('');
+                box.innerHTML = html || '<div class="text-center text-gray-300 text-base mt-10">和你的搭子打个招呼吧~</div>';
+                box.scrollTop = box.scrollHeight;
+            },
+
+            sendMessage() {
+                var input = document.getElementById('chatInput');
+                var text = (input.value || '').trim();
+                if (!text) return;
+
+                var chatKey = this.chatPartnerKey;
+                this.appendChat(chatKey, { isMe: true, text: text, time: this.nowTime() });
+                input.value = '';
+                this.renderChatMessages();
+
+                var view = this;
+                setTimeout(function () {
+                    var reply = CHAT_REPLIES[Math.floor(Math.random() * CHAT_REPLIES.length)];
+                    view.appendChat(chatKey, { isMe: false, text: reply, time: view.nowTime() });
+                    view.renderChatMessages();
+                }, 900);
+            },
+
+            nowTime() {
+                var d = new Date();
+                var h = d.getHours();
+                var m = d.getMinutes();
+                return (h < 10 ? '0' + h : h) + ':' + (m < 10 ? '0' + m : m);
             },
 
             // ---------- 手机号授权 ----------
@@ -371,25 +1022,25 @@
                 overlay.innerHTML = `
                 <div class="w-full max-w-sm bg-white rounded-3xl p-5 animate-promo-pop">
                     <div class="flex items-center justify-between mb-3">
-                        <h3 class="text-lg font-black text-gray-900">手机号授权</h3>
+                        <h3 class="text-xl font-black text-gray-900">手机号授权</h3>
                         <button onclick="GroundPromoView.closeAuthModal()" class="p-1 rounded-full active:bg-gray-100">
                             <i data-lucide="x" class="w-5 h-5 text-gray-400"></i>
                         </button>
                     </div>
-                    <p class="text-xs text-gray-500 leading-relaxed mb-4">用于注册搭子计划并参与「好运双响炮」任务，我们不会向第三方泄露你的信息</p>
+                    <p class="text-base text-gray-500 leading-relaxed mb-4">用于注册搭子计划并参与「好运双响炮」任务，我们不会向第三方泄露你的信息</p>
 
-                    <label class="text-xs font-bold text-gray-500 mb-2 block">手机号</label>
+                    <label class="text-base font-bold text-gray-500 mb-2 block">手机号</label>
                     <input id="promoAuthPhone" type="tel" maxlength="11" value="${escapeHtml(this.authPhone)}"
-                           class="w-full border border-gray-200 rounded-xl px-4 py-3 text-base bg-gray-50 outline-none focus:border-brand-orange"
+                           class="w-full border border-gray-200 rounded-xl px-4 py-3 text-lg bg-gray-50 outline-none focus:border-brand-orange"
                            placeholder="请输入手机号"/>
 
                     <div class="flex gap-3 mt-5">
                         <button onclick="GroundPromoView.closeAuthModal()"
-                                class="flex-1 py-3 rounded-xl text-sm font-bold border border-gray-200 text-gray-500 active:scale-95 transition-transform">
+                                class="flex-1 py-3 rounded-xl text-base font-bold border border-gray-200 text-gray-500 active:scale-95 transition-transform">
                             拒绝
                         </button>
                         <button onclick="GroundPromoView.confirmAuth()"
-                                class="flex-1 py-3 rounded-xl text-white text-sm font-black active:scale-95 transition-transform"
+                                class="flex-1 py-3 rounded-xl text-white text-base font-black active:scale-95 transition-transform"
                                 style="background: linear-gradient(135deg, #FF6B00, #FFB300); box-shadow: 0 4px 15px rgba(255,107,0,0.4);">
                             允许授权
                         </button>
@@ -432,34 +1083,45 @@
                 overlay.innerHTML = `
                 <div class="bg-white w-full max-w-md rounded-t-3xl p-5 pb-8 animate-slide-up-promo">
                     <div class="flex items-center justify-between mb-1">
-                        <h3 class="text-lg font-black text-gray-900">关注公众号</h3>
+                        <h3 class="text-xl font-black text-gray-900">关注公众号</h3>
                         <button onclick="GroundPromoView.closeSubscribeSheet()" class="p-1 rounded-full active:bg-gray-100">
                             <i data-lucide="x" class="w-5 h-5 text-gray-400"></i>
                         </button>
                     </div>
-                    <p class="text-xs text-gray-400 mb-4">第二步：关注公众号完成订阅</p>
+                    <p class="text-base text-gray-400 mb-4">第二步：关注公众号完成订阅</p>
 
                     <div class="flex flex-col items-center">
-                        <div id="promoSubscribeQr" class="bg-white rounded-2xl p-3 border-2 border-gray-100 w-48 h-48 cursor-pointer select-none">
+                        <div id="promoSubscribeQr" onclick="GroundPromoView.countSubscribeClick()"
+                             class="bg-white rounded-2xl p-3 border-2 border-gray-100 w-48 h-48 cursor-pointer select-none active:opacity-80">
                             ${renderQrCodeSvg()}
                         </div>
-                        <p class="text-sm font-bold text-gray-800 mt-3">长按识别关注公众号以完成订阅</p>
-                        <p class="text-[10px] text-gray-400 mt-1">（演示模式：双击二维码模拟完成关注）</p>
+                        <p class="text-lg font-bold text-gray-800 mt-3">长按识别关注公众号以完成订阅</p>
+                        <p class="text-sm text-gray-400 mt-1">（演示模式：双击二维码模拟完成关注）</p>
                     </div>
                 </div>
                 `;
                 document.body.appendChild(overlay);
                 window.Common.initIcons();
 
-                var qr = document.getElementById('promoSubscribeQr');
-                qr.addEventListener('dblclick', function () {
-                    GroundPromoView.completeSubscribe();
-                });
+                this.subscribeClickCount = 0;
+                this.subscribeLastClickTime = 0;
             },
 
             closeSubscribeSheet() {
                 var sheet = document.getElementById('promoSubscribeSheet');
                 if (sheet) sheet.remove();
+            },
+
+            // 双击模拟完成关注（触屏无 dblclick 事件，用 400ms 内两次点击判定）
+            countSubscribeClick() {
+                var now = Date.now();
+                if (now - this.subscribeLastClickTime < 400 && this.subscribeLastClickTime > 0) {
+                    this.subscribeClickCount = 0;
+                    this.subscribeLastClickTime = 0;
+                    this.completeSubscribe();
+                    return;
+                }
+                this.subscribeLastClickTime = now;
             },
 
             completeSubscribe() {
@@ -525,18 +1187,18 @@
                             <div class="w-40 h-48 rounded-2xl flex flex-col items-center justify-center"
                                  style="background: linear-gradient(160deg, #fffdf4, #fdf2cf); border: 2px solid rgba(255,208,0,0.8);">
                                 <span class="text-4xl">🎁</span>
-                                <span class="font-black text-base mt-2" style="color:#8a6a1a;">见面礼</span>
-                                <span class="text-[9px] tracking-widest mt-1" style="color: rgba(169,123,10,0.55);">MEET GIFT 2026</span>
+                                <span class="font-black text-xl mt-2" style="color:#8a6a1a;">见面礼</span>
+                                <span class="text-sm tracking-widest mt-1" style="color: rgba(169,123,10,0.55);">MEET GIFT 2026</span>
                             </div>
                             <div class="promo-stamp">
-                                <span class="text-[10px]">已验证</span>
-                                <span class="text-base">已领奖</span>
+                                <span class="text-sm">已验证</span>
+                                <span class="text-xl">已领奖</span>
                             </div>
                         </div>
-                        <div class="font-black text-base text-gray-900">🎉 领奖成功，好运开箱！</div>
-                        <p class="text-xs text-gray-500 mt-2 leading-relaxed">见面礼已到手，和搭子们分享这份好运吧</p>
+                        <div class="font-black text-xl text-gray-900">🎉 领奖成功，好运开箱！</div>
+                        <p class="text-base text-gray-500 mt-2 leading-relaxed">见面礼已到手，和搭子们分享这份好运吧</p>
                         <button onclick="GroundPromoView.closeRedeemModal()"
-                                class="mt-5 w-full py-3 rounded-xl font-black text-sm active:scale-95 transition-transform text-white"
+                                class="mt-5 w-full py-3 rounded-xl font-black text-base active:scale-95 transition-transform text-white"
                                 style="background: linear-gradient(135deg, #FF6B00, #FFB300); box-shadow: 0 4px 15px rgba(255,107,0,0.4);">
                             好的，收下好运！
                         </button>
@@ -545,17 +1207,17 @@
                 } else {
                     body = `
                     <div class="flex flex-col items-center text-center py-1">
-                        <div class="font-black text-base text-gray-900">出示核销码领奖</div>
-                        <p class="text-xs text-gray-500 mt-1.5 leading-relaxed">凭此二维码到工作人员处核销领奖</p>
+                        <div class="font-black text-xl text-gray-900">出示核销码领奖</div>
+                        <p class="text-base text-gray-500 mt-1.5 leading-relaxed">凭此二维码到工作人员处核销领奖</p>
                         <div class="mt-4 bg-white rounded-2xl p-3 border-2 border-gray-100">
                             <div class="w-44 h-44">${renderQrCodeSvg()}</div>
                         </div>
                         <div id="promoRedeemHint" onclick="GroundPromoView.countRedeemClick()"
-                             class="mt-3 text-xs font-bold underline underline-offset-2 cursor-pointer select-none text-brand-orange">
+                             class="mt-3 text-base font-bold underline underline-offset-2 cursor-pointer select-none text-brand-orange">
                             请出示给工作人员进行领奖
                         </div>
                         <button onclick="GroundPromoView.closeRedeemModal()"
-                                class="w-full mt-3 py-3 rounded-xl text-sm font-black active:scale-95 transition-transform flex items-center justify-center gap-1.5"
+                                class="w-full mt-3 py-3 rounded-xl text-base font-black active:scale-95 transition-transform flex items-center justify-center gap-1.5"
                                 style="background: rgba(255,107,0,0.1); color:#FF6B00;">
                             <i data-lucide="chevron-left" class="w-4 h-4"></i>
                             返回
@@ -590,57 +1252,19 @@
                 this.celebrate();
             },
 
-            // ---------- 奖品详情 ----------
-            openPrizeModal(id) {
-                var prize = PRIZES.find(function (p) { return p.id === id; });
-                if (!prize || document.getElementById('promoPrizeModal')) return;
-                this.prizeModalId = id;
-
-                var overlay = document.createElement('div');
-                overlay.id = 'promoPrizeModal';
-                overlay.className = 'fixed inset-0 z-[200] flex items-center justify-center p-6 fade-in';
-                overlay.style.background = 'rgba(0,0,0,0.5)';
-                overlay.innerHTML = `
-                <div class="w-full max-w-sm bg-white rounded-3xl p-5 animate-promo-pop">
-                    <div class="flex items-center justify-between mb-3">
-                        <h3 class="text-lg font-black text-gray-900">奖品详情</h3>
-                        <button onclick="GroundPromoView.closePrizeModal()" class="p-1 rounded-full active:bg-gray-100">
-                            <i data-lucide="x" class="w-5 h-5 text-gray-400"></i>
-                        </button>
-                    </div>
-                    <div class="flex flex-col items-center text-center py-2">
-                        <div class="w-24 h-24 rounded-2xl flex items-center justify-center text-5xl"
-                             style="background: linear-gradient(160deg, #fff4e0, #fdeec4);">
-                            ${prize.icon}
-                        </div>
-                        <div class="font-black text-base text-gray-900 mt-3">${prize.name}</div>
-                        <p class="text-xs text-gray-500 mt-2 leading-relaxed">${prize.desc}</p>
-                        <p class="text-[10px] text-gray-400 mt-3">完成任务并现场核销后即可领取</p>
-                        <button onclick="GroundPromoView.closePrizeModal()"
-                                class="mt-5 w-full py-3 rounded-xl font-black text-sm active:scale-95 transition-transform text-white"
-                                style="background: linear-gradient(135deg, #FF6B00, #FFB300); box-shadow: 0 4px 15px rgba(255,107,0,0.4);">
-                            知道了
-                        </button>
-                    </div>
-                </div>
-                `;
-                document.body.appendChild(overlay);
-                window.Common.initIcons();
-
-                overlay.addEventListener('click', function (e) {
-                    if (e.target === overlay) GroundPromoView.closePrizeModal();
-                });
-            },
-
-            closePrizeModal() {
-                var modal = document.getElementById('promoPrizeModal');
-                if (modal) modal.remove();
+            // ---------- 演示重置 ----------
+            resetPromoDemo() {
+                saveState({ phoneAuthorized: false, subscribed: false, rewarded: false });
+                this.render();
+                window.Common.showToast('已重置，好运双响炮重新开始');
             }
         };
 
         window.GroundPromoView = GroundPromoView;
 
         document.addEventListener('DOMContentLoaded', function () {
+            // 已发布过需求则直接进入需求列表视图
+            if (buddyState.posts.length > 0) GroundPromoView.buddyView = 'posts';
             GroundPromoView.render();
         });
     </script>
