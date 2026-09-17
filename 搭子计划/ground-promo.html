@@ -293,10 +293,10 @@
                 var baseTaskHtml = this.taskDone() ? `
                 <div class="mt-3 flex items-center gap-2 bg-green-50 rounded-xl px-3 py-2.5 border border-green-100">
                     <i data-lucide="badge-check" class="w-4 h-4 text-green-500 shrink-0"></i>
-                    <span class="text-base text-green-700 font-bold">基础任务已完成</span>
+                    <span class="text-sm text-green-700 font-bold">基础任务已完成</span>
                 </div>` : `
                 <button onclick="GroundPromoView.openAuthModal()"
-                        class="mt-3 px-6 py-1.5 rounded-full text-white font-black text-base active:scale-95 transition-transform inline-flex items-center"
+                        class="mt-3 px-6 py-1.5 rounded-full text-white font-black text-sm active:scale-95 transition-transform inline-flex items-center"
                         style="background: linear-gradient(135deg, #FF6B00, #FFB300); box-shadow: 0 4px 15px rgba(255,107,0,0.4);">
                     马上完成
                 </button>`;
@@ -304,10 +304,10 @@
                 var fieldTasksHtml = FIELD_TASKS.map((t) => `
                 <div>
                     <div class="flex items-center gap-1.5">
-                        <span class="text-xl leading-none">${t.icon}</span>
-                        <span class="text-base font-bold text-gray-800">${t.name}</span>
+                        <span class="text-lg leading-none">${t.icon}</span>
+                        <span class="text-sm font-bold text-gray-800">${t.name}</span>
                     </div>
-                    <div class="text-base text-gray-500 mt-0.5 leading-snug">${t.desc}</div>
+                    <div class="text-sm text-gray-500 mt-0.5 leading-snug">${t.desc}</div>
                 </div>
                 `).join('');
 
@@ -315,10 +315,10 @@
                 var redeemHtml = state.rewarded ? `
                 <div class="mt-3 flex items-center gap-2 bg-gray-50 rounded-xl px-3 py-2.5">
                     <i data-lucide="stamp" class="w-4 h-4 text-gray-400 shrink-0"></i>
-                    <span class="text-base text-gray-500 font-bold">已领奖</span>
+                    <span class="text-sm text-gray-500 font-bold">已领奖</span>
                 </div>` : `
                 <button onclick="GroundPromoView.openRedeemModal()"
-                        class="w-full mt-3 py-3.5 rounded-xl font-black text-xl active:scale-95 transition-transform ${this.taskDone() ? '' : 'bg-gray-100 text-gray-400'}"
+                        class="w-full mt-3 py-3.5 rounded-xl font-black text-lg active:scale-95 transition-transform ${this.taskDone() ? '' : 'bg-gray-100 text-gray-400'}"
                         style="${this.taskDone() ? 'background: linear-gradient(135deg, #FFD000, #FFB300); color:#5c4300; box-shadow: 0 4px 15px rgba(255,208,0,0.4);' : ''}">
                     出示核销码领奖
                 </button>`;
@@ -326,7 +326,7 @@
                 app.innerHTML = `
                 <main>
                     <!-- 活动 Banner（静态图，无动效） -->
-                    <img src="ground-promo-banner.svg" alt="搭子计划 · 见面有礼"
+                    <img src="ground-promo-banner.png" alt="搭子计划 · 见面有礼"
                          class="w-full h-auto block"
                          onerror="this.style.display='none';this.nextElementSibling.style.display='block';" />
                     <div class="hidden w-full" style="aspect-ratio: 750/360; background: linear-gradient(160deg, #FF8A00, #FFB300 55%, #FFD54F);"></div>
@@ -334,8 +334,8 @@
                     <!-- 主卡片：活动标题 / 时间 / 基础任务 / 核销领奖 -->
                     <div class="px-4 pt-3 pb-24">
                         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
-                            <h1 class="text-2xl font-black text-gray-900">搭子计划 · 见面有礼</h1>
-                            <p class="text-base text-gray-400 mt-1">🕐 活动时间：9.18 - 9.20 全天</p>
+                            <h1 class="text-xl font-black text-gray-900">搭子计划 · 见面有礼</h1>
+                            <p class="text-sm text-gray-400 mt-1">🕐 活动时间：9.18 - 9.20 全天</p>
 
                             <!-- 基础任务（独立包裹） -->
                             <div class="mt-4 border-t border-gray-200 pt-4">
@@ -344,11 +344,11 @@
                                         <div class="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style="background: rgba(255,107,0,0.12);">
                                             <i data-lucide="target" class="w-4 h-4" style="color:#FF6B00;"></i>
                                         </div>
-                                        <h3 class="font-black text-gray-900 text-lg whitespace-nowrap">基础任务</h3>
+                                        <h3 class="font-black text-gray-900 text-base whitespace-nowrap">基础任务</h3>
                                         <div class="flex-1 h-px" style="background: #e5e7eb;"></div>
-                                        <span class="text-sm text-gray-400 whitespace-nowrap">必做</span>
+                                        <span class="text-xs text-gray-400 whitespace-nowrap">必做</span>
                                     </div>
-                                    <p class="text-base text-gray-500 mt-2">注册 + 订阅，两步轻松搞定！</p>
+                                    <p class="text-sm text-gray-500 mt-2">注册 + 订阅，两步轻松搞定！</p>
                                     ${baseTaskHtml}
                                 </div>
                             </div>
@@ -360,9 +360,9 @@
                                         <div class="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style="background: rgba(255,107,0,0.12);">
                                             <i data-lucide="party-popper" class="w-4 h-4" style="color:#FF6B00;"></i>
                                         </div>
-                                        <h3 class="font-black text-gray-900 text-lg whitespace-nowrap">本场任务</h3>
+                                        <h3 class="font-black text-gray-900 text-base whitespace-nowrap">本场任务</h3>
                                         <div class="flex-1 h-px" style="background: #e5e7eb;"></div>
-                                        <span class="text-sm text-gray-400 whitespace-nowrap">现场玩法</span>
+                                        <span class="text-xs text-gray-400 whitespace-nowrap">现场玩法</span>
                                     </div>
                                     <div class="space-y-2.5 mt-3">${fieldTasksHtml}</div>
                                 </div>
@@ -370,11 +370,11 @@
 
                             <!-- 核销领奖 -->
                             <div class="mt-5 border-t border-gray-200 pt-4">
-                                <h3 class="font-black text-gray-900 text-xl">核销领奖</h3>
-                                <p class="text-base text-gray-500 mt-1">完成以上任务即可领取搭子计划精美见面礼！</p>
+                                <h3 class="font-black text-gray-900 text-lg">核销领奖</h3>
+                                <p class="text-sm text-gray-500 mt-1">完成以上任务即可领取搭子计划精美见面礼！</p>
                                 ${redeemHtml}
                                 <button onclick="GroundPromoView.resetPromoDemo()"
-                                        class="w-full mt-2 py-1 text-center text-base text-gray-400 underline underline-offset-2 active:opacity-70">
+                                        class="w-full mt-2 py-1 text-center text-sm text-gray-400 underline underline-offset-2 active:opacity-70">
                                     重置（仅演示版使用）
                                 </button>
                             </div>
@@ -386,11 +386,11 @@
                                 <div class="p-1.5 rounded-lg flex-shrink-0" style="background: rgba(255,107,0,0.12);">
                                     <i data-lucide="book-open" class="w-4 h-4" style="color:#FF6B00;"></i>
                                 </div>
-                                <h3 class="font-black text-gray-900 whitespace-nowrap text-xl">活动说明</h3>
+                                <h3 class="font-black text-gray-900 whitespace-nowrap text-lg">活动说明</h3>
                                 <i data-lucide="chevron-down" class="w-5 h-5 text-gray-400 ml-auto transition-transform duration-300 ${this.explainOpen ? 'rotate-180' : ''}"></i>
                             </div>
                             ${this.explainOpen ? `
-                            <div class="space-y-3 text-base text-gray-600 leading-relaxed mt-3 animate-promo-reveal">
+                            <div class="space-y-3 text-sm text-gray-600 leading-relaxed mt-3 animate-promo-reveal">
                                 <p>本场为参与任务的小伙伴准备了丰厚的见面礼：完成注册 + 订阅基础任务并现场核销后，即可领取「新人见面礼包」（帆布袋、贴纸、好运签），还能拿到「咖啡双人券」，和搭子在现场咖啡车碰个杯；完成全部任务还可参与「大运河音乐节门票」抽奖，现场更有限量「搭子周边公仔」等你抱回家。</p>
                                 <p>活动规则：① 现场扫码进入本页，完成注册 + 订阅基础任务；② 任务完成后凭核销码到工作人员处核销领奖，每人限领一次；③ 奖品数量有限，先到先得，领完即止；④ 本活动最终解释权归搭子计划所有。</p>
                             </div>` : ''}
@@ -400,7 +400,7 @@
                         ${this.renderBuddySection()}
                     </div>
                 </main>
-                <footer class="text-center text-sm text-gray-400 pb-8 pt-2">搭子计划 · 地推活动页（DEMO 演示，数据保存在本地浏览器）</footer>
+                <footer class="text-center text-xs text-gray-400 pb-8 pt-2">搭子计划 · 地推活动页（DEMO 演示，数据保存在本地浏览器）</footer>
                 `;
 
                 if (window.Common) window.Common.initIcons();
@@ -453,8 +453,8 @@
                             <i data-lucide="heart-handshake" class="w-4 h-4" style="color:#FF4081;"></i>
                         </div>
                         <div class="min-w-0">
-                            <h3 class="font-black text-gray-900 whitespace-nowrap text-xl">现场找搭子</h3>
-                            <p class="text-sm text-gray-400">发布需求匹配同场搭子，一起玩更热闹</p>
+                            <h3 class="font-black text-gray-900 whitespace-nowrap text-lg">现场找搭子</h3>
+                            <p class="text-xs text-gray-400">发布需求匹配同场搭子，一起玩更热闹</p>
                         </div>
                     </div>
                     ${content}
@@ -473,9 +473,9 @@
 
                 return `
                 <div class="flex items-center justify-between mb-2">
-                    <span class="text-base text-gray-500">随机抽取 4 位同场搭子抢先看</span>
+                    <span class="text-sm text-gray-500">随机抽取 4 位同场搭子抢先看</span>
                     <button onclick="GroundPromoView.openBuddyForm()"
-                            class="flex-shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-bold border border-white active:scale-95 transition-transform"
+                            class="flex-shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold border border-white active:scale-95 transition-transform"
                             style="background: linear-gradient(135deg, #FF6B00, #FFB300); color:#ffffff;">
                         <i data-lucide="plus" class="w-3.5 h-3.5"></i>
                         发需求
@@ -483,7 +483,7 @@
                 </div>
                 <div class="space-y-3">${picks.map((b) => this.renderBuddyCard(b)).join('')}</div>
                 <button onclick="GroundPromoView.goPublishRequest()"
-                        class="w-full mt-3 py-3 rounded-xl text-base font-bold border active:scale-95 transition-transform"
+                        class="w-full mt-3 py-3 rounded-xl text-sm font-bold border active:scale-95 transition-transform"
                         style="color:#c26200; border-color: rgba(255,107,0,0.4); background: rgba(255,107,0,0.06);">
                     更多
                 </button>
@@ -496,22 +496,22 @@
                     <div class="flex items-center gap-3">
                         <img src="${escapeHtml(b.avatarUrl)}" class="w-14 h-14 flex-shrink-0 rounded-full border-2 border-white shadow-md object-cover"
                              onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"/>
-                        <div class="w-14 h-14 flex-shrink-0 rounded-full border-2 border-white shadow-md hidden items-center justify-center text-xl font-black text-white"
+                        <div class="w-14 h-14 flex-shrink-0 rounded-full border-2 border-white shadow-md hidden items-center justify-center text-lg font-black text-white"
                              style="background: linear-gradient(135deg, #FF6B00, #FFB300);">${escapeHtml(b.name.charAt(0))}</div>
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center gap-1.5 flex-wrap">
-                                <span class="font-black text-gray-900 whitespace-nowrap text-base">${escapeHtml(b.name)}</span>
+                                <span class="font-black text-gray-900 whitespace-nowrap text-sm">${escapeHtml(b.name)}</span>
                                 <i data-lucide="badge-check" class="w-3.5 h-3.5 text-brand-blue"></i>
-                                <span class="text-sm text-gray-500 whitespace-nowrap">${escapeHtml(b.gender)} · ${escapeHtml(b.age)}岁</span>
+                                <span class="text-xs text-gray-500 whitespace-nowrap">${escapeHtml(b.gender)} · ${escapeHtml(b.age)}岁</span>
                             </div>
                             <div class="flex flex-wrap gap-1.5 mt-1.5">
-                                <span class="text-sm px-2 py-0.5 rounded-full font-medium" style="background: rgba(255,107,0,0.1); color:#c26200;">${categoryLabel(b.category)}</span>
+                                <span class="text-xs px-2 py-0.5 rounded-full font-medium" style="background: rgba(255,107,0,0.1); color:#c26200;">${categoryLabel(b.category)}</span>
                             </div>
                         </div>
                     </div>
-                    <p class="text-base text-gray-500 leading-relaxed mt-3 rounded-xl p-3" style="background: #ffffff;">"${escapeHtml(b.intro)}"</p>
+                    <p class="text-sm text-gray-500 leading-relaxed mt-3 rounded-xl p-3" style="background: #ffffff;">"${escapeHtml(b.intro)}"</p>
                     <button onclick="GroundPromoView.contactFromExplore()"
-                            class="w-full mt-3 py-2.5 rounded-xl text-white font-black text-base active:scale-95 transition-transform flex items-center justify-center gap-2"
+                            class="w-full mt-3 py-2.5 rounded-xl text-white font-black text-sm active:scale-95 transition-transform flex items-center justify-center gap-2"
                             style="background: linear-gradient(135deg, #FF6B00, #FFB300); box-shadow: 0 4px 15px rgba(255,107,0,0.4);">
                         <i data-lucide="message-circle" class="w-4 h-4"></i>
                         联系TA
@@ -531,34 +531,34 @@
                 return `
                 <div>
                     ${buddyState.posts.length > 0 ? `
-                    <button onclick="GroundPromoView.backToPosts()" class="flex items-center gap-1 text-sm text-gray-500 mb-2 active:opacity-70">
+                    <button onclick="GroundPromoView.backToPosts()" class="flex items-center gap-1 text-xs text-gray-500 mb-2 active:opacity-70">
                         <i data-lucide="chevron-left" class="w-4 h-4"></i>
                         返回我的需求
                     </button>` : ''}
 
                     <div class="rounded-2xl px-3.5 py-3.5" style="background: #fafafa; border: 1px solid #f3f4f6;">
-                        <label class="text-base font-bold text-gray-500 mb-2 block">需求类型 <span class="text-red-400 font-normal">（必选）</span></label>
+                        <label class="text-sm font-bold text-gray-500 mb-2 block">需求类型 <span class="text-red-400 font-normal">（必选）</span></label>
                         <select id="buddyCategorySelect" onchange="GroundPromoView.pickBuddyCategory(this.value)"
-                                class="w-full border border-gray-200 rounded-xl px-3 py-3 text-base bg-white outline-none focus:border-brand-orange mb-4">
+                                class="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm bg-white outline-none focus:border-brand-orange mb-4">
                             <option value="">请选择需求类型</option>
                             ${catOptions}
                         </select>
 
-                        <label class="text-base font-bold text-gray-500 mb-2 block">我的MBTI <span class="text-gray-400 font-normal">（选填）</span></label>
+                        <label class="text-sm font-bold text-gray-500 mb-2 block">我的MBTI <span class="text-gray-400 font-normal">（选填）</span></label>
                         <select id="buddyMbtiSelect" onchange="GroundPromoView.pickBuddyMbti(this.value)"
-                                class="w-full border border-gray-200 rounded-xl px-3 py-3 text-base bg-white outline-none focus:border-brand-orange mb-4">
+                                class="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm bg-white outline-none focus:border-brand-orange mb-4">
                             <option value="">请选择（选填）</option>
                             ${mbtiOptions}
                         </select>
 
-                        <label class="text-base font-bold text-gray-500 mb-2 block">个人留言 <span class="text-gray-400 font-normal">（100 字以内）</span></label>
+                        <label class="text-sm font-bold text-gray-500 mb-2 block">个人留言 <span class="text-gray-400 font-normal">（100 字以内）</span></label>
                         <textarea id="buddyMessage" maxlength="100" rows="3"
-                                  class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-base bg-white outline-none focus:border-brand-orange resize-none"
+                                  class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm bg-white outline-none focus:border-brand-orange resize-none"
                                   placeholder="${escapeHtml(this.buddyMessagePlaceholder())}"></textarea>
-                        <div class="text-right text-sm text-gray-400 mt-1"><span id="buddyMessageCount">0</span>/100</div>
+                        <div class="text-right text-xs text-gray-400 mt-1"><span id="buddyMessageCount">0</span>/100</div>
 
                         <button onclick="GroundPromoView.submitBuddyForm()"
-                                class="w-full mt-3 py-3.5 rounded-xl text-white font-black text-lg active:scale-95 transition-transform"
+                                class="w-full mt-3 py-3.5 rounded-xl text-white font-black text-base active:scale-95 transition-transform"
                                 style="background: linear-gradient(135deg, #FF6B00, #FFB300); box-shadow: 0 4px 15px rgba(255,107,0,0.4);">
                             立即匹配搭子
                         </button>
@@ -583,7 +583,7 @@
                             var active = p.id === post.id;
                             return `
                             <button data-id="${escapeHtml(p.id)}" onclick="GroundPromoView.switchPost(this.dataset.id)"
-                                    class="flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-bold border transition-all duration-150 whitespace-nowrap ${active ? '' : 'border-gray-200 bg-white text-gray-500'}"
+                                    class="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-bold border transition-all duration-150 whitespace-nowrap ${active ? '' : 'border-gray-200 bg-white text-gray-500'}"
                                     style="${active ? 'background: linear-gradient(135deg, #FF6B00, #FFB300); color:#ffffff;' : ''}">
                                 需求${i + 1} · ${categoryLabel(p.category)}
                             </button>`;
@@ -603,16 +603,16 @@
                     <!-- 我的需求卡 -->
                     <div class="rounded-2xl px-3.5 py-3.5" style="background: #fafafa; border: 1px solid #f3f4f6;">
                         <div class="flex items-center justify-between mb-2">
-                            <h3 class="font-black text-gray-900 text-base whitespace-nowrap shrink-0">我的需求</h3>
+                            <h3 class="font-black text-gray-900 text-sm whitespace-nowrap shrink-0">我的需求</h3>
                             <div class="flex items-center gap-2 shrink-0">
                                 ${this.editingPostId === post.id ? '' : `
                                 <button onclick="GroundPromoView.editPost('${post.id}')"
-                                        class="text-sm font-bold px-3 py-1.5 rounded-full border border-gray-200 text-gray-500 bg-white flex items-center gap-1 active:scale-95 transition-transform">
+                                        class="text-xs font-bold px-3 py-1.5 rounded-full border border-gray-200 text-gray-500 bg-white flex items-center gap-1 active:scale-95 transition-transform">
                                     <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
                                     编辑
                                 </button>`}
                                 <button onclick="GroundPromoView.openBuddyForm()"
-                                        class="text-sm font-bold px-3 py-1.5 rounded-full flex items-center gap-1 active:scale-95 transition-transform text-white"
+                                        class="text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1 active:scale-95 transition-transform text-white"
                                         style="background: linear-gradient(135deg, #FF6B00, #FFB300);">
                                     <i data-lucide="plus" class="w-3.5 h-3.5"></i>
                                     再发一条
@@ -626,34 +626,34 @@
                         <!-- 编辑态 -->
                         <div class="space-y-3">
                             <div>
-                                <label class="text-base font-bold text-gray-500 mb-2 block">需求类型 <span class="text-red-400 font-normal">（必选）</span></label>
+                                <label class="text-sm font-bold text-gray-500 mb-2 block">需求类型 <span class="text-red-400 font-normal">（必选）</span></label>
                                 <select id="editCategorySelect" onchange="GroundPromoView.pickEditCategory(this.value)"
-                                        class="w-full border border-gray-200 rounded-xl px-3 py-3 text-base bg-white outline-none focus:border-brand-orange">
+                                        class="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm bg-white outline-none focus:border-brand-orange">
                                     <option value="">请选择需求类型</option>
                                     ${editCatOptions}
                                 </select>
                             </div>
                             <div>
-                                <label class="text-base font-bold text-gray-500 mb-2 block">我的MBTI <span class="text-gray-400 font-normal">（选填）</span></label>
+                                <label class="text-sm font-bold text-gray-500 mb-2 block">我的MBTI <span class="text-gray-400 font-normal">（选填）</span></label>
                                 <select id="editMbtiSelect" onchange="GroundPromoView.pickEditMbti(this.value)"
-                                        class="w-full border border-gray-200 rounded-xl px-3 py-3 text-base bg-white outline-none focus:border-brand-orange">
+                                        class="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm bg-white outline-none focus:border-brand-orange">
                                     <option value="">请选择（选填）</option>
                                     ${editMbtiOptions}
                                 </select>
                             </div>
                             <div>
-                                <label class="text-base font-bold text-gray-500 mb-2 block">留言 <span class="text-gray-400 font-normal">（100 字以内）</span></label>
+                                <label class="text-sm font-bold text-gray-500 mb-2 block">留言 <span class="text-gray-400 font-normal">（100 字以内）</span></label>
                                 <textarea id="editMessage" maxlength="100" rows="3"
-                                          class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-base bg-white outline-none focus:border-brand-orange resize-none">${escapeHtml(post.message)}</textarea>
+                                          class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm bg-white outline-none focus:border-brand-orange resize-none">${escapeHtml(post.message)}</textarea>
                                 <div class="flex items-center justify-between mt-1.5">
-                                    <span class="text-sm text-gray-400"><span id="editMessageCount">0</span>/100</span>
+                                    <span class="text-xs text-gray-400"><span id="editMessageCount">0</span>/100</span>
                                     <div class="flex gap-2">
                                         <button onclick="GroundPromoView.cancelEditPost()"
-                                                class="text-sm font-bold px-3 py-1.5 rounded-full border border-gray-200 text-gray-500 active:scale-95 transition-transform">
+                                                class="text-xs font-bold px-3 py-1.5 rounded-full border border-gray-200 text-gray-500 active:scale-95 transition-transform">
                                             取消
                                         </button>
                                         <button onclick="GroundPromoView.saveEditPost()"
-                                                class="text-sm font-bold px-3 py-1.5 rounded-full text-white active:scale-95 transition-transform"
+                                                class="text-xs font-bold px-3 py-1.5 rounded-full text-white active:scale-95 transition-transform"
                                                 style="background: linear-gradient(135deg, #FF6B00, #FFB300);">
                                             保存
                                         </button>
@@ -662,18 +662,18 @@
                             </div>
                         </div>` : `
                         <!-- 静态预览 -->
-                        <div class="space-y-2 text-base">
+                        <div class="space-y-2 text-sm">
                             <div class="flex items-center gap-2">
-                                <span class="text-sm font-bold text-white px-2 py-0.5 rounded-md whitespace-nowrap shrink-0" style="background:#FF6B00;">需求类型</span>
+                                <span class="text-xs font-bold text-white px-2 py-0.5 rounded-md whitespace-nowrap shrink-0" style="background:#FF6B00;">需求类型</span>
                                 <span class="text-gray-700">${categoryLabel(post.category)}</span>
-                                ${post.time ? '<span class="ml-auto text-sm text-gray-300 whitespace-nowrap">' + escapeHtml(post.time) + ' 发布</span>' : ''}
+                                ${post.time ? '<span class="ml-auto text-xs text-gray-300 whitespace-nowrap">' + escapeHtml(post.time) + ' 发布</span>' : ''}
                             </div>
                             <div class="flex items-center gap-2">
-                                <span class="text-sm font-bold text-white px-2 py-0.5 rounded-md whitespace-nowrap shrink-0" style="background:#42A5F5;">我的MBTI</span>
+                                <span class="text-xs font-bold text-white px-2 py-0.5 rounded-md whitespace-nowrap shrink-0" style="background:#42A5F5;">我的MBTI</span>
                                 <span class="text-gray-700">${escapeHtml(post.mbti || '未填写')}</span>
                             </div>
                             <div class="flex items-start gap-2">
-                                <span class="text-sm font-bold text-white px-2 py-0.5 rounded-md mt-0.5 whitespace-nowrap shrink-0" style="background:#7B1FA2;">留&#12288;&#12288;言</span>
+                                <span class="text-xs font-bold text-white px-2 py-0.5 rounded-md mt-0.5 whitespace-nowrap shrink-0" style="background:#7B1FA2;">留&#12288;&#12288;言</span>
                                 <span class="text-gray-600 leading-relaxed">${escapeHtml(post.message)}</span>
                             </div>
                         </div>`}
@@ -685,14 +685,14 @@
                             <div class="p-1.5 rounded-lg flex-shrink-0" style="background: rgba(255,64,129,0.12);">
                                 <i data-lucide="users" class="w-4 h-4" style="color:#FF4081;"></i>
                             </div>
-                            <h3 class="font-black text-gray-900 text-base">为你找到 ${matches.length} 位搭子</h3>
-                            <span class="text-sm text-gray-400">选一位开聊吧</span>
+                            <h3 class="font-black text-gray-900 text-sm">为你找到 ${matches.length} 位搭子</h3>
+                            <span class="text-xs text-gray-400">选一位开聊吧</span>
                         </div>
                         ${matches.map((m) => this.renderMatchCard(m)).join('') || `
-                        <div class="text-center text-gray-400 text-sm py-6">
+                        <div class="text-center text-gray-400 text-xs py-6">
                             <div class="mb-2">暂时没有匹配结果</div>
                             <button onclick="GroundPromoView.rematchPost()"
-                                    class="text-sm font-bold px-4 py-2 rounded-full border active:scale-95 transition-transform"
+                                    class="text-xs font-bold px-4 py-2 rounded-full border active:scale-95 transition-transform"
                                     style="color:#c26200; border-color: rgba(255,107,0,0.4); background: rgba(255,107,0,0.06);">
                                 重新匹配
                             </button>
@@ -708,23 +708,23 @@
                     <div class="flex items-center gap-3">
                         <img src="${escapeHtml(m.avatarUrl)}" class="w-14 h-14 flex-shrink-0 rounded-full border-2 border-white shadow-md object-cover"
                              onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"/>
-                        <div class="w-14 h-14 flex-shrink-0 rounded-full border-2 border-white shadow-md hidden items-center justify-center text-xl font-black text-white"
+                        <div class="w-14 h-14 flex-shrink-0 rounded-full border-2 border-white shadow-md hidden items-center justify-center text-lg font-black text-white"
                              style="background: linear-gradient(135deg, #FF6B00, #FFB300);">${escapeHtml(m.name.charAt(0))}</div>
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center gap-1.5 flex-wrap">
-                                <span class="font-black text-gray-900 whitespace-nowrap text-base">${escapeHtml(m.name)}</span>
+                                <span class="font-black text-gray-900 whitespace-nowrap text-sm">${escapeHtml(m.name)}</span>
                                 <i data-lucide="badge-check" class="w-3.5 h-3.5 text-brand-blue"></i>
-                                <span class="text-sm text-gray-500 whitespace-nowrap">${escapeHtml(m.gender)} · ${escapeHtml(m.age)}岁</span>
+                                <span class="text-xs text-gray-500 whitespace-nowrap">${escapeHtml(m.gender)} · ${escapeHtml(m.age)}岁</span>
                             </div>
                             <div class="flex flex-wrap gap-1.5 mt-1.5">
-                                <span class="text-sm px-2 py-0.5 rounded-full font-medium" style="background: rgba(255,107,0,0.1); color:#c26200;">${categoryLabel(m.category)}</span>
-                                ${m.mbti ? '<span class="text-sm px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">' + escapeHtml(m.mbti) + '</span>' : ''}
+                                <span class="text-xs px-2 py-0.5 rounded-full font-medium" style="background: rgba(255,107,0,0.1); color:#c26200;">${categoryLabel(m.category)}</span>
+                                ${m.mbti ? '<span class="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">' + escapeHtml(m.mbti) + '</span>' : ''}
                             </div>
                         </div>
                     </div>
-                    <p class="text-base text-gray-500 leading-relaxed mt-3 rounded-xl p-3" style="background: #ffffff;">"${escapeHtml(m.intro)}"</p>
+                    <p class="text-sm text-gray-500 leading-relaxed mt-3 rounded-xl p-3" style="background: #ffffff;">"${escapeHtml(m.intro)}"</p>
                     <button data-id="${escapeHtml(m.id)}" onclick="GroundPromoView.openChat(this.dataset.id)"
-                            class="w-full mt-3 py-2.5 rounded-xl text-white font-black text-base active:scale-95 transition-transform flex items-center justify-center gap-2"
+                            class="w-full mt-3 py-2.5 rounded-xl text-white font-black text-sm active:scale-95 transition-transform flex items-center justify-center gap-2"
                             style="background: linear-gradient(135deg, #FF6B00, #FFB300); box-shadow: 0 4px 15px rgba(255,107,0,0.4);">
                         <i data-lucide="message-circle" class="w-4 h-4"></i>
                         和 TA 聊天
@@ -850,8 +850,8 @@
                 overlay.style.background = 'rgba(0,0,0,0.7)';
                 overlay.innerHTML = `
                     <div class="promo-ring w-14 h-14 mb-5"></div>
-                    <div class="text-white font-bold text-xl">正在为你匹配搭子…</div>
-                    <div class="text-white/60 text-base mt-2">根据需求类型智能匹配 · 稍后揭晓</div>
+                    <div class="text-white font-bold text-lg">正在为你匹配搭子…</div>
+                    <div class="text-white/60 text-sm mt-2">根据需求类型智能匹配 · 稍后揭晓</div>
                 `;
                 document.body.appendChild(overlay);
                 window.Common.initIcons();
@@ -930,21 +930,21 @@
                         </button>
                         <img src="${escapeHtml(p.avatarUrl)}" class="w-9 h-9 rounded-full object-cover border border-gray-200"
                              onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"/>
-                        <div class="w-9 h-9 rounded-full border border-gray-200 hidden items-center justify-center text-base font-black text-white flex-shrink-0"
+                        <div class="w-9 h-9 rounded-full border border-gray-200 hidden items-center justify-center text-sm font-black text-white flex-shrink-0"
                              style="background: linear-gradient(135deg, #FF6B00, #FFB300);">${escapeHtml(p.name.charAt(0))}</div>
                         <div class="flex-1 min-w-0">
-                            <div class="font-bold text-base text-gray-900 flex items-center gap-1 whitespace-nowrap">
+                            <div class="font-bold text-sm text-gray-900 flex items-center gap-1 whitespace-nowrap">
                                 ${escapeHtml(p.name)}
                                 <i data-lucide="badge-check" class="w-3.5 h-3.5 text-brand-blue flex-shrink-0"></i>
                             </div>
-                            <div class="text-sm text-gray-400 truncate">${categoryLabel(p.category)}搭子 · ${escapeHtml(p.gender)} · ${escapeHtml(p.age)}岁</div>
+                            <div class="text-xs text-gray-400 truncate">${categoryLabel(p.category)}搭子 · ${escapeHtml(p.gender)} · ${escapeHtml(p.age)}岁</div>
                         </div>
                     </div>
                     <div id="chatMessages" class="flex-1 overflow-y-auto px-4 py-4 space-y-3"></div>
                     <div class="px-3 pb-3 pt-2 bg-white/85 backdrop-blur-md border-t border-gray-100">
                         <div class="flex items-center gap-2">
                             <input id="chatInput" type="text" maxlength="100" placeholder="和 TA 聊聊活动…"
-                                   class="flex-1 border border-gray-200 rounded-full px-4 py-2.5 text-base bg-white outline-none focus:border-brand-orange"/>
+                                   class="flex-1 border border-gray-200 rounded-full px-4 py-2.5 text-sm bg-white outline-none focus:border-brand-orange"/>
                             <button onclick="GroundPromoView.sendMessage()"
                                     class="w-10 h-10 rounded-full text-white flex items-center justify-center active:scale-90 transition-transform"
                                     style="background: linear-gradient(135deg, #FF6B00, #FFB300);">
@@ -976,10 +976,10 @@
                 var list = buddyState.chats[this.chatPartnerKey] || [];
                 var html = list.map(function (m) {
                     return m.isMe
-                        ? '<div class="flex justify-end"><div class="chat-bubble-me max-w-[75%] px-3.5 py-2.5 text-base leading-relaxed shadow-sm">' + escapeHtml(m.text) + '</div></div>'
-                        : '<div class="flex justify-start"><div class="chat-bubble-other max-w-[75%] px-3.5 py-2.5 text-base leading-relaxed text-gray-700 shadow-sm border border-gray-100">' + escapeHtml(m.text) + '</div></div>';
+                        ? '<div class="flex justify-end"><div class="chat-bubble-me max-w-[75%] px-3.5 py-2.5 text-sm leading-relaxed shadow-sm">' + escapeHtml(m.text) + '</div></div>'
+                        : '<div class="flex justify-start"><div class="chat-bubble-other max-w-[75%] px-3.5 py-2.5 text-sm leading-relaxed text-gray-700 shadow-sm border border-gray-100">' + escapeHtml(m.text) + '</div></div>';
                 }).join('');
-                box.innerHTML = html || '<div class="text-center text-gray-300 text-base mt-10">和你的搭子打个招呼吧~</div>';
+                box.innerHTML = html || '<div class="text-center text-gray-300 text-sm mt-10">和你的搭子打个招呼吧~</div>';
                 box.scrollTop = box.scrollHeight;
             },
 
@@ -1022,25 +1022,25 @@
                 overlay.innerHTML = `
                 <div class="w-full max-w-sm bg-white rounded-3xl p-5 animate-promo-pop">
                     <div class="flex items-center justify-between mb-3">
-                        <h3 class="text-xl font-black text-gray-900">手机号授权</h3>
+                        <h3 class="text-lg font-black text-gray-900">手机号授权</h3>
                         <button onclick="GroundPromoView.closeAuthModal()" class="p-1 rounded-full active:bg-gray-100">
                             <i data-lucide="x" class="w-5 h-5 text-gray-400"></i>
                         </button>
                     </div>
-                    <p class="text-base text-gray-500 leading-relaxed mb-4">用于注册搭子计划并参与「好运双响炮」任务，我们不会向第三方泄露你的信息</p>
+                    <p class="text-sm text-gray-500 leading-relaxed mb-4">用于注册搭子计划并参与「好运双响炮」任务，我们不会向第三方泄露你的信息</p>
 
-                    <label class="text-base font-bold text-gray-500 mb-2 block">手机号</label>
+                    <label class="text-sm font-bold text-gray-500 mb-2 block">手机号</label>
                     <input id="promoAuthPhone" type="tel" maxlength="11" value="${escapeHtml(this.authPhone)}"
-                           class="w-full border border-gray-200 rounded-xl px-4 py-3 text-lg bg-gray-50 outline-none focus:border-brand-orange"
+                           class="w-full border border-gray-200 rounded-xl px-4 py-3 text-base bg-gray-50 outline-none focus:border-brand-orange"
                            placeholder="请输入手机号"/>
 
                     <div class="flex gap-3 mt-5">
                         <button onclick="GroundPromoView.closeAuthModal()"
-                                class="flex-1 py-3 rounded-xl text-base font-bold border border-gray-200 text-gray-500 active:scale-95 transition-transform">
+                                class="flex-1 py-3 rounded-xl text-sm font-bold border border-gray-200 text-gray-500 active:scale-95 transition-transform">
                             拒绝
                         </button>
                         <button onclick="GroundPromoView.confirmAuth()"
-                                class="flex-1 py-3 rounded-xl text-white text-base font-black active:scale-95 transition-transform"
+                                class="flex-1 py-3 rounded-xl text-white text-sm font-black active:scale-95 transition-transform"
                                 style="background: linear-gradient(135deg, #FF6B00, #FFB300); box-shadow: 0 4px 15px rgba(255,107,0,0.4);">
                             允许授权
                         </button>
@@ -1083,20 +1083,20 @@
                 overlay.innerHTML = `
                 <div class="bg-white w-full max-w-md rounded-t-3xl p-5 pb-8 animate-slide-up-promo">
                     <div class="flex items-center justify-between mb-1">
-                        <h3 class="text-xl font-black text-gray-900">关注公众号</h3>
+                        <h3 class="text-lg font-black text-gray-900">关注公众号</h3>
                         <button onclick="GroundPromoView.closeSubscribeSheet()" class="p-1 rounded-full active:bg-gray-100">
                             <i data-lucide="x" class="w-5 h-5 text-gray-400"></i>
                         </button>
                     </div>
-                    <p class="text-base text-gray-400 mb-4">第二步：关注公众号完成订阅</p>
+                    <p class="text-sm text-gray-400 mb-4">第二步：关注公众号完成订阅</p>
 
                     <div class="flex flex-col items-center">
                         <div id="promoSubscribeQr" onclick="GroundPromoView.countSubscribeClick()"
                              class="bg-white rounded-2xl p-3 border-2 border-gray-100 w-48 h-48 cursor-pointer select-none active:opacity-80">
                             ${renderQrCodeSvg()}
                         </div>
-                        <p class="text-lg font-bold text-gray-800 mt-3">长按识别关注公众号以完成订阅</p>
-                        <p class="text-sm text-gray-400 mt-1">（演示模式：双击二维码模拟完成关注）</p>
+                        <p class="text-base font-bold text-gray-800 mt-3">长按识别关注公众号以完成订阅</p>
+                        <p class="text-xs text-gray-400 mt-1">（演示模式：双击二维码模拟完成关注）</p>
                     </div>
                 </div>
                 `;
@@ -1186,19 +1186,19 @@
                         <div class="relative mb-5 mt-1">
                             <div class="w-40 h-48 rounded-2xl flex flex-col items-center justify-center"
                                  style="background: linear-gradient(160deg, #fffdf4, #fdf2cf); border: 2px solid rgba(255,208,0,0.8);">
-                                <span class="text-4xl">🎁</span>
-                                <span class="font-black text-xl mt-2" style="color:#8a6a1a;">见面礼</span>
-                                <span class="text-sm tracking-widest mt-1" style="color: rgba(169,123,10,0.55);">MEET GIFT 2026</span>
+                                <span class="text-3xl">🎁</span>
+                                <span class="font-black text-lg mt-2" style="color:#8a6a1a;">见面礼</span>
+                                <span class="text-xs tracking-widest mt-1" style="color: rgba(169,123,10,0.55);">MEET GIFT 2026</span>
                             </div>
                             <div class="promo-stamp">
-                                <span class="text-sm">已验证</span>
-                                <span class="text-xl">已领奖</span>
+                                <span class="text-xs">已验证</span>
+                                <span class="text-lg">已领奖</span>
                             </div>
                         </div>
-                        <div class="font-black text-xl text-gray-900">🎉 领奖成功，好运开箱！</div>
-                        <p class="text-base text-gray-500 mt-2 leading-relaxed">见面礼已到手，和搭子们分享这份好运吧</p>
+                        <div class="font-black text-lg text-gray-900">🎉 领奖成功，好运开箱！</div>
+                        <p class="text-sm text-gray-500 mt-2 leading-relaxed">见面礼已到手，和搭子们分享这份好运吧</p>
                         <button onclick="GroundPromoView.closeRedeemModal()"
-                                class="mt-5 w-full py-3 rounded-xl font-black text-base active:scale-95 transition-transform text-white"
+                                class="mt-5 w-full py-3 rounded-xl font-black text-sm active:scale-95 transition-transform text-white"
                                 style="background: linear-gradient(135deg, #FF6B00, #FFB300); box-shadow: 0 4px 15px rgba(255,107,0,0.4);">
                             好的，收下好运！
                         </button>
@@ -1207,17 +1207,17 @@
                 } else {
                     body = `
                     <div class="flex flex-col items-center text-center py-1">
-                        <div class="font-black text-xl text-gray-900">出示核销码领奖</div>
-                        <p class="text-base text-gray-500 mt-1.5 leading-relaxed">凭此二维码到工作人员处核销领奖</p>
+                        <div class="font-black text-lg text-gray-900">出示核销码领奖</div>
+                        <p class="text-sm text-gray-500 mt-1.5 leading-relaxed">凭此二维码到工作人员处核销领奖</p>
                         <div class="mt-4 bg-white rounded-2xl p-3 border-2 border-gray-100">
                             <div class="w-44 h-44">${renderQrCodeSvg()}</div>
                         </div>
                         <div id="promoRedeemHint" onclick="GroundPromoView.countRedeemClick()"
-                             class="mt-3 text-base font-bold underline underline-offset-2 cursor-pointer select-none text-brand-orange">
+                             class="mt-3 text-sm font-bold underline underline-offset-2 cursor-pointer select-none text-brand-orange">
                             请出示给工作人员进行领奖
                         </div>
                         <button onclick="GroundPromoView.closeRedeemModal()"
-                                class="w-full mt-3 py-3 rounded-xl text-base font-black active:scale-95 transition-transform flex items-center justify-center gap-1.5"
+                                class="w-full mt-3 py-3 rounded-xl text-sm font-black active:scale-95 transition-transform flex items-center justify-center gap-1.5"
                                 style="background: rgba(255,107,0,0.1); color:#FF6B00;">
                             <i data-lucide="chevron-left" class="w-4 h-4"></i>
                             返回
