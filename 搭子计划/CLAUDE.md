@@ -146,6 +146,7 @@
 | `activity-manage.html` | 活动管理（发布者） | 管理页 |
 | `activity-participants.html` | 活动参与者列表 | 列表页 |
 | `autumn2026.html` | 🍂 秋季专题"秋天的第一个搭子" | 专题页 |
+| `ground-promo.html` | 🎁 地推活动专题（好运双响炮：注册+订阅，核销领奖） | 专题页 |
 | `music-festival.html` | 🎵 大运河音乐节专题（上大屏 / 我的AI合照 / 找搭子） | 专题页 |
 | `style.css` | 全局自定义样式 | 资源 |
 | `common.js` | 公共函数库 | 资源 |
