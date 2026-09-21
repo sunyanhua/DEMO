@@ -135,18 +135,31 @@ var ALL_PARTICIPANTS={
     {name:'栀子花开',gender:'female',photo:'images/photo/female/crop.0.0.2267.3023.0.750.1000.jpg'},
   ],
 };
+var CONSTELLATIONS=['白羊座','金牛座','双子座','巨蟹座','狮子座','处女座','天秤座','天蝎座','射手座','摩羯座','水瓶座','双鱼座'];
 function getParticipants(actId){
-  if(ALL_PARTICIPANTS[actId])return ALL_PARTICIPANTS[actId];
-  // Generate random
-  var pool=[],NM=['清风徐来','阳光骑士','北辰','追风少年','海的彼岸','咖啡不加糖','大熊','星河漫步','枫叶飘零','时光旅人'];
-  var NF=['甜心小鹿','奶茶妹妹','浅笑安然','栀子花开','月亮不睡','棉花糖','小兔软糖','咕咚姑娘','雪落无声','薄荷微光'];
-  var PM=['images/photo/male/crop.0.0.1078.1438.0.750.1000.jpg','images/photo/male/crop.17.0.1224.1632.0.750.1000.jpg','images/photo/male/crop.194.56.917.1222.0.750.1000.jpg','images/photo/male/crop.0.501.960.1280.0.750.1000.jpg'];
-  var PF=['images/photo/female/crop.0.67.1079.1438.0.750.1000.jpg','images/photo/female/crop.0.61.723.964.0.750.1000.jpg','images/photo/female/crop.384.0.2304.3072.0.750.1000.jpg','images/photo/female/crop.0.0.2267.3023.0.750.1000.jpg'];
-  for(var i=0;i<a.current;i++){
-    var isMale=i%2===0;
-    pool.push({name:isMale?NM[i%10]:NF[i%10],gender:isMale?'male':'female',photo:isMale?PM[i%4]:PF[i%4]});
+  var pool;
+  if(ALL_PARTICIPANTS[actId])pool=ALL_PARTICIPANTS[actId].slice();
+  else{
+    // Generate random
+    pool=[];
+    var NM=['清风徐来','阳光骑士','北辰','追风少年','海的彼岸','咖啡不加糖','大熊','星河漫步','枫叶飘零','时光旅人'];
+    var NF=['甜心小鹿','奶茶妹妹','浅笑安然','栀子花开','月亮不睡','棉花糖','小兔软糖','咕咚姑娘','雪落无声','薄荷微光'];
+    var PM=['images/photo/male/crop.0.0.1078.1438.0.750.1000.jpg','images/photo/male/crop.17.0.1224.1632.0.750.1000.jpg','images/photo/male/crop.194.56.917.1222.0.750.1000.jpg','images/photo/male/crop.0.501.960.1280.0.750.1000.jpg'];
+    var PF=['images/photo/female/crop.0.67.1079.1438.0.750.1000.jpg','images/photo/female/crop.0.61.723.964.0.750.1000.jpg','images/photo/female/crop.384.0.2304.3072.0.750.1000.jpg','images/photo/female/crop.0.0.2267.3023.0.750.1000.jpg'];
+    for(var i=0;i<a.current;i++){
+      var isMale=i%2===0;
+      pool.push({name:isMale?NM[i%10]:NF[i%10],gender:isMale?'male':'female',photo:isMale?PM[i%4]:PF[i%4]});
+    }
+    ALL_PARTICIPANTS[actId]=pool;
   }
-  ALL_PARTICIPANTS[actId]=pool;return pool;
+  return pool.map(function(u,i){
+    return {
+      name:u.name,gender:u.gender,photo:u.photo,
+      age:u.age||(22+(i*7)%14),
+      constellation:u.constellation||CONSTELLATIONS[i%12],
+      verified:u.verified===undefined?(i%3===0):u.verified
+    };
+  });
 }
 var participants=getParticipants(parseInt(id));
 
@@ -206,6 +219,46 @@ function confirmCancel(){
 function showSafety(){ window.Common.showPopup('safety-overlay'); }
 function hideSafety(e){ window.Common.closePopup(e, 'safety-overlay'); }
 
+// ====== Tabs: 活动详情 / 报名嘉宾 ======
+var actTab='detail';
+function getDetailHtml(){
+  return '<div class="text-gray-600 text-sm leading-relaxed">'+a.desc.replace(/\n/g,'<br/>')+'</div>';
+}
+function getGuestsHtml(){
+  if(!participants.length)return '<div class="p-8 text-center text-gray-400">暂无报名嘉宾</div>';
+  var cards=participants.map(function(u){
+    var genderBadge=u.gender==='male'
+      ?'<span class="text-[10px] px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-500 font-medium inline-flex items-center gap-0.5"><i data-lucide="mars" class="w-2.5 h-2.5"></i>男</span>'
+      :'<span class="text-[10px] px-1.5 py-0.5 rounded-full bg-pink-50 text-brand-pink font-medium inline-flex items-center gap-0.5"><i data-lucide="venus" class="w-2.5 h-2.5"></i>女</span>';
+    var verifiedHtml=u.verified
+      ?'<span class="text-[9px] px-1.5 py-0.5 rounded-full bg-gradient-to-r from-brand-pink to-brand-orange text-white font-medium flex items-center gap-0.5"><i data-lucide="badge-check" class="w-2.5 h-2.5"></i>已实名</span>'
+      :'';
+    return '<div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 card-hover flex flex-col cursor-pointer" onclick="window.location.href=\'profile.html\'">'+
+      '<div class="relative w-full photo-3x4 overflow-hidden bg-gray-100 flex-shrink-0">'+
+        '<img src="'+u.photo+'" alt="'+u.name+'" class="w-full h-full object-cover"/>'+
+        '<div class="absolute top-2 right-2 flex flex-col gap-1 items-end">'+verifiedHtml+'</div>'+
+      '</div>'+
+      '<div class="p-2.5 flex flex-col gap-1">'+
+        '<div class="flex items-center gap-1.5"><span class="text-sm font-bold text-gray-800 truncate max-w-[72px]">'+u.name+'</span>'+genderBadge+'</div>'+
+        '<div class="flex items-center gap-2 text-xs text-gray-400"><span>'+u.age+'岁</span><span class="w-px h-2.5 bg-gray-200"></span><span>'+u.constellation+'</span></div>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+  return '<div class="bg-brand-pink-light border border-brand-pink/15 rounded-xl px-4 py-3 mb-4 flex items-start gap-2.5">'+
+    '<i data-lucide="info" class="w-4 h-4 text-brand-pink flex-shrink-0 mt-0.5"></i>'+
+    '<p class="text-xs text-gray-600 leading-relaxed">以下为本场活动报名嘉宾名单，入选以最终审核通知为准。</p>'+
+  '</div>'+
+  '<div class="grid grid-cols-2 gap-3">'+cards+'</div>';
+}
+function switchActTab(key){
+  actTab=key;
+  var isDetail=key==='detail';
+  document.getElementById('act-tab-detail').className='flex-1 text-center text-base pb-2.5 tab-indicator cursor-pointer '+(isDetail?'text-brand-pink font-bold border-b-[3px] border-brand-pink':'text-gray-500 font-medium border-b-[3px] border-transparent');
+  document.getElementById('act-tab-guests').className='flex-1 text-center text-base pb-2.5 tab-indicator cursor-pointer '+(isDetail?'text-gray-500 font-medium border-b-[3px] border-transparent':'text-brand-pink font-bold border-b-[3px] border-brand-pink');
+  document.getElementById('act-tab-content').innerHTML=isDetail?getDetailHtml():getGuestsHtml();
+  window.Common.initIcons();
+}
+
 function render(){
   var orgHtml='';
   if(a.zone==='chaoyang'){
@@ -218,11 +271,6 @@ function render(){
 
 // Shuffle for random display
 for(var i2=participants.length-1;i2>0;i2--){var j2=Math.floor(Math.random()*(i2+1));[participants[i2],participants[j2]]=[participants[j2],participants[i2]];}
-
-  var pList=participants.map(function(u){
-    var gb=u.gender==='male'?'<span class="text-[10px] px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-500 font-medium inline-flex items-center gap-0.5"><i data-lucide="mars" class="w-2.5 h-2.5"></i>男</span>':'<span class="text-[10px] px-1.5 py-0.5 rounded-full bg-pink-50 text-brand-pink font-medium inline-flex items-center gap-0.5"><i data-lucide="venus" class="w-2.5 h-2.5"></i>女</span>';
-    return'<div class="flex items-center gap-2.5 py-2 cursor-pointer card-hover" onclick="window.location.href=\'profile.html\'"><img src="'+u.photo+'" class="w-9 h-9 rounded-full object-cover border border-gray-100 flex-shrink-0"/><div class="flex-1 min-w-0 leading-tight"><span class="text-sm font-bold text-gray-800 truncate max-w-[72px]">'+u.name+'</span><br/><span class="text-[10px] px-1.5 py-0.5 rounded-full '+(u.gender==='male'?'bg-blue-50 text-blue-500':'bg-pink-50 text-brand-pink')+' font-medium inline-flex items-center gap-0.5">'+(u.gender==='male'?'<i data-lucide="mars" class="w-2.5 h-2.5"></i>男':'<i data-lucide="venus" class="w-2.5 h-2.5"></i>女')+'</span></div></div>';
-  });
 
   document.getElementById('app').innerHTML=
     '<div class="fixed top-0 left-0 right-0 z-50 flex items-center px-4 py-3 bg-transparent bg-gradient-to-b from-black/50 to-transparent text-white">'+
@@ -242,12 +290,12 @@ for(var i2=participants.length-1;i2>0;i2--){var j2=Math.floor(Math.random()*(i2+
         '<div class="border-t border-gray-200"></div>'+
         '<div class="flex items-start gap-3 py-3"><div class="p-2 bg-white rounded-lg shadow-sm text-purple-500"><i data-lucide="users" class="w-5 h-5"></i></div><div><div class="font-bold text-gray-900 text-sm">人员限制</div><div class="text-sm text-gray-600">已报 '+a.current+' 人 / 限 '+a.max+' 人'+a.genderLimit+'</div></div></div>'+
       '</div>'+
-      // Description
-      '<h3 class="font-bold text-lg mb-3">活动详情</h3>'+
-      '<div class="text-gray-600 text-sm leading-relaxed mb-6">'+a.desc.replace(/\n/g,'<br/>')+'</div>'+
-      // Participants
-      '<h3 class="font-bold text-lg mb-3">报名名单 <span class="text-sm font-normal text-gray-400">('+participants.length+'人)</span></h3>'+
-      '<div class="grid grid-cols-2 gap-x-4 gap-y-0 mb-24">'+pList.join('')+'</div>'+
+      // Tabs: 活动详情 / 报名嘉宾
+      '<div class="flex w-full border-b border-gray-100">'+
+        '<span id="act-tab-detail" class="flex-1 text-center text-base pb-2.5 tab-indicator cursor-pointer '+(actTab==='detail'?'text-brand-pink font-bold border-b-[3px] border-brand-pink':'text-gray-500 font-medium border-b-[3px] border-transparent')+'" onclick="switchActTab(\'detail\')">活动详情</span>'+
+        '<span id="act-tab-guests" class="flex-1 text-center text-base pb-2.5 tab-indicator cursor-pointer '+(actTab==='guests'?'text-brand-pink font-bold border-b-[3px] border-brand-pink':'text-gray-500 font-medium border-b-[3px] border-transparent')+'" onclick="switchActTab(\'guests\')">报名嘉宾</span>'+
+      '</div>'+
+      '<div id="act-tab-content" class="pt-4 pb-24 fade-in">'+(actTab==='detail'?getDetailHtml():getGuestsHtml())+'</div>'+
     '</div>'+
     // Bottom bar
     (function(){
