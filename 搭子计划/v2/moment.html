@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>动态详情</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-white text-gray-900 pb-20">
+
+    <div id="app"></div>
+
+    <script src="data.js?v=2"></script>
+    <script src="common.js?v=2"></script>
+    <script>
+        function render() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const momentId = urlParams.get('id') || 'mo1';
+            const moment = window.GlobalData.moments.find(m => m.id === momentId) || window.GlobalData.moments[0];
+            
+            // Resolve User
+            const user = window.GlobalData.user.id === moment.userId ? window.GlobalData.user : 
+                         (window.GlobalData.partners.find(p=>p.id===moment.userId) || 
+                         window.GlobalData.activities.find(a=>a.organizer.id===moment.userId)?.organizer ||
+                         { id: moment.userId, name:'神秘用户', avatarUrl:'https://picsum.photos/50/50?random=99' });
+
+            document.getElementById('app').innerHTML = `
+                <!-- Header -->
+                <div class="fixed top-0 left-0 right-0 bg-white z-50 px-4 py-3 flex items-center justify-between border-b border-gray-50">
+                    <div class="flex items-center gap-3">
+                         <button onclick="window.history.back()"><i data-lucide="chevron-left" class="w-6 h-6 text-gray-800"></i></button>
+                         <div class="flex items-center gap-2" onclick="window.location.href='profile.html?id=${user.id}'">
+                             <img src="${user.avatarUrl}" class="w-8 h-8 rounded-full border border-gray-100" />
+                             <span class="font-bold text-sm">${user.name}</span>
+                         </div>
+                    </div>
+                    <button class="px-4 py-1.5 border border-brand-orange text-brand-orange text-xs font-bold rounded-full" onclick="window.Common.showToast('关注成功')">关注</button>
+                </div>
+
+                <!-- Scrollable Content -->
+                <div class="pt-[60px] pb-6">
+                    <!-- Images (Carousel Mock) -->
+                    <div class="flex overflow-x-auto snap-x snap-mandatory gap-0 no-scrollbar mb-4 bg-gray-50 aspect-[4/5] items-center">
+                        ${moment.images.map(img => `
+                            <img src="${img}" class="w-full h-full object-contain snap-center flex-shrink-0" />
+                        `).join('')}
+                    </div>
+
+                    <div class="px-4">
+                        <p class="text-base text-gray-900 leading-relaxed mb-3">${moment.content}</p>
+                        
+                        <div class="flex items-center gap-2 mb-4">
+                            ${moment.location ? `<div class="inline-flex items-center gap-1 bg-gray-100 px-2 py-0.5 rounded-full text-xs text-blue-600"><i data-lucide="map-pin" class="w-3 h-3"></i> ${moment.location}</div>` : ''}
+                            <span class="text-xs text-gray-400">${moment.time}</span>
+                        </div>
+
+                        <div class="border-t border-gray-100 py-3 flex items-center justify-between">
+                             <div class="font-bold text-sm">共 ${moment.comments} 条评论</div>
+                             <div class="text-xs text-gray-400">按热度</div>
+                        </div>
+
+                        <!-- Mock Comments -->
+                        <div class="space-y-4">
+                             <div class="flex gap-2">
+                                <img src="https://picsum.photos/50/50?random=101" class="w-8 h-8 rounded-full bg-gray-200" />
+                                <div class="flex-1">
+                                    <div class="text-xs text-gray-500 mb-0.5">路人甲</div>
+                                    <div class="text-sm text-gray-800">真的很不错！我也想去。</div>
+                                </div>
+                                <i data-lucide="heart" class="w-3 h-3 text-gray-300"></i>
+                             </div>
+                             <div class="flex gap-2">
+                                <img src="https://picsum.photos/50/50?random=102" class="w-8 h-8 rounded-full bg-gray-200" />
+                                <div class="flex-1">
+                                    <div class="text-xs text-gray-500 mb-0.5">路人乙</div>
+                                    <div class="text-sm text-gray-800">求具体位置？</div>
+                                </div>
+                                <i data-lucide="heart" class="w-3 h-3 text-gray-300"></i>
+                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bottom Bar -->
+                <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-4 py-3 safe-area-bottom flex items-center gap-4 z-50">
+                    <div class="flex-1 bg-gray-100 rounded-full px-4 py-2 text-sm text-gray-400">说点什么...</div>
+                    <div class="flex items-center gap-4 text-gray-600">
+                        <div class="flex flex-col items-center gap-0.5">
+                            <i data-lucide="heart" class="w-6 h-6"></i>
+                            <span class="text-[10px]">${moment.likes}</span>
+                        </div>
+                        <div class="flex flex-col items-center gap-0.5">
+                            <i data-lucide="star" class="w-6 h-6"></i>
+                            <span class="text-[10px]">收藏</span>
+                        </div>
+                        <div class="flex flex-col items-center gap-0.5">
+                            <i data-lucide="message-circle" class="w-6 h-6"></i>
+                            <span class="text-[10px]">${moment.comments}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            window.Common.initIcons();
+        }
+
+        document.addEventListener('DOMContentLoaded', render);
+    </script>
+</body>
+</html>

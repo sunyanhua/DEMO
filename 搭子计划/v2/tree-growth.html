@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>浇个朋友 - 成长树</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        /* 树木容器样式 */
+        .tree-container {
+            transition: transform 0.5s ease-out;
+            transform-origin: bottom center;
+        }
+        /* 浇水按钮动画 */
+        @keyframes watering {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        .watering-animation {
+            animation: watering 0.6s ease;
+        }
+        /* 成长值进度条 */
+        .progress-bar {
+            height: 8px;
+            border-radius: 4px;
+            background: linear-gradient(90deg, #10b981 0%, #34d399 100%);
+            transition: width 0.5s ease;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-b from-emerald-50 to-white min-h-screen pb-24">
+    <div id="app"></div>
+
+    <script src="data.js?v=2"></script>
+    <script src="common.js?v=2"></script>
+    <script>
+        // 树木成长状态
+        const TreeState = {
+            growth: 0, // 成长值（浇水次数）
+            maxGrowth: 100, // 最大成长值
+            scale: 1.0, // 树木缩放比例
+            level: 1, // 当前等级
+
+            init() {
+                // 从本地存储加载已有的成长值
+                const saved = localStorage.getItem('treeGrowth');
+                if (saved) {
+                    const data = JSON.parse(saved);
+                    this.growth = data.growth || 0;
+                    this.scale = data.scale || 1.0;
+                    this.level = data.level || 1;
+                }
+                this.updateScale();
+            },
+
+            // 浇水一次
+            water() {
+                if (this.growth >= this.maxGrowth) return;
+                this.growth += 1;
+                this.updateScale();
+                this.updateLevel();
+                this.save();
+                return this.growth;
+            },
+
+            // 根据成长值计算缩放比例
+            updateScale() {
+                // 基础大小 1.0，最大成长时达到 3.0
+                const minScale = 1.0;
+                const maxScale = 3.0;
+                this.scale = minScale + (this.growth / this.maxGrowth) * (maxScale - minScale);
+            },
+
+            // 更新等级（每20成长值升一级）
+            updateLevel() {
+                this.level = Math.floor(this.growth / 20) + 1;
+                if (this.level > 5) this.level = 5;
+            },
+
+            // 保存到本地存储
+            save() {
+                localStorage.setItem('treeGrowth', JSON.stringify({
+                    growth: this.growth,
+                    scale: this.scale,
+                    level: this.level
+                }));
+            },
+
+            // 重置树木（用于测试）
+            reset() {
+                this.growth = 0;
+                this.scale = 1.0;
+                this.level = 1;
+                this.save();
+            }
+        };
+
+        function render() {
+            TreeState.init();
+
+            const progressPercent = (TreeState.growth / TreeState.maxGrowth) * 100;
+            const nextLevelGrowth = TreeState.level * 20;
+            const currentLevelGrowth = (TreeState.level - 1) * 20;
+            const levelProgress = TreeState.growth - currentLevelGrowth;
+            const levelMax = nextLevelGrowth - currentLevelGrowth;
+
+            document.getElementById('app').innerHTML = `
+                <!-- 顶部导航 -->
+                <div class="sticky top-0 z-50 bg-white/95 backdrop-blur-md px-4 py-3 shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <button onclick="window.history.back()" class="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                            <i data-lucide="chevron-left" class="w-5 h-5 text-gray-800"></i>
+                        </button>
+                        <div class="flex-1">
+                            <h1 class="text-lg font-bold text-gray-900">浇个朋友</h1>
+                            <p class="text-xs text-gray-500">每日浇水，陪伴成长</p>
+                        </div>
+                        <button class="p-2 hover:bg-gray-100 rounded-full transition-colors" onclick="window.Common.showToast('分享活动')">
+                            <i data-lucide="share-2" class="w-5 h-5 text-gray-800"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <main class="px-4 py-6">
+                    <!-- 成长值进度条 -->
+                    <div class="mb-6">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-sm font-medium text-gray-700">成长值</span>
+                            <span class="text-sm font-bold text-emerald-600">${TreeState.growth} / ${TreeState.maxGrowth}</span>
+                        </div>
+                        <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
+                            <div class="progress-bar h-full rounded-full" style="width: ${progressPercent}%"></div>
+                        </div>
+                        <div class="flex justify-between text-xs text-gray-400 mt-1">
+                            <span>小树苗</span>
+                            <span>参天大树</span>
+                        </div>
+                    </div>
+
+                    <!-- 等级显示 -->
+                    <div class="flex items-center justify-center mb-8">
+                        <div class="inline-flex items-center gap-2 bg-gradient-to-r from-emerald-100 to-green-100 px-4 py-2 rounded-full">
+                            <i data-lucide="award" class="w-4 h-4 text-emerald-600"></i>
+                            <span class="text-sm font-bold text-emerald-800">LV ${TreeState.level}</span>
+                            <span class="text-xs text-emerald-600">${levelProgress}/${levelMax} 成长值</span>
+                        </div>
+                    </div>
+
+                    <!-- 树木显示区域 -->
+                    <div class="flex flex-col items-center justify-center mb-10">
+                        <div class="relative">
+                            <!-- 树木容器 -->
+                            <div class="tree-container mb-4" style="transform: scale(${TreeState.scale})">
+                                <div class="text-center">
+                                    <!-- 使用 Lucide 树图标，根据等级改变颜色 -->
+                                    ${TreeState.level >= 5 ? '<i data-lucide="tree-pine" class="w-40 h-40 text-emerald-700"></i>' :
+                                      TreeState.level >= 4 ? '<i data-lucide="tree-pine" class="w-40 h-40 text-emerald-600"></i>' :
+                                      TreeState.level >= 3 ? '<i data-lucide="tree" class="w-40 h-40 text-emerald-500"></i>' :
+                                      TreeState.level >= 2 ? '<i data-lucide="tree" class="w-40 h-40 text-emerald-400"></i>' :
+                                      '<i data-lucide="sprout" class="w-40 h-40 text-emerald-300"></i>'}
+                                </div>
+                            </div>
+
+                            <!-- 浇水动画效果（浇水时显示） -->
+                            <div id="water-effect" class="absolute inset-0 flex items-center justify-center opacity-0 pointer-events-none">
+                                <div class="flex flex-col items-center">
+                                    <i data-lucide="droplets" class="w-12 h-12 text-blue-400"></i>
+                                    <span class="text-blue-400 text-sm font-bold mt-1">+1</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 成长值标签 -->
+                        <div class="text-center mb-2">
+                            <p class="text-gray-600 text-sm">${TreeState.growth === 0 ? '快给小树浇第一滴水吧！' :
+                                TreeState.growth < 20 ? '小树正在努力成长中...' :
+                                TreeState.growth < 40 ? '小树已经长高了不少！' :
+                                TreeState.growth < 60 ? '树木茁壮成长，继续加油！' :
+                                TreeState.growth < 80 ? '大树即将参天！' :
+                                '参天大树，郁郁葱葱！'}</p>
+                        </div>
+                    </div>
+
+                    <!-- 浇水按钮 -->
+                    <div class="fixed bottom-20 left-0 right-0 px-4">
+                        <button id="water-btn"
+                                class="w-full py-4 bg-gradient-to-r from-blue-500 to-cyan-400 text-white text-lg font-bold rounded-2xl shadow-lg shadow-blue-200 active:scale-95 transition-transform flex items-center justify-center gap-3"
+                                onclick="handleWater()">
+                            <i data-lucide="droplets" class="w-6 h-6"></i>
+                            <span>浇一下</span>
+                        </button>
+                        <p class="text-center text-gray-500 text-xs mt-3">每天最多可浇水10次，与好友组队浇水成长更快！</p>
+                    </div>
+
+                    <!-- 组队信息 -->
+                    <div class="mt-12">
+                        <div class="flex items-center justify-between mb-4">
+                            <h2 class="text-lg font-bold text-gray-900">我的浇水小队</h2>
+                            <button class="text-sm text-blue-500 font-medium" onclick="window.Common.showToast('邀请好友')">邀请好友</button>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4">
+                            <div class="bg-white rounded-xl p-4 text-center shadow-sm border border-gray-100">
+                                <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                                    <i data-lucide="users" class="w-6 h-6 text-blue-500"></i>
+                                </div>
+                                <p class="text-sm font-bold text-gray-900">3人</p>
+                                <p class="text-xs text-gray-500">小队成员</p>
+                            </div>
+                            <div class="bg-white rounded-xl p-4 text-center shadow-sm border border-gray-100">
+                                <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                                    <i data-lucide="trophy" class="w-6 h-6 text-green-500"></i>
+                                </div>
+                                <p class="text-sm font-bold text-gray-900">第12名</p>
+                                <p class="text-xs text-gray-500">小组排名</p>
+                            </div>
+                            <div class="bg-white rounded-xl p-4 text-center shadow-sm border border-gray-100">
+                                <div class="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                                    <i data-lucide="calendar" class="w-6 h-6 text-amber-500"></i>
+                                </div>
+                                <p class="text-sm font-bold text-gray-900">7天</p>
+                                <p class="text-xs text-gray-500">连续打卡</p>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+
+                <!-- 底部导航（使用通用组件） -->
+                ${window.Common ? window.Common.renderBottomNav('activity') : ''}
+            `;
+
+            if (window.Common) window.Common.initIcons();
+        }
+
+        function handleWater() {
+            // 浇水动画
+            const waterBtn = document.getElementById('water-btn');
+            const waterEffect = document.getElementById('water-effect');
+
+            // 按钮点击动画
+            waterBtn.classList.add('watering-animation');
+            setTimeout(() => {
+                waterBtn.classList.remove('watering-animation');
+            }, 600);
+
+            // 显示水滴效果
+            waterEffect.style.opacity = '1';
+            waterEffect.style.transition = 'opacity 0.3s';
+            setTimeout(() => {
+                waterEffect.style.opacity = '0';
+            }, 800);
+
+            // 增加成长值
+            const newGrowth = TreeState.water();
+
+            // 更新UI
+            setTimeout(() => {
+                render();
+                // 显示成长提示
+                if (newGrowth % 20 === 0) {
+                    window.Common.showToast(`恭喜！树木升到 LV ${TreeState.level}`, 'success');
+                } else {
+                    window.Common.showToast('浇水成功！成长值 +1');
+                }
+            }, 300);
+        }
+
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', render);
+    </script>
+</body>
+</html>

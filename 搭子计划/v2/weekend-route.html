@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>定制周末路线 - 搭子计划</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gray-50 text-gray-900">
+
+    <div id="app"></div>
+
+    <script src="data.js?v=2"></script>
+    <script src="common.js?v=2"></script>
+    <script>
+        const RouteForm = {
+            // 全部 7 个选择项：情况、片区、5 组筛选，null 表示未选
+            selections: {
+                situation: null,
+                area: null,
+                time: null,
+                people: null,
+                budget: null,
+                partner: null,
+                stranger: null
+            },
+            submitted: false,
+
+            get form() {
+                return (window.GlobalData && window.GlobalData.weekendRouteForm) || null;
+            },
+
+            missingCount() {
+                return Object.values(this.selections).filter(v => v === null).length;
+            },
+            isComplete() {
+                return this.missingCount() === 0;
+            },
+
+            header() {
+                return `
+                <div class="fixed top-0 left-0 right-0 h-[50px] bg-white z-50 flex items-center px-4 shadow-sm border-b border-gray-100">
+                    <button onclick="window.location.href='index.html'" class="p-1.5 rounded-full hover:bg-gray-100 transition">
+                        <i data-lucide="chevron-left" class="w-6 h-6 text-gray-800"></i>
+                    </button>
+                    <div class="flex-1 text-center font-bold text-gray-900">定制周末路线</div>
+                    <div class="w-6"></div> <!-- 占位保持对称 -->
+                </div>
+                `;
+            },
+
+            sectionTitle(text) {
+                return `
+                <div class="flex items-center gap-1.5 mb-3">
+                    <div class="w-1 h-4 rounded-full bg-brand-orange"></div>
+                    <h2 class="text-base font-black text-gray-900">${text}</h2>
+                </div>
+                `;
+            },
+
+            situationSection() {
+                const situations = this.form.situations;
+                const cardsHtml = situations.map((s, i) => {
+                    const selected = this.selections.situation === i;
+                    return `
+                    <button onclick="RouteForm.select('situation', ${i})" class="flex items-center gap-3 p-3.5 rounded-xl border text-left transition-colors ${selected ? 'border-brand-orange bg-brand-orange/5 ring-1 ring-brand-orange' : 'border-gray-100 bg-white'}">
+                        <div class="w-10 h-10 flex-shrink-0 ${s.color} rounded-xl flex items-center justify-center">
+                            <i data-lucide="${s.icon}" class="w-5 h-5"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-bold ${selected ? 'text-brand-orange' : 'text-gray-900'}">${s.title}</p>
+                            <p class="text-[11px] text-gray-400 mt-0.5 truncate">${s.subtitle}</p>
+                        </div>
+                        ${selected ? '<i data-lucide="check-circle" class="w-5 h-5 text-brand-orange flex-shrink-0"></i>' : ''}
+                    </button>
+                    `;
+                }).join('');
+                return `
+                <div class="px-4 pt-5">
+                    ${this.sectionTitle('这次属于哪种情况？')}
+                    <div class="grid grid-cols-2 gap-3">${cardsHtml}</div>
+                </div>
+                `;
+            },
+
+            areaSection() {
+                const areas = this.form.areas;
+                const rowsHtml = areas.map((a, i) => {
+                    const selected = this.selections.area === i;
+                    return `
+                    <button onclick="RouteForm.select('area', ${i})" class="w-full flex items-center gap-3 bg-white rounded-xl p-4 border text-left transition-colors ${selected ? 'border-brand-orange ring-1 ring-brand-orange bg-brand-orange/5' : 'border-gray-100'}">
+                        <div class="w-10 h-10 flex-shrink-0 rounded-xl flex items-center justify-center ${selected ? 'bg-brand-orange/10 text-brand-orange' : 'bg-gray-50 text-gray-500'}">
+                            <i data-lucide="${a.icon}" class="w-5 h-5"></i>
+                        </div>
+                        <span class="flex-1 text-sm font-bold ${selected ? 'text-brand-orange' : 'text-gray-800'}">${a.label}</span>
+                        ${selected ? '<i data-lucide="check-circle" class="w-5 h-5 text-brand-orange flex-shrink-0"></i>' : ''}
+                    </button>
+                    `;
+                }).join('');
+                return `
+                <div class="px-4 pt-6">
+                    ${this.sectionTitle('想在哪片儿玩？')}
+                    <div class="space-y-2.5">${rowsHtml}</div>
+                </div>
+                `;
+            },
+
+            filtersSection() {
+                const rowsHtml = this.form.filters.map(f => {
+                    const chipsHtml = f.options.map((opt, oi) => {
+                        const selected = this.selections[f.id] === oi;
+                        return `
+                        <button onclick="RouteForm.select('${f.id}', ${oi})" class="px-3.5 py-1.5 rounded-full text-xs font-medium border transition-colors ${selected ? 'bg-brand-orange text-white border-brand-orange' : 'bg-white text-gray-600 border-gray-200'}">${opt}</button>
+                        `;
+                    }).join('');
+                    return `
+                    <div>
+                        <p class="text-sm font-bold text-gray-900 mb-2.5">${f.label}</p>
+                        <div class="flex flex-wrap gap-2">${chipsHtml}</div>
+                    </div>
+                    `;
+                }).join('');
+                return `
+                <div class="px-4 pt-6">
+                    ${this.sectionTitle('再补充筛选')}
+                    <div class="bg-white rounded-xl border border-gray-100 p-4 space-y-5">${rowsHtml}</div>
+                </div>
+                `;
+            },
+
+            submitBar() {
+                const missing = this.missingCount();
+                if (missing > 0) {
+                    return `
+                    <div class="fixed bottom-4 left-0 right-0 px-4 z-40">
+                        <div class="w-full py-3.5 bg-gray-200 text-gray-400 rounded-xl font-bold text-center text-base">生成我的周末路线（还差 ${missing} 项）</div>
+                    </div>
+                    `;
+                }
+                return `
+                <div class="fixed bottom-4 left-0 right-0 px-4 z-40">
+                    <button onclick="RouteForm.submit()" class="w-full py-3.5 bg-brand-orange text-white rounded-xl font-bold text-base shadow-lg shadow-brand-orange/30 active:scale-95 transition-transform">生成我的周末路线</button>
+                </div>
+                `;
+            },
+
+            formView() {
+                return `
+                <div class="pt-[50px] pb-40 fade-in">
+                    ${this.situationSection()}
+                    ${this.areaSection()}
+                    ${this.filtersSection()}
+                </div>
+                ${this.submitBar()}
+                `;
+            },
+
+            resultView() {
+                const form = this.form;
+                const sit = form.situations[this.selections.situation];
+                const area = form.areas[this.selections.area];
+                const filterRows = form.filters.map(f => ({
+                    label: f.label,
+                    value: f.options[this.selections[f.id]]
+                }));
+                const summaryHtml = [
+                    { label: '情况', value: sit.title },
+                    { label: '片区', value: area.label },
+                    ...filterRows
+                ].map(row => `
+                    <div class="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2">
+                        <span class="text-xs text-gray-400 flex-shrink-0 mr-3">${row.label}</span>
+                        <span class="text-xs font-bold text-gray-800 text-right">${row.value}</span>
+                    </div>
+                `).join('');
+                return `
+                <div class="pt-[50px] min-h-screen px-4 pt-8 fade-in">
+                    <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100">
+                        <div class="bg-gradient-to-br from-brand-orange to-brand-yellow px-5 pt-8 pb-7 text-center relative overflow-hidden">
+                            <div class="absolute -right-8 -top-8 w-32 h-32 bg-white/15 rounded-full blur-2xl"></div>
+                            <div class="relative">
+                                <p class="text-white/75 text-[11px] font-semibold tracking-widest">ROUTE PLANNING</p>
+                                <div class="w-16 h-16 mx-auto mt-3 bg-white/20 rounded-3xl flex items-center justify-center backdrop-blur-sm">
+                                    <i data-lucide="map" class="w-8 h-8 text-white"></i>
+                                </div>
+                                <h2 class="mt-3 text-2xl font-black text-white">路线定制中</h2>
+                                <span class="inline-block mt-2 px-3 py-1 bg-white/20 text-white text-xs font-bold rounded-full border border-white/40">敬请期待</span>
+                            </div>
+                        </div>
+                        <div class="p-5">
+                            <p class="text-sm text-gray-500 leading-relaxed mb-4">我们正在根据你的偏好，生成专属这个周末的北京路线。先看看你的定制偏好：</p>
+                            <div class="space-y-2">${summaryHtml}</div>
+                            <div class="mt-6 space-y-3">
+                                <button onclick="window.location.href='index.html'" class="w-full py-3 bg-brand-orange text-white rounded-xl font-bold active:scale-95 transition-transform shadow-lg shadow-brand-orange/30">返回首页</button>
+                                <button onclick="RouteForm.reset()" class="w-full py-3 bg-white border border-brand-orange text-brand-orange rounded-xl font-bold active:scale-95 transition-transform">重新填写</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                `;
+            },
+
+            errorView() {
+                return `
+                <div class="pt-[50px] min-h-screen flex flex-col items-center justify-center px-6 fade-in">
+                    <div class="text-center -mt-10">
+                        <div class="text-5xl">🧩</div>
+                        <h2 class="mt-4 text-xl font-black text-gray-900">表单配置加载失败</h2>
+                        <p class="mt-2 text-sm text-gray-500">请检查网络后重试</p>
+                        <button onclick="window.location.reload()" class="mt-6 px-8 py-2.5 bg-brand-orange text-white rounded-xl font-bold">重新加载</button>
+                    </div>
+                </div>
+                `;
+            },
+
+            select(groupId, optionIndex) {
+                this.selections[groupId] = optionIndex;
+                this.render();
+            },
+
+            submit() {
+                if (!this.isComplete()) return;
+                this.submitted = true;
+                this.render(true); // 提交后滚回顶部
+            },
+
+            reset() {
+                this.selections = {
+                    situation: null,
+                    area: null,
+                    time: null,
+                    people: null,
+                    budget: null,
+                    partner: null,
+                    stranger: null
+                };
+                this.submitted = false;
+                this.render();
+            },
+
+            render(resetScroll) {
+                let view;
+                if (!this.form) {
+                    view = this.errorView();
+                } else if (this.submitted) {
+                    view = this.resultView();
+                } else {
+                    view = this.formView();
+                }
+                const scrollY = resetScroll ? 0 : ((typeof window !== 'undefined' && typeof window.scrollY === 'number') ? window.scrollY : 0);
+                document.getElementById('app').innerHTML = `
+                    ${this.header()}
+                    ${view}
+                `;
+                if (window.Common) window.Common.initIcons();
+                if (typeof window !== 'undefined' && typeof window.scrollTo === 'function') window.scrollTo(0, scrollY);
+            }
+        };
+
+        window.RouteForm = RouteForm;
+        document.addEventListener('DOMContentLoaded', () => RouteForm.render());
+    </script>
+</body>
+</html>

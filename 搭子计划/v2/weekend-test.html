@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>周末人格测试 - 搭子计划</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gray-50 text-gray-900">
+
+    <div id="app"></div>
+
+    <script src="data.js?v=2"></script>
+    <script src="common.js?v=2"></script>
+    <script src="weekend-test.js?v=2"></script>
+    <script>
+        const OPTION_KEYS = ['A', 'B', 'C', 'D'];
+        const ANSWER_DELAY_MS = 250; // 选中后停顿，再进入下一题
+
+        const Test = {
+            answers: [],
+            currentIndex: 0,
+            locked: false, // 防止选中后连点
+            started: false, // 是否已点击"开始测试"（区分"未开始"与"已开始未作答"）
+
+            get questions() {
+                return (window.GlobalData && window.GlobalData.weekendTestQuestions) || [];
+            },
+            get personalities() {
+                return (window.GlobalData && window.GlobalData.weekendPersonalities) || [];
+            },
+
+            header() {
+                return `
+                <div class="fixed top-0 left-0 right-0 h-[50px] bg-white z-50 flex items-center px-4 shadow-sm border-b border-gray-100">
+                    <button onclick="window.location.href='index.html'" class="p-1.5 rounded-full hover:bg-gray-100 transition">
+                        <i data-lucide="chevron-left" class="w-6 h-6 text-gray-800"></i>
+                    </button>
+                    <div class="flex-1 text-center font-bold text-gray-900">周末人格测试</div>
+                    <div class="w-6"></div> <!-- 占位保持对称 -->
+                </div>
+                `;
+            },
+
+            introView() {
+                const teaser = this.personalities.map(p => `
+                    <div class="flex flex-col items-center gap-1.5">
+                        <div class="w-12 h-12 bg-white rounded-2xl shadow-sm border border-gray-100 flex items-center justify-center text-xl">${p.emoji}</div>
+                        <span class="text-[10px] text-gray-500">${p.title}</span>
+                    </div>
+                `).join('');
+                return `
+                <div class="pt-[50px] min-h-screen flex flex-col justify-center px-6 fade-in">
+                    <div class="w-full max-w-sm mx-auto -mt-6">
+                        <div class="w-20 h-20 mx-auto rounded-3xl bg-gradient-to-br from-brand-orange to-brand-yellow flex items-center justify-center shadow-lg shadow-brand-orange/30 rotate-3">
+                            <i data-lucide="sparkles" class="w-9 h-9 text-white"></i>
+                        </div>
+                        <h2 class="mt-6 text-center text-2xl font-black text-gray-900">测出你的周末人格</h2>
+                        <p class="mt-2 text-center text-sm text-gray-500 leading-relaxed">8 道小题，看看这个周末<br/>最适合你的打开方式</p>
+                        <div class="mt-8 grid grid-cols-4 gap-x-3 gap-y-5">${teaser}</div>
+                        <button onclick="Test.start()" class="mt-8 w-full py-3.5 bg-brand-orange text-white rounded-xl font-bold text-base shadow-lg shadow-brand-orange/30 active:scale-95 transition-transform">
+                            开始测试
+                        </button>
+                    </div>
+                </div>
+                `;
+            },
+
+            quizView() {
+                const total = this.questions.length;
+                const q = this.questions[this.currentIndex];
+                const progress = Math.round((this.currentIndex / total) * 100);
+                const optionsHtml = q.options.map((opt, i) => `
+                    <button onclick="Test.answer(${i})" class="w-full flex items-center gap-3 bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-left active:scale-[0.98] transition-transform hover:border-brand-orange/40">
+                        <span class="w-8 h-8 flex-shrink-0 rounded-full bg-brand-orange/10 text-brand-orange font-bold text-sm flex items-center justify-center">${OPTION_KEYS[i]}</span>
+                        <span class="text-sm text-gray-800 leading-snug">${opt.text}</span>
+                    </button>
+                `).join('');
+                return `
+                <div class="pt-[50px] min-h-screen fade-in">
+                    <div class="px-4 pt-5">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs text-gray-400 font-medium">第 ${this.currentIndex + 1}/${total} 题</span>
+                            <span class="text-xs text-gray-400">${progress}%</span>
+                        </div>
+                        <div class="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                            <div class="h-full bg-gradient-to-r from-brand-orange to-brand-yellow rounded-full transition-all duration-500" style="width: ${progress}%"></div>
+                        </div>
+                    </div>
+                    <div class="px-4 mt-7">
+                        <h2 class="text-xl font-black text-gray-900 leading-snug">${q.text}</h2>
+                        <div class="mt-6 space-y-3">${optionsHtml}</div>
+                    </div>
+                </div>
+                `;
+            },
+
+            resultView() {
+                const { id } = window.WeekendTest.calculate(this.answers);
+                const p = this.personalities.find(item => item.id === id);
+                const tagsHtml = p.tags.map(tag => `
+                    <span class="px-3 py-1 bg-white/20 text-white text-xs font-medium rounded-full border border-white/40">${tag}</span>
+                `).join('');
+                return `
+                <div class="pt-[50px] min-h-screen fade-in">
+                    <div class="px-4 pt-4">
+                        <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100">
+                            <div class="bg-gradient-to-br ${p.color} px-5 pt-8 pb-7 text-center relative overflow-hidden">
+                                <div class="absolute -right-8 -top-8 w-32 h-32 bg-white/15 rounded-full blur-2xl"></div>
+                                <div class="absolute -left-6 -bottom-10 w-28 h-28 bg-black/10 rounded-full blur-2xl"></div>
+                                <div class="relative">
+                                    <p class="text-white/75 text-[11px] font-semibold tracking-widest">你的周末人格</p>
+                                    <div class="text-5xl mt-2">${p.emoji}</div>
+                                    <h2 class="mt-2 text-3xl font-black text-white">${p.title}</h2>
+                                    <div class="mt-3 flex flex-wrap justify-center gap-2">${tagsHtml}</div>
+                                </div>
+                            </div>
+                            <div class="p-5">
+                                <blockquote class="relative pl-4 border-l-4 border-brand-orange">
+                                    <p class="text-base font-bold text-gray-900 leading-relaxed">"${p.quote}"</p>
+                                </blockquote>
+                                <p class="mt-4 text-sm text-gray-500 leading-relaxed">${p.description}</p>
+                                <div class="mt-6 space-y-3">
+                                    <button onclick="window.location.href='weekend-route.html'" class="w-full flex items-center justify-center gap-2 py-3.5 bg-brand-orange text-white rounded-xl font-bold active:scale-95 transition-transform shadow-lg shadow-brand-orange/30">
+                                        <i data-lucide="map" class="w-4 h-4"></i><span>定制我的周末路线</span>
+                                    </button>
+                                    <button onclick="Test.restart()" class="w-full py-3 bg-white border border-brand-orange text-brand-orange rounded-xl font-bold active:scale-95 transition-transform">
+                                        重新测试
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                `;
+            },
+
+            errorView() {
+                return `
+                <div class="pt-[50px] min-h-screen flex flex-col items-center justify-center px-6 fade-in">
+                    <div class="text-center -mt-10">
+                        <div class="text-5xl">🧩</div>
+                        <h2 class="mt-4 text-xl font-black text-gray-900">测试题目加载失败</h2>
+                        <p class="mt-2 text-sm text-gray-500">请检查网络后重试</p>
+                        <button onclick="window.location.reload()" class="mt-6 px-8 py-2.5 bg-brand-orange text-white rounded-xl font-bold">重新加载</button>
+                    </div>
+                </div>
+                `;
+            },
+
+            start() {
+                this.started = true;
+                this.answers = [];
+                this.currentIndex = 0;
+                this.locked = false;
+                this.render();
+            },
+
+            restart() {
+                this.started = false;
+                this.answers = [];
+                this.currentIndex = 0;
+                this.locked = false;
+                this.render();
+            },
+
+            answer(optionIndex) {
+                if (this.locked) return;
+                this.locked = true;
+                this.answers.push(optionIndex);
+
+                // 选中项高亮反馈
+                const buttons = document.querySelectorAll('#app button[onclick^="Test.answer"]');
+                buttons.forEach((btn, i) => {
+                    if (i === optionIndex) {
+                        btn.className = btn.className.replace('border-gray-100', 'border-brand-orange bg-brand-orange/5 ring-1 ring-brand-orange');
+                    } else {
+                        btn.className += ' opacity-40';
+                    }
+                });
+
+                setTimeout(() => {
+                    this.currentIndex++;
+                    this.locked = false;
+                    this.render();
+                }, ANSWER_DELAY_MS);
+            },
+
+            render() {
+                let view;
+                if (!window.WeekendTest || this.questions.length === 0) {
+                    view = this.errorView();
+                } else if (this.answers.length === this.questions.length) {
+                    view = this.resultView();
+                } else if (this.started || this.answers.length > 0) {
+                    view = this.quizView();
+                } else {
+                    view = this.introView();
+                }
+                document.getElementById('app').innerHTML = `
+                    ${this.header()}
+                    ${view}
+                `;
+                if (window.Common) window.Common.initIcons();
+            }
+        };
+
+        window.Test = Test;
+        document.addEventListener('DOMContentLoaded', () => Test.render());
+    </script>
+</body>
+</html>

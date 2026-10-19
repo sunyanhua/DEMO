@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>用户主页</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-white text-gray-900 pb-24">
+
+    <div id="app"></div>
+
+    <script src="data.js?v=2"></script>
+    <script src="common.js?v=2"></script>
+    <script>
+        function render() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const userId = urlParams.get('id');
+            const currentTab = urlParams.get('tab') || 'moments'; // activities | moments
+            const activityFilter = urlParams.get('activityFilter') || 'joined'; // published | joined
+            const isOwnProfile = userId === window.GlobalData.user.id;
+            
+            // 如果是自己的主页，使用全局用户数据
+            let user;
+            if (isOwnProfile) {
+                user = { ...window.GlobalData.user };
+            } else {
+                // 简单 Mock：如果是 partners 里的 ID，显示 Partner 信息；否则模拟一个普通用户
+                user = window.GlobalData.partners.find(p => p.id === userId);
+                // 确保用户对象有积分等级字段
+                if (user) {
+                    user.level = user.level || 2;
+                    user.points = user.points || 800;
+                }
+
+                if (!user) {
+                    // 模拟根据 ID 获取活动发起人
+                    const activityOrganizer = window.GlobalData.activities.find(a => a.organizer.id === userId)?.organizer;
+                    if (activityOrganizer) {
+                        user = {
+                            ...activityOrganizer,
+                            intro: activityOrganizer.intro || '热爱生活，喜欢交朋友。',
+                            tags: ['运动', '美食'],
+                            followers: 56,
+                            following: 12,
+                            level: 3,
+                            points: 1200
+                        };
+                    } else if (window.GlobalData.moments.find(m => m.userId === userId)) {
+                         // From moments
+                         user = { id: userId, name: '活跃用户', avatarUrl: 'https://picsum.photos/100/100?random=88', intro:'热爱分享动态', tags:['分享'], followers: 20, following: 5, level: 2, points: 600 };
+                    } else {
+                        // Fallback
+                        user = {
+                            id: userId,
+                            name: '神秘搭子',
+                            avatarUrl: 'https://picsum.photos/100/100?random=99',
+                            intro: '这个用户很低调。',
+                            tags: [],
+                            followers: 0,
+                            following: 0,
+                            level: 1,
+                            points: 100
+                        };
+                    }
+                }
+            }
+
+            // 确保用户对象有认证字段
+            user.realNameVerified = user.realNameVerified || false;
+            user.cooperationVerified = user.cooperationVerified || false;
+            user.verified = user.verified || false;
+            user.role = user.role || 'user';
+
+            // Mock Data Filter
+            let userActivities = [];
+            if (activityFilter === 'published') {
+                // 用户发布的活动
+                userActivities = window.GlobalData.activities.filter(a => a.organizer.id === userId);
+            } else if (activityFilter === 'joined') {
+                // 用户报名的活动 - 基于订单数据
+                if (isOwnProfile) {
+                    // 当前用户：从订单中获取已报名的活动ID
+                    const joinedActivityIds = window.GlobalData.orders
+                        .filter(order => order.status === 'paid')
+                        .map(order => order.activityId);
+                    // 去重
+                    const uniqueActivityIds = [...new Set(joinedActivityIds)];
+                    userActivities = window.GlobalData.activities
+                        .filter(activity => uniqueActivityIds.includes(activity.id));
+                } else {
+                    // 其他用户：模拟数据，选择前3个非用户发布的活动
+                    userActivities = window.GlobalData.activities
+                        .filter(a => a.organizer.id !== userId)
+                        .slice(0, 3);
+                }
+            }
+            // 这里为了演示效果，如果该用户没有动态，就随机塞几个展示
+            let userMoments = window.GlobalData.moments.filter(m => m.userId === userId);
+            if (userMoments.length === 0 && userActivities.length === 0) {
+                 userMoments = window.GlobalData.moments.slice(0, 3); // Fallback to show something
+            }
+
+            // Tab logic
+            const getTabClass = (name) => currentTab === name ? 'text-gray-900 font-bold border-b-2 border-brand-orange' : 'text-gray-400';
+
+            // Content logic
+            let contentHtml = '';
+            if (currentTab === 'activities') {
+                 // 活动筛选器样式函数
+                 const getFilterClass = (name) => activityFilter === name ? 'px-3 py-1.5 bg-brand-orange text-white text-xs font-medium rounded-full whitespace-nowrap flex-shrink-0' : 'px-3 py-1.5 bg-gray-100 text-gray-600 text-xs font-medium rounded-full whitespace-nowrap flex-shrink-0 hover:bg-gray-200 transition-colors';
+
+                 contentHtml = `
+                    <div class="space-y-4 fade-in">
+                        <!-- 活动筛选器 -->
+                        <div class="mb-4 overflow-x-auto no-scrollbar">
+                            <div class="flex gap-2">
+                                <button onclick="window.location.href='profile.html?id=${userId}&tab=activities&activityFilter=joined'" class="${getFilterClass('joined')}">${isOwnProfile ? '我' : 'TA'}报名的</button>
+                                <button onclick="window.location.href='profile.html?id=${userId}&tab=activities&activityFilter=published'" class="${getFilterClass('published')}">${isOwnProfile ? '我' : 'TA'}发布的</button>
+                            </div>
+                        </div>
+
+                        ${userActivities.length > 0 ? userActivities.map(activity => `
+                             <div onclick="window.location.href='detail.html?id=${activity.id}'" class="flex gap-3 bg-white rounded-xl shadow-sm border border-gray-50 p-3 cursor-pointer">
+                                <img src="${activity.imageUrl}" class="w-28 h-20 object-cover rounded-lg bg-gray-100" />
+                                <div class="flex-1 flex flex-col justify-between py-0.5">
+                                    <h3 class="font-bold text-gray-900 text-sm line-clamp-2">${activity.title}</h3>
+                                    <div class="flex justify-between items-end mt-2">
+                                        <span class="text-xs text-gray-400">${activity.date}</span>
+                                        <span class="text-brand-orange text-xs font-bold">${activity.status === 'RECRUITING' ? '招募中' : '已结束'}</span>
+                                    </div>
+                                </div>
+                             </div>
+                        `).join('') : '<div class="text-gray-400 text-sm py-10 text-center bg-gray-50 rounded-lg">暂无' + (activityFilter === 'published' ? '发布' : '报名') + '活动</div>'}
+                    </div>
+                 `;
+            } else {
+                contentHtml = `
+                    <div class="columns-2 gap-3 space-y-3 fade-in">
+                        ${userMoments.length > 0 ? userMoments.map(m => `
+                            <div onclick="window.location.href='moment.html?id=${m.id}'" class="break-inside-avoid bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100 cursor-pointer">
+                                <img src="${m.images[0]}" class="w-full h-auto object-cover" />
+                                <div class="p-2">
+                                    <p class="text-xs text-gray-800 line-clamp-2 mb-1">${m.content}</p>
+                                    <div class="flex items-center justify-between text-gray-400">
+                                        <span class="text-[10px]">${m.time}</span>
+                                        <div class="flex items-center gap-1">
+                                            <div class="flex items-center gap-0.5">
+                                                <i data-lucide="heart" class="w-3 h-3"></i>
+                                                <span class="text-[10px]">${m.likes}</span>
+                                            </div>
+                                            <div class="flex items-center gap-0.5">
+                                                <i data-lucide="message-circle" class="w-3 h-3"></i>
+                                                <span class="text-[10px]">${m.comments || 0}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('') : '<div class="text-gray-400 text-sm py-10 text-center col-span-2">暂无动态</div>'}
+                    </div>
+                `;
+            }
+
+            document.getElementById('app').innerHTML = `
+                <div class="relative">
+                    <!-- 顶部背景图 -->
+                    <div class="h-48 w-full overflow-hidden">
+                        <img src="https://picsum.photos/800/400?blur=5" class="w-full h-full object-cover opacity-80" />
+                        <div class="absolute inset-0 bg-gradient-to-b from-transparent to-white"></div>
+                        
+                        <!-- 导航栏 -->
+                        <div class="absolute top-0 left-0 right-0 p-4 flex justify-between z-10">
+                            <button onclick="window.history.back()" class="bg-white/50 backdrop-blur rounded-full p-2 hover:bg-white transition"><i data-lucide="chevron-left" class="w-6 h-6 text-gray-800"></i></button>
+                            <div class="flex gap-1">
+                                <button onclick="shareProfile()" class="bg-white/50 backdrop-blur rounded-full p-2 hover:bg-white transition"><i data-lucide="share-2" class="w-6 h-6 text-gray-800"></i></button>
+                                ${isOwnProfile ? '<button onclick="changeProfileBackground()" class="bg-white/50 backdrop-blur rounded-full p-2 hover:bg-white transition"><i data-lucide="edit-3" class="w-6 h-6 text-gray-800"></i></button>' : ''}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="px-4 -mt-10 relative">
+                        <div class="flex justify-between items-end mb-4">
+                            <img src="${user.avatarUrl}" class="w-24 h-24 rounded-full border-4 border-white shadow-lg object-cover bg-gray-200" />
+                            <div class="flex gap-2 mb-2">
+                                <button onclick="window.location.href='chat.html?uid=${user.id}&name=${encodeURIComponent(user.name)}'" class="px-4 py-1.5 border border-gray-300 rounded-full text-sm font-bold text-gray-700 active:bg-gray-50">私信</button>
+                                <button onclick="window.Common.showToast('已关注')" class="px-5 py-1.5 bg-brand-orange text-white rounded-full text-sm font-bold shadow-brand-orange/30 shadow-md active:scale-95 transition-transform">关注</button>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <h1 class="text-2xl font-black text-gray-900 mb-1 flex items-center gap-1">
+                                ${user.name}
+                                ${user.realNameVerified ? '<i data-lucide="shield-check" class="w-5 h-5 text-orange-500 fill-orange-100" title="实名认证"></i>' : ''}
+                                ${user.cooperationVerified ? '<i data-lucide="badge-check" class="w-5 h-5 text-blue-500 fill-blue-100" title="合作认证"></i>' : ''}
+                                <span class="px-2 py-0.5 bg-gradient-to-r from-brand-orange to-brand-yellow text-white text-xs font-bold rounded-full flex items-center gap-0.5">
+                                    LV.${user.level || 1}
+                                    <i data-lucide="star" class="w-3 h-3"></i>
+                                </span>
+                            </h1>
+                            <p class="text-sm text-gray-500 mb-3">${user.intro}</p>
+                            
+                            <div class="flex gap-2 mb-4">
+                                ${user.tags && user.tags.length > 0 ? user.tags.map(tag => `<span class="px-2 py-0.5 bg-gray-100 text-gray-500 text-xs rounded-md">#${tag}</span>`).join('') : ''}
+                                <span class="px-2 py-0.5 bg-gray-100 text-gray-500 text-xs rounded-md flex items-center gap-0.5"><i data-lucide="map-pin" class="w-3 h-3"></i> 北京</span>
+                            </div>
+
+                            <div class="flex gap-6 text-sm">
+                                <div><span class="font-bold text-gray-900 text-base">${user.following || 0}</span> <span class="text-gray-400">关注</span></div>
+                                <div><span class="font-bold text-gray-900 text-base">${user.followers || 0}</span> <span class="text-gray-400">粉丝</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-2 bg-gray-50"></div>
+
+                <div class="px-4 py-2 sticky top-0 bg-white z-20 shadow-sm mb-2">
+                    <div class="flex gap-6 text-sm">
+                        <button onclick="window.location.href='profile.html?id=${userId}&tab=moments'" class="py-2 ${getTabClass('moments')}">动态</button>
+                        <button onclick="window.location.href='profile.html?id=${userId}&tab=activities'" class="py-2 ${getTabClass('activities')}">活动</button>
+                    </div>
+                </div>
+
+                <div class="px-4 pb-10">
+                    ${contentHtml}
+                </div>
+            `;
+            window.Common.initIcons();
+        }
+
+        function shareProfile() {
+            const url = window.location.href;
+            const title = document.title;
+            const text = `看看${window.GlobalData.user.name}的主页`;
+
+            if (navigator.share) {
+                navigator.share({
+                    title: title,
+                    text: text,
+                    url: url,
+                }).then(() => {
+                    window.Common.showToast('分享成功');
+                }).catch(err => {
+                    window.Common.showToast('分享已取消');
+                });
+            } else {
+                // Fallback: copy to clipboard
+                navigator.clipboard.writeText(url).then(() => {
+                    window.Common.showToast('链接已复制到剪贴板');
+                }).catch(() => {
+                    window.Common.showToast('复制失败，请手动复制链接');
+                });
+            }
+        }
+
+        function changeProfileBackground() {
+            // 模拟更换背景图片
+            const backgroundImages = [
+                'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1469474968028-56623f02e42e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1501854140801-50d01698950b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1439066615861-d1af74d74000?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+            ];
+
+            // 随机选择一张背景图片
+            const randomImage = backgroundImages[Math.floor(Math.random() * backgroundImages.length)];
+
+            // 更新背景图片
+            const bgImg = document.querySelector('.h-48.w-full.overflow-hidden img');
+            if (bgImg) {
+                bgImg.src = randomImage;
+                window.Common.showToast('背景图片已更换');
+            } else {
+                window.Common.showToast('更换失败，请重试');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', render);
+    </script>
+</body>
+</html>

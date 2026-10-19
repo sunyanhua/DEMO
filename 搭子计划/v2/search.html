@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>搜索结果 - 搭子计划</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* 搜索页面优化样式 */
+        .search-header {
+            backdrop-filter: blur(10px);
+            background-color: rgba(255, 255, 255, 0.95);
+        }
+
+        .search-input-container {
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .search-input-container:focus-within {
+            box-shadow: 0 4px 12px rgba(255, 107, 0, 0.15);
+            background-color: white;
+        }
+
+        .search-tab-active {
+            position: relative;
+            font-weight: 700;
+            color: #1f2937;
+            font-size: 1.125rem;
+        }
+
+        .search-tab-active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 24px;
+            height: 3px;
+            background: linear-gradient(90deg, #FF6B00, #FF8C00);
+            border-radius: 1.5px;
+        }
+
+        .filter-btn {
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .filter-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .filter-btn-active {
+            background: linear-gradient(135deg, #FF6B00, #FF8C00);
+            color: white;
+            box-shadow: 0 4px 12px rgba(255, 107, 0, 0.3);
+        }
+
+        .moment-card {
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            overflow: hidden;
+        }
+
+        .moment-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+        }
+
+        .activity-card {
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+
+        .activity-card:hover {
+            transform: translateX(2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+        }
+
+        .partner-card {
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .partner-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+            border-color: rgba(255, 107, 0, 0.2);
+        }
+
+        .suggestion-item {
+            transition: all 0.15s ease;
+        }
+
+        .suggestion-item:hover {
+            background-color: #f9fafb;
+            transform: translateX(4px);
+        }
+
+        .hot-search-tag {
+            transition: all 0.2s ease;
+            background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+        }
+
+        .hot-search-tag:hover {
+            background: linear-gradient(135deg, #e5e7eb, #d1d5db);
+            transform: scale(1.05);
+        }
+
+        /* 骨架屏加载动画 */
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: skeleton-loading 1.5s infinite;
+        }
+
+        @keyframes skeleton-loading {
+            0% {
+                background-position: 200% 0;
+            }
+
+            100% {
+                background-position: -200% 0;
+            }
+        }
+
+        /* 空状态样式 */
+        .empty-state {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 高亮关键词样式 */
+        .keyword-highlight {
+            background: linear-gradient(120deg, #fffbeb 0%, #fef3c7 100%);
+            border-radius: 3px;
+            padding: 0 2px;
+            font-weight: 600;
+            color: #92400e;
+            border-bottom: 2px solid #f59e0b;
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 360px) {
+            .search-header {
+                height: 48px;
+                padding-left: 12px;
+                padding-right: 12px;
+            }
+
+            .search-input-container {
+                font-size: 0.875rem;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .search-container {
+                max-width: 768px;
+                margin: 0 auto;
+            }
+
+            .moment-card {
+                break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 text-gray-900 pb-20">
+    <div id="app"></div>
+
+    <script src="data.js?v=2"></script>
+    <script src="common.js?v=2"></script>
+    <script>
+        // 搜索历史管理
+        const SEARCH_HISTORY_KEY = 'search_history';
+        const MAX_HISTORY_ITEMS = 10;
+
+        function saveSearchHistory(query) {
+            if (!query || query.trim() === '') return;
+            query = query.trim();
+            let history = getSearchHistory();
+            // 移除重复项
+            history = history.filter(item => item !== query);
+            // 添加到开头
+            history.unshift(query);
+            // 限制数量
+            if (history.length > MAX_HISTORY_ITEMS) {
+                history = history.slice(0, MAX_HISTORY_ITEMS);
+            }
+            localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(history));
+        }
+
+        function getSearchHistory() {
+            try {
+                const history = localStorage.getItem(SEARCH_HISTORY_KEY);
+                return history ? JSON.parse(history) : [];
+            } catch (e) {
+                console.error('读取搜索历史失败:', e);
+                return [];
+            }
+        }
+
+        function clearSearchHistory() {
+            localStorage.removeItem(SEARCH_HISTORY_KEY);
+        }
+
+        function removeFromSearchHistory(query) {
+            let history = getSearchHistory();
+            history = history.filter(item => item !== query);
+            localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(history));
+        }
+
+        // 热门搜索关键词（可以从服务器获取，这里使用模拟数据）
+        const HOT_SEARCHES = [
+            '飞盘', '滑雪', '咖啡', '剧本杀', '瑜伽',
+            '探店', '跑步', '健身', '读书', '音乐'
+        ];
+
+        // 搜索关键字高亮函数
+        function highlightKeyword(text, keyword) {
+            if (!text || !keyword || keyword.trim() === '') return text;
+
+            const escapedKeyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const regex = new RegExp(`(${escapedKeyword})`, 'gi');
+
+            return text.replace(regex, '<span class="keyword-highlight">$1</span>');
+        }
+
+        // 防抖函数
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // 防抖版本的实时搜索函数
+        const debouncedPerformRealTimeSearch = debounce(performRealTimeSearch, 300);
+
+        // 搜索状态管理
+        let currentSort = 'latest';
+        let currentFilters = {
+            free_only: false,
+            online_only: false
+        };
+
+        // 更新URL中的排序和筛选参数
+        function updateUrlParams(params = {}) {
+            const urlParams = new URLSearchParams(window.location.search);
+            Object.entries(params).forEach(([key, value]) => {
+                if (value !== undefined && value !== null) {
+                    urlParams.set(key, value);
+                } else {
+                    urlParams.delete(key);
+                }
+            });
+            const newUrl = `?${urlParams.toString()}`;
+            window.history.replaceState(null, '', newUrl);
+        }
+
+        // 应用排序
+        function applySort(sortType) {
+            currentSort = sortType;
+            updateUrlParams({ sort: sortType });
+            render();
+        }
+
+        // 切换筛选
+        function toggleFilter(filterType) {
+            currentFilters[filterType] = !currentFilters[filterType];
+            updateUrlParams({ [filterType]: currentFilters[filterType] });
+            render();
+        }
+
+        // 应用排序到结果集
+        function applySortToResults(results, viewType) {
+            if (!results || results.length === 0) return results;
+
+            const sortedResults = [...results];
+
+            switch (currentSort) {
+                case 'latest':
+                    // 动态按时间倒序，活动按日期，搭子按ID（假设ID越大越新）
+                    if (viewType === 'moment') {
+                        // 模拟时间排序：按ID倒序
+                        sortedResults.sort((a, b) => {
+                            const aNum = parseInt(a.id.replace('mo', '')) || 0;
+                            const bNum = parseInt(b.id.replace('mo', '')) || 0;
+                            return bNum - aNum;
+                        });
+                    } else if (viewType === 'activity') {
+                        // 按日期排序（这里简化处理，实际应该解析日期）
+                        sortedResults.sort((a, b) => {
+                            // 模拟按ID倒序（假设ID越大越新）
+                            const aNum = parseInt(a.id.replace('a', '')) || 0;
+                            const bNum = parseInt(b.id.replace('a', '')) || 0;
+                            return bNum - aNum;
+                        });
+                    } else if (viewType === 'partner') {
+                        sortedResults.sort((a, b) => {
+                            const aNum = parseInt(a.id.replace('p', '')) || 0;
+                            const bNum = parseInt(b.id.replace('p', '')) || 0;
+                            return bNum - aNum;
+                        });
+                    }
+                    break;
+
+                case 'hottest':
+                    // 按热度（点赞数）排序
+                    if (viewType === 'moment') {
+                        sortedResults.sort((a, b) => b.likes - a.likes);
+                    } else if (viewType === 'activity') {
+                        sortedResults.sort((a, b) => b.currentParticipants - a.currentParticipants);
+                    } else if (viewType === 'partner') {
+                        // 搭子按距离排序（假设距离越近越热）
+                        sortedResults.sort((a, b) => {
+                            const aDist = parseFloat(a.distance) || 10;
+                            const bDist = parseFloat(b.distance) || 10;
+                            return aDist - bDist;
+                        });
+                    }
+                    break;
+
+                case 'nearest':
+                    // 按距离排序
+                    if (viewType === 'moment' || viewType === 'activity') {
+                        // 模拟距离排序：按ID（假设ID越小距离越近）
+                        sortedResults.sort((a, b) => {
+                            const aNum = parseInt(a.id.replace(/[^\d]/g, '')) || 0;
+                            const bNum = parseInt(b.id.replace(/[^\d]/g, '')) || 0;
+                            return aNum - bNum;
+                        });
+                    } else if (viewType === 'partner') {
+                        sortedResults.sort((a, b) => {
+                            const aDist = parseFloat(a.distance) || 10;
+                            const bDist = parseFloat(b.distance) || 10;
+                            return aDist - bDist;
+                        });
+                    }
+                    break;
+
+                case 'price_low':
+                    if (viewType === 'activity') {
+                        sortedResults.sort((a, b) => a.price - b.price);
+                    }
+                    break;
+
+                case 'price_high':
+                    if (viewType === 'activity') {
+                        sortedResults.sort((a, b) => b.price - a.price);
+                    }
+                    break;
+
+                case 'most_active':
+                    if (viewType === 'partner') {
+                        // 模拟活跃度排序：按ID倒序（假设ID越大越活跃）
+                        sortedResults.sort((a, b) => {
+                            const aNum = parseInt(a.id.replace('p', '')) || 0;
+                            const bNum = parseInt(b.id.replace('p', '')) || 0;
+                            return bNum - aNum;
+                        });
+                    }
+                    break;
+
+                case 'newest':
+                    if (viewType === 'partner') {
+                        sortedResults.sort((a, b) => {
+                            const aNum = parseInt(a.id.replace('p', '')) || 0;
+                            const bNum = parseInt(b.id.replace('p', '')) || 0;
+                            return bNum - aNum;
+                        });
+                    }
+                    break;
+            }
+
+            return sortedResults;
+        }
+
+        // 应用筛选到结果集
+        function applyFiltersToResults(results, viewType) {
+            if (!results || results.length === 0) return results;
+
+            let filteredResults = [...results];
+
+            if (currentFilters.free_only && viewType === 'activity') {
+                filteredResults = filteredResults.filter(item => item.price === 0);
+            }
+
+            if (currentFilters.online_only && viewType === 'partner') {
+                // 模拟在线状态：随机选择一些用户为在线
+                filteredResults = filteredResults.filter(item => Math.random() > 0.3);
+            }
+
+            return filteredResults;
+        }
+
+        function render() {
+            const urlParams = new URLSearchParams(window.location.search);
+            // 搜索参数
+            const query = urlParams.get('q') || '';
+            const activeView = urlParams.get('view') || 'moment'; // 'moment' | 'activity' | 'partner'
+
+            // 读取排序和筛选参数
+            const sortParam = urlParams.get('sort') || 'latest';
+            if (sortParam) {
+                currentSort = sortParam;
+            }
+
+            // 读取筛选参数
+            const freeOnlyParam = urlParams.get('free_only');
+            const onlineOnlyParam = urlParams.get('online_only');
+            if (freeOnlyParam !== null) {
+                currentFilters.free_only = freeOnlyParam === 'true';
+            }
+            if (onlineOnlyParam !== null) {
+                currentFilters.online_only = onlineOnlyParam === 'true';
+            }
+
+            // 搜索过滤函数
+            function filterByKeyword(items, keyword, fields) {
+                if (!keyword) return items;
+                const lowerKeyword = keyword.toLowerCase();
+                return items.filter(item => {
+                    return fields.some(field => {
+                        const value = item[field];
+                        if (Array.isArray(value)) {
+                            return value.some(v => v.toLowerCase().includes(lowerKeyword));
+                        } else if (typeof value === 'string') {
+                            return value.toLowerCase().includes(lowerKeyword);
+                        }
+                        return false;
+                    });
+                });
+            }
+
+            // 过滤动态
+            function searchMoments(keyword) {
+                const moments = window.GlobalData.moments || [];
+                return filterByKeyword(moments, keyword, ['content', 'location']);
+            }
+
+            // 过滤活动
+            function searchActivities(keyword) {
+                const activities = window.GlobalData.activities || [];
+                return filterByKeyword(activities, keyword, ['title', 'description', 'location', 'district', 'tags']);
+            }
+
+            // 过滤用户（搭子）
+            function searchPartners(keyword) {
+                const partners = window.GlobalData.partners || [];
+                // 为了搜索更丰富，添加更多模拟用户
+                const allUsers = [
+                    ...partners,
+                    {
+                        id: 'p5',
+                        name: '摄影爱好者',
+                        avatarUrl: 'https://picsum.photos/100/100?random=30',
+                        tags: ['街拍', '人像', '夜景'],
+                        intro: '周末一起扫街拍照，交流摄影技巧。',
+                        distance: '0.8km'
+                    },
+                    {
+                        id: 'p6',
+                        name: '桌游达人',
+                        avatarUrl: 'https://picsum.photos/100/100?random=31',
+                        tags: ['狼人杀', '剧本杀', '德式'],
+                        intro: '每周组织桌游局，新手友好！',
+                        distance: '2.3km'
+                    },
+                    {
+                        id: 'p7',
+                        name: '瑜伽修行者',
+                        avatarUrl: 'https://picsum.photos/100/100?random=32',
+                        tags: ['瑜伽', '冥想', '正念'],
+                        intro: '清晨瑜伽练习，寻找同频伙伴。',
+                        distance: '1.5km'
+                    },
+                    {
+                        id: 'p8',
+                        name: '美食地图',
+                        avatarUrl: 'https://picsum.photos/100/100?random=33',
+                        tags: ['探店', '火锅', '甜品'],
+                        intro: '吃遍北京所有网红店，一起打卡！',
+                        distance: '3.2km'
+                    }
+                ];
+                return filterByKeyword(allUsers, keyword, ['name', 'intro', 'tags']);
+            }
+
+            // 顶部搜索栏
+            const headerHtml = `
+                <div class="fixed top-0 left-0 right-0 h-[40px] bg-white/95 backdrop-blur-sm z-50 flex items-center px-4 shadow-md border-b border-gray-100 justify-between search-header">
+                    <button onclick="window.history.back()" class="p-1.5 rounded-full hover:bg-gray-100 transition">
+                        <i data-lucide="chevron-left" class="w-6 h-6 text-gray-800"></i>
+                    </button>
+                    <div class="flex-1 mx-3 relative">
+                        <div class="flex items-center bg-gray-100 rounded-full px-3 py-2 search-input-container">
+                            <i data-lucide="search" class="w-4 h-4 text-gray-400 mr-2"></i>
+                            <input id="search-input" type="text" value="${query}" placeholder="搜索动态、活动、搭子..." class="bg-transparent border-none outline-none text-sm w-full placeholder-gray-400 text-gray-800" onkeypress="if(event.key === 'Enter') performSearch()" oninput="handleSearchInput(this.value)" onfocus="showSearchSuggestionsOnFocus()"/>
+                            <button onclick="clearSearchInput()" class="p-1 text-gray-400 hover:text-gray-600 ${query ? '' : 'hidden'}" id="clear-search-btn">
+                                <i data-lucide="x" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                        <!-- 搜索建议下拉框 -->
+                        <div id="search-suggestions" class="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden z-50 hidden"></div>
+                    </div>
+                    <button onclick="performSearch()" class="text-sm text-brand-orange font-bold">搜索</button>
+                </div>
+            `;
+
+            // 搜索结果统计
+            const momentResults = searchMoments(query);
+            const activityResults = searchActivities(query);
+            const partnerResults = searchPartners(query);
+
+            // 应用筛选和排序
+            let processedMomentResults = [...momentResults];
+            let processedActivityResults = [...activityResults];
+            let processedPartnerResults = [...partnerResults];
+
+            // 应用筛选
+            processedMomentResults = applyFiltersToResults(processedMomentResults, 'moment');
+            processedActivityResults = applyFiltersToResults(processedActivityResults, 'activity');
+            processedPartnerResults = applyFiltersToResults(processedPartnerResults, 'partner');
+
+            // 应用排序
+            processedMomentResults = applySortToResults(processedMomentResults, 'moment');
+            processedActivityResults = applySortToResults(processedActivityResults, 'activity');
+            processedPartnerResults = applySortToResults(processedPartnerResults, 'partner');
+
+            // 顶部切换栏
+            const tabHtml = `
+                <div class="bg-white sticky top-[40px] z-40 border-b border-gray-100">
+                    <div class="flex gap-6 text-base px-4">
+                        <div onclick="window.location.href='search.html?q=${encodeURIComponent(query)}&view=moment'" class="relative py-3 cursor-pointer ${activeView === 'moment' ? 'search-tab-active' : 'text-gray-500'}">
+                            动态
+                        </div>
+                        <div onclick="window.location.href='search.html?q=${encodeURIComponent(query)}&view=activity'" class="relative py-3 cursor-pointer ${activeView === 'activity' ? 'search-tab-active' : 'text-gray-500'}">
+                            活动
+                        </div>
+                        <div onclick="window.location.href='search.html?q=${encodeURIComponent(query)}&view=partner'" class="relative py-3 cursor-pointer ${activeView === 'partner' ? 'search-tab-active' : 'text-gray-500'}">
+                            搭子
+                        </div>
+                    </div>
+                </div>
+            `;
+
+
+
+            const resultStatsHtml = `
+                <div class="pt-[40px] bg-gray-50 border-b border-gray-100">
+                    <div class="px-4 py-3">
+                        <div class="text-sm text-gray-600">
+                            搜索"<span class="font-bold text-gray-900">${query || '全部'}</span>"，共找到
+                            <span class="font-bold text-brand-orange">${momentResults.length + activityResults.length + partnerResults.length}</span> 个结果
+                            &nbsp;(<span class="gap-4 mt-2 text-xs text-gray-500">
+                                <span>动态: ${momentResults.length}</span>
+                                <span>活动: ${activityResults.length}</span>
+                                <span>搭子: ${partnerResults.length}</span>
+                            </span>)
+                        </div>
+                    </div>
+                    <!-- 筛选器 -->
+                    <div class="px-4 pb-2 overflow-x-auto no-scrollbar">
+                        <div class="flex gap-2">
+                            ${activeView === 'moment' ? `
+                                <button onclick="applySort('latest')" class="px-3 py-1.5 filter-btn ${currentSort === 'latest' ? 'filter-btn-active' : 'bg-gray-100 text-gray-600'} text-xs font-medium rounded-full whitespace-nowrap flex-shrink-0">最新</button>
+                                <button onclick="applySort('hottest')" class="px-3 py-1.5 filter-btn ${currentSort === 'hottest' ? 'filter-btn-active' : 'bg-gray-100 text-gray-600'} text-xs font-medium rounded-full whitespace-nowrap flex-shrink-0">最热</button>
+                                <button onclick="applySort('nearest')" class="px-3 py-1.5 filter-btn ${currentSort === 'nearest' ? 'filter-btn-active' : 'bg-gray-100 text-gray-600'} text-xs font-medium rounded-full whitespace-nowrap flex-shrink-0">最近</button>
+                            ` : activeView === 'activity' ? `
+                                <button onclick="applySort('latest')" class="px-3 py-1.5 filter-btn ${currentSort === 'latest' ? 'filter-btn-active' : 'bg-gray-100 text-gray-600'} text-xs font-medium rounded-full whitespace-nowrap flex-shrink-0">最新</button>
+                                <button onclick="applySort('price_low')" class="px-3 py-1.5 filter-btn ${currentSort === 'price_low' ? 'filter-btn-active' : 'bg-gray-100 text-gray-600'} text-xs font-medium rounded-full whitespace-nowrap flex-shrink-0">价格最低</button>
+                                <button onclick="applySort('price_high')" class="px-3 py-1.5 filter-btn ${currentSort === 'price_high' ? 'filter-btn-active' : 'bg-gray-100 text-gray-600'} text-xs font-medium rounded-full whitespace-nowrap flex-shrink-0">价格最高</button>
+                                <button onclick="applySort('nearest')" class="px-3 py-1.5 filter-btn ${currentSort === 'nearest' ? 'filter-btn-active' : 'bg-gray-100 text-gray-600'} text-xs font-medium rounded-full whitespace-nowrap flex-shrink-0">最近</button>
+                                <button onclick="toggleFilter('free_only')" class="px-3 py-1.5 filter-btn ${currentFilters.free_only ? 'filter-btn-active' : 'bg-gray-100 text-gray-600'} text-xs font-medium rounded-full whitespace-nowrap flex-shrink-0">只看免费</button>
+                            ` : activeView === 'partner' ? `
+                                <button onclick="applySort('nearest')" class="px-3 py-1.5 filter-btn ${currentSort === 'nearest' ? 'filter-btn-active' : 'bg-gray-100 text-gray-600'} text-xs font-medium rounded-full whitespace-nowrap flex-shrink-0">最近</button>
+                                <button onclick="applySort('most_active')" class="px-3 py-1.5 filter-btn ${currentSort === 'most_active' ? 'filter-btn-active' : 'bg-gray-100 text-gray-600'} text-xs font-medium rounded-full whitespace-nowrap flex-shrink-0">最活跃</button>
+                                <button onclick="applySort('newest')" class="px-3 py-1.5 filter-btn ${currentSort === 'newest' ? 'filter-btn-active' : 'bg-gray-100 text-gray-600'} text-xs font-medium rounded-full whitespace-nowrap flex-shrink-0">最新加入</button>
+                                <button onclick="toggleFilter('online_only')" class="px-3 py-1.5 filter-btn ${currentFilters.online_only ? 'filter-btn-active' : 'bg-gray-100 text-gray-600'} text-xs font-medium rounded-full whitespace-nowrap flex-shrink-0">只看在线</button>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            let contentHtml = '';
+
+            if (activeView === 'moment') {
+                // 动态搜索结果
+                if (processedMomentResults.length > 0) {
+                    const getMomentCard = (m) => {
+                        const user = window.GlobalData.user.id === m.userId ? window.GlobalData.user :
+                            (window.GlobalData.partners.find(p => p.id === m.userId) ||
+                                { name: '未知用户', avatarUrl: 'https://picsum.photos/50/50?random=0' });
+
+                        const highlightedContent = highlightKeyword(m.content, query);
+                        const highlightedLocation = highlightKeyword(m.location, query);
+                        // 判断是否为官方动态（这里根据userId判断，u2、u4为官方账号）
+                        const isOfficial = m.userId === 'u2' || m.userId === 'u4';
+
+                        return `
+                        <div onclick="window.location.href='moment.html?id=${m.id}'" class="break-inside-avoid mb-3 bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100 cursor-pointer group moment-card relative">
+                            <!-- 官方标记 -->
+                            ${isOfficial ? `
+                                <div class="absolute top-2 right-2 z-10 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5 shadow-md">
+                                    <i data-lucide="check-circle" class="w-2.5 h-2.5"></i>
+                                    官方
+                                </div>
+                            ` : ''}
+                            <img src="${m.images[0]}" class="w-full h-auto object-cover" />
+                            <div class="p-2.5">
+                                <p class="text-sm text-gray-800 line-clamp-2 mb-2 leading-snug">${highlightedContent}</p>
+                                ${m.location ? `<div class="text-xs text-gray-500 mt-1 flex items-center gap-1">
+                                    <i data-lucide="map-pin" class="w-3 h-3"></i>
+                                    <span class="truncate">${highlightedLocation}</span>
+                                </div>` : ''}
+                                <div class="flex items-center justify-between mt-2">
+                                    <div class="flex items-center gap-1.5 overflow-hidden" onclick="event.stopPropagation(); window.location.href='profile.html?id=${m.userId}'">
+                                        <img src="${user.avatarUrl}" class="w-5 h-5 rounded-full border border-gray-100 flex-shrink-0" />
+                                        <span class="text-[10px] text-gray-500 truncate">${user.name}</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 text-gray-400">
+                                        <!-- 点赞 -->
+                                        <div class="flex items-center gap-1">
+                                            <i data-lucide="heart" class="w-3 h-3 ${Math.random() > 0.5 ? 'text-red-500 fill-red-500' : ''}"></i>
+                                            <span class="text-[10px]">${m.likes}</span>
+                                        </div>
+                                        <!-- 评论 -->
+                                        <div class="flex items-center gap-1">
+                                            <i data-lucide="message-circle" class="w-3 h-3"></i>
+                                            <span class="text-[10px]">${m.comments || 0}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        `;
+                    };
+
+                    contentHtml = `
+                        <div class="pt-3 px-3 pb-20 min-h-screen bg-gray-50">
+                            <div class="columns-2 gap-3 space-y-3">
+                                ${processedMomentResults.map(m => getMomentCard(m)).join('')}
+                            </div>
+                            <div class="text-center text-xs text-gray-300 py-6">没有更多了</div>
+                        </div>
+                    `;
+                } else {
+                    contentHtml = `
+                        <div class="py-20 text-center bg-gray-50 empty-state">
+                            <i data-lucide="search-x" class="w-12 h-12 text-gray-300 mx-auto mb-3"></i>
+                            <p class="text-gray-400 text-sm">没有找到相关的动态</p>
+                            ${query ? `<p class="text-gray-400 text-xs mt-1">尝试搜索其他关键词</p>` : ''}
+                        </div>
+                    `;
+                }
+            } else if (activeView === 'activity') {
+                // 活动搜索结果
+                if (processedActivityResults.length > 0) {
+                    const listHtml = processedActivityResults.map(activity => {
+                        const isFull = activity.status === 'FULL';
+                        const highlightedTitle = highlightKeyword(activity.title, query);
+                        const highlightedLocation = highlightKeyword(activity.location, query);
+                        const highlightedTags = activity.tags ? activity.tags.map(tag => highlightKeyword(tag, query)).join(', ') : '';
+
+                        return `
+                        <div onclick="window.location.href='detail.html?id=${activity.id}'" class="bg-white rounded-xl p-3 shadow-sm flex gap-3 mb-3 cursor-pointer activity-card">
+                            <div class="relative w-24 h-24 flex-shrink-0">
+                                <img src="${activity.imageUrl}" class="w-full h-full object-cover rounded-lg" />
+                                ${activity.status === 'RECRUITING' ? '<div class="absolute top-0 left-0 bg-brand-orange text-white text-[10px] px-1.5 py-0.5 rounded-br-lg rounded-tl-lg">招募</div>' : '<div class="absolute top-0 left-0 bg-gray-400 text-white text-[10px] px-1.5 py-0.5 rounded-br-lg rounded-tl-lg">满员</div>'}
+                            </div>
+                            <div class="flex-1 flex flex-col justify-between py-0.5">
+                                <h3 class="text-sm font-bold text-gray-900 line-clamp-2 leading-tight">${highlightedTitle}</h3>
+                                ${activity.tags && activity.tags.length > 0 ? `
+                                    <div class="flex flex-wrap gap-1 mt-1">
+                                        ${activity.tags.map(tag => `
+                                            <span class="text-[10px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded-md">${highlightKeyword(tag, query)}</span>
+                                        `).join('')}
+                                    </div>
+                                ` : ''}
+                                <div class="text-xs text-gray-400 mt-1 flex items-center gap-1">
+                                    <i data-lucide="calendar" class="w-3 h-3"></i> ${activity.date}
+                                </div>
+                                 <div class="text-xs text-gray-400 mt-0.5 flex items-center gap-1">
+                                    <i data-lucide="map-pin" class="w-3 h-3"></i> <span class="truncate">${highlightedLocation}</span>
+                                </div>
+                                <div class="flex items-center justify-between mt-2">
+                                    <div class="flex items-center gap-1" onclick="event.stopPropagation(); window.location.href='profile.html?id=${activity.organizer.id}'">
+                                        <img src="${activity.organizer.avatarUrl}" class="w-4 h-4 rounded-full" />
+                                        <span class="text-xs text-gray-500 scale-90 origin-left">${activity.organizer.name}</span>
+                                    </div>
+                                    <span class="text-brand-orange font-bold text-sm">${activity.price === 0 ? '免费' : '¥' + activity.price}</span>
+                                </div>
+                            </div>
+                        </div>
+                        `;
+                    }).join('');
+
+                    contentHtml = `
+                        <div class="p-3 pb-20 min-h-screen bg-gray-50">
+                            <div class="space-y-3">
+                                ${listHtml}
+                            </div>
+                            <div class="text-center text-xs text-gray-300 py-4">没有更多了</div>
+                        </div>
+                    `;
+                } else {
+                    contentHtml = `
+                        <div class="py-20 text-center bg-gray-50 empty-state">
+                            <i data-lucide="calendar-x" class="w-12 h-12 text-gray-300 mx-auto mb-3"></i>
+                            <p class="text-gray-400 text-sm">没有找到相关的活动</p>
+                            ${query ? `<p class="text-gray-400 text-xs mt-1">尝试搜索其他关键词</p>` : ''}
+                        </div>
+                    `;
+                }
+            } else if (activeView === 'partner') {
+                // 搭子搜索结果
+                if (processedPartnerResults.length > 0) {
+                    contentHtml = `
+                        <div class="p-3 pb-20 min-h-screen bg-gray-50">
+                            <div class="space-y-3">
+                                ${processedPartnerResults.map(user => {
+                                    const isOnline = Math.random() > 0.5;
+                                    return `
+                                    <div onclick="window.location.href='profile.html?id=${user.id}'" class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 active:bg-gray-50 cursor-pointer group partner-card">
+                                        <div class="flex gap-3">
+                                            <!-- 头像 -->
+                                            <div class="relative flex-shrink-0">
+                                                <img src="${user.avatarUrl}" class="w-14 h-14 rounded-full border-2 border-white shadow-md object-cover bg-gray-100">
+                                                <div class="absolute -bottom-1 -right-1 bg-brand-blue text-[8px] text-white px-1.5 py-0.5 rounded-full border border-white">${user.distance || '1.0km'}</div>
+                                            </div>
+
+                                            <!-- 用户信息 -->
+                                            <div class="flex-1 min-w-0">
+                                                <div class="flex justify-between items-start mb-1">
+                                                    <div>
+                                                        <h3 class="font-bold text-gray-900 text-sm truncate flex items-center gap-1">
+                                                            ${user.name}
+                                                            ${user.realNameVerified ? '<i data-lucide="shield-check" class="w-3 h-3 text-orange-500 flex-shrink-0" title="实名认证"></i>' : ''}
+                                                            ${user.cooperationVerified ? '<i data-lucide="badge-check" class="w-3 h-3 text-blue-500 flex-shrink-0" title="合作认证"></i>' : ''}
+                                                        </h3>
+                                                        <div class="flex gap-1 mt-1 flex-wrap">
+                                                            ${user.tags ? user.tags.map(tag => `<span class="px-2 py-0.5 bg-gray-50 text-gray-500 text-xs rounded-md border border-gray-100">${tag}</span>`).join('') : ''}
+                                                        </div>
+                                                    </div>
+                                                    <button onclick="event.stopPropagation(); window.location.href='chat.html?uid=${user.id}&name=${encodeURIComponent(user.name)}'" class="px-3 py-1 bg-gradient-to-r from-gray-900 to-gray-700 text-white text-[10px] font-bold rounded-full shadow-gray-200 shadow-sm active:scale-95 transition-transform flex items-center gap-1">
+                                                        <i data-lucide="message-circle" class="w-2.5 h-2.5"></i>搭讪
+                                                    </button>
+                                                </div>
+
+                                                <!-- 简介 -->
+                                                <p class="text-xs text-gray-500 mt-2 line-clamp-2 bg-gray-50/50 rounded p-2">"${user.intro || '这个用户很神秘'}"</p>
+
+                                                <!-- 互动信息 -->
+                                                <div class="flex items-center justify-between mt-3 text-xs text-gray-400">
+                                                    <div class="flex items-center gap-3">
+                                                        <span class="flex items-center gap-1">
+                                                            <i data-lucide="calendar" class="w-3 h-3"></i>
+                                                            <span>最近活跃: 今天</span>
+                                                        </span>
+                                                        <span class="flex items-center gap-1">
+                                                            <i data-lucide="users" class="w-3 h-3"></i>
+                                                            <span>共同兴趣: 2个</span>
+                                                        </span>
+                                                    </div>
+                                                    <span class="flex items-center gap-1 ${isOnline ? 'text-green-500' : 'text-gray-400'}">
+                                                        <i data-lucide="circle" class="w-2.5 h-2.5 ${isOnline ? 'fill-green-500' : 'fill-gray-400'}"></i>
+                                                        <span>${isOnline ? '在线' : '离线'}</span>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                                }).join('')}
+                            </div>
+                            <div class="text-center text-xs text-gray-300 py-6">没有更多了</div>
+                        </div>
+                    `;
+                } else {
+                    contentHtml = `
+                        <div class="py-20 text-center bg-gray-50 empty-state">
+                            <i data-lucide="user-x" class="w-12 h-12 text-gray-300 mx-auto mb-3"></i>
+                            <p class="text-gray-400 text-sm">没有找到相关的搭子</p>
+                            ${query ? `<p class="text-gray-400 text-xs mt-1">尝试搜索其他关键词</p>` : ''}
+                        </div>
+                    `;
+                }
+            }
+
+            document.getElementById('app').innerHTML = `
+                ${headerHtml}
+                ${tabHtml}
+                ${resultStatsHtml}
+                ${contentHtml}
+                ${window.Common.renderBottomNav('discover')}
+            `;
+            window.Common.initIcons();
+
+            // 为搜索框添加事件监听
+            const searchInput = document.getElementById('search-input');
+            if (searchInput) {
+                searchInput.focus();
+                searchInput.setSelectionRange(searchInput.value.length, searchInput.value.length);
+            }
+        }
+
+        // 当搜索框获得焦点时显示搜索建议
+        function showSearchSuggestionsOnFocus() {
+            const searchInput = document.getElementById('search-input');
+            if (searchInput && (!searchInput.value || searchInput.value.trim() === '')) {
+                renderSearchSuggestions();
+            }
+        }
+
+        // 执行搜索（带历史记录保存）
+        function performSearch() {
+            const searchInput = document.getElementById('search-input');
+            const query = searchInput?.value?.trim() || '';
+            // 保存搜索历史
+            saveSearchHistory(query);
+            // 保持当前view参数
+            const urlParams = new URLSearchParams(window.location.search);
+            const currentView = urlParams.get('view') || 'moment';
+
+            window.location.href = `search.html?q=${encodeURIComponent(query)}&view=${currentView}`;
+        }
+
+        // 实时搜索（不跳转页面，只更新结果）
+        function handleSearchInput(query) {
+            const clearBtn = document.getElementById('clear-search-btn');
+            if (clearBtn) {
+                clearBtn.classList.toggle('hidden', !query || query.trim() === '');
+            }
+
+            if (!query || query.trim() === '') {
+                // 清空查询时显示热门搜索和历史
+                renderSearchSuggestions();
+                return;
+            }
+            query = query.trim();
+            // 只显示搜索建议，不执行搜索
+            renderSearchSuggestions();
+        }
+
+        function performRealTimeSearch(query) {
+            const clearBtn = document.getElementById('clear-search-btn');
+            if (clearBtn) {
+                clearBtn.classList.toggle('hidden', !query || query.trim() === '');
+            }
+
+            if (!query || query.trim() === '') {
+                // 清空查询时显示热门搜索和历史
+                renderSearchSuggestions();
+                return;
+            }
+            query = query.trim();
+            // 更新URL但不刷新页面
+            const urlParams = new URLSearchParams(window.location.search);
+            const currentView = urlParams.get('view') || 'moment';
+            const newUrl = `?q=${encodeURIComponent(query)}&view=${currentView}`;
+            window.history.replaceState(null, '', newUrl);
+            // 重新渲染搜索结果
+            render();
+        }
+
+        // 清空搜索框
+        function clearSearchInput() {
+            const searchInput = document.getElementById('search-input');
+            if (searchInput) {
+                searchInput.value = '';
+                searchInput.focus();
+                handleSearchInput('');
+            }
+        }
+
+        // 渲染搜索建议（历史+热门）
+        function renderSearchSuggestions() {
+            const suggestionsEl = document.getElementById('search-suggestions');
+            if (!suggestionsEl) return;
+
+            const history = getSearchHistory();
+            const hasHistory = history.length > 0;
+
+            let suggestionsHtml = '';
+
+            // 搜索历史部分
+            if (hasHistory) {
+                suggestionsHtml += `
+                    <div class="p-3 border-b border-gray-100">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm font-medium text-gray-800">搜索历史</span>
+                            <button onclick="clearSearchHistory(); renderSearchSuggestions();" class="text-xs text-gray-400 hover:text-gray-600">清空</button>
+                        </div>
+                        <div class="space-y-1">
+                            ${history.map(item => `
+                                <div class="flex items-center justify-between p-2 hover:bg-gray-50 rounded-lg cursor-pointer group suggestion-item" onclick="searchFromSuggestion('${item.replace(/'/g, "\\'")}')">
+                                    <div class="flex items-center gap-2 flex-1">
+                                        <i data-lucide="clock" class="w-3.5 h-3.5 text-gray-400 flex-shrink-0"></i>
+                                        <span class="text-sm text-gray-700 truncate">${item}</span>
+                                    </div>
+                                    <button onclick="event.stopPropagation(); removeFromSearchHistory('${item.replace(/'/g, "\\'")}'); renderSearchSuggestions();" class="p-1 text-gray-400 hover:text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <i data-lucide="x" class="w-3 h-3"></i>
+                                    </button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            // 热门搜索部分
+            suggestionsHtml += `
+                <div class="p-3">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-sm font-medium text-gray-800">热门搜索</span>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        ${HOT_SEARCHES.map(item => `
+                            <button onclick="searchFromSuggestion('${item}')" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm rounded-full transition-colors hot-search-tag">${item}</button>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+
+            suggestionsEl.innerHTML = suggestionsHtml;
+            suggestionsEl.classList.remove('hidden');
+            if (window.Common) window.Common.initIcons();
+        }
+
+        // 从搜索建议中搜索
+        function searchFromSuggestion(query) {
+            const searchInput = document.getElementById('search-input');
+            if (searchInput) {
+                searchInput.value = query;
+                performSearch();
+            }
+        }
+
+        // 点击外部关闭搜索建议
+        document.addEventListener('click', (e) => {
+            const suggestionsEl = document.getElementById('search-suggestions');
+            const searchContainer = document.querySelector('.relative'); // 搜索框容器
+            if (suggestionsEl && !suggestionsEl.contains(e.target) &&
+                searchContainer && !searchContainer.contains(e.target)) {
+                suggestionsEl.classList.add('hidden');
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', render);
+    </script>
+</body>
+
+</html>

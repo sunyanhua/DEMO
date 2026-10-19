@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>活动管理 - 搭子计划</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-white text-gray-900 pb-24">
+    <div id="app"></div>
+
+    <script src="data.js?v=2"></script>
+    <script src="common.js?v=2"></script>
+    <script>
+        function render() {
+            // 获取 URL 参数
+            const urlParams = new URLSearchParams(window.location.search);
+            const activityId = urlParams.get('id') || 'a5';
+            const activity = window.GlobalData.activities.find(a => a.id === activityId) || window.GlobalData.activities[0];
+
+            // 检查当前用户是否为活动发布者
+            const isOrganizer = activity.organizer.id === window.GlobalData.user.id;
+            if (!isOrganizer) {
+                document.getElementById('app').innerHTML = `
+                    <div class="p-8 text-center">
+                        <i data-lucide="shield-alert" class="w-16 h-16 text-gray-300 mx-auto mb-4"></i>
+                        <h2 class="text-xl font-bold text-gray-900 mb-2">无权访问</h2>
+                        <p class="text-gray-500 mb-6">只有活动发布者才能管理此活动。</p>
+                        <button onclick="window.history.back()" class="px-6 py-3 bg-brand-orange text-white rounded-full font-bold">返回</button>
+                    </div>
+                `;
+                window.Common.initIcons();
+                return;
+            }
+
+            // 获取该活动的订单数据
+            const activityOrders = window.GlobalData.orders.filter(order =>
+                order.activityId === activityId && order.status === 'paid'
+            );
+
+            // 计算统计
+            const totalParticipants = activityOrders.reduce((sum, order) => sum + order.participants, 0);
+            const totalRevenue = activityOrders.reduce((sum, order) => sum + order.amount, 0);
+            const orderCount = activityOrders.length;
+
+            // 状态显示文本
+            const getStatusText = () => {
+                if (activity.status === 'FULL') return '已报满';
+                if (activity.status === 'COMPLETED') return '已完成';
+                if (activity.status === 'CANCELLED') return '已取消';
+                // RECRUITING
+                if (activity.currentParticipants >= activity.maxParticipants) return '已报满';
+                return '报名中';
+            };
+
+            // 状态颜色
+            const getStatusColor = () => {
+                const status = getStatusText();
+                if (status === '报名中') return 'bg-green-100 text-green-700';
+                if (status === '已报满') return 'bg-orange-100 text-orange-700';
+                if (status === '已完成') return 'bg-blue-100 text-blue-700';
+                if (status === '已取消') return 'bg-gray-100 text-gray-700';
+                return 'bg-gray-100 text-gray-700';
+            };
+
+            document.getElementById('app').innerHTML = `
+                <!-- 顶部导航 -->
+                <div class="sticky top-0 z-40 bg-white/95 backdrop-blur-md px-4 py-3 shadow-sm flex items-center justify-between border-b border-gray-100">
+                    <button onclick="window.history.back()" class="p-1.5 rounded-full hover:bg-gray-100 transition">
+                        <i data-lucide="chevron-left" class="w-6 h-6 text-gray-800"></i>
+                    </button>
+                    <h1 class="text-lg font-bold text-gray-900">活动管理</h1>
+                    <div class="w-10"></div> <!-- 占位保持对称 -->
+                </div>
+
+                <div class="px-4 pt-4">
+                    <!-- 活动信息卡片 -->
+                    <div class="bg-gradient-to-r from-brand-orange/5 to-brand-yellow/5 rounded-xl p-4 mb-6 border border-brand-orange/20">
+                        <div class="flex items-center gap-3 mb-4">
+                            <img src="${activity.imageUrl}" class="w-20 h-20 object-cover rounded-lg bg-gray-100" />
+                            <div class="flex-1">
+                                <h2 class="font-bold text-gray-900 text-base line-clamp-2">${activity.title}</h2>
+                                <div class="flex items-center gap-2 mt-1">
+                                    <i data-lucide="calendar" class="w-4 h-4 text-gray-400"></i>
+                                    <span class="text-xs text-gray-500">${activity.date}</span>
+                                    <i data-lucide="map-pin" class="w-4 h-4 text-gray-400 ml-2"></i>
+                                    <span class="text-xs text-gray-500">${activity.location}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="text-sm text-gray-600">
+                                活动费用：<span class="font-bold text-brand-orange text-lg">${activity.price === 0 ? '免费' : '¥' + activity.price}</span>
+                            </div>
+                            <span class="px-3 py-1 rounded-full text-xs font-bold ${getStatusColor()}">${getStatusText()}</span>
+                        </div>
+                    </div>
+
+                    <!-- 数据统计 -->
+                    <div class="grid grid-cols-3 gap-3 mb-6">
+                        <div class="bg-white rounded-xl p-4 text-center shadow-sm border border-gray-100">
+                            <div class="text-2xl font-black text-gray-900 mb-1">${orderCount}</div>
+                            <div class="text-xs text-gray-400">报名订单</div>
+                        </div>
+                        <div class="bg-white rounded-xl p-4 text-center shadow-sm border border-gray-100">
+                            <div class="text-2xl font-black text-gray-900 mb-1">${totalParticipants}</div>
+                            <div class="text-xs text-gray-400">报名人数</div>
+                        </div>
+                        <div class="bg-white rounded-xl p-4 text-center shadow-sm border border-gray-100">
+                            <div class="text-2xl font-black text-brand-orange mb-1">¥${totalRevenue.toFixed(2)}</div>
+                            <div class="text-xs text-gray-400">总收入</div>
+                        </div>
+                    </div>
+
+                    <!-- 报名用户列表入口 -->
+                    <div onclick="window.location.href='activity-participants.html?id=${activity.id}'" class="flex items-center justify-between bg-gray-50 rounded-xl p-4 mb-6 cursor-pointer hover:bg-gray-100 transition-colors">
+                        <div class="flex items-center gap-3">
+                            <div class="p-2 bg-white rounded-lg shadow-sm">
+                                <i data-lucide="users" class="w-5 h-5 text-brand-blue"></i>
+                            </div>
+                            <div>
+                                <div class="font-bold text-gray-900 text-sm">查看报名搭子</div>
+                                <div class="text-xs text-gray-500">查看所有报名用户的详细信息</div>
+                            </div>
+                        </div>
+                        <i data-lucide="chevron-right" class="w-5 h-5 text-gray-300"></i>
+                    </div>
+
+                    <!-- 状态管理 -->
+                    <div class="mb-8">
+                        <h3 class="font-bold text-gray-900 text-base mb-4">活动状态管理</h3>
+
+                        ${getStatusText() === '报名中' || getStatusText() === '已报满' ? `
+                        <div class="space-y-3">
+                            <div class="bg-gradient-to-r from-green-50 to-green-100/50 border border-green-200 rounded-xl p-4">
+                                <div class="flex items-center justify-between mb-3">
+                                    <div class="flex items-center gap-3">
+                                        <div class="p-2 bg-white rounded-lg shadow-sm">
+                                            <i data-lucide="check-circle" class="w-5 h-5 text-green-600"></i>
+                                        </div>
+                                        <div>
+                                            <div class="font-bold text-gray-900 text-sm">完成活动</div>
+                                            <div class="text-xs text-gray-600">活动正常结束，收入将进入您的钱包</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button onclick="completeActivity('${activity.id}')" class="w-full py-3 bg-gradient-to-r from-green-500 to-green-600 text-white font-bold rounded-full shadow-sm">
+                                    完成活动
+                                </button>
+                            </div>
+
+                            <div class="bg-gradient-to-r from-red-50 to-red-100/50 border border-red-200 rounded-xl p-4">
+                                <div class="flex items-center justify-between mb-3">
+                                    <div class="flex items-center gap-3">
+                                        <div class="p-2 bg-white rounded-lg shadow-sm">
+                                            <i data-lucide="x-circle" class="w-5 h-5 text-red-600"></i>
+                                        </div>
+                                        <div>
+                                            <div class="font-bold text-gray-900 text-sm">取消活动</div>
+                                            <div class="text-xs text-gray-600">取消活动并退款给所有报名用户</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button onclick="cancelActivity('${activity.id}')" class="w-full py-3 bg-gradient-to-r from-red-500 to-red-600 text-white font-bold rounded-full shadow-sm">
+                                    取消活动
+                                </button>
+                            </div>
+                        </div>
+                        ` : ''}
+
+                        ${getStatusText() === '已完成' ? `
+                        <div class="bg-gradient-to-r from-blue-50 to-blue-100/50 border border-blue-200 rounded-xl p-4 text-center">
+                            <i data-lucide="check-circle" class="w-12 h-12 text-green-500 mx-auto mb-3"></i>
+                            <h4 class="font-bold text-gray-900 text-base mb-2">活动已完成</h4>
+                            <p class="text-sm text-gray-600">活动收入已转入您的钱包</p>
+                            <p class="text-xs text-gray-500 mt-2">总计收入：<span class="font-bold text-brand-orange">¥${totalRevenue.toFixed(2)}</span></p>
+                        </div>
+                        ` : ''}
+
+                        ${getStatusText() === '已取消' ? `
+                        <div class="bg-gradient-to-r from-gray-50 to-gray-100/50 border border-gray-200 rounded-xl p-4 text-center">
+                            <i data-lucide="x-circle" class="w-12 h-12 text-gray-400 mx-auto mb-3"></i>
+                            <h4 class="font-bold text-gray-900 text-base mb-2">活动已取消</h4>
+                            <p class="text-sm text-gray-600">已退款给所有报名用户</p>
+                        </div>
+                        ` : ''}
+                    </div>
+
+                    <!-- 订单列表 -->
+                    <div>
+                        <h3 class="font-bold text-gray-900 text-base mb-3">报名订单</h3>
+                        ${activityOrders.length > 0 ? activityOrders.map(order => `
+                            <div class="flex items-center justify-between bg-white rounded-xl shadow-sm border border-gray-100 p-3 mb-3">
+                                <div>
+                                    <div class="font-bold text-gray-900 text-sm">${order.activityTitle}</div>
+                                    <div class="text-xs text-gray-500 flex items-center gap-2 mt-1">
+                                        <span>${order.time}</span>
+                                        <span class="px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded-md text-[10px]">${order.participants}人</span>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="font-bold text-gray-900 text-sm">¥${order.amount.toFixed(2)}</div>
+                                    <span class="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-md">已支付</span>
+                                </div>
+                            </div>
+                        `).join('') : `
+                            <div class="text-center py-6 bg-gray-50 rounded-xl">
+                                <i data-lucide="receipt" class="w-8 h-8 text-gray-300 mx-auto mb-2"></i>
+                                <p class="text-gray-400 text-sm">暂无报名订单</p>
+                            </div>
+                        `}
+                    </div>
+                </div>
+            `;
+            window.Common.initIcons();
+        }
+
+        // 完成活动
+        function completeActivity(activityId) {
+            if (!confirm('确认完成活动？活动收入将转入您的钱包，活动状态将变更为已完成。')) {
+                return;
+            }
+
+            const activity = window.GlobalData.activities.find(a => a.id === activityId);
+            if (!activity) return;
+
+            // 获取该活动的订单
+            const activityOrders = window.GlobalData.orders.filter(order =>
+                order.activityId === activityId && order.status === 'paid'
+            );
+            const totalRevenue = activityOrders.reduce((sum, order) => sum + order.amount, 0);
+
+            // 更新活动状态
+            activity.status = 'COMPLETED';
+
+            // 将收入转入发布者钱包
+            window.GlobalData.user.wallet += totalRevenue;
+
+            // 添加钱包记录
+            const walletRecordId = 'wr' + (window.GlobalData.walletRecords.length + 1);
+            window.GlobalData.walletRecords.unshift({
+                id: walletRecordId,
+                type: 'income',
+                description: `活动"${activity.title}"完成收入`,
+                amount: totalRevenue,
+                time: '刚刚',
+                status: 'completed'
+            });
+
+            // 显示成功消息
+            window.Common.showToast(`活动已完成！¥${totalRevenue.toFixed(2)}已转入您的钱包`);
+
+            // 重新渲染页面
+            setTimeout(() => render(), 1500);
+        }
+
+        // 取消活动
+        function cancelActivity(activityId) {
+            if (!confirm('确认取消活动？将退款给所有报名用户，活动状态将变更为已取消。')) {
+                return;
+            }
+
+            const activity = window.GlobalData.activities.find(a => a.id === activityId);
+            if (!activity) return;
+
+            // 获取该活动的订单
+            const activityOrders = window.GlobalData.orders.filter(order =>
+                order.activityId === activityId && order.status === 'paid'
+            );
+
+            // 更新订单状态为退款
+            activityOrders.forEach(order => {
+                order.status = 'refunded';
+            });
+
+            // 更新活动状态
+            activity.status = 'CANCELLED';
+
+            // 显示成功消息
+            window.Common.showToast(`活动已取消！已退款给${activityOrders.length}位报名用户`);
+
+            // 重新渲染页面
+            setTimeout(() => render(), 1500);
+        }
+
+        document.addEventListener('DOMContentLoaded', render);
+    </script>
+</body>
+</html>

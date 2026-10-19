@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>发布</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-white text-gray-900">
+
+    <div id="app"></div>
+
+    <script src="data.js?v=2"></script>
+    <script src="common.js?v=2"></script>
+    <script>
+        function render() {
+            const user = window.GlobalData.user;
+            const urlParams = new URLSearchParams(window.location.search);
+            // type: 'activity' | 'moment'
+            const type = urlParams.get('type') || 'moment';
+
+            // 检查用户认证状态
+            const isAuthorized = user.cooperationVerified === true;
+
+            // Tab 切换逻辑
+            const tabHtml = `
+                <div class="flex items-center justify-center gap-6 text-base mb-2">
+                    <div onclick="window.location.href='publish.html?type=activity'" class="py-2 relative cursor-pointer ${type === 'activity' ? 'font-black text-gray-900' : 'text-gray-500 font-medium'}">
+                        发活动
+                        ${type === 'activity' ? '<div class="absolute bottom-1 left-1/2 -translate-x-1/2 w-4 h-1 bg-brand-orange rounded-full"></div>' : ''}
+                    </div>
+                    <div onclick="window.location.href='publish.html?type=moment'" class="py-2 relative cursor-pointer ${type === 'moment' ? 'font-black text-gray-900' : 'text-gray-500 font-medium'}">
+                        发动态
+                        ${type === 'moment' ? '<div class="absolute bottom-1 left-1/2 -translate-x-1/2 w-4 h-1 bg-brand-orange rounded-full"></div>' : ''}
+                    </div>
+                </div>
+            `;
+
+            let formContent = '';
+
+            if (type === 'activity') {
+                if (!isAuthorized) {
+                    // 未认证用户显示认证提示
+                    formContent = `
+                        <div class="flex flex-col items-center justify-center py-12 px-4 text-center fade-in">
+                            <div class="w-20 h-20 bg-brand-orange/10 rounded-full flex items-center justify-center mb-6">
+                                <i data-lucide="shield-alert" class="w-10 h-10 text-brand-orange"></i>
+                            </div>
+                            <h2 class="text-xl font-black text-gray-900 mb-3">发布活动需要认证</h2>
+                            <p class="text-gray-500 text-sm mb-8 max-w-sm">
+                                为了保障活动质量和用户权益，发布活动者必须为平台的合作商户或主理人。
+                                请先完成认证，提交相关资质材料。
+                            </p>
+
+                            <div class="w-full max-w-sm space-y-3">
+                                <button onclick="goToVerification()" class="w-full py-3.5 bg-gradient-to-r from-brand-orange to-brand-yellow text-white font-bold rounded-xl shadow-lg shadow-brand-orange/30 active:scale-95 transition-transform">
+                                    立即认证
+                                </button>
+                                <button onclick="window.location.href='index.html'" class="w-full py-3 text-gray-500 font-medium text-sm">
+                                    以后再说
+                                </button>
+                            </div>
+
+                            <div class="mt-10 pt-6 border-t border-gray-100 w-full max-w-sm">
+                                <h3 class="text-sm font-bold text-gray-700 mb-3 text-left">认证条件</h3>
+                                <div class="space-y-3 text-left">
+                                    <div class="flex items-start gap-2">
+                                        <i data-lucide="check-circle" class="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0"></i>
+                                        <div class="text-xs text-gray-600">合作商户：需提供营业执照、实体门店照片等资质</div>
+                                    </div>
+                                    <div class="flex items-start gap-2">
+                                        <i data-lucide="check-circle" class="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0"></i>
+                                        <div class="text-xs text-gray-600">主理人：需提供过往活动组织经验、个人简介等</div>
+                                    </div>
+                                    <div class="flex items-start gap-2">
+                                        <i data-lucide="check-circle" class="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0"></i>
+                                        <div class="text-xs text-gray-600">认证审核通常需要1-3个工作日</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    // 已认证用户显示正常表单
+                    formContent = `
+                        <div class="space-y-4 fade-in">
+                            <!-- Image Upload -->
+                            <div class="w-full aspect-video bg-gray-50 rounded-xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-gray-400 mb-6 cursor-pointer hover:bg-gray-100 transition">
+                                <i data-lucide="camera" class="w-8 h-8 mb-2"></i>
+                                <span class="text-xs">添加活动封面图</span>
+                            </div>
+
+                            <!-- Title & Desc -->
+                            <div class="mb-6 space-y-4">
+                                <input type="text" placeholder="填写活动标题（例如：周末三里屯探店）" class="w-full text-lg font-bold border-b border-gray-100 pb-2 outline-none placeholder-gray-300" />
+                                <textarea placeholder="描述活动内容、流程、注意事项..." class="w-full h-32 text-sm text-gray-700 outline-none resize-none placeholder-gray-300" ></textarea>
+                            </div>
+
+                            <!-- Form Fields -->
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between py-3 border-b border-gray-50">
+                                    <div class="flex items-center gap-2 text-gray-700">
+                                        <i data-lucide="calendar" class="w-5 h-5 text-gray-400"></i>
+                                        <span class="text-sm font-medium">活动时间</span>
+                                    </div>
+                                    <div class="flex items-center gap-1 text-gray-400 text-sm">
+                                        <span>请选择</span>
+                                        <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center justify-between py-3 border-b border-gray-50">
+                                    <div class="flex items-center gap-2 text-gray-700">
+                                        <i data-lucide="map-pin" class="w-5 h-5 text-gray-400"></i>
+                                        <span class="text-sm font-medium">活动地点</span>
+                                    </div>
+                                    <div class="flex items-center gap-1 text-gray-400 text-sm">
+                                        <span>请选择</span>
+                                        <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center justify-between py-3 border-b border-gray-50">
+                                    <div class="flex items-center gap-2 text-gray-700">
+                                        <i data-lucide="users" class="w-5 h-5 text-gray-400"></i>
+                                        <span class="text-sm font-medium">人数限制</span>
+                                    </div>
+                                     <div class="flex items-center gap-3">
+                                        <button class="w-6 h-6 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center">-</button>
+                                        <span class="text-sm font-bold">4</span>
+                                        <button class="w-6 h-6 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center">+</button>
+                                     </div>
+                                </div>
+
+                                <div class="flex items-center justify-between py-3 border-b border-gray-50">
+                                    <div class="flex items-center gap-2 text-gray-700">
+                                        <i data-lucide="banknote" class="w-5 h-5 text-gray-400"></i>
+                                        <span class="text-sm font-medium">费用类型</span>
+                                    </div>
+                                    <div class="flex bg-gray-100 rounded-lg p-0.5">
+                                        <button class="px-3 py-1 text-xs font-bold rounded-md bg-white shadow-sm text-gray-900">免费</button>
+                                        <button class="px-3 py-1 text-xs font-medium text-gray-500">AA制</button>
+                                        <button class="px-3 py-1 text-xs font-medium text-gray-500">定额</button>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center justify-between py-3 border-b border-gray-50">
+                                    <div class="flex items-center gap-2 text-gray-700">
+                                        <i data-lucide="tag" class="w-5 h-5 text-gray-400"></i>
+                                        <span class="text-sm font-medium">活动分类</span>
+                                    </div>
+                                     <div class="flex items-center gap-1 text-gray-400 text-sm">
+                                        <span>运动</span>
+                                        <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            } else {
+                // Moment Form
+                formContent = `
+                    <div class="fade-in">
+                        <textarea placeholder="分享此刻的想法..." class="w-full h-32 text-base text-gray-800 outline-none resize-none placeholder-gray-400 mb-4"></textarea>
+                        
+                        <!-- Image Grid -->
+                        <div class="grid grid-cols-3 gap-2 mb-6">
+                             <div class="aspect-square bg-gray-50 rounded-lg border border-dashed border-gray-200 flex flex-col items-center justify-center text-gray-400 cursor-pointer">
+                                <i data-lucide="plus" class="w-6 h-6"></i>
+                            </div>
+                        </div>
+
+                        <div class="space-y-2">
+                             <div class="flex items-center justify-between py-3 border-t border-gray-50 cursor-pointer">
+                                <div class="flex items-center gap-2 text-gray-700">
+                                    <i data-lucide="map-pin" class="w-5 h-5 text-gray-400"></i>
+                                    <span class="text-sm font-medium">添加地点</span>
+                                </div>
+                                <i data-lucide="chevron-right" class="w-4 h-4 text-gray-300"></i>
+                            </div>
+                            <div class="flex items-center justify-between py-3 border-t border-gray-50 cursor-pointer">
+                                <div class="flex items-center gap-2 text-gray-700">
+                                    <i data-lucide="hash" class="w-5 h-5 text-gray-400"></i>
+                                    <span class="text-sm font-medium">参与话题</span>
+                                </div>
+                                <i data-lucide="chevron-right" class="w-4 h-4 text-gray-300"></i>
+                            </div>
+                            <div class="flex items-center justify-between py-3 border-t border-gray-50 cursor-pointer">
+                                <div class="flex items-center gap-2 text-gray-700">
+                                    <i data-lucide="lock" class="w-5 h-5 text-gray-400"></i>
+                                    <span class="text-sm font-medium">谁可以看</span>
+                                </div>
+                                <span class="text-xs text-gray-400 flex items-center gap-1">公开 <i data-lucide="chevron-right" class="w-4 h-4"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // 根据认证状态生成发布按钮
+            let publishButtonHtml = '';
+            if (type === 'activity' && !isAuthorized) {
+                // 未认证用户不显示右上角按钮
+                publishButtonHtml = `<div class="w-16"></div>`; // 占位保持布局
+            } else {
+                // 已认证用户或发布动态显示"发布"按钮
+                publishButtonHtml = `<button class="text-white text-sm font-bold bg-brand-orange px-4 py-1.5 rounded-full shadow-brand-orange/30 shadow-sm w-16" onclick="window.Common.showToast('发布成功！')">发布</button>`;
+            }
+
+            document.getElementById('app').innerHTML = `
+                <!-- Header -->
+                <div class="sticky top-0 bg-white z-50 px-4 py-2 border-b border-gray-100 flex items-center justify-between h-[50px]">
+                    <button onclick="window.location.href='index.html'" class="text-gray-600 font-medium text-sm w-12 text-left">取消</button>
+                    ${tabHtml}
+                    ${publishButtonHtml}
+                </div>
+
+                <div class="p-5 pb-20">
+                    ${formContent}
+                </div>
+            `;
+            window.Common.initIcons();
+        }
+
+        document.addEventListener('DOMContentLoaded', render);
+
+        // 跳转到认证页面
+        function goToVerification() {
+            window.location.href = 'verification.html';
+        }
+    </script>
+</body>
+</html>

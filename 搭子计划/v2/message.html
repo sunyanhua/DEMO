@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>消息 - 搭子计划</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gray-50 text-gray-900 pb-20">
+
+    <div id="app" class="min-h-screen"></div>
+
+    <script src="data.js?v=2"></script>
+    <script src="common.js?v=2"></script>
+    <script>
+        function render() {
+            const messages = window.GlobalData.messages || [];
+            const notifications = window.GlobalData.notifications || [];
+
+            // 简单的 Tab 切换状态
+            const urlParams = new URLSearchParams(window.location.search);
+            const activeTab = urlParams.get('tab') || 'chat'; // chat or notification
+
+            // 按时间戳倒序排序
+            const sortedMessages = [...messages].sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+            const chatListHtml = sortedMessages.length > 0 ? sortedMessages.map(msg => `
+                <div onclick="window.location.href='chat.html?uid=${msg.userId}&name=${encodeURIComponent(msg.name)}'" class="flex items-center gap-3 p-4 bg-white active:bg-gray-50 border-b border-gray-50 last:border-none cursor-pointer">
+                    <div class="relative">
+                        <img src="${msg.avatarUrl}" class="w-12 h-12 rounded-full border border-gray-100 object-cover" />
+                        ${msg.unread > 0 ? `<div class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full border border-white">${msg.unread}</div>` : ''}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center justify-between mb-1">
+                            <h3 class="font-bold text-gray-900 text-sm truncate">${msg.name}</h3>
+                            <span class="text-xs text-gray-400">${msg.time}</span>
+                        </div>
+                        <p class="text-sm text-gray-500 truncate">${msg.lastMessage}</p>
+                    </div>
+                </div>
+            `).join('') : '<div class="p-8 text-center text-gray-400 text-sm">暂无消息</div>';
+
+            const notifListHtml = notifications.length > 0 ? notifications.map(notif => {
+                // 决定图标和颜色
+                let icon = 'bell';
+                let bgColor = 'blue-50';
+                let textColor = 'blue-500';
+                if (notif.type === 'success') {
+                    icon = 'check-circle';
+                    bgColor = 'green-50';
+                    textColor = 'green-500';
+                } else if (notif.type === 'like') {
+                    icon = 'heart';
+                    bgColor = 'red-50';
+                    textColor = 'red-500';
+                } else if (notif.type === 'follow') {
+                    icon = 'user-plus';
+                    bgColor = 'blue-50';
+                    textColor = 'blue-500';
+                } else if (notif.type === 'comment') {
+                    icon = 'message-circle';
+                    bgColor = 'green-50';
+                    textColor = 'green-500';
+                } else if (notif.type === 'comment_like') {
+                    icon = 'heart';
+                    bgColor = 'red-50';
+                    textColor = 'red-500';
+                } else if (notif.type === 'comment_reply') {
+                    icon = 'reply';
+                    bgColor = 'purple-50';
+                    textColor = 'purple-500';
+                }
+                // 点击事件
+                let onClick = '';
+                if (notif.type === 'follow' && notif.userId) {
+                    onClick = `window.location.href='profile.html?id=${notif.userId}'`;
+                } else if (notif.type === 'like' && notif.momentId) {
+                    onClick = `window.location.href='moment.html?id=${notif.momentId}'`;
+                } else if (notif.type === 'comment' && notif.momentId) {
+                    onClick = `window.location.href='moment.html?id=${notif.momentId}'`;
+                } else if (notif.type === 'comment_like' && notif.momentId) {
+                    onClick = `window.location.href='moment.html?id=${notif.momentId}'`;
+                } else if (notif.type === 'comment_reply' && notif.momentId) {
+                    onClick = `window.location.href='moment.html?id=${notif.momentId}'`;
+                }
+                const cursorClass = onClick ? 'cursor-pointer' : '';
+                return `
+                <div class="p-4 bg-white mb-2 rounded-lg shadow-sm mx-4 mt-2 ${cursorClass}" ${onClick ? `onclick="${onClick}"` : ''}>
+                    <div class="flex items-start gap-3">
+                        <div class="p-2 rounded-full bg-${bgColor} text-${textColor} mt-0.5">
+                            <i data-lucide="${icon}" class="w-4 h-4"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-bold text-sm text-gray-900 mb-1 flex justify-between">
+                                <span>${notif.title}</span>
+                                <span class="text-[10px] text-gray-400 font-normal">${notif.time}</span>
+                            </h3>
+                            <p class="text-xs text-gray-500 leading-relaxed">${notif.content}</p>
+                        </div>
+                    </div>
+                </div>
+                `;
+            }).join('') : '<div class="p-8 text-center text-gray-400 text-sm">暂无通知</div>';
+
+            document.getElementById('app').innerHTML = `
+                <!-- 顶部 -->
+                <div class="fixed top-0 left-0 right-0 bg-white z-40 px-4 h-[50px] flex items-center justify-center shadow-sm">
+                    <div class="flex bg-gray-100 p-1 rounded-lg">
+                        <button onclick="window.location.href='message.html?tab=chat'" class="px-6 py-1 text-sm font-bold rounded-md transition-all ${activeTab === 'chat' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'}">私信</button>
+                        <button onclick="window.location.href='message.html?tab=notification'" class="px-6 py-1 text-sm font-bold rounded-md transition-all ${activeTab === 'notification' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'}">通知</button>
+                    </div>
+                </div>
+
+                <!-- 列表 -->
+                <div class="pt-[50px]">
+                    ${activeTab === 'chat' ? `<div class="bg-white">${chatListHtml}</div>` : `<div class="pb-4">${notifListHtml}</div>`}
+                </div>
+
+                ${window.Common.renderBottomNav('message')}
+            `;
+            window.Common.initIcons();
+        }
+
+        document.addEventListener('DOMContentLoaded', render);
+    </script>
+</body>
+</html>
