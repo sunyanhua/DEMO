@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>商户详情 - 搭子计划</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gray-50 text-gray-900">
+
+    <div id="app"></div>
+
+    <script src="data.js?v=2"></script>
+    <script src="common.js?v=2"></script>
+    <script>
+        const MerchantDetail = {
+            claimed: {}, // couponId -> 已领取标记（会话内）
+            activeCouponId: null, // 正在查看使用的优惠（使用面板）
+
+            get merchantId() {
+                return new URLSearchParams(window.location.search).get('id');
+            },
+            get tab() {
+                return new URLSearchParams(window.location.search).get('tab');
+            },
+            get merchant() {
+                const registry = (window.GlobalData && window.GlobalData.partnerMerchants) || {};
+                return registry[this.merchantId] || null;
+            },
+
+            header() {
+                return `
+                <div class="fixed top-0 left-0 right-0 h-[50px] bg-white z-50 flex items-center px-4 shadow-sm border-b border-gray-100">
+                    <button onclick="window.history.back()" class="p-1.5 rounded-full hover:bg-gray-100 transition">
+                        <i data-lucide="chevron-left" class="w-6 h-6 text-gray-800"></i>
+                    </button>
+                    <div class="flex-1 text-center font-bold text-gray-900">商户详情</div>
+                    <div class="w-6"></div> <!-- 占位保持对称 -->
+                </div>
+                `;
+            },
+
+            gallerySection() {
+                const m = this.merchant;
+                const imagesHtml = m.images.map(img => `
+                    <img src="${img}" class="w-full h-56 flex-shrink-0 snap-center object-cover" onerror="this.remove()" />
+                `).join('');
+                const dotsHtml = m.images.map((_, i) => `
+                    <span class="w-1.5 h-1.5 rounded-full ${i === 0 ? 'bg-white w-3' : 'bg-white/50'}"></span>
+                `).join('');
+                return `
+                <div class="relative">
+                    <div class="absolute inset-0 bg-gradient-to-br from-brand-orange/20 via-brand-yellow/10 to-brand-orange/20 flex items-center justify-center text-4xl">🏪</div>
+                    <div class="relative flex overflow-x-auto snap-x snap-mandatory no-scrollbar" style="scrollbar-width: none; -ms-overflow-style: none;">
+                        ${imagesHtml}
+                    </div>
+                    <span class="absolute top-2 left-2 bg-brand-orange text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow">平台合作</span>
+                    <div class="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 p-1 bg-black/20 rounded-full backdrop-blur-[2px]">${dotsHtml}</div>
+                </div>
+                `;
+            },
+
+            infoSection() {
+                const m = this.merchant;
+                return `
+                <div class="px-4 pt-4">
+                    <div class="bg-white rounded-xl border border-gray-100 p-4">
+                        <h2 class="text-lg font-black text-gray-900">${m.name}</h2>
+                        <div class="flex items-center gap-2 mt-2 text-[11px] text-gray-500">
+                            <span class="px-2 py-0.5 bg-gray-50 rounded-md">预算 ${m.budget}</span>
+                            <span class="px-2 py-0.5 bg-gray-50 rounded-md">${m.district}</span>
+                        </div>
+                        <p class="mt-3 text-xs text-gray-600 leading-relaxed">${m.description}</p>
+                        <p class="mt-3 text-[11px] text-amber-600 bg-amber-50 rounded-lg px-2.5 py-1.5 flex items-start gap-1">
+                            <i data-lucide="lightbulb" class="w-3.5 h-3.5 flex-shrink-0 mt-0.5"></i><span>${m.notes}</span>
+                        </p>
+                    </div>
+                </div>
+                `;
+            },
+
+            locationSection() {
+                const m = this.merchant;
+                const navUrl = 'https://uri.amap.com/marker?position=' + m.location.lng + ',' + m.location.lat + '&name=' + encodeURIComponent(m.name);
+                return `
+                <div class="px-4 pt-4">
+                    <div class="bg-white rounded-xl border border-gray-100 p-4">
+                        <p class="text-sm font-bold text-gray-900 mb-2">详细位置</p>
+                        <p class="text-xs text-gray-600 flex items-start gap-1.5 leading-relaxed">
+                            <i data-lucide="map-pin" class="w-4 h-4 text-brand-orange flex-shrink-0 mt-0.5"></i>
+                            <span>${m.address}</span>
+                        </p>
+                        <a href="${navUrl}" target="_blank" class="mt-3 w-full py-3 bg-brand-orange text-white rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 shadow-lg shadow-brand-orange/20 active:scale-95 transition-transform">
+                            <i data-lucide="navigation" class="w-4 h-4"></i><span>到这儿去</span>
+                        </a>
+                    </div>
+                </div>
+                `;
+            },
+
+            couponsSection() {
+                const m = this.merchant;
+                const cardsHtml = m.coupons.map(c => {
+                    const claimed = this.claimed[c.id];
+                    const btnHtml = claimed
+                        ? `<button onclick="MerchantDetail.openUsage('${c.id}')" class="px-3 py-2 rounded-xl text-xs font-bold flex-shrink-0 bg-brand-orange/10 text-brand-orange border border-brand-orange/30">已领取，去使用</button>`
+                        : `<button onclick="MerchantDetail.claim('${c.id}')" class="px-4 py-2 rounded-xl text-xs font-bold flex-shrink-0 bg-brand-orange text-white">领取</button>`;
+                    return `
+                    <div class="flex items-center justify-between gap-3 bg-white rounded-xl border border-gray-100 p-3.5">
+                        <div class="min-w-0">
+                            <p class="text-sm font-bold text-gray-900">${c.title}</p>
+                            <p class="text-[11px] text-gray-400 mt-0.5">${c.description}</p>
+                            <span class="inline-block mt-1.5 px-2 py-0.5 bg-brand-orange/10 text-brand-orange text-[10px] font-bold rounded">${c.value}</span>
+                        </div>
+                        ${btnHtml}
+                    </div>
+                    `;
+                }).join('');
+                return `
+                <div class="px-4 pt-4 pb-10" id="coupons-section">
+                    <p class="text-sm font-black text-gray-900 mb-2.5 flex items-center gap-1.5"><i data-lucide="ticket" class="w-4 h-4 text-brand-orange"></i>店内优惠</p>
+                    <div class="space-y-2.5">${cardsHtml}</div>
+                    <p class="mt-3 text-center text-[10px] text-gray-300">领取后到店出示即可使用</p>
+                </div>
+                `;
+            },
+
+            // 优惠使用面板：茶百道券码模式（一键复制），北平机器/华熙核销二维码模式
+            usageModal() {
+                const m = this.merchant;
+                const coupon = m.coupons.find(c => c.id === this.activeCouponId);
+                if (!coupon) return '';
+                const isCode = m.couponMode === 'code';
+                const brand = m.name.split('（')[0];
+                const contentHtml = isCode
+                    ? `
+                    <p class="text-[11px] text-gray-400 mb-2.5">请复制券码后前往${brand}小程序下单时使用</p>
+                    <div class="bg-gray-50 rounded-xl p-4 text-center">
+                        <p class="font-mono text-xl font-black tracking-widest text-gray-900">${coupon.code}</p>
+                    </div>
+                    <button onclick="MerchantDetail.copyCode('${coupon.id}')" class="mt-3 w-full py-2.5 bg-brand-orange text-white rounded-xl font-bold text-sm shadow-lg shadow-brand-orange/20 active:scale-95 transition-transform flex items-center justify-center gap-1.5">
+                        <i data-lucide="copy" class="w-4 h-4"></i><span>一键复制</span>
+                    </button>
+                    `
+                    : `
+                    <p class="text-[11px] text-gray-400 mb-2.5">请在点单时将核销码出示给店员核销使用</p>
+                    <div class="flex justify-center">
+                        <canvas id="qr-canvas" data-code="${coupon.code}" width="180" height="180"></canvas>
+                    </div>
+                    `;
+                return `
+                <div class="fixed inset-0 bg-black/40 z-[200] flex items-center justify-center px-6" onclick="MerchantDetail.closeUsage()">
+                    <div class="bg-white rounded-2xl p-5 w-80" onclick="event.stopPropagation()">
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="text-base font-black text-gray-900 line-clamp-1">${coupon.title}</h3>
+                            <button onclick="MerchantDetail.closeUsage()" class="p-1 rounded-full hover:bg-gray-100 transition">
+                                <i data-lucide="x" class="w-4 h-4 text-gray-400"></i>
+                            </button>
+                        </div>
+                        ${contentHtml}
+                        <button onclick="MerchantDetail.closeUsage()" class="mt-4 w-full py-2.5 bg-gray-100 text-gray-700 rounded-xl font-bold text-sm">关闭</button>
+                    </div>
+                </div>
+                `;
+            },
+
+            errorView() {
+                return `
+                <div class="pt-[50px] min-h-screen flex flex-col items-center justify-center px-6 fade-in">
+                    <div class="text-center -mt-10">
+                        <div class="text-5xl">🏪</div>
+                        <h2 class="mt-4 text-xl font-black text-gray-900">商户信息加载失败</h2>
+                        <p class="mt-2 text-sm text-gray-500">请返回路线页重试</p>
+                        <button onclick="window.history.back()" class="mt-6 px-8 py-2.5 bg-brand-orange text-white rounded-xl font-bold">返回</button>
+                    </div>
+                </div>
+                `;
+            },
+
+            claim(couponId) {
+                if (this.claimed[couponId]) return;
+                this.claimed[couponId] = true;
+                if (window.Common) window.Common.showToast('优惠券领取成功，到店出示即可使用');
+                this.render();
+            },
+
+            openUsage(couponId) {
+                this.activeCouponId = couponId;
+                this.render();
+            },
+
+            closeUsage() {
+                this.activeCouponId = null;
+                this.render();
+            },
+
+            copyCode(couponId) {
+                const coupon = this.merchant.coupons.find(c => c.id === couponId);
+                const text = coupon ? coupon.code : '';
+                try {
+                    if (navigator && navigator.clipboard && navigator.clipboard.writeText) {
+                        navigator.clipboard.writeText(text).catch(() => {});
+                    } else {
+                        const ta = document.createElement('textarea');
+                        ta.value = text;
+                        document.body.appendChild(ta);
+                        ta.select();
+                        if (document.execCommand) document.execCommand('copy');
+                        document.body.removeChild(ta);
+                    }
+                } catch (e) {
+                    // 演示环境复制失败时忽略，仍提示已复制
+                }
+                if (window.Common) window.Common.showToast('券码已复制，快去使用吧');
+            },
+
+            render() {
+                const merchant = this.merchant;
+                const view = merchant
+                    ? this.gallerySection() + this.infoSection() + this.locationSection() + this.couponsSection()
+                    : this.errorView();
+                document.getElementById('app').innerHTML = `
+                    ${this.header()}
+                    ${view}
+                    ${merchant && this.activeCouponId ? this.usageModal() : ''}
+                `;
+                if (window.Common) window.Common.initIcons();
+                // 核销二维码绘制（真实浏览器中 canvas 可用时）
+                if (merchant && this.activeCouponId) {
+                    const canvas = document.getElementById('qr-canvas');
+                    if (canvas && typeof canvas.getContext === 'function' && window.Common && window.Common.drawQr) {
+                        window.Common.drawQr(canvas, canvas.getAttribute('data-code') || '');
+                    }
+                }
+                // tab=coupons：进入后滚动到优惠区
+                if (merchant && this.tab === 'coupons') {
+                    const el = document.getElementById('coupons-section');
+                    if (el && typeof el.scrollIntoView === 'function') el.scrollIntoView();
+                }
+            }
+        };
+
+        window.MerchantDetail = MerchantDetail;
+        document.addEventListener('DOMContentLoaded', () => MerchantDetail.render());
+    </script>
+</body>
+</html>

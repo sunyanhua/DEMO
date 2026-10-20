@@ -128,12 +128,12 @@
 | `detail.html` | 活动详情 + 报名 | 详情页 |
 | `profile.html` | 用户个人主页 | 详情页 |
 | `edit-profile.html` | 编辑个人资料 | 表单页 |
-| `chat.html` | 私信对话 | 功能页 |
+| `chat.html` | 私信对话（支持带同款路线进入：路线卡片 + 畅聊 + 带路线发送） | 功能页 |
 | `message.html` | 消息列表 | 主页 |
 | `search.html` | 搜索 | 功能页 |
 | `user-list.html` | 用户列表 | 列表页 |
 | `recommend-users.html` | 推荐搭子 | 列表页 |
-| `me.html` | 个人中心 | 主页 |
+| `me.html` | 个人中心（周末人格展示 + 活动/收藏/溜达 TAB + 更多下拉） | 主页 |
 | `moment.html` | 动态广场 | 列表页 |
 | `history.html` | 浏览记录 | 列表页 |
 | `favorites.html` | 我的收藏 | 列表页 |
@@ -149,14 +149,17 @@
 | `ground-promo.html` | 🎁 地推活动专题（好运双响炮：注册+订阅，核销领奖） | 专题页 |
 | `music-festival.html` | 🎵 大运河音乐节专题（上大屏 / 我的AI合照 / 找搭子） | 专题页 |
 | `huaxi.html` | 🎡 华熙"搭子就位·奇遇华熙"专题（打个卡 / 找搭子 / 大转盘抽奖 / 奖品核销） | 专题页 |
-| `weekend-test.html` | 🎯 周末人格测试（8 种周末人格、8 题计分制、同分随机出结果） | 专题页 |
-| `weekend-route.html` | 🗺️ 定制周末路线（路线定制表单：情况/片区/5 组筛选，路线生成待开发） | 专题页 |
+| `weekend-test.html` | 🎯 周末人格测试（8 种周末人格、8 题计分制、同分随机；结果页含分享海报/推荐路线/热门活动/同款搭子） | 专题页 |
+| `weekend-route.html` | 🗺️ 定制周末路线（表单就地选择 → 路线推荐列表 → 路线详情 + 质量评价 + 操作占位） | 专题页 |
+| `merchant-detail.html` | 🏪 合作商家详情页（店面图集/介绍/位置导航/优惠领取） | 详情页 |
 | `style.css` | 全局自定义样式 | 资源 |
 | `common.js` | 公共函数库 | 资源 |
-| `data.js` | 全局 mock 数据（含周末人格/测试题/路线表单配置） | 资源 |
+| `data.js` | 全局 mock 数据（含周末人格/测试题/路线表单/9条路线/合作商家注册表） | 资源 |
 | `weekend-test.js` | 周末人格测试计分引擎（纯逻辑，可独立测试） | 资源 |
+| `weekend-route.js` | 定制周末路线引擎（类型标签、配额推荐固定5条、推荐理由计算、匹配度计算） | 资源 |
 | `weekend-test.test.cjs` | 周末人格测试引擎测试（`npm test` 运行） | 资源 |
 | `weekend-route.test.cjs` | 路线定制表单测试（`npm test` 运行） | 资源 |
+| `merchant-detail.test.cjs` | 商户详情页测试（`npm test` 运行） | 资源 |
 
 ## 用户角色体系
 

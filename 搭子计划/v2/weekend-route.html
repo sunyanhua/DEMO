@@ -7,6 +7,26 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* 表单/评价选项选中态：通过 data-selected 属性就地切换，避免整页重渲染闪烁（Tailwind CDN 无需重新处理 DOM） */
+        .opt-card[data-selected="true"] {
+            border-color: #FF6B00 !important;
+            background-color: rgba(255, 107, 0, 0.05) !important;
+            box-shadow: 0 0 0 1px #FF6B00 !important;
+        }
+        .opt-card[data-selected="true"] .opt-title { color: #FF6B00 !important; }
+        .opt-card[data-selected="true"] .opt-icon {
+            background-color: rgba(255, 107, 0, 0.12) !important;
+            color: #FF6B00 !important;
+        }
+        .opt-card .opt-check { display: none; color: #FF6B00; }
+        .opt-card[data-selected="true"] .opt-check { display: flex; }
+        .opt-chip[data-selected="true"] {
+            background-color: #FF6B00 !important;
+            color: #ffffff !important;
+            border-color: #FF6B00 !important;
+        }
+    </style>
 </head>
 <body class="bg-gray-50 text-gray-900">
 
@@ -14,6 +34,7 @@
 
     <script src="data.js?v=2"></script>
     <script src="common.js?v=2"></script>
+    <script src="weekend-route.js?v=2"></script>
     <script>
         const RouteForm = {
             // 全部 7 个选择项：情况、片区、5 组筛选，null 表示未选
@@ -26,10 +47,20 @@
                 partner: null,
                 stranger: null
             },
-            submitted: false,
+            view: 'form', // 'form' 表单 | 'list' 路线推荐列表 | 'detail' 路线详情
+            currentRouteId: null, // 当前展示的路线 id
+            ratingSelected: null, // 已点选的评价项下标
+            showShare: false, // 是否展示路线分享卡片
 
             get form() {
                 return (window.GlobalData && window.GlobalData.weekendRouteForm) || null;
+            },
+            currentRoute() {
+                const routes = window.WeekendRoute ? window.WeekendRoute.getRoutes() : [];
+                return routes.find(r => r.id === this.currentRouteId) || null;
+            },
+            activityById(id) {
+                return (window.GlobalData && window.GlobalData.activities || []).find(a => a.id === id) || null;
             },
 
             missingCount() {
@@ -38,11 +69,22 @@
             isComplete() {
                 return this.missingCount() === 0;
             },
+            typeBadgeClass(type) {
+                return {
+                    recommend: 'bg-brand-orange/10 text-brand-orange',
+                    classic: 'bg-brand-blue/10 text-brand-blue',
+                    smart: 'bg-brand-purple/10 text-brand-purple'
+                }[type] || 'bg-gray-100 text-gray-500';
+            },
 
             header() {
+                // 表单为入口页返回首页；列表/详情通过浏览器历史逐步后退（状态由 URL 恢复）
+                const backAction = this.view === 'form'
+                    ? "window.location.href='index.html'"
+                    : 'window.history.back()';
                 return `
                 <div class="fixed top-0 left-0 right-0 h-[50px] bg-white z-50 flex items-center px-4 shadow-sm border-b border-gray-100">
-                    <button onclick="window.location.href='index.html'" class="p-1.5 rounded-full hover:bg-gray-100 transition">
+                    <button onclick="${backAction}" class="p-1.5 rounded-full hover:bg-gray-100 transition">
                         <i data-lucide="chevron-left" class="w-6 h-6 text-gray-800"></i>
                     </button>
                     <div class="flex-1 text-center font-bold text-gray-900">定制周末路线</div>
@@ -60,20 +102,22 @@
                 `;
             },
 
+            // ---------- 表单视图 ----------
+
             situationSection() {
                 const situations = this.form.situations;
                 const cardsHtml = situations.map((s, i) => {
                     const selected = this.selections.situation === i;
                     return `
-                    <button onclick="RouteForm.select('situation', ${i})" class="flex items-center gap-3 p-3.5 rounded-xl border text-left transition-colors ${selected ? 'border-brand-orange bg-brand-orange/5 ring-1 ring-brand-orange' : 'border-gray-100 bg-white'}">
+                    <button onclick="RouteForm.select('situation', ${i})" data-route-group="situation" data-option-index="${i}" data-selected="${selected}" class="opt-card flex items-center gap-3 p-3.5 rounded-xl border border-gray-100 bg-white text-left transition-colors">
                         <div class="w-10 h-10 flex-shrink-0 ${s.color} rounded-xl flex items-center justify-center">
                             <i data-lucide="${s.icon}" class="w-5 h-5"></i>
                         </div>
                         <div class="flex-1 min-w-0">
-                            <p class="text-sm font-bold ${selected ? 'text-brand-orange' : 'text-gray-900'}">${s.title}</p>
+                            <p class="opt-title text-sm font-bold text-gray-900">${s.title}</p>
                             <p class="text-[11px] text-gray-400 mt-0.5 truncate">${s.subtitle}</p>
                         </div>
-                        ${selected ? '<i data-lucide="check-circle" class="w-5 h-5 text-brand-orange flex-shrink-0"></i>' : ''}
+                        <span class="opt-check w-5 h-5 flex-shrink-0 items-center justify-center"><i data-lucide="check-circle" class="w-5 h-5"></i></span>
                     </button>
                     `;
                 }).join('');
@@ -90,12 +134,12 @@
                 const rowsHtml = areas.map((a, i) => {
                     const selected = this.selections.area === i;
                     return `
-                    <button onclick="RouteForm.select('area', ${i})" class="w-full flex items-center gap-3 bg-white rounded-xl p-4 border text-left transition-colors ${selected ? 'border-brand-orange ring-1 ring-brand-orange bg-brand-orange/5' : 'border-gray-100'}">
-                        <div class="w-10 h-10 flex-shrink-0 rounded-xl flex items-center justify-center ${selected ? 'bg-brand-orange/10 text-brand-orange' : 'bg-gray-50 text-gray-500'}">
+                    <button onclick="RouteForm.select('area', ${i})" data-route-group="area" data-option-index="${i}" data-selected="${selected}" class="opt-card w-full flex items-center gap-3 bg-white rounded-xl p-4 border border-gray-100 text-left transition-colors">
+                        <div class="opt-icon w-10 h-10 flex-shrink-0 rounded-xl flex items-center justify-center bg-gray-50 text-gray-500">
                             <i data-lucide="${a.icon}" class="w-5 h-5"></i>
                         </div>
-                        <span class="flex-1 text-sm font-bold ${selected ? 'text-brand-orange' : 'text-gray-800'}">${a.label}</span>
-                        ${selected ? '<i data-lucide="check-circle" class="w-5 h-5 text-brand-orange flex-shrink-0"></i>' : ''}
+                        <span class="opt-title flex-1 text-sm font-bold text-gray-800">${a.label}</span>
+                        <span class="opt-check w-5 h-5 flex-shrink-0 items-center justify-center"><i data-lucide="check-circle" class="w-5 h-5"></i></span>
                     </button>
                     `;
                 }).join('');
@@ -112,7 +156,7 @@
                     const chipsHtml = f.options.map((opt, oi) => {
                         const selected = this.selections[f.id] === oi;
                         return `
-                        <button onclick="RouteForm.select('${f.id}', ${oi})" class="px-3.5 py-1.5 rounded-full text-xs font-medium border transition-colors ${selected ? 'bg-brand-orange text-white border-brand-orange' : 'bg-white text-gray-600 border-gray-200'}">${opt}</button>
+                        <button onclick="RouteForm.select('${f.id}', ${oi})" data-route-group="${f.id}" data-option-index="${oi}" data-selected="${selected}" class="opt-chip px-3.5 py-1.5 rounded-full text-xs font-medium border border-gray-200 bg-white text-gray-600 transition-colors">${opt}</button>
                         `;
                     }).join('');
                     return `
@@ -130,20 +174,12 @@
                 `;
             },
 
-            submitBar() {
+            submitBarInner() {
                 const missing = this.missingCount();
                 if (missing > 0) {
-                    return `
-                    <div class="fixed bottom-4 left-0 right-0 px-4 z-40">
-                        <div class="w-full py-3.5 bg-gray-200 text-gray-400 rounded-xl font-bold text-center text-base">生成我的周末路线（还差 ${missing} 项）</div>
-                    </div>
-                    `;
+                    return `<div class="w-full py-3.5 bg-gray-200 text-gray-400 rounded-xl font-bold text-center text-base">生成我的周末路线（还差 ${missing} 项）</div>`;
                 }
-                return `
-                <div class="fixed bottom-4 left-0 right-0 px-4 z-40">
-                    <button onclick="RouteForm.submit()" class="w-full py-3.5 bg-brand-orange text-white rounded-xl font-bold text-base shadow-lg shadow-brand-orange/30 active:scale-95 transition-transform">生成我的周末路线</button>
-                </div>
-                `;
+                return `<button onclick="RouteForm.submit()" class="w-full py-3.5 bg-brand-orange text-white rounded-xl font-bold text-base shadow-lg shadow-brand-orange/30 active:scale-95 transition-transform">生成我的周末路线</button>`;
             },
 
             formView() {
@@ -153,52 +189,425 @@
                     ${this.areaSection()}
                     ${this.filtersSection()}
                 </div>
-                ${this.submitBar()}
+                <div class="fixed bottom-4 left-0 right-0 px-4 z-40" id="route-submit-bar">${this.submitBarInner()}</div>
                 `;
             },
 
-            resultView() {
+            // ---------- 路线推荐列表视图 ----------
+
+            conditionChips() {
                 const form = this.form;
-                const sit = form.situations[this.selections.situation];
-                const area = form.areas[this.selections.area];
-                const filterRows = form.filters.map(f => ({
-                    label: f.label,
-                    value: f.options[this.selections[f.id]]
-                }));
-                const summaryHtml = [
-                    { label: '情况', value: sit.title },
-                    { label: '片区', value: area.label },
-                    ...filterRows
-                ].map(row => `
-                    <div class="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2">
-                        <span class="text-xs text-gray-400 flex-shrink-0 mr-3">${row.label}</span>
-                        <span class="text-xs font-bold text-gray-800 text-right">${row.value}</span>
+                const items = [
+                    { label: '情况', value: form.situations[this.selections.situation].title },
+                    { label: '片区', value: form.areas[this.selections.area].label },
+                    ...form.filters.map(f => ({ label: f.label, value: f.options[this.selections[f.id]] }))
+                ];
+                return items.map(s => `
+                    <span class="px-2.5 py-1 bg-gray-50 border border-gray-100 rounded-lg text-[10px] text-gray-500"><span class="text-gray-400">${s.label}</span> ${s.value}</span>
+                `).join('');
+            },
+
+            listView() {
+                const form = this.form;
+                // 固定推荐 5 条：诚意推荐 1 → 经典必逛 3 → 智能定制 1，同类内按匹配度择优
+                const ordered = window.WeekendRoute.getRecommendationList(form, this.selections, 5);
+                const cardsHtml = ordered.map(r => {
+                    const tagsHtml = r.tags.map(tag => `
+                        <span class="px-2 py-0.5 bg-gray-50 text-gray-500 text-[10px] rounded-md border border-gray-100">${tag}</span>
+                    `).join('');
+                    const reasons = window.WeekendRoute.recommendReasons(r, form, this.selections);
+                    // 智能定制不显示推荐理由，改为 AI 定制提示胶囊
+                    const reasonsHtml = r.type === 'smart'
+                        ? `<div class="mt-2.5"><span class="inline-block px-2.5 py-1 bg-brand-purple/10 text-brand-purple text-[10px] font-medium rounded-md">根据您的需求AI定制，路线仅供参考</span></div>`
+                        : (reasons.length > 0
+                            ? `<div class="flex flex-wrap gap-1.5 mt-2.5">${reasons.map(reason => `
+                                <span class="px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[10px] font-medium rounded-md flex items-center gap-0.5">
+                                    <i data-lucide="check" class="w-2.5 h-2.5"></i><span>${reason}</span>
+                                </span>
+                            `).join('')}</div>`
+                            : '');
+                    // 诚意推荐与经典必逛显示匹配度，智能定制不显示
+                    const showPercent = r.type === 'recommend' || r.type === 'classic';
+                    const percent = window.WeekendRoute.matchPercent(r, form, this.selections);
+                    const percentHtml = showPercent
+                        ? `<span class="absolute top-0 right-0 bg-brand-orange text-white text-[10px] font-bold px-2.5 py-1 rounded-bl-xl">匹配度 ${percent}%</span>`
+                        : '';
+                    return `
+                    <button onclick="RouteForm.openRoute('${r.id}')" class="w-full text-left bg-white rounded-2xl border border-gray-100 p-4 active:scale-[0.99] transition-transform relative overflow-hidden">
+                        ${percentHtml}
+                        <span class="inline-block px-2 py-0.5 ${this.typeBadgeClass(r.type)} text-[10px] font-bold rounded-full">${window.WeekendRoute.typeLabel(r.type)}</span>
+                        <h3 class="mt-2 text-base font-black text-gray-900">${r.name}</h3>
+                        <div class="flex flex-wrap gap-1.5 mt-2">${tagsHtml}</div>
+                        <p class="mt-2.5 text-xs text-gray-400">${r.schedule.length} 站行程 · ${r.schedule[0].time} ${r.schedule[0].item} 起</p>
+                        ${reasonsHtml}
+                        <div class="mt-3 flex items-center justify-between border-t border-gray-50 pt-2.5">
+                            <div class="flex items-center gap-1.5 bg-brand-orange/10 rounded-lg px-2.5 py-1">
+                                <span class="text-[10px] text-brand-orange font-medium">人均预算</span>
+                                <span class="text-lg font-black text-brand-orange leading-none">${r.budgetTotal}</span>
+                            </div>
+                            <span class="text-xs font-bold text-brand-orange flex items-center">查看详情 <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i></span>
+                        </div>
+                    </button>
+                    `;
+                }).join('');
+                return `
+                <div class="pt-[50px] pb-10 fade-in">
+                    <div class="px-4 pt-5">
+                        <div class="bg-white rounded-xl border border-gray-100 p-4">
+                            <div class="flex items-center justify-between mb-2.5">
+                                <p class="text-sm font-black text-gray-900">你的定制条件</p>
+                                <button onclick="window.history.back()" class="text-xs text-brand-orange font-bold flex items-center gap-0.5">
+                                    <i data-lucide="pencil" class="w-3 h-3"></i><span>修改</span>
+                                </button>
+                            </div>
+                            <div class="flex flex-wrap gap-2">${this.conditionChips()}</div>
+                        </div>
+                    </div>
+                    <div class="px-4 pt-6">
+                        ${this.sectionTitle('路线推荐')}
+                        <div class="space-y-3">${cardsHtml}</div>
+                    </div>
+                </div>
+                `;
+            },
+
+            // ---------- 路线详情视图 ----------
+
+            routeHero() {
+                const route = this.currentRoute();
+                const typeLabel = window.WeekendRoute.typeLabel(route.type);
+                const tagsHtml = route.tags.map(tag => `
+                    <span class="px-2.5 py-0.5 bg-white/20 text-white text-[11px] font-medium rounded-full border border-white/40">${tag}</span>
+                `).join('');
+                return `
+                <div class="bg-gradient-to-br from-brand-orange via-[#FF8A3D] to-brand-yellow px-5 pt-7 pb-6 relative overflow-hidden">
+                    <div class="absolute -right-8 -top-8 w-32 h-32 bg-white/15 rounded-full blur-2xl"></div>
+                    <div class="absolute -left-6 -bottom-10 w-28 h-28 bg-brand-yellow/40 rounded-full blur-2xl"></div>
+                    <div class="relative">
+                        <span class="inline-block px-3 py-1 bg-white text-brand-orange text-xs font-black rounded-full shadow-md">${typeLabel}</span>
+                        <h2 class="mt-3 text-2xl font-black text-white leading-snug">${route.name}</h2>
+                        <div class="flex flex-wrap gap-1.5 mt-3">${tagsHtml}</div>
+                    </div>
+                </div>
+                `;
+            },
+
+            scheduleSection() {
+                const route = this.currentRoute();
+                const rowsHtml = route.schedule.map((s, i) => `
+                    <div class="flex gap-3">
+                        <div class="flex flex-col items-center">
+                            <div class="w-2.5 h-2.5 rounded-full mt-1.5 ${i === 0 ? 'bg-brand-orange ring-4 ring-brand-orange/15' : 'bg-gray-300'}"></div>
+                            ${i < route.schedule.length - 1 ? '<div class="w-0.5 flex-1 bg-gray-200 my-0.5"></div>' : ''}
+                        </div>
+                        <div class="pb-4 ${i === route.schedule.length - 1 ? 'pb-0' : ''}">
+                            <span class="text-sm font-bold text-brand-orange">${s.time}</span>
+                            <span class="text-sm text-gray-800 ml-2">${s.item}</span>
+                        </div>
                     </div>
                 `).join('');
                 return `
-                <div class="pt-[50px] min-h-screen px-4 pt-8 fade-in">
-                    <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100">
-                        <div class="bg-gradient-to-br from-brand-orange to-brand-yellow px-5 pt-8 pb-7 text-center relative overflow-hidden">
-                            <div class="absolute -right-8 -top-8 w-32 h-32 bg-white/15 rounded-full blur-2xl"></div>
-                            <div class="relative">
-                                <p class="text-white/75 text-[11px] font-semibold tracking-widest">ROUTE PLANNING</p>
-                                <div class="w-16 h-16 mx-auto mt-3 bg-white/20 rounded-3xl flex items-center justify-center backdrop-blur-sm">
-                                    <i data-lucide="map" class="w-8 h-8 text-white"></i>
-                                </div>
-                                <h2 class="mt-3 text-2xl font-black text-white">路线定制中</h2>
-                                <span class="inline-block mt-2 px-3 py-1 bg-white/20 text-white text-xs font-bold rounded-full border border-white/40">敬请期待</span>
-                            </div>
-                        </div>
-                        <div class="p-5">
-                            <p class="text-sm text-gray-500 leading-relaxed mb-4">我们正在根据你的偏好，生成专属这个周末的北京路线。先看看你的定制偏好：</p>
-                            <div class="space-y-2">${summaryHtml}</div>
-                            <div class="mt-6 space-y-3">
-                                <button onclick="window.location.href='index.html'" class="w-full py-3 bg-brand-orange text-white rounded-xl font-bold active:scale-95 transition-transform shadow-lg shadow-brand-orange/30">返回首页</button>
-                                <button onclick="RouteForm.reset()" class="w-full py-3 bg-white border border-brand-orange text-brand-orange rounded-xl font-bold active:scale-95 transition-transform">重新填写</button>
+                <div class="px-4 pt-5">
+                    ${this.sectionTitle('路线安排')}
+                    <div class="bg-white rounded-xl border border-gray-100 p-4">${rowsHtml}</div>
+                </div>
+                `;
+            },
+
+            activitiesSection() {
+                const route = this.currentRoute();
+                const activities = route.nearbyActivities.map(id => this.activityById(id)).filter(Boolean);
+                if (activities.length === 0) return '';
+                const cardsHtml = activities.map(a => `
+                    <div onclick="window.location.href='detail.html?id=${a.id}'" class="flex gap-3 bg-white rounded-xl border border-gray-100 p-3 cursor-pointer active:scale-[0.99] transition-transform">
+                        <img src="${a.imageUrl}" class="w-20 h-20 rounded-lg object-cover flex-shrink-0" />
+                        <div class="flex-1 flex flex-col justify-between py-0.5 min-w-0">
+                            <h3 class="text-sm font-bold text-gray-900 line-clamp-1">${a.title}</h3>
+                            <div class="text-[11px] text-gray-400 mt-1 flex items-center gap-1"><i data-lucide="calendar" class="w-3 h-3"></i>${a.date}</div>
+                            <div class="text-[11px] text-gray-400 mt-0.5 flex items-center gap-1"><i data-lucide="map-pin" class="w-3 h-3"></i>${a.district} · ${a.location}</div>
+                            <div class="flex items-center justify-between mt-1">
+                                <span class="text-[10px] text-gray-400">${a.currentParticipants}/${a.maxParticipants}人</span>
+                                <span class="text-brand-orange font-bold text-sm">${a.price === 0 ? '免费' : '¥' + a.price}</span>
                             </div>
                         </div>
                     </div>
+                `).join('');
+                return `
+                <div class="px-4 pt-5">
+                    ${this.sectionTitle('附近活动')}
+                    <div class="space-y-2.5">${cardsHtml}</div>
                 </div>
+                `;
+            },
+
+            merchantsSection() {
+                const route = this.currentRoute();
+                const cardsHtml = route.merchants.map((m, i) => {
+                    // 平台活动合作商家：顶部图片（加载失败自动降级为渐变占位）+ 平台合作标识 + 跳转商户详情页
+                    const partnerHeader = m.partner ? `
+                        <div class="relative h-32 -mx-4 -mt-4 mb-3 overflow-hidden rounded-t-xl">
+                            <div class="absolute inset-0 bg-gradient-to-br from-brand-orange/20 via-brand-yellow/10 to-brand-orange/20 flex items-center justify-center text-3xl">🏪</div>
+                            <img src="${m.image}" class="relative w-full h-full object-cover" onerror="this.remove()" />
+                            <span class="absolute top-2 left-2 bg-brand-orange text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow">平台合作</span>
+                        </div>
+                    ` : '';
+                    const partnerButtons = m.partner ? `
+                        <div class="mt-3 flex gap-2.5">
+                            <button onclick="window.location.href='merchant-detail.html?id=${m.partnerId}'" class="flex-1 py-2.5 bg-brand-orange text-white rounded-xl font-bold text-sm shadow-lg shadow-brand-orange/20 active:scale-95 transition-transform">查看详情</button>
+                            <button onclick="window.location.href='merchant-detail.html?id=${m.partnerId}&tab=coupons'" class="flex-1 py-2.5 bg-brand-yellow text-gray-900 rounded-xl font-bold text-sm border border-brand-yellow active:scale-95 transition-transform">领取优惠</button>
+                        </div>
+                    ` : '';
+                    return `
+                    <div class="bg-white rounded-xl border border-gray-100 overflow-hidden ${i === 0 ? 'ring-1 ring-brand-orange/30' : ''}">
+                        <div class="p-4">
+                            ${partnerHeader}
+                            <div class="flex items-center justify-between mb-2">
+                                <h3 class="text-sm font-bold text-gray-900">${m.name}</h3>
+                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${m.primary ? 'bg-brand-orange/10 text-brand-orange' : 'bg-gray-100 text-gray-500'}">${m.primary ? '主推荐' : '顺路推荐'}</span>
+                            </div>
+                            <div class="flex items-center gap-2 text-[11px] text-gray-500 mb-2">
+                                <span class="px-2 py-0.5 bg-gray-50 rounded-md">预算 ${m.budget}</span>
+                                <span class="px-2 py-0.5 bg-gray-50 rounded-md">${m.district}</span>
+                            </div>
+                            <p class="text-xs text-gray-600 leading-relaxed">${m.blurb}</p>
+                            <p class="mt-2 text-[11px] text-amber-600 bg-amber-50 rounded-lg px-2.5 py-1.5 flex items-start gap-1">
+                                <i data-lucide="lightbulb" class="w-3.5 h-3.5 flex-shrink-0 mt-0.5"></i><span>${m.tip}</span>
+                            </p>
+                            ${partnerButtons}
+                        </div>
+                    </div>
+                    `;
+                }).join('');
+                return `
+                <div class="px-4 pt-5">
+                    ${this.sectionTitle('沿途推荐')}
+                    <div class="space-y-2.5">${cardsHtml}</div>
+                </div>
+                `;
+            },
+
+            prepSection() {
+                const route = this.currentRoute();
+                const rowsHtml = route.prep.map(item => `
+                    <div class="flex items-start gap-2.5">
+                        <i data-lucide="check-circle-2" class="w-4 h-4 text-brand-orange flex-shrink-0 mt-0.5"></i>
+                        <span class="text-xs text-gray-700 leading-relaxed">${item}</span>
+                    </div>
+                `).join('');
+                return `
+                <div class="px-4 pt-5">
+                    ${this.sectionTitle('路线准备（出发前核验）')}
+                    <div class="bg-white rounded-xl border border-gray-100 p-4 space-y-2.5">${rowsHtml}</div>
+                </div>
+                `;
+            },
+
+            budgetSection() {
+                const route = this.currentRoute();
+                const rowsHtml = route.budget.map(b => `
+                    <div class="flex items-center justify-between py-2 border-b border-gray-50">
+                        <span class="text-sm text-gray-600">${b.item}</span>
+                        <span class="text-sm font-bold text-gray-900">${b.amount} 元</span>
+                    </div>
+                `).join('');
+                return `
+                <div class="px-4 pt-5">
+                    ${this.sectionTitle('预算明细')}
+                    <div class="bg-white rounded-xl border border-gray-100 p-4">
+                        ${rowsHtml}
+                        <div class="flex items-center justify-between pt-3">
+                            <span class="text-sm font-black text-gray-900">合计</span>
+                            <span class="text-base font-black text-brand-orange">${route.budgetTotal}</span>
+                        </div>
+                    </div>
+                </div>
+                `;
+            },
+
+            reasonSection() {
+                const route = this.currentRoute();
+                return `
+                <div class="px-4 pt-5">
+                    ${this.sectionTitle('推荐理由')}
+                    <blockquote class="relative bg-white rounded-xl border border-gray-100 p-4 pl-5 border-l-4 border-l-brand-orange">
+                        <p class="text-sm text-gray-800 font-medium leading-relaxed">"${route.reason}"</p>
+                    </blockquote>
+                </div>
+                `;
+            },
+
+            guideSection() {
+                const route = this.currentRoute();
+                const g = route.guide;
+                const list = (items) => items.map(item => `
+                    <div class="flex items-start gap-2">
+                        <span class="w-1 h-1 rounded-full bg-gray-300 flex-shrink-0 mt-1.5"></span>
+                        <span class="text-xs text-gray-600 leading-relaxed">${item}</span>
+                    </div>
+                `).join('');
+                return `
+                <div class="px-4 pt-5">
+                    ${this.sectionTitle('路线攻略')}
+                    <div class="space-y-3">
+                        <div class="bg-white rounded-xl border border-gray-100 p-4">
+                            <p class="flex items-center gap-1.5 text-sm font-bold text-gray-900 mb-2"><i data-lucide="train-front" class="w-4 h-4 text-brand-blue"></i>出行建议</p>
+                            <p class="text-xs text-gray-600 leading-relaxed">${g.transport}</p>
+                        </div>
+                        <div class="bg-white rounded-xl border border-gray-100 p-4">
+                            <p class="flex items-center gap-1.5 text-sm font-bold text-gray-900 mb-2"><i data-lucide="check-circle-2" class="w-4 h-4 text-brand-green"></i>适合谁</p>
+                            <div class="space-y-1.5">${list(g.suitable)}</div>
+                        </div>
+                        <div class="bg-white rounded-xl border border-gray-100 p-4">
+                            <p class="flex items-center gap-1.5 text-sm font-bold text-gray-900 mb-2"><i data-lucide="x-circle" class="w-4 h-4 text-brand-red"></i>不太适合谁</p>
+                            <div class="space-y-1.5">${list(g.unsuitable)}</div>
+                        </div>
+                        <div class="bg-white rounded-xl border border-gray-100 p-4">
+                            <p class="flex items-center gap-1.5 text-sm font-bold text-gray-900 mb-2"><i data-lucide="shuffle" class="w-4 h-4 text-brand-purple"></i>备选方案</p>
+                            <div class="space-y-1.5">${list(g.alternatives)}</div>
+                        </div>
+                    </div>
+                </div>
+                `;
+            },
+
+            ratingSection() {
+                const options = (window.GlobalData && window.GlobalData.routeRatingOptions) || [];
+                const chipsHtml = options.map((opt, i) => `
+                    <button onclick="RouteForm.rate(${i})" data-rating-option data-option-index="${i}" data-selected="${this.ratingSelected === i}" class="opt-chip px-3.5 py-1.5 rounded-full text-xs font-medium border border-gray-200 bg-white text-gray-600 transition-colors">${opt}</button>
+                `).join('');
+                return `
+                <div class="px-4 pt-5">
+                    ${this.sectionTitle('这条路线怎么样？')}
+                    <div class="bg-white rounded-xl border border-gray-100 p-4">
+                        <p class="text-[11px] text-gray-400 mb-2.5">点一下就行，后续会用来优化路线和店铺</p>
+                        <div class="flex flex-wrap gap-2">${chipsHtml}</div>
+                    </div>
+                </div>
+                `;
+            },
+
+            // 同款搭子：匹配到这条路线的搭子（参考首页推荐搭子排版）
+            fellowsSection() {
+                const route = this.currentRoute();
+                const fellows = window.WeekendRoute.routeFellowsForRoute(route.id);
+                const cardsHtml = fellows.map(f => `
+                    <div onclick="window.location.href='profile.html?id=${f.id}'" class="flex-shrink-0 w-36 bg-white rounded-xl p-3 shadow-sm border border-gray-100 cursor-pointer">
+                        <div class="flex flex-col items-center">
+                            <div class="relative mb-2">
+                                <img src="${f.avatarUrl}" class="w-14 h-14 rounded-full border-2 border-white shadow-md object-cover"/>
+                                <div class="absolute bottom-0 right-0 bg-brand-blue text-[8px] text-white px-1.5 py-0.5 rounded-full border border-white">${f.distance}</div>
+                            </div>
+                            <h3 class="font-bold text-gray-900 text-sm mb-1 truncate w-full text-center">${f.name}</h3>
+                            <div class="flex flex-wrap justify-center gap-1 mb-2 h-5 overflow-hidden">
+                                ${f.tags.slice(0, 2).map(tag => `<span class="text-[9px] px-1.5 py-0.5 bg-gray-50 text-gray-500 rounded-md border border-gray-100">${tag}</span>`).join('')}
+                            </div>
+                            <p class="text-[10px] text-gray-400 text-center line-clamp-2 h-8 leading-tight w-full mb-2 bg-gray-50/50 rounded p-1">"${f.intro}"</p>
+                            <button class="w-full py-1 bg-gradient-to-r from-gray-900 to-gray-700 text-white text-[10px] font-bold rounded-full active:scale-95 transition-transform flex items-center justify-center gap-1" onclick="event.stopPropagation(); window.location.href='chat.html?uid=${f.id}&name=${encodeURIComponent(f.name)}&route=${route.id}'">
+                                <i data-lucide="message-circle" class="w-2.5 h-2.5"></i><span>搭讪</span>
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+                const content = fellows.length > 0
+                    ? `<div class="flex overflow-x-auto gap-3 no-scrollbar pb-1" style="scrollbar-width: none; -ms-overflow-style: none;">${cardsHtml}</div>`
+                    : '<div class="bg-white rounded-xl border border-gray-100 p-6 text-center text-xs text-gray-400">暂时没有匹配这条路线的搭子</div>';
+                return `
+                <div class="px-4 pt-5">
+                    ${this.sectionTitle('同款搭子')}
+                    <p class="text-[11px] text-gray-400 -mt-1.5 mb-2.5">TA们也匹配到了这条路线</p>
+                    ${content}
+                </div>
+                `;
+            },
+
+            // 底部固定悬浮操作栏：收藏 / 分享 / 加入溜达计划
+            actionBar() {
+                return `
+                <div class="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-gray-100 px-4 pt-2 pb-safe">
+                    <div class="flex items-center gap-2.5 pb-2">
+                        <button onclick="RouteForm.favorite()" class="flex flex-col items-center gap-0.5 px-3 py-1 text-brand-orange active:scale-95 transition-transform">
+                            <i data-lucide="heart" class="w-5 h-5"></i>
+                            <span class="text-[10px] font-medium">收藏</span>
+                        </button>
+                        <button onclick="RouteForm.openShare()" class="flex flex-col items-center gap-0.5 px-3 py-1 text-brand-orange active:scale-95 transition-transform">
+                            <i data-lucide="share-2" class="w-5 h-5"></i>
+                            <span class="text-[10px] font-medium">分享</span>
+                        </button>
+                        <button onclick="RouteForm.joinPlan()" class="flex-1 py-3 bg-brand-orange text-white rounded-xl font-bold text-sm shadow-lg shadow-brand-orange/30 active:scale-95 transition-transform">
+                            加入溜达计划
+                        </button>
+                    </div>
+                </div>
+                `;
+            },
+
+            favorite() {
+                if (window.Common) window.Common.showToast('收藏成功，可前往个人中心我的收藏查看');
+            },
+
+            joinPlan() {
+                if (window.Common) window.Common.showToast('已加入你的溜达计划，可前往个人中心查看，安排你的出行');
+            },
+
+            openShare() {
+                this.showShare = true;
+                this.render();
+            },
+
+            closeShare() {
+                this.showShare = false;
+                this.render();
+            },
+
+            // 分享卡片：当前路线信息 + 演示二维码
+            shareModal() {
+                if (!this.showShare) return '';
+                const route = this.currentRoute();
+                if (!route) return '';
+                const tagsHtml = route.tags.map(tag => `
+                    <span class="px-2.5 py-0.5 bg-white/20 text-white text-[11px] font-medium rounded-full border border-white/40">${tag}</span>
+                `).join('');
+                return `
+                <div class="fixed inset-0 bg-black/60 z-[200] flex items-center justify-center px-8" onclick="RouteForm.closeShare()">
+                    <div class="w-full max-w-xs" onclick="event.stopPropagation()">
+                        <div class="rounded-2xl overflow-hidden bg-gradient-to-br from-brand-orange via-[#FF8A3D] to-brand-yellow p-5 relative">
+                            <div class="absolute -right-8 -top-8 w-32 h-32 bg-white/15 rounded-full blur-2xl"></div>
+                            <div class="relative">
+                                <div class="flex items-center justify-between">
+                                    <span class="inline-block px-2.5 py-1 bg-white/20 text-white text-[10px] font-bold rounded-full border border-white/40">${window.WeekendRoute.typeLabel(route.type)}</span>
+                                    <span class="text-white/80 text-[10px] font-bold">${route.budgetTotal}</span>
+                                </div>
+                                <h3 class="mt-3 text-xl font-black text-white leading-snug">${route.name}</h3>
+                                <div class="flex flex-wrap gap-1.5 mt-2.5">${tagsHtml}</div>
+                                <p class="text-white/80 text-[11px] mt-2">${route.schedule.length} 站行程 · ${route.schedule[0].time} 起</p>
+                                <div class="mt-4 bg-white rounded-xl p-3.5 flex items-center gap-3">
+                                    <canvas id="qr-canvas" class="flex-shrink-0" width="72" height="72" style="width:72px;height:72px"></canvas>
+                                    <p class="text-[10px] text-gray-500 leading-relaxed">扫码查看这条<br/>周末路线</p>
+                                </div>
+                            </div>
+                        </div>
+                        <button onclick="RouteForm.closeShare()" class="mt-3 w-full py-2.5 bg-white/90 rounded-xl font-bold text-sm text-gray-700">关闭</button>
+                    </div>
+                </div>
+                `;
+            },
+
+            routeView() {
+                return `
+                <div class="pt-[50px] pb-32 fade-in">
+                    ${this.routeHero()}
+                    ${this.scheduleSection()}
+                    ${this.activitiesSection()}
+                    ${this.merchantsSection()}
+                    ${this.prepSection()}
+                    ${this.budgetSection()}
+                    ${this.reasonSection()}
+                    ${this.guideSection()}
+                    ${this.fellowsSection()}
+                    ${this.ratingSection()}
+                    <p class="mt-6 text-center text-[10px] text-gray-300">路线数据仅供参考，出行前请再次核验</p>
+                </div>
+                ${this.actionBar()}
                 `;
             },
 
@@ -215,37 +624,96 @@
                 `;
             },
 
+            // ---------- 交互 ----------
+
+            // 就地更新选中态：不整页重渲染，避免闪烁；选择同步进当前历史记录的 URL
             select(groupId, optionIndex) {
+                if (this.selections[groupId] === optionIndex) return;
                 this.selections[groupId] = optionIndex;
-                this.render();
+                const nodes = document.querySelectorAll('[data-route-group="' + groupId + '"]');
+                for (const node of nodes) {
+                    const idx = Number(node.getAttribute('data-option-index'));
+                    node.setAttribute('data-selected', idx === optionIndex ? 'true' : 'false');
+                }
+                this.updateSubmitBar();
+                this.syncUrl(true);
+            },
+
+            updateSubmitBar() {
+                const bar = document.getElementById('route-submit-bar');
+                if (bar) bar.innerHTML = this.submitBarInner();
+            },
+
+            // 把视图与选择状态同步进 URL（replace 时更新当前记录，否则压入新历史记录）
+            syncUrl(replace) {
+                const params = new URLSearchParams();
+                if (this.view !== 'form') params.set('view', this.view);
+                const keys = { situation: 's', area: 'a', time: 't', people: 'p', budget: 'b', partner: 'pa', stranger: 'st' };
+                for (const [key, short] of Object.entries(keys)) {
+                    if (this.selections[key] != null) params.set(short, this.selections[key]);
+                }
+                if (this.currentRouteId) params.set('route', this.currentRouteId);
+                const qs = params.toString();
+                const url = qs ? '?' + qs : window.location.pathname;
+                if (replace) window.history.replaceState({}, '', url);
+                else window.history.pushState({}, '', url);
+            },
+
+            // 从 URL 恢复视图与选择状态（前进/后退/深链共用）
+            restoreFromUrl() {
+                const params = new URLSearchParams(window.location.search);
+                const view = params.get('view');
+                this.view = ['form', 'list', 'detail'].includes(view) ? view : 'form';
+                const keys = { s: 'situation', a: 'area', t: 'time', p: 'people', b: 'budget', pa: 'partner', st: 'stranger' };
+                for (const [short, key] of Object.entries(keys)) {
+                    const value = params.get(short);
+                    this.selections[key] = value === null ? null : parseInt(value, 10);
+                }
+                this.currentRouteId = params.get('route');
+                this.ratingSelected = null;
             },
 
             submit() {
                 if (!this.isComplete()) return;
-                this.submitted = true;
-                this.render(true); // 提交后滚回顶部
+                if (!window.WeekendRoute || window.WeekendRoute.getRoutes().length === 0) {
+                    if (window.Common) window.Common.showToast('路线数据加载失败，请重试');
+                    return;
+                }
+                this.view = 'list';
+                this.syncUrl(false);
+                this.render(true);
             },
 
-            reset() {
-                this.selections = {
-                    situation: null,
-                    area: null,
-                    time: null,
-                    people: null,
-                    budget: null,
-                    partner: null,
-                    stranger: null
-                };
-                this.submitted = false;
-                this.render();
+            openRoute(routeId) {
+                this.currentRouteId = routeId;
+                this.ratingSelected = null;
+                this.view = 'detail';
+                this.syncUrl(false);
+                this.render(true);
+            },
+
+            rate(optionIndex) {
+                this.ratingSelected = optionIndex;
+                const nodes = document.querySelectorAll('[data-rating-option]');
+                for (const node of nodes) {
+                    const idx = Number(node.getAttribute('data-option-index'));
+                    node.setAttribute('data-selected', idx === optionIndex ? 'true' : 'false');
+                }
+                if (window.Common) window.Common.showToast('感谢反馈，我们会持续优化路线和店铺');
+            },
+
+            action(actionName) {
+                if (window.Common) window.Common.showToast('「' + actionName + '」功能开发中，敬请期待');
             },
 
             render(resetScroll) {
                 let view;
                 if (!this.form) {
                     view = this.errorView();
-                } else if (this.submitted) {
-                    view = this.resultView();
+                } else if (this.view === 'detail' && this.currentRoute()) {
+                    view = this.routeView();
+                } else if (this.view === 'list') {
+                    view = this.listView();
                 } else {
                     view = this.formView();
                 }
@@ -253,14 +721,30 @@
                 document.getElementById('app').innerHTML = `
                     ${this.header()}
                     ${view}
+                    ${this.shareModal()}
                 `;
                 if (window.Common) window.Common.initIcons();
+                // 分享卡片二维码绘制（真实浏览器中 canvas 可用时）
+                if (this.showShare && this.currentRoute()) {
+                    const canvas = document.getElementById('qr-canvas');
+                    if (canvas && typeof canvas.getContext === 'function' && window.Common && window.Common.drawQr) {
+                        window.Common.drawQr(canvas, 'route:' + this.currentRoute().id);
+                    }
+                }
                 if (typeof window !== 'undefined' && typeof window.scrollTo === 'function') window.scrollTo(0, scrollY);
             }
         };
 
         window.RouteForm = RouteForm;
-        document.addEventListener('DOMContentLoaded', () => RouteForm.render());
+        // 浏览器前进/后退：从 URL 恢复状态后重渲染
+        window.addEventListener('popstate', () => {
+            RouteForm.restoreFromUrl();
+            RouteForm.render(true);
+        });
+        document.addEventListener('DOMContentLoaded', () => {
+            RouteForm.restoreFromUrl();
+            RouteForm.render();
+        });
     </script>
 </body>
 </html>

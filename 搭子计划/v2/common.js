@@ -297,5 +297,45 @@ window.Common = {
             this.showToast('报名失败，请重试');
             return false;
         }
+    },
+
+    // 演示用二维码：按种子文本确定性绘制（非真实可扫二维码，商户核销与人格海报共用）
+    drawQr(canvas, seed) {
+        const size = 180;
+        const n = 25; // 25×25 模块
+        const ctx = canvas.getContext('2d');
+        canvas.width = size;
+        canvas.height = size;
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, size, size);
+        let h = 2166136261;
+        for (const ch of String(seed)) {
+            h ^= ch.charCodeAt(0);
+            h = Math.imul(h, 16777619);
+        }
+        const rand = () => {
+            h ^= h << 13; h ^= h >>> 17; h ^= h << 5; h >>>= 0;
+            return h / 4294967296;
+        };
+        const cell = size / n;
+        ctx.fillStyle = '#111111';
+        for (let y = 0; y < n; y++) {
+            for (let x = 0; x < n; x++) {
+                const inFinder = (x < 7 && y < 7) || (x >= n - 7 && y < 7) || (x < 7 && y >= n - 7);
+                if (!inFinder && rand() > 0.5) ctx.fillRect(x * cell, y * cell, cell + 0.5, cell + 0.5);
+            }
+        }
+        const finder = (fx, fy) => {
+            ctx.fillStyle = '#111111';
+            ctx.fillRect(fx * cell, fy * cell, 7 * cell, 7 * cell);
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect((fx + 1) * cell, (fy + 1) * cell, 5 * cell, 5 * cell);
+            ctx.fillStyle = '#111111';
+            ctx.fillRect((fx + 2) * cell, (fy + 2) * cell, 3 * cell, 3 * cell);
+        };
+        finder(0, 0);
+        finder(n - 7, 0);
+        finder(0, n - 7);
     }
+
 };

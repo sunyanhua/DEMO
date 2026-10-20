@@ -23,7 +23,8 @@ window.GlobalData = {
         wallet: 386.50, // 钱包余额（元）
         level: 3, // 当前等级
         nextLevelPoints: 2000, // 下一等级所需积分
-        likes: 128 // 获赞数
+        likes: 128, // 获赞数
+        weekendPersonality: 'hutong' // 我的周末人格（测试结果，个人中心展示）
     },
 
     weekendCard: {
@@ -111,6 +112,34 @@ window.GlobalData = {
         }
     ],
 
+    // 周末人格 → 推荐路线映射（测试结果页展示）
+    weekendPersonalityRoutes: {
+        hutong: ['r2', 'r9', 'r4'],
+        beer: ['r2', 'r5', 'r6'],
+        solo: ['r7', 'r9'],
+        host: ['r6', 'r1'],
+        tourist: ['r1', 'r2'],
+        lazy: ['r4', 'r8'],
+        budget: ['r7', 'r4'],
+        outdoor: ['r3', 'r6']
+    },
+
+    // 同款搭子 mock（测试结果页按人格过滤展示，参考首页推荐搭子排版）
+    weekendFellows: [
+        { id: 'f1', name: '胡同观察员', avatarUrl: 'https://picsum.photos/100/100?random=31', personalityId: 'hutong', distance: '1.2km', tags: ['citywalk', '摄影'], intro: '周末就爱钻胡同，宫门口一带门儿清。', routeIds: ['r2', 'r4', 'r9'] },
+        { id: 'f2', name: '慢速遛弯儿', avatarUrl: 'https://picsum.photos/100/100?random=32', personalityId: 'hutong', distance: '2.5km', tags: ['散步', '咖啡'], intro: '不打卡，只溜达。', routeIds: ['r4', 'r9'] },
+        { id: 'f3', name: '精酿小李', avatarUrl: 'https://picsum.photos/100/100?random=33', personalityId: 'beer', distance: '0.8km', tags: ['精酿', '组局'], intro: '周五晚上北平机器常驻。', routeIds: ['r2', 'r5', 'r6'] },
+        { id: 'f4', name: '微醺电台', avatarUrl: 'https://picsum.photos/100/100?random=34', personalityId: 'beer', distance: '3.1km', tags: ['酒馆', '聊天'], intro: '喝点好的，认识点新的。', routeIds: ['r5', 'r2'] },
+        { id: 'f5', name: '孤勇干饭人', avatarUrl: 'https://picsum.photos/100/100?random=35', personalityId: 'solo', distance: '1.5km', tags: ['一人食', '火锅'], intro: '一个人吃火锅，谁也别劝。', routeIds: ['r7', 'r9'] },
+        { id: 'f6', name: '局王本王', avatarUrl: 'https://picsum.photos/100/100?random=36', personalityId: 'host', distance: '0.9km', tags: ['桌游', '羽毛球'], intro: '缺人喊我，一喊一个准。', routeIds: ['r6', 'r1'] },
+        { id: 'f7', name: '攒局小能手', avatarUrl: 'https://picsum.photos/100/100?random=37', personalityId: 'host', distance: '2.2km', tags: ['剧本杀', '饭局'], intro: '@全体成员是我的日常。', routeIds: ['r6', 'r2'] },
+        { id: 'f8', name: '首刷特种兵', avatarUrl: 'https://picsum.photos/100/100?random=38', personalityId: 'tourist', distance: '4.0km', tags: ['打卡', '拍照'], intro: '第一次来北京，清单还有20项。', routeIds: ['r1', 'r2'] },
+        { id: 'f9', name: '躺平协会会长', avatarUrl: 'https://picsum.photos/100/100?random=39', personalityId: 'lazy', distance: '1.1km', tags: ['宅家', '书店'], intro: '床是本体，出门随缘。', routeIds: ['r4', 'r8'] },
+        { id: 'f10', name: '羊毛薅手', avatarUrl: 'https://picsum.photos/100/100?random=40', personalityId: 'budget', distance: '2.8km', tags: ['优惠券', '免费展'], intro: '免费展清单周更。', routeIds: ['r7', 'r4'] },
+        { id: 'f11', name: '放电侠', avatarUrl: 'https://picsum.photos/100/100?random=41', personalityId: 'outdoor', distance: '3.5km', tags: ['骑行', '徒步'], intro: '奥森一圈起，两圈正常。', routeIds: ['r3', 'r6'] },
+        { id: 'f12', name: '晨跑永动机', avatarUrl: 'https://picsum.photos/100/100?random=42', personalityId: 'outdoor', distance: '1.9km', tags: ['跑步', '球类'], intro: '早上六点的公园见。', routeIds: ['r3', 'r8'] }
+    ],
+
     // 定制周末路线：表单配置
     weekendRouteForm: {
         situations: [
@@ -132,6 +161,543 @@ window.GlobalData = {
             { id: 'partner', label: '是否找搭子', options: ['不找', '找熟人', '找平台搭子', '接受陌生人组局'] },
             { id: 'stranger', label: '是否接受陌生人组局', options: ['接受', '先聊再说', '不接受'] }
         ]
+    },
+
+    // 路线质量评价选项（全局一份，点一下即反馈，用于后续优化路线和店铺）
+    routeRatingOptions: ['路线好用', '店铺不准', '价格不准', '太远了', '排队太久'],
+
+    // 定制周末路线：路线数据
+    // type 推荐优先顺序：recommend 诚意推荐 > classic 经典必逛 > smart 智能定制
+    // areaId 对应表单片区（weekendRouteForm.areas），r5 为 798 额外路线（无片区，通过"换一条"切换查看）
+    weekendRoutes: [
+        {
+            id: 'r1',
+            type: 'recommend',
+            tags: ['社交型', '治愈型', '文艺型'],
+            name: '三里屯brunch与亮马河散步',
+            areaId: 'sanlitun',
+            schedule: [
+                { time: '14:00', item: '三里屯brunch' },
+                { time: '16:00', item: '精品咖啡' },
+                { time: '18:00', item: '亮马河散步' },
+                { time: '20:00', item: '蓝港晚餐' }
+            ],
+            nearbyActivities: ['a2', 'a1'],
+            merchants: [
+                { name: 'Element Fresh（三里屯店）', budget: '¥120-150/人', district: '三里屯', blurb: '适合想拍照、吃得健康、聊天放松的人。', tip: '周末热门时段座位紧张，建议提前订位。', primary: true },
+                { name: 'Berry Beans（三里屯店）', budget: '¥40-60/人', district: '三里屯', blurb: '胡同风精品咖啡，适合下午茶歇脚。', tip: '座位少，建议下午茶时段错峰前往。', primary: false },
+                { name: '茶百道（三里屯店）', budget: '¥15-25/人', district: '三里屯', blurb: '逛街间隙来一杯，常驻第二杯半价活动。', tip: '周末下午出杯慢，建议小程序先下单。', primary: false, partner: true, image: 'https://images.unsplash.com/photo-1497935586351-b67a49e012bf?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', partnerId: 'm-teabadao-slt' }
+            ],
+            prep: [
+                '核验主推荐店铺营业时间、排队和是否需要预约',
+                '提前确认集合点、地铁站出口和返程方式',
+                '按人均预算预留20-50元浮动费用',
+                '先搜三里屯brunch候选，确认位置后再出发'
+            ],
+            budget: [
+                { item: '餐饮', amount: 190 },
+                { item: '咖啡', amount: 55 },
+                { item: '交通', amount: 35 },
+                { item: '备用', amount: 50 }
+            ],
+            budgetTotal: '约 330 元/人',
+            reason: '适合想要精致一点、聊天环境舒服的周末。',
+            guide: {
+                transport: '三里屯、亮马河和蓝港之间建议用地铁或打车衔接。建议集合点：三里屯太古里南区入口。出发前确认营业时间、预约规则、排队情况和返程方式。',
+                suitable: ['适合社交型、治愈型、文艺型用户。', '适合想聊天、组局或晚上放松的人。'],
+                unsuitable: ['预算很紧时不建议优先选这条，餐饮波动比较明显。', '不适合特别怕人多、排队或不想拍照的人。'],
+                alternatives: ['如果下雨，把户外段缩短，改去附近商场、咖啡店、书店或影院。', '想省钱时，把正餐换成简餐或小吃，预算通常能下降60-120元。', '如果临时找不到搭子，这条路线也可以拆成半日独自版。']
+            }
+        },
+        {
+            id: 'r2',
+            type: 'classic',
+            tags: ['治愈型', '文艺型', '美食型'],
+            name: '鼓楼南锣鼓巷夜景与什刹海小吃',
+            areaId: 'shichahai',
+            schedule: [
+                { time: '15:00', item: '鼓楼东大街漫步' },
+                { time: '17:00', item: '南锣鼓巷胡同小店' },
+                { time: '19:00', item: '什刹海夜景与小吃' },
+                { time: '21:00', item: '后海晚风散步' }
+            ],
+            nearbyActivities: ['a8', 'a11'],
+            merchants: [
+                { name: '北平机器（方家胡同店）', budget: '¥80-120/人', district: '方家胡同', blurb: '精酿配老胡同，晚上氛围拉满。', tip: '周末晚间排队，建议先取号再逛。', primary: true, partner: true, image: 'https://images.unsplash.com/photo-1541336032412-2048a678540d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', partnerId: 'm-beiping-fangjia' },
+                { name: '姚记炒肝店（鼓楼店）', budget: '¥30-50/人', district: '鼓楼', blurb: '老北京味道，适合第一次来北京想体验地道小吃的人。', tip: '饭点排队较长，建议错峰前往。', primary: false },
+                { name: '茶汤李（什刹海店）', budget: '¥20-40/人', district: '什刹海', blurb: '老字号甜品，适合饭后解腻。', tip: '店面小，可打包边走边吃。', primary: false }
+            ],
+            prep: [
+                '核验主推荐店铺营业时间与排队情况',
+                '提前确认地铁8号线什刹海站出口与返程末班车',
+                '按人均预算预留20-50元浮动费用',
+                '胡同区域部分路段禁行机动车，建议地铁出行'
+            ],
+            budget: [
+                { item: '小吃', amount: 80 },
+                { item: '甜品咖啡', amount: 60 },
+                { item: '交通', amount: 20 },
+                { item: '备用', amount: 40 }
+            ],
+            budgetTotal: '约 200 元/人',
+            reason: '适合想慢悠悠感受老北京烟火气与胡同夜景的周末。',
+            guide: {
+                transport: '鼓楼、南锣与什刹海之间步行串联，建议地铁8号线什刹海站进出。建议集合点：鼓楼东大街地铁站A口。出发前确认营业时间与排队情况。',
+                suitable: ['适合治愈型、文艺型、喜欢老城烟火气的用户。', '适合一个人或两三人慢逛拍照。'],
+                unsuitable: ['不喜欢排队、对老城人流敏感的不建议。', '预算极低时建议选更精简的版本。'],
+                alternatives: ['如果下雨，改走室内路线：附近书店、咖啡馆与小型展览。', '人太多时提前离场，转去北锣鼓巷支巷。', '想省钱把甜品换成路边小吃，通常能省40-80元。']
+            }
+        },
+        {
+            id: 'r3',
+            type: 'smart',
+            tags: ['运动型', '治愈型'],
+            name: '奥森绿道骑行与林间野餐',
+            areaId: 'aosen',
+            schedule: [
+                { time: '09:00', item: '奥森南门集合热身' },
+                { time: '10:00', item: '环园绿道骑行' },
+                { time: '12:00', item: '林间野餐' },
+                { time: '14:00', item: '湖边散步消食' }
+            ],
+            nearbyActivities: ['a3', 'a6'],
+            merchants: [
+                { name: '林间野餐盒（奥森公园店）', budget: '¥60-80/人', district: '奥森', blurb: '轻食野餐盒，适合骑行途中补给。', tip: '野餐盒需提前1天下单。', primary: true },
+                { name: '茶百道（奥森南门店）', budget: '¥15-25/人', district: '奥森', blurb: '骑行补给站，冰饮恢复状态。', tip: '运动后别喝太冰，微糖更合适。', primary: false, partner: true, image: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', partnerId: 'm-teabadao-as' },
+                { name: '温榆河畔农庄餐厅', budget: '¥80-120/人', district: '温榆河', blurb: '骑行终点农家菜，量大实惠。', tip: '距离较远，可打车前往。', primary: false }
+            ],
+            prep: [
+                '核验主推荐店铺营业时间与野餐盒预订规则',
+                '提前确认骑行路线与天气，雨天改期',
+                '按人均预算预留20-50元浮动费用',
+                '检查共享单车或自备车辆，确认集合点停车位置'
+            ],
+            budget: [
+                { item: '野餐', amount: 80 },
+                { item: '咖啡', amount: 35 },
+                { item: '交通', amount: 30 },
+                { item: '备用', amount: 45 }
+            ],
+            budgetTotal: '约 190 元/人',
+            reason: '适合想动一动、呼吸新鲜空气、又不赶时间的周末。',
+            guide: {
+                transport: '奥森南门地铁8号线直达，骑行全程走园内绿道。建议集合点：奥森南门地铁站B口。出发前确认天气与骑行路线。',
+                suitable: ['适合运动型、治愈型用户。', '适合想轻运动、野餐、拍照的人。'],
+                unsuitable: ['不喜欢户外或体力一般的不建议全程骑行。', '雨天或大风天不建议走这条线。'],
+                alternatives: ['如果下雨，改成室内羽毛球或游泳局。', '体力不够时，骑行段可改为湖边散步。', '想省钱，野餐盒可自备食材，能省40-60元。']
+            }
+        },
+        {
+            id: 'r4',
+            type: 'classic',
+            tags: ['文艺型', '治愈型'],
+            name: '白塔寺胡同漫游与宫门口咖啡',
+            areaId: 'baitasi',
+            schedule: [
+                { time: '14:00', item: '白塔寺胡同漫游' },
+                { time: '16:00', item: '白塔寺红墙拍照' },
+                { time: '17:30', item: '宫门口胡同咖啡' },
+                { time: '19:00', item: '华熙LIVE晚餐夜景' }
+            ],
+            nearbyActivities: ['a9', 'a18'],
+            merchants: [
+                { name: '华熙LIVE商圈', budget: '¥80-120/人', district: '华熙', blurb: '晚餐选择多，夜景热闹，适合收尾一站。', tip: '周末饭点排队，可先取号再逛。', primary: true, partner: true, image: 'https://images.unsplash.com/photo-1501386761578-eac5c94b800a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', partnerId: 'm-huaxi' },
+                { name: '熊煮咖啡（白塔寺店）', budget: '¥35-50/人', district: '白塔寺', blurb: '红墙白塔景观位，适合拍照发呆。', tip: '景观位周末紧俏，建议提前去。', primary: false },
+                { name: '宫门口馒头铺', budget: '¥10-20/人', district: '宫门口', blurb: '老字号主食铺，性价比高。', tip: '下午收摊早，别太晚去。', primary: false }
+            ],
+            prep: [
+                '核验主推荐店铺营业时间与景观位情况',
+                '提前确认地铁2号线阜成门站出口与返程方式',
+                '按人均预算预留20-50元浮动费用',
+                '胡同拍照注意居民隐私，部分胡同为私人区域'
+            ],
+            budget: [
+                { item: '咖啡甜品', amount: 60 },
+                { item: '小吃', amount: 30 },
+                { item: '交通', amount: 25 },
+                { item: '备用', amount: 45 }
+            ],
+            budgetTotal: '约 160 元/人',
+            reason: '适合想安静走走胡同、拍拍照、喝杯咖啡的周末。',
+            guide: {
+                transport: '白塔寺与宫门口之间步行可达，晚餐建议地铁或打车去华熙LIVE。建议集合点：地铁2号线阜成门站B口。出发前确认营业时间与拍照位置。',
+                suitable: ['适合文艺型、治愈型用户。', '适合喜欢胡同、拍照、安静咖啡的人。'],
+                unsuitable: ['不喜欢走路或对胡同环境无感的不建议。', '华熙LIVE段人多，社恐可只走白塔寺半段。'],
+                alternatives: ['如果下雨，改去附近书店或咖啡馆。', '白塔寺人多时，转去广济寺或历代帝王庙。', '想省钱，晚餐可换成宫门口一带的小馆子。']
+            }
+        },
+        {
+            id: 'r5',
+            type: 'classic',
+            tags: ['文艺型', '社交型'],
+            name: '798艺术区咖啡与公园散步',
+            areaId: null, // 额外路线，不绑定表单片区，通过推荐列表查看
+            schedule: [
+                { time: '13:00', item: '798画廊巡游' },
+                { time: '15:00', item: '艺术区咖啡' },
+                { time: '17:00', item: '751广场拍照' },
+                { time: '19:00', item: '园区晚餐' }
+            ],
+            nearbyActivities: ['a10', 'a19'],
+            merchants: [
+                { name: '北平机器（798店）', budget: '¥90-130/人', district: '798艺术区', blurb: '厂房风精酿晚餐，看展后收尾首选。', tip: '周末晚餐建议订位。', primary: true, partner: true, image: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', partnerId: 'm-beiping-798' },
+                { name: 'VOYAGE COFFEE（798店）', budget: '¥40-60/人', district: '798艺术区', blurb: '厂房改造咖啡馆，适合看展间隙歇脚。', tip: '周末下午人多，建议错峰。', primary: false },
+                { name: '尤伦斯当代艺术中心商店', budget: '¥0-200/人', district: '798艺术区', blurb: '逛展+买周边，文艺感拉满。', tip: '部分展览需提前购票。', primary: false }
+            ],
+            prep: [
+                '核验主推荐店铺营业时间与展览开放情况',
+                '提前确认地铁14号线望京南站出口与返程方式',
+                '按人均预算预留20-50元浮动费用',
+                '提前查好想看的展览与是否需要预约购票'
+            ],
+            budget: [
+                { item: '展览', amount: 80 },
+                { item: '咖啡', amount: 50 },
+                { item: '交通', amount: 30 },
+                { item: '备用', amount: 40 }
+            ],
+            budgetTotal: '约 200 元/人',
+            reason: '适合想逛展、拍照、喝咖啡，文艺氛围拉满的周末。',
+            guide: {
+                transport: '798园区较大，展馆之间步行串联，进出建议打车或地铁14号线望京南站。建议集合点：798艺术区南门。出发前确认展览开放时间。',
+                suitable: ['适合文艺型、社交型用户。', '适合喜欢看展、拍照、逛园区的人。'],
+                unsuitable: ['对当代艺术无感的不建议。', '不想走路的人建议只看核心展馆。'],
+                alternatives: ['如果下雨，多安排室内展馆。', '想省钱，只逛免费展，能省50-80元。', '时间紧的话，只逛尤伦斯周边核心区域。']
+            }
+        },
+        {
+            id: 'r6',
+            type: 'classic',
+            tags: ['运动型', '社交型'],
+            name: '工体夜跑与三里屯夜宵',
+            areaId: 'sanlitun',
+            schedule: [
+                { time: '18:00', item: '工体北门集合热身' },
+                { time: '19:00', item: '夜跑5公里' },
+                { time: '20:00', item: '拉伸放松' },
+                { time: '21:00', item: '三里屯夜宵局' }
+            ],
+            nearbyActivities: ['a1', 'a23'],
+            merchants: [
+                { name: '工体夜宵小馆', budget: '¥60-90/人', district: '工体', blurb: '夜跑后补充能量，热闹实惠。', tip: '晚间高峰需排队，可错峰到 21:30。', primary: true },
+                { name: '茶百道（工体店）', budget: '¥15-25/人', district: '工体', blurb: '夜宵搭配冰饮，快乐加倍。', tip: '大杯第二份半价，建议拼单。', primary: false, partner: true, image: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', partnerId: 'm-teabadao-gt' },
+                { name: '三里屯深夜食堂', budget: '¥50-80/人', district: '三里屯', blurb: '日式深夜食堂，安静收尾。', tip: '凌晨 1 点打烊，别太晚。', primary: false }
+            ],
+            prep: [
+                '核验主推荐店铺营业时间与夜宵时段',
+                '提前确认夜跑路线与照明情况，结伴出行',
+                '按人均预算预留20-50元浮动费用',
+                '带好替换衣物与运动补给'
+            ],
+            budget: [
+                { item: '夜宵', amount: 100 },
+                { item: '运动饮料', amount: 20 },
+                { item: '交通', amount: 20 },
+                { item: '备用', amount: 40 }
+            ],
+            budgetTotal: '约 180 元/人',
+            reason: '适合白天上班、晚上想动一动再吃顿好的周末。',
+            guide: {
+                transport: '工体与三里屯步行可达，夜跑路线沿工体外围绿道。建议集合点：工体北门。出发前确认天气与夜跑路线。',
+                suitable: ['适合运动型、社交型用户。', '适合想夜跑、夜宵、组局的人。'],
+                unsuitable: ['膝盖不适或体力一般的不建议夜跑。', '怕晚上出门的不建议这条线。'],
+                alternatives: ['如果下雨，夜跑改为室内羽毛球或健身房。', '跑不动就只走两圈，直接进夜宵环节。', '想省钱，夜宵换成便利店简餐，能省40-60元。']
+            }
+        },
+        {
+            id: 'r7',
+            type: 'smart',
+            tags: ['运动型', '美食型'],
+            name: '后海晨骑与胡同早点',
+            areaId: 'shichahai',
+            schedule: [
+                { time: '07:30', item: '后海环湖晨骑' },
+                { time: '08:30', item: '胡同早点' },
+                { time: '09:30', item: '鼓楼咖啡' },
+                { time: '11:00', item: '什刹海晨光散步' }
+            ],
+            nearbyActivities: ['a8', 'a11'],
+            merchants: [
+                { name: '什刹海早点铺', budget: '¥20-35/人', district: '什刹海', blurb: '糖油饼配豆汁，胡同里的清晨味道。', tip: '早上 10 点后部分品类售罄。', primary: true },
+                { name: '北平机器（方家胡同店）', budget: '¥80-120/人', district: '方家胡同', blurb: '白天是安静的胡同咖啡精酿馆。', tip: '上午人少，适合晨骑后歇脚。', primary: false, partner: true, image: 'https://images.unsplash.com/photo-1541336032412-2048a678540d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', partnerId: 'm-beiping-fangjia' },
+                { name: '鼓楼社区咖啡', budget: '¥30-45/人', district: '鼓楼', blurb: '社区小店，早晨安静出片。', tip: '9 点开门，别去太早。', primary: false }
+            ],
+            prep: [
+                '核验主推荐店铺营业时间（早餐时段）',
+                '提前确认骑行路线与共享单车停放点',
+                '按人均预算预留20-50元浮动费用',
+                '清晨体感偏凉，带件薄外套'
+            ],
+            budget: [
+                { item: '早点', amount: 30 },
+                { item: '咖啡', amount: 40 },
+                { item: '交通', amount: 15 },
+                { item: '备用', amount: 35 }
+            ],
+            budgetTotal: '约 120 元/人',
+            reason: '适合想用清晨运动开启一天、顺便吃顿地道早点的周末。',
+            guide: {
+                transport: '后海环湖绿道骑行，早点与咖啡均在步行范围内。建议集合点：什刹海地铁站A口。出发前确认天气与骑行路线。',
+                suitable: ['适合运动型、美食型用户。', '适合早起、喜欢清晨北京的人。'],
+                unsuitable: ['起不来早的不建议这条线。', '不喜欢豆汁等老北京口味的不建议。'],
+                alternatives: ['如果下雨，改成室内早午餐。', '骑不动就散步环湖，节奏更慢。', '想省钱，咖啡换成豆浆，能省30元。']
+            }
+        },
+        {
+            id: 'r8',
+            type: 'classic',
+            tags: ['治愈型', '文艺型'],
+            name: '温榆河露营风下午茶',
+            areaId: 'aosen',
+            schedule: [
+                { time: '13:00', item: '温榆河公园漫步' },
+                { time: '15:00', item: '露营风下午茶' },
+                { time: '17:00', item: '河边日落拍照' },
+                { time: '19:00', item: '返程晚餐自理' }
+            ],
+            nearbyActivities: ['a3', 'a6'],
+            merchants: [
+                { name: '温榆河畔茶室', budget: '¥70-100/人', district: '温榆河', blurb: '天幕帐篷下午茶，草地河边都好拍。', tip: '周末帐篷位需提前预约。', primary: true },
+                { name: '茶百道（温榆河店）', budget: '¥15-25/人', district: '温榆河', blurb: '公园门口补给，回程路上带一杯。', tip: '出公园方向顺路，别绕行。', primary: false, partner: true, image: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', partnerId: 'm-teabadao-wyh' },
+                { name: '奥森轻食店', budget: '¥40-60/人', district: '奥森', blurb: '返程前的轻食补给。', tip: '晚 7 点后停止点单。', primary: false }
+            ],
+            prep: [
+                '核验主推荐店铺营业时间与帐篷位预约',
+                '提前确认公园开放时间与返程交通',
+                '按人均预算预留20-50元浮动费用',
+                '户外注意防晒与蚊虫'
+            ],
+            budget: [
+                { item: '下午茶', amount: 90 },
+                { item: '交通', amount: 40 },
+                { item: '备用', amount: 40 }
+            ],
+            budgetTotal: '约 170 元/人',
+            reason: '适合想离开市区、在草地河边放松一下午的周末。',
+            guide: {
+                transport: '温榆河公园建议自驾或打车前往，公园内部步行。建议集合点：温榆河公园西园入口。出发前确认开放时间与天气。',
+                suitable: ['适合治愈型、文艺型用户。', '适合想野餐、下午茶、拍日落的人。'],
+                unsuitable: ['不想出远门的不建议这条线。', '蚊虫敏感体质不建议夏季前往。'],
+                alternatives: ['如果下雨，改去室内咖啡馆。', '人多时改去奥森南园草坪。', '想省钱，下午茶自带简餐，能省60-80元。']
+            }
+        },
+        {
+            id: 'r9',
+            type: 'recommend',
+            tags: ['治愈型', '美食型', '文艺型'],
+            name: '什刹海晨光散步与鼓楼早午餐',
+            areaId: 'shichahai',
+            schedule: [
+                { time: '09:00', item: '什刹海晨光散步' },
+                { time: '10:30', item: '鼓楼早午餐' },
+                { time: '12:30', item: '胡同咖啡馆' },
+                { time: '14:00', item: '南锣手作小店' }
+            ],
+            nearbyActivities: ['a8', 'a11'],
+            merchants: [
+                { name: '鼓楼早午餐小馆', budget: '¥80-110/人', district: '鼓楼', blurb: '胡同里的阳光早午餐，适合慢慢吃。', tip: '周末 10 点半后需排队。', primary: true },
+                { name: '茶百道（鼓楼店）', budget: '¥15-25/人', district: '鼓楼', blurb: '饭后一杯，边喝边逛南锣。', tip: '热门款可能售罄，早去。', primary: false, partner: true, image: 'https://images.unsplash.com/photo-1563245372-f21724e3856d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', partnerId: 'm-teabadao-gl' },
+                { name: '南锣手作咖啡', budget: '¥35-50/人', district: '南锣鼓巷', blurb: '手作与咖啡结合的小店，适合慢慢逛。', tip: '店内座位有限。', primary: false }
+            ],
+            prep: [
+                '核验主推荐店铺营业时间与排队情况',
+                '提前确认地铁8号线什刹海站出口',
+                '按人均预算预留20-50元浮动费用',
+                '清晨湖边微凉，带件外套'
+            ],
+            budget: [
+                { item: '早午餐', amount: 110 },
+                { item: '咖啡', amount: 45 },
+                { item: '交通', amount: 20 },
+                { item: '备用', amount: 45 }
+            ],
+            budgetTotal: '约 220 元/人',
+            reason: '适合想用一顿舒服的早午餐开启周末、再慢逛胡同的人。',
+            guide: {
+                transport: '什刹海、鼓楼与南锣之间步行串联，建议地铁8号线什刹海站进出。建议集合点：什刹海荷花市场。出发前确认营业时间。',
+                suitable: ['适合治愈型、美食型、文艺型用户。', '适合想慢节奏过周六的人。'],
+                unsuitable: ['赶时间的不建议，这条线适合慢慢走。', '周末怕排队的不建议早午餐时段去。'],
+                alternatives: ['如果下雨，早午餐后改逛室内小店。', '人多时跳过南锣，改走北锣支巷。', '想省钱，早午餐换胡同早点铺，能省50-70元。']
+            }
+        }
+    ],
+
+    // 个人中心 mock：我报名的活动 / 我收藏的动态与路线 / 我的溜达计划（未出行 pending / 已出行 done）
+    myActivities: ['a1', 'a3', 'a21'],
+    myFavoriteMoments: ['mo1', 'mo4'],
+    myFavoriteRoutes: ['r1', 'r9'],
+    myPlanRoutes: [
+        { routeId: 'r1', status: 'pending' },
+        { routeId: 'r9', status: 'pending' },
+        { routeId: 'r2', status: 'done' }
+    ],
+
+    // 平台活动合作商家注册表（按 partnerId 索引，路线数据通过 partnerId 引用）
+    partnerMerchants: {
+        'm-teabadao-slt': {
+            id: 'm-teabadao-slt',
+            couponMode: 'code',
+            name: '茶百道（三里屯店）',
+            budget: '¥15-25/人',
+            district: '三里屯',
+            description: '三里屯核心商圈的连锁鲜果茶店，主打杨枝甘露与招牌奶茶，逛街歇脚首选。门店支持小程序提前点单，出杯快，是三里屯片区的热门饮品补给站。',
+            notes: '周末下午出杯较慢，建议小程序提前下单，高峰时段建议外带。',
+            images: [
+                'https://images.unsplash.com/photo-1497935586351-b67a49e012bf?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1511512578047-dfb367046420?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+            ],
+            address: '北京市朝阳区三里屯太古里南区 B1 层',
+            location: { lng: 116.455, lat: 39.937 },
+            coupons: [
+                { id: 'c1', code: 'TB7F3K2Q', title: '第二杯半价', description: '全场饮品第二杯半价，可与朋友拼单', value: '第二杯半价' },
+                { id: 'c2', code: 'TB2B4M9X', title: '新客立减5元', description: '首次小程序点单立减 5 元', value: '减5元' },
+                { id: 'c3', code: 'TB6A1P8C', title: '满30减6', description: '单笔满 30 元减 6 元', value: '减6元' }
+            ]
+        },
+        'm-beiping-fangjia': {
+            id: 'm-beiping-fangjia',
+            couponMode: 'qr',
+            name: '北平机器（方家胡同店）',
+            budget: '¥80-120/人',
+            district: '方家胡同',
+            description: '藏在方家胡同里的精酿酒吧，工业风装修配老胡同院墙，主打自酿 IPA 与酸啤。白天安静适合聊天，晚上气氛热闹，是鼓楼片区精酿爱好者的据点。',
+            notes: '周末晚间人多，建议先取号再逛，部分酒款度数偏高请适量。',
+            images: [
+                'https://images.unsplash.com/photo-1541336032412-2048a678540d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1563245372-f21724e3856d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1546519638-68e109498ffc?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+            ],
+            address: '北京市东城区方家胡同 46 号院',
+            location: { lng: 116.407, lat: 39.939 },
+            coupons: [
+                { id: 'c1', code: 'BJ4R8T2W', title: '精酿第二杯半价', description: '指定精酿第二杯半价', value: '第二杯半价' },
+                { id: 'c2', code: 'BJ5S9N1E', title: '下酒小食8折', description: '全场下酒小食 8 折', value: '8折' }
+            ]
+        },
+        'm-teabadao-as': {
+            id: 'm-teabadao-as',
+            couponMode: 'code',
+            name: '茶百道（奥森南门店）',
+            budget: '¥15-25/人',
+            district: '奥森',
+            description: '奥森南门附近的连锁茶饮店，运动前后的补给站。主打清爽果茶系列，骑行、跑步后来一杯恢复状态，支持小程序下单到店自取。',
+            notes: '运动后建议选择微糖或去冰，周末午后排队，建议上午前往。',
+            images: [
+                'https://images.unsplash.com/photo-1511512578047-dfb367046420?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1497935586351-b67a49e012bf?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+            ],
+            address: '北京市朝阳区奥林匹克森林公园南门东侧',
+            location: { lng: 116.393, lat: 40.011 },
+            coupons: [
+                { id: 'c1', code: 'TB3G6H1J', title: '运动日立减4元', description: '穿运动装备到店立减 4 元', value: '减4元' },
+                { id: 'c2', code: 'TB8D5K4L', title: '第二杯半价', description: '全场饮品第二杯半价', value: '第二杯半价' }
+            ]
+        },
+        'm-huaxi': {
+            id: 'm-huaxi',
+            couponMode: 'qr',
+            name: '华熙LIVE商圈',
+            budget: '¥80-120/人',
+            district: '华熙',
+            description: '华熙LIVE·五棵松是西四环的大型商业综合体，餐饮、酒吧、Livehouse 聚集，夜晚灯光氛围热闹。商圈内选择多，适合作为路线收尾站，吃逛一体。',
+            notes: '周末饭点热门餐厅排队，建议先取号再逛，并提前看好店铺位置。',
+            images: [
+                'https://images.unsplash.com/photo-1501386761578-eac5c94b800a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1511379938547-c1f69419868d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1550745165-9bc0b252726f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+            ],
+            address: '北京市海淀区复兴路 69 号',
+            location: { lng: 116.271, lat: 39.906 },
+            coupons: [
+                { id: 'c1', code: 'HX2W9P7M', title: '小吊梨汤（华熙店）满100减15', description: '小吊梨汤（华熙店）单笔满 100 元减 15 元', value: '减15元' },
+                { id: 'c2', code: 'HX6C3A5B', title: '华熙LIVE商圈停车2小时免费', description: '商圈内消费满 200 元兑换 2 小时免费停车', value: '停车券' },
+                { id: 'c3', code: 'HX1E8D4F', title: '湊湊火锅（华熙店）新店9折', description: '湊湊火锅（华熙店）全场 9 折', value: '9折' }
+            ]
+        },
+        'm-beiping-798': {
+            id: 'm-beiping-798',
+            couponMode: 'qr',
+            name: '北平机器（798店）',
+            budget: '¥90-130/人',
+            district: '798艺术区',
+            description: '北平机器在 798 艺术区的分店，改造自老厂房，挑高空间配工业装置。主打精酿与西式简餐，看展之后来一杯的收尾选择，晚上常有现场演出。',
+            notes: '周末晚餐建议提前订位，园区步行距离较远请预留时间。',
+            images: [
+                'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1541336032412-2048a678540d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1563245372-f21724e3856d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+            ],
+            address: '北京市朝阳区酒仙桥路 4 号 798 艺术区 751 园区',
+            location: { lng: 116.497, lat: 39.984 },
+            coupons: [
+                { id: 'c1', code: 'BJ7Q2V6Z', title: '精酿第二杯半价', description: '指定精酿第二杯半价', value: '第二杯半价' },
+                { id: 'c2', code: 'BJ9M3X8Y', title: '工作日午市8.8折', description: '工作日午餐时段全场 8.8 折', value: '8.8折' }
+            ]
+        },
+        'm-teabadao-gt': {
+            id: 'm-teabadao-gt',
+            couponMode: 'code',
+            name: '茶百道（工体店）',
+            budget: '¥15-25/人',
+            district: '工体',
+            description: '工体北门附近的连锁茶饮店，夜跑、看球后的补给点。主打冰饮与果茶，支持小程序点单，高峰期出杯依然稳定。',
+            notes: '赛事日晚间客流大，建议提前下单并选择外带。',
+            images: [
+                'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1497935586351-b67a49e012bf?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+            ],
+            address: '北京市朝阳区工体北路 8 号',
+            location: { lng: 116.444, lat: 39.932 },
+            coupons: [
+                { id: 'c1', code: 'TB5N2C7P', title: '大杯第二份半价', description: '大杯饮品第二份半价', value: '第二份半价' },
+                { id: 'c2', code: 'TB1K9R4T', title: '满25减5', description: '单笔满 25 元减 5 元', value: '减5元' }
+            ]
+        },
+        'm-teabadao-wyh': {
+            id: 'm-teabadao-wyh',
+            couponMode: 'code',
+            name: '茶百道（温榆河店）',
+            budget: '¥15-25/人',
+            district: '温榆河',
+            description: '温榆河公园附近的连锁茶饮店，露营、散步后的补给站。主打清爽果茶与奶盖系列，出公园方向顺路，支持小程序下单自取。',
+            notes: '公园旺季周末排队较长，奶盖系列建议尽快饮用。',
+            images: [
+                'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1511512578047-dfb367046420?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+            ],
+            address: '北京市顺义区温榆河公园西园入口旁',
+            location: { lng: 116.527, lat: 40.032 },
+            coupons: [
+                { id: 'c1', code: 'TB4V8B2W', title: '露营日立减5元', description: '出示露营装备立减 5 元', value: '减5元' },
+                { id: 'c2', code: 'TB9Z6M3D', title: '第二杯半价', description: '全场饮品第二杯半价', value: '第二杯半价' }
+            ]
+        },
+        'm-teabadao-gl': {
+            id: 'm-teabadao-gl',
+            couponMode: 'code',
+            name: '茶百道（鼓楼店）',
+            budget: '¥15-25/人',
+            district: '鼓楼',
+            description: '鼓楼东大街上的连锁茶饮店，逛胡同、看鼓楼时的歇脚点。主打杨枝甘露与柠檬茶系列，店内可小坐，窗边位能看街景。',
+            notes: '热门款下午可能售罄建议早去，周末店内座位紧张。',
+            images: [
+                'https://images.unsplash.com/photo-1563245372-f21724e3856d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1497935586351-b67a49e012bf?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1511512578047-dfb367046420?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+            ],
+            address: '北京市东城区鼓楼东大街 120 号',
+            location: { lng: 116.397, lat: 39.945 },
+            coupons: [
+                { id: 'c1', code: 'TB3J7Y5G', title: '第二杯半价', description: '全场饮品第二杯半价', value: '第二杯半价' },
+                { id: 'c2', code: 'TB6E1H8S', title: '新客立减4元', description: '首次小程序点单立减 4 元', value: '减4元' },
+                { id: 'c3', code: 'TB2Q4N9K', title: '满30减6', description: '单笔满 30 元减 6 元', value: '减6元' }
+            ]
+        }
     },
 
     // 周末人格测试：8 道题，每题 4 个选项，选项给对应人格加分

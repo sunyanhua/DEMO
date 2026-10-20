@@ -23,7 +23,9 @@
             answers: [],
             currentIndex: 0,
             locked: false, // 防止选中后连点
-            started: false, // 是否已点击"开始测试"（区分"未开始"与"已开始未作答"）
+            started: false, // 是否已点击"开始鉴定"（区分"未开始"与"已开始未作答"）
+            showPoster: false, // 是否展示分享人格海报
+            resultPersonality: null, // 当前测试结果人格（海报与结果页区块复用）
 
             get questions() {
                 return (window.GlobalData && window.GlobalData.weekendTestQuestions) || [];
@@ -57,11 +59,16 @@
                         <div class="w-20 h-20 mx-auto rounded-3xl bg-gradient-to-br from-brand-orange to-brand-yellow flex items-center justify-center shadow-lg shadow-brand-orange/30 rotate-3">
                             <i data-lucide="sparkles" class="w-9 h-9 text-white"></i>
                         </div>
-                        <h2 class="mt-6 text-center text-2xl font-black text-gray-900">测出你的周末人格</h2>
-                        <p class="mt-2 text-center text-sm text-gray-500 leading-relaxed">8 道小题，看看这个周末<br/>最适合你的打开方式</p>
-                        <div class="mt-8 grid grid-cols-4 gap-x-3 gap-y-5">${teaser}</div>
+                        <h2 class="mt-6 text-center text-xl font-black text-gray-900">测测你是哪种北京周末生物？</h2>
+                        <p class="mt-2 text-center text-sm text-gray-500">8道题，看看你周末是哪种野生人类。</p>
+                        <div class="mt-5 bg-white rounded-xl border border-gray-100 p-4 space-y-2">
+                            <p class="text-xs text-gray-600 leading-relaxed">不赶景点，不硬社交。</p>
+                            <p class="text-xs text-gray-600 leading-relaxed">选你真实会选的，我们给你一条北京周末路线。</p>
+                            <p class="text-xs text-gray-600 leading-relaxed">一个人能玩，熟人能分享，想找搭子也能一键组局。</p>
+                        </div>
+                        <div class="mt-6 grid grid-cols-4 gap-x-3 gap-y-5">${teaser}</div>
                         <button onclick="Test.start()" class="mt-8 w-full py-3.5 bg-brand-orange text-white rounded-xl font-bold text-base shadow-lg shadow-brand-orange/30 active:scale-95 transition-transform">
-                            开始测试
+                            开始鉴定 →
                         </button>
                     </div>
                 </div>
@@ -100,11 +107,12 @@
             resultView() {
                 const { id } = window.WeekendTest.calculate(this.answers);
                 const p = this.personalities.find(item => item.id === id);
+                this.resultPersonality = p; // 供海报与区块复用（避免同分随机重算）
                 const tagsHtml = p.tags.map(tag => `
                     <span class="px-3 py-1 bg-white/20 text-white text-xs font-medium rounded-full border border-white/40">${tag}</span>
                 `).join('');
                 return `
-                <div class="pt-[50px] min-h-screen fade-in">
+                <div class="pt-[50px] pb-10 fade-in">
                     <div class="px-4 pt-4">
                         <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100">
                             <div class="bg-gradient-to-br ${p.color} px-5 pt-8 pb-7 text-center relative overflow-hidden">
@@ -126,12 +134,158 @@
                                     <button onclick="window.location.href='weekend-route.html'" class="w-full flex items-center justify-center gap-2 py-3.5 bg-brand-orange text-white rounded-xl font-bold active:scale-95 transition-transform shadow-lg shadow-brand-orange/30">
                                         <i data-lucide="map" class="w-4 h-4"></i><span>定制我的周末路线</span>
                                     </button>
-                                    <button onclick="Test.restart()" class="w-full py-3 bg-white border border-brand-orange text-brand-orange rounded-xl font-bold active:scale-95 transition-transform">
-                                        重新测试
-                                    </button>
+                                    <div class="grid grid-cols-2 gap-2.5">
+                                        <button onclick="Test.openPoster()" class="flex items-center justify-center gap-1.5 py-3 bg-brand-orange/10 text-brand-orange rounded-xl font-bold text-sm active:scale-95 transition-transform">
+                                            <i data-lucide="share-2" class="w-4 h-4"></i><span>分享人格</span>
+                                        </button>
+                                        <button onclick="Test.restart()" class="py-3 bg-white border border-brand-orange text-brand-orange rounded-xl font-bold text-sm active:scale-95 transition-transform">
+                                            重新测试
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
+                    </div>
+                    ${this.recommendRoutesSection()}
+                    ${this.hotActivitiesSection()}
+                    ${this.fellowsSection()}
+                </div>
+                `;
+            },
+
+            sectionTitle(text) {
+                return `
+                <div class="flex items-center gap-1.5 mb-2.5">
+                    <div class="w-1 h-4 rounded-full bg-brand-orange"></div>
+                    <h2 class="text-base font-black text-gray-900">${text}</h2>
+                </div>
+                `;
+            },
+
+            // 推荐周末路线：按人格映射（点击深链进路线详情）
+            recommendRoutesSection() {
+                const routes = window.WeekendTest.routesForPersonality(this.resultPersonality.id);
+                if (routes.length === 0) return '';
+                const cardsHtml = routes.map(r => `
+                    <div onclick="window.location.href='weekend-route.html?view=detail&route=${r.id}'" class="bg-white rounded-xl border border-gray-100 p-3.5 cursor-pointer active:scale-[0.99] transition-transform">
+                        <div class="flex items-center justify-between gap-2">
+                            <h3 class="text-sm font-bold text-gray-900 line-clamp-1">${r.name}</h3>
+                            <span class="text-xs font-black text-brand-orange flex-shrink-0">${r.budgetTotal}</span>
+                        </div>
+                        <div class="flex flex-wrap gap-1.5 mt-2">
+                            ${r.tags.map(tag => `<span class="px-2 py-0.5 bg-gray-50 text-gray-500 text-[10px] rounded-md border border-gray-100">${tag}</span>`).join('')}
+                        </div>
+                        <p class="mt-1.5 text-[11px] text-gray-400">${r.schedule.length} 站行程 · ${r.schedule[0].time} ${r.schedule[0].item} 起</p>
+                    </div>
+                `).join('');
+                return `
+                <div class="px-4 pt-5">
+                    ${this.sectionTitle('推荐周末路线')}
+                    <div class="space-y-2.5">${cardsHtml}</div>
+                </div>
+                `;
+            },
+
+            // 平台热门活动：最新 3 条
+            hotActivitiesSection() {
+                const activities = window.WeekendTest.latestActivities(3);
+                if (activities.length === 0) return '';
+                const cardsHtml = activities.map(a => `
+                    <div onclick="window.location.href='detail.html?id=${a.id}'" class="flex gap-3 bg-white rounded-xl border border-gray-100 p-3 cursor-pointer active:scale-[0.99] transition-transform">
+                        <img src="${a.imageUrl}" class="w-20 h-20 rounded-lg object-cover flex-shrink-0" />
+                        <div class="flex-1 flex flex-col justify-between py-0.5 min-w-0">
+                            <h3 class="text-sm font-bold text-gray-900 line-clamp-1">${a.title}</h3>
+                            <div class="text-[11px] text-gray-400 mt-1 flex items-center gap-1"><i data-lucide="calendar" class="w-3 h-3"></i>${a.date}</div>
+                            <div class="text-[11px] text-gray-400 mt-0.5 flex items-center gap-1"><i data-lucide="map-pin" class="w-3 h-3"></i>${a.district} · ${a.location}</div>
+                            <div class="flex items-center justify-between mt-1">
+                                <span class="text-[10px] text-gray-400">${a.currentParticipants}/${a.maxParticipants}人</span>
+                                <span class="text-brand-orange font-bold text-sm">${a.price === 0 ? '免费' : '¥' + a.price}</span>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+                return `
+                <div class="px-4 pt-5">
+                    ${this.sectionTitle('平台热门活动')}
+                    <div class="space-y-2.5">${cardsHtml}</div>
+                </div>
+                `;
+            },
+
+            // 同款搭子：同人格用户横滑卡（参考首页推荐搭子排版）
+            fellowsSection() {
+                const fellows = window.WeekendTest.fellowsForPersonality(this.resultPersonality.id);
+                const cardsHtml = fellows.map(f => `
+                    <div onclick="window.location.href='profile.html?id=${f.id}'" class="flex-shrink-0 w-36 bg-white rounded-xl p-3 shadow-sm border border-gray-100 cursor-pointer">
+                        <div class="flex flex-col items-center">
+                            <div class="relative mb-2">
+                                <img src="${f.avatarUrl}" class="w-14 h-14 rounded-full border-2 border-white shadow-md object-cover"/>
+                                <div class="absolute bottom-0 right-0 bg-brand-blue text-[8px] text-white px-1.5 py-0.5 rounded-full border border-white">${f.distance}</div>
+                            </div>
+                            <h3 class="font-bold text-gray-900 text-sm mb-1 truncate w-full text-center">${f.name}</h3>
+                            <div class="flex flex-wrap justify-center gap-1 mb-2 h-5 overflow-hidden">
+                                ${f.tags.slice(0, 2).map(tag => `<span class="text-[9px] px-1.5 py-0.5 bg-gray-50 text-gray-500 rounded-md border border-gray-100">${tag}</span>`).join('')}
+                            </div>
+                            <p class="text-[10px] text-gray-400 text-center line-clamp-2 h-8 leading-tight w-full mb-2 bg-gray-50/50 rounded p-1">"${f.intro}"</p>
+                            <button class="w-full py-1 bg-gradient-to-r from-gray-900 to-gray-700 text-white text-[10px] font-bold rounded-full active:scale-95 transition-transform flex items-center justify-center gap-1" onclick="event.stopPropagation(); window.location.href='chat.html?uid=${f.id}&name=${encodeURIComponent(f.name)}'">
+                                <i data-lucide="message-circle" class="w-2.5 h-2.5"></i><span>搭讪</span>
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+                const content = fellows.length > 0
+                    ? `<div class="flex overflow-x-auto gap-3 no-scrollbar pb-1" style="scrollbar-width: none; -ms-overflow-style: none;">${cardsHtml}</div>`
+                    : '<div class="bg-white rounded-xl border border-gray-100 p-6 text-center text-xs text-gray-400">暂时没有同款搭子，快去首页找找吧</div>';
+                return `
+                <div class="px-4 pt-5">
+                    ${this.sectionTitle('同款搭子')}
+                    ${content}
+                </div>
+                `;
+            },
+
+            openPoster() {
+                this.showPoster = true;
+                this.render();
+            },
+
+            closePoster() {
+                this.showPoster = false;
+                this.render();
+            },
+
+            // 分享人格海报：头像昵称/结果/台词/描述/二维码/扫码引导
+            posterModal() {
+                if (!this.showPoster || !this.resultPersonality) return '';
+                const p = this.resultPersonality;
+                const user = (window.GlobalData && window.GlobalData.user) || { name: '我', avatarUrl: '' };
+                return `
+                <div class="fixed inset-0 bg-black/60 z-[200] flex items-center justify-center px-8" onclick="Test.closePoster()">
+                    <div class="w-full max-w-xs" onclick="event.stopPropagation()">
+                        <div class="rounded-2xl overflow-hidden bg-gradient-to-br ${p.color} p-5 relative">
+                            <div class="absolute -right-8 -top-8 w-32 h-32 bg-white/15 rounded-full blur-2xl"></div>
+                            <div class="absolute -left-6 -bottom-10 w-28 h-28 bg-black/10 rounded-full blur-2xl"></div>
+                            <div class="relative">
+                                <div class="flex items-center gap-2">
+                                    <img src="${user.avatarUrl}" class="w-10 h-10 rounded-full border-2 border-white/70 object-cover" />
+                                    <div>
+                                        <p class="text-white text-sm font-bold">${user.name}</p>
+                                        <p class="text-white/70 text-[10px]">在搭子计划完成了周末人格测试</p>
+                                    </div>
+                                </div>
+                                <div class="text-center mt-4">
+                                    <div class="text-5xl">${p.emoji}</div>
+                                    <h3 class="text-white text-2xl font-black mt-2">${p.title}</h3>
+                                    <p class="text-white/90 text-sm italic mt-2">"${p.quote}"</p>
+                                    <p class="text-white/85 text-[11px] mt-2 leading-relaxed">${p.description}</p>
+                                </div>
+                                <div class="mt-4 bg-white rounded-xl p-3.5 flex items-center gap-3">
+                                    <canvas id="qr-canvas" class="flex-shrink-0" width="72" height="72" style="width:72px;height:72px"></canvas>
+                                    <p class="text-[10px] text-gray-500 leading-relaxed">来测测你和我<br/>是不是同一种<br/>周末生物</p>
+                                </div>
+                            </div>
+                        </div>
+                        <button onclick="Test.closePoster()" class="mt-3 w-full py-2.5 bg-white/90 rounded-xl font-bold text-sm text-gray-700">关闭</button>
                     </div>
                 </div>
                 `;
@@ -202,8 +356,17 @@
                 document.getElementById('app').innerHTML = `
                     ${this.header()}
                     ${view}
+                    ${this.posterModal()}
                 `;
                 if (window.Common) window.Common.initIcons();
+                // 海报二维码绘制（真实浏览器中 canvas 可用时）
+                if (this.showPoster && this.resultPersonality) {
+                    const canvas = document.getElementById('qr-canvas');
+                    if (canvas && typeof canvas.getContext === 'function' && window.Common && window.Common.drawQr) {
+                        const userName = (window.GlobalData && window.GlobalData.user && window.GlobalData.user.name) || 'me';
+                        window.Common.drawQr(canvas, 'weekend-test:' + this.resultPersonality.id + ':' + userName);
+                    }
+                }
             }
         };
 

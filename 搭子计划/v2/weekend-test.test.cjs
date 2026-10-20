@@ -162,25 +162,34 @@ function makePageSandbox(options = {}) {
         .map(m => m[2])
         .join('\n');
     vm.runInContext(inline, sandbox);
-    return { Test: sandbox.window.Test, document };
+    return {
+        Test: sandbox.window.Test,
+        WeekendTest: sandbox.window.WeekendTest,
+        document,
+        GlobalData: sandbox.window.GlobalData
+    };
 }
 
-test('页面初始渲染为介绍视图', () => {
+test('页面初始渲染为介绍视图（含规格文案）', () => {
     const { Test, document } = makePageSandbox();
     Test.render();
-    assert.ok(document._html.includes('测出你的周末人格'));
-    assert.ok(document._html.includes('开始测试'));
+    assert.ok(document._html.includes('测测你是哪种北京周末生物？'), '标题应为规格文案');
+    assert.ok(document._html.includes('8道题，看看你周末是哪种野生人类。'), '副标题应为规格文案');
+    assert.ok(document._html.includes('不赶景点，不硬社交。'), '引导语第 1 句缺失');
+    assert.ok(document._html.includes('选你真实会选的，我们给你一条北京周末路线。'), '引导语第 2 句缺失');
+    assert.ok(document._html.includes('一个人能玩，熟人能分享，想找搭子也能一键组局。'), '引导语第 3 句缺失');
+    assert.ok(document._html.includes('开始鉴定'), '按钮文案应为「开始鉴定 →」');
     assert.ok(!document._html.includes('重新测试')); // 尚未出现结果视图
 });
 
 test('点击开始测试后进入第 1 题答题视图', () => {
     const { Test, document } = makePageSandbox();
     Test.render();
-    assert.ok(document._html.includes('开始测试'));
-    Test.start(); // 模拟点击"开始测试"按钮
+    assert.ok(document._html.includes('开始鉴定'));
+    Test.start(); // 模拟点击"开始鉴定"按钮
     assert.ok(document._html.includes('第 1/8 题'), 'start 后应展示第 1 题进度');
     assert.ok(document._html.includes('周六早上醒来，你第一反应是？'), 'start 后应展示第 1 题题干');
-    assert.ok(!document._html.includes('开始测试'), 'start 后不应再停留在介绍视图');
+    assert.ok(!document._html.includes('开始鉴定'), 'start 后不应再停留在介绍视图');
     assert.strictEqual(Test.answers.length, 0, '尚未作答，答案应为空');
 });
 
@@ -213,7 +222,7 @@ test('重新测试回到介绍视图', () => {
     for (let i = 0; i < 8; i++) Test.answer(0);
     assert.ok(document._html.includes('你的周末人格'));
     Test.restart();
-    assert.ok(document._html.includes('测出你的周末人格'));
+    assert.ok(document._html.includes('测测你是哪种北京周末生物？'));
     assert.ok(!document._html.includes('重新测试'), '重新测试后应回到介绍页');
     assert.strictEqual(Test.answers.length, 0);
     assert.strictEqual(Test.started, false);
@@ -224,6 +233,76 @@ test('数据缺失时展示错误视图', () => {
     Test.render();
     assert.ok(document._html.includes('测试题目加载失败'));
     assert.ok(!document._html.includes('开始测试'));
+});
+
+test('结果页配套数据：人格路线映射与同款搭子完整', () => {
+    const { GlobalData } = makePageSandbox();
+    const map = GlobalData.weekendPersonalityRoutes;
+    const pids = GlobalData.weekendPersonalities.map(p => p.id);
+    const routeIds = new Set(GlobalData.weekendRoutes.map(r => r.id));
+    assert.ok(map, '应有 weekendPersonalityRoutes 映射');
+    for (const pid of pids) {
+        assert.ok(Array.isArray(map[pid]) && map[pid].length >= 2, `人格 ${pid} 应映射至少 2 条路线`);
+        for (const rid of map[pid]) assert.ok(routeIds.has(rid), `人格 ${pid} 映射了未知路线 ${rid}`);
+    }
+    const fellows = GlobalData.weekendFellows;
+    assert.ok(Array.isArray(fellows) && fellows.length >= 8, '同款搭子 mock 数据应至少 8 人');
+    for (const pid of pids) {
+        assert.ok(fellows.some(f => f.personalityId === pid), `人格 ${pid} 应至少 1 个同款搭子`);
+    }
+    for (const f of fellows) {
+        assert.ok(f.id && f.name && f.avatarUrl && f.personalityId && f.distance && Array.isArray(f.tags) && f.intro,
+            `搭子 ${f.name} 字段不全`);
+    }
+});
+
+test('引擎查询：人格路线 / 最新活动 / 同款搭子', () => {
+    const { WeekendTest } = makePageSandbox();
+    const routes = [...WeekendTest.routesForPersonality('hutong')];
+    assert.deepStrictEqual(routes.map(r => r.id), ['r2', 'r9', 'r4'], '胡同街溜子应映射鼓楼/什刹海/白塔寺路线');
+    const acts = [...WeekendTest.latestActivities(3)];
+    assert.strictEqual(acts.length, 3);
+    assert.strictEqual(acts[0].id, 'a25', '最新活动应按 id 降序（a25 密室逃脱挑战）');
+    assert.strictEqual(acts[1].id, 'a24');
+    assert.strictEqual(acts[2].id, 'a23');
+    const fellows = [...WeekendTest.fellowsForPersonality('hutong')];
+    assert.strictEqual(fellows.length, 2, '胡同街溜子应有 2 位同款搭子');
+    assert.ok(fellows.every(f => f.personalityId === 'hutong'));
+    assert.strictEqual(WeekendTest.fellowsForPersonality('nobody').length, 0, '未知人格应返回空');
+});
+
+test('测试结果页新增区块：分享人格按钮 + 推荐路线 + 热门活动 + 同款搭子', () => {
+    const { Test, document } = makePageSandbox();
+    Test.render();
+    Test.start();
+    for (let i = 0; i < 8; i++) Test.answer(1); // 全选 B → 胡同街溜子
+    const html = document._html;
+    assert.ok(html.includes('分享人格'), '结果页应有分享人格按钮');
+    assert.ok(html.includes('推荐周末路线'), '应有推荐周末路线区');
+    assert.ok(html.includes('鼓楼南锣鼓巷夜景与什刹海小吃'), '推荐路线应含人格映射路线');
+    assert.ok(html.includes('weekend-route.html?view=detail&route=r2'), '推荐路线应可深链进路线详情');
+    assert.ok(html.includes('平台热门活动'), '应有平台热门活动区');
+    assert.ok(html.includes('密室逃脱挑战') && html.includes('日式居酒屋小酌') && html.includes('火锅聚餐局'), '应显示 3 条最新活动');
+    assert.ok(html.includes('同款搭子'), '应有同款搭子区');
+    assert.ok(html.includes('胡同观察员') && html.includes('慢速遛弯儿'), '应显示同人格的搭子');
+});
+
+test('分享人格海报：含头像昵称/结果/台词/描述/二维码/扫码引导', () => {
+    const { Test, document } = makePageSandbox();
+    Test.render();
+    Test.start();
+    for (let i = 0; i < 8; i++) Test.answer(1);
+    assert.ok(!document._html.includes('qr-canvas'), '未打开海报时不应有二维码');
+    Test.openPoster();
+    const html = document._html;
+    assert.ok(html.includes('ActiveExplorer'), '海报应含当前用户昵称');
+    assert.ok(html.includes('胡同街溜子'), '海报应含测试结果');
+    assert.ok(html.includes('我不赶路，我巡视胡同。'), '海报应含人设台词');
+    assert.ok(html.includes('你不爱排队打卡'), '海报应含人格描述');
+    assert.ok(html.includes('来测测你和我') && html.includes('周末生物'), '海报应含扫码引导语');
+    assert.ok(html.includes('qr-canvas'), '海报应含二维码画布');
+    Test.closePoster();
+    assert.ok(!document._html.includes('qr-canvas'), '关闭海报后二维码应消失');
 });
 
 test('页面不渲染底部主导航（介绍/答题/结果视图均无）', () => {

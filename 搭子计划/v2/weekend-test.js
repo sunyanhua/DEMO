@@ -54,5 +54,29 @@
         return { id: pickWinner(scores, random), scores };
     }
 
-    window.WeekendTest = { score, pickWinner, calculate };
+    // 测试结果页配套查询：按人格映射的推荐路线（返回路线对象数组）
+    function routesForPersonality(personalityId) {
+        const g = (typeof window !== 'undefined' && window.GlobalData) || {};
+        const map = g.weekendPersonalityRoutes || {};
+        const routes = g.weekendRoutes || [];
+        return (map[personalityId] || [])
+            .map(id => routes.find(r => r.id === id))
+            .filter(Boolean);
+    }
+
+    // 平台最新活动：按 id 数字降序取前 count 条
+    function latestActivities(count) {
+        const g = (typeof window !== 'undefined' && window.GlobalData) || {};
+        return [...(g.activities || [])]
+            .sort((a, b) => (parseInt(b.id.replace(/\D/g, '')) || 0) - (parseInt(a.id.replace(/\D/g, '')) || 0))
+            .slice(0, count || 3);
+    }
+
+    // 同款搭子：按人格过滤
+    function fellowsForPersonality(personalityId) {
+        const g = (typeof window !== 'undefined' && window.GlobalData) || {};
+        return (g.weekendFellows || []).filter(f => f.personalityId === personalityId);
+    }
+
+    window.WeekendTest = { score, pickWinner, calculate, routesForPersonality, latestActivities, fellowsForPersonality };
 })();
