@@ -56,6 +56,7 @@ test('合作商家注册表：id 唯一且详情字段齐全', () => {
     assert.strictEqual(new Set(ids).size, ids.length, '商户 id 应全局唯一');
     for (const m of entries) {
         assert.ok(m.name && m.budget && m.district, `${m.id} 缺少基础字段`);
+        assert.ok(m.businessHours && m.businessHours.length > 5, `${m.id} 应有营业时间`);
         assert.ok(m.description && m.description.length > 20, `${m.id} 店面介绍过短`);
         assert.ok(typeof m.notes === 'string' && m.notes.length > 10, `${m.id} 注意事项应为一句话`);
         assert.ok(Array.isArray(m.images) && m.images.length >= 3, `${m.id} 店面图应至少 3 张`);
@@ -88,6 +89,8 @@ test('商户详情页渲染全部内容区块（茶百道三里屯店）', () =>
     assert.ok(html.includes('¥15-25/人'), '应展示预算');
     assert.ok(html.includes('三里屯'), '应展示片区');
     assert.ok(html.includes('平台合作'), '应展示平台合作标识');
+    assert.ok(html.includes('营业时间'), '应展示营业时间');
+    assert.ok(html.includes('10:00-22:00'), '应展示具体营业时间段');
     assert.ok(!html.includes('店面介绍'), '店面介绍标题应已移除');
     assert.ok(!html.includes('注意事项'), '注意事项标题应已移除');
     assert.ok(html.includes('三里屯核心商圈的连锁鲜果茶店'), '介绍内容应直接展示');

@@ -157,6 +157,13 @@
 | `interact.html` | 缘分速配（主玩法） |
 | `matchmaker.html` | 牵线玩法（CP推荐+投票） |
 | `fate-detail.html` | 缘分详情页 |
+| `baoxi-list.html` | 报喜喜讯列表（卡片 → 报喜详情页；随份子：虚拟礼物/现金红包/官方首礼520 + 悬浮我要报喜） |
+| `baoxi-detail.html` | 报喜详情页（完整结缘海报 + 海报内随礼列表/我要随份子 + 底部返回按钮） |
+| `lib/baoxi-data.js` | 报喜 mock 数据（4 对审核通过报喜，列表/详情共用） |
+| `lib/baoxi-gifts.js` | 随份子模块（数据规则 + 弹窗状态机，列表/详情共用） |
+| `lib/baoxi-report.js` | 结缘海报 DOM 渲染模块（从 baoxi.html renderReport 原样抽取，报喜页/详情页共用） |
+| `lib/baoxi-poster.js` | 结缘海报 Canvas 绘制模块（从 baoxi.html drawPoster 原样抽取，下载海报用） |
+| `baoxi-list.test.cjs` | 报喜功能测试（`npm test` 运行） |
 | `message.html` | 消息（通知+私信） |
 | `chat.html` | 私信对话 |
 | `style.css` | 全局自定义样式 |

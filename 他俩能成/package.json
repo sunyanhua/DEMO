@@ -1,0 +1,8 @@
+{
+  "name": "他俩能成-(ta-men)",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "test": "node baoxi-list.test.cjs"
+  }
+}

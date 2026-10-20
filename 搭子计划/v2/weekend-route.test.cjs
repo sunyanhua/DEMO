@@ -11,6 +11,16 @@ const vm = require('node:vm');
 
 const dir = __dirname;
 
+// 共享 sessionStorage 存储：模拟同一会话内状态保留
+const store = {};
+// 共享 localStorage 存储：定制记录持久化
+const localStore = {};
+
+function clearPlanStore() {
+    for (const k of Object.keys(store)) delete store[k];
+    for (const k of Object.keys(localStore)) delete localStore[k];
+}
+
 function makePageSandbox(options = {}) {
     // 元素桩：app 为整页容器；route-submit-bar 等局部容器就地记录 innerHTML，用于验证"就地更新"
     const elements = {};
@@ -34,7 +44,11 @@ function makePageSandbox(options = {}) {
         get _html() { return el('app').innerHTML; },
         set _html(v) { el('app').innerHTML = v; }
     };
-    const sessionStorage = { getItem: () => null, setItem: () => {}, removeItem: () => {} };
+    const sessionStorage = {
+        getItem: (k) => (k in store ? store[k] : null),
+        setItem: (k, v) => { store[k] = String(v); },
+        removeItem: (k) => { delete store[k]; }
+    };
     const toasts = [];
     // 浏览器语义的 history/location 模拟：pushState 追加记录并更新 location.search，back() 回退并触发 popstate
     const location = { href: '', search: options.initialSearch || '', pathname: 'weekend-route.html' };
@@ -62,7 +76,13 @@ function makePageSandbox(options = {}) {
         URLSearchParams,
         setTimeout: (fn) => fn()
     };
+    const localStorage = {
+        getItem: (k) => (k in localStore ? localStore[k] : null),
+        setItem: (k, v) => { localStore[k] = String(v); },
+        removeItem: (k) => { delete localStore[k]; }
+    };
     sandbox.window.sessionStorage = sessionStorage;
+    sandbox.localStorage = localStorage;
     sandbox.window.document = document;
     // Common 桩：renderBottomNav 渲染 __bottom_nav__ 标记，showToast 记录调用
     sandbox.window.Common = {
@@ -353,11 +373,12 @@ test('点击路线卡片进入详情：全字段展示、无定制条件、无�
     for (const opt of ['路线好用', '店铺不准', '价格不准', '太远了', '排队太久']) {
         assert.ok(html.includes(opt), `评价选项缺失: ${opt}`);
     }
-    // 底部固定悬浮操作栏：收藏/分享/加入溜达计划（找同款搭子已移除）
+    // 底部固定悬浮操作栏：收藏/分享 + 溜搭状态按钮（找同款搭子已移除）
     assert.ok(html.includes('fixed bottom-0'), '操作栏应固定在页面底部');
-    for (const action of ['收藏', '分享', '加入溜达计划']) {
+    for (const action of ['收藏', '分享']) {
         assert.ok(html.includes(action), `操作按钮缺失: ${action}`);
     }
+    assert.ok(html.includes('标记为已出行'), 'r1 为未出行状态，按钮应显示「标记为已出行」');
     assert.ok(!html.includes('找同款搭子'), '找同款搭子按钮应已移除（改为同款搭子区块）');
     // 同款搭子区块（路线攻略下方）
     assert.ok(html.includes('同款搭子'), '应有同款搭子区块');
@@ -410,16 +431,37 @@ test('质量评价点击触发感谢提示', () => {
     assert.strictEqual(RouteForm.ratingSelected, 0);
 });
 
-test('收藏与加入溜达计划点击提示', () => {
-    const { RouteForm, toasts } = makePageSandbox();
+test('收藏提示 + 操作栏按钮随溜搭状态变化', () => {
+    const { RouteForm, document, toasts } = makePageSandbox();
     RouteForm.render();
     selectAll(RouteForm);
     RouteForm.submit();
+    // r3 未加入溜搭计划 → 显示「加入溜搭计划」
+    RouteForm.openRoute('r3');
+    let html = document._html;
+    assert.ok(html.includes('加入溜搭计划'), '未加入路线的按钮应为「加入溜搭计划」');
+    RouteForm.joinPlan();
+    assert.ok(toasts.some(t => t.includes('已加入你的溜搭计划') && t.includes('个人中心')), `加入应弹提示, got: ${toasts.join('|')}`);
+    assert.strictEqual(store['me_plan_r3'], 'pending', '加入后应记录未出行状态');
+    html = document._html;
+    assert.ok(html.includes('标记为已出行'), '加入后按钮应变为「标记为已出行」');
+    // 标记已出行
+    RouteForm.markPlanDone();
+    assert.ok(toasts.some(t => t.includes('已标记为已出行')), '标记应弹提示');
+    assert.strictEqual(store['me_plan_r3'], 'done', '标记后应记录已出行');
+    html = document._html;
+    assert.ok(html.includes('已出行') && !html.includes('标记为已出行'), '标记后按钮应变为「已出行」');
+    // r1 数据默认为未出行 → 按钮「标记为已出行」
     RouteForm.openRoute('r1');
+    assert.ok(document._html.includes('标记为已出行'), 'r1 应显示「标记为已出行」');
+    // r2 数据默认为已出行 → 按钮「已出行」且不可点击
+    RouteForm.openRoute('r2');
+    assert.ok(document._html.includes('已出行') && !document._html.includes('markPlanDone'), 'r2 应显示已出行且无标记入口');
+    // 收藏提示
     RouteForm.favorite();
     assert.ok(toasts.some(t => t.includes('收藏成功') && t.includes('我的收藏')), `收藏应弹提示, got: ${toasts.join('|')}`);
-    RouteForm.joinPlan();
-    assert.ok(toasts.some(t => t.includes('已加入你的溜达计划') && t.includes('个人中心')), `加入溜达计划应弹提示, got: ${toasts.join('|')}`);
+    // 清理
+    delete store['me_plan_r3'];
 });
 
 test('分享卡片：弹窗含当前路线信息与二维码，可关闭', () => {
@@ -492,6 +534,48 @@ test('表单选项选中态完全由 data-selected 驱动（切换后旧选项�
     // 片区卡与筛选胶囊同样校验
     assert.ok(!pick('area', 0).includes('border-brand-orange'));
     assert.ok(!pick('time', 0).includes('bg-brand-orange'));
+});
+
+test('提交定制自动保存记录；我的定制记录可查看历史并回看当次推荐路线', () => {
+    clearPlanStore();
+    const { RouteForm, document, WeekendRoute } = makePageSandbox();
+    RouteForm.render();
+    // 表单右上角有"我的定制记录"入口
+    assert.ok(document._html.includes('我的定制记录'), '表单右上角应有我的定制记录入口');
+    selectAll(RouteForm);
+    RouteForm.submit();
+    const records = [...WeekendRoute.getRouteRecords()];
+    assert.strictEqual(records.length, 1, '提交后应保存 1 条记录');
+    const rec = records[0];
+    assert.strictEqual(rec.selections.situation, 0, '记录应含定制选择');
+    assert.deepStrictEqual([...rec.routeIds], ['r9', 'r4', 'r2', 'r5', 'r3'], '记录应为当次推荐结果（5 条）');
+    // 记录列表
+    RouteForm.openRecords();
+    let html = document._html;
+    assert.ok(html.includes('定制记录'), '记录页应有标题');
+    assert.ok(html.includes('本地周末'), '记录列表应含选择摘要');
+    assert.ok(html.includes('5 条路线'), '记录列表应含推荐数量');
+    // 每个选项带标题
+    for (const label of ['情况', '片区', '什么时候有空', '几个人', '人均预算', '是否找搭子', '是否接受陌生人组局']) {
+        assert.ok(html.includes(label), `记录列表应显示选项标题: ${label}`);
+    }
+    assert.ok(html.includes('0-50元'), '记录列表预算应带元单位');
+    // 记录详情：当次推荐路线 + 本次定制条件（非当前选择）
+    RouteForm.openRecord(rec.id);
+    html = document._html;
+    assert.ok(html.includes('本次定制条件'), '记录详情应展示该次定制条件');
+    assert.ok(html.includes('什刹海晨光散步与鼓楼早午餐'), '记录详情应含当次推荐路线');
+    assert.ok(html.includes('奥森绿道骑行与林间野餐'), '记录详情应含当次推荐路线');
+    assert.ok(!html.includes('你的定制条件'), '记录详情不应是实时列表');
+    // 深链恢复记录视图
+    const { RouteForm: RF2, document: doc2 } = makePageSandbox({ initialSearch: '?view=records' });
+    RF2.restoreFromUrl();
+    RF2.render();
+    assert.ok(doc2._html.includes('定制记录'), '深链应恢复记录视图');
+    // 记录持久（同 storage 新沙箱）
+    const { WeekendRoute: WR2 } = makePageSandbox();
+    assert.strictEqual([...WR2.getRouteRecords()].length, 1, '记录应持久保存');
+    clearPlanStore();
 });
 
 test('页面不渲染底部主导航（表单/列表/详情均无）', () => {

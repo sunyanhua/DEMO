@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>报喜喜讯 - 他俩能成</title>
+<script src="lib/tailwind.min.js"></script>
+<script src="lib/lucide.min.js"></script>
+<link rel="stylesheet" href="style.css">
+<style>
+  body { background: #FFF5F3; }
+</style>
+</head>
+<body class="antialiased">
+<div class="bg-decoration" style="z-index:0;"><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div></div>
+
+<div id="app" class="relative z-[1]"></div>
+
+<script src="common.js"></script>
+<script src="lib/baoxi-data.js"></script>
+<script src="lib/baoxi-gifts.js"></script>
+<script>
+var giftUi = window.BaoxiGifts.createUi({ render: render });
+
+// ====== 列表卡片（简洁样式，暖色点缀） ======
+function cardHtml(pair) {
+    var gifts = window.BaoxiGifts.getGifts(pair.id);
+    var money = gifts.reduce(function (s, g) { return s + (g.amount || 0); }, 0);
+    return `
+    <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 mb-4">
+        <div class="flex items-center gap-2.5">
+            <div class="flex -space-x-2.5">
+                <img src="${pair.avatars[0]}" class="w-11 h-11 rounded-full border-2 border-white object-cover shadow-sm"/>
+                <img src="${pair.avatars[1]}" class="w-11 h-11 rounded-full border-2 border-white object-cover shadow-sm"/>
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="text-sm font-bold text-gray-800">${pair.names[0]} <span style="color:#E85D3A;">❤</span> ${pair.names[1]}</p>
+                <p class="text-[10px] text-gray-400 mt-0.5">${pair.time} 官宣</p>
+            </div>
+            <span class="px-2 py-1 rounded-full text-[10px] font-bold flex-shrink-0" style="background:#FFF0EC;color:#E85D3A;">已收 ${gifts.length} 份 · ¥${money.toFixed(2)}</span>
+        </div>
+        <p class="text-xs text-gray-500 leading-relaxed mt-2.5 line-clamp-2">"${pair.story}"</p>
+        <div class="flex gap-2 mt-3">
+            <span onclick="window.location.href='baoxi-detail.html?id=${pair.id}'" class="flex-1 text-center py-2 rounded-full text-xs font-bold cursor-pointer card-hover" style="background:#FFF0EC;color:#E85D3A;">查看结缘海报</span>
+            <span onclick="giftUi.open('${pair.id}')" class="flex-1 text-center py-2 rounded-full bg-gradient-to-tr from-brand-pink to-brand-orange text-white text-xs font-bold cursor-pointer card-hover">我要随份子</span>
+        </div>
+    </div>
+    `;
+}
+
+function listView() {
+    var cards = window.BaoxiData.pairs.map(cardHtml).join('');
+    // 完成报喜后按钮变为"我的报喜"（查看自己的结缘海报），否则为"我要报喜"
+    var submitted = false;
+    try { submitted = localStorage.getItem('baoxi_submitted') === '1'; } catch (e) {}
+    var floatBtn = submitted
+        ? `<div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 px-6 py-3 rounded-full bg-gradient-to-tr from-brand-pink to-brand-orange text-white font-bold text-sm shadow-xl shadow-brand-pink/30 card-hover cursor-pointer flex items-center gap-2" onclick="window.location.href='baoxi-detail.html?id=mine'">
+            <i data-lucide="heart" class="w-4 h-4"></i>我的报喜
+          </div>`
+        : `<div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 px-6 py-3 rounded-full bg-gradient-to-tr from-brand-pink to-brand-orange text-white font-bold text-sm shadow-xl shadow-brand-pink/30 card-hover cursor-pointer flex items-center gap-2" onclick="window.location.href='baoxi.html'">
+            <i data-lucide="party-popper" class="w-4 h-4"></i>我要报喜
+          </div>`;
+    return `
+    <div class="sticky top-0 z-40 bg-white/90 backdrop-blur-md px-4 py-3 flex items-center justify-between">
+        <span onclick="window.history.back()" class="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center cursor-pointer"><i data-lucide="chevron-left" class="w-5 h-5 text-gray-600"></i></span>
+        <span class="font-black text-gray-800 text-base">报喜喜讯</span>
+        <span class="w-9"></span>
+    </div>
+    <div class="px-4 pt-4 pb-28">
+        <p class="text-xs text-gray-400 mb-3 text-center">以下喜讯均已通过平台审核，欢迎随份子送祝福 🎉</p>
+        ${cards}
+    </div>
+    ${floatBtn}
+    `;
+}
+
+function render() {
+    document.getElementById('app').innerHTML = listView() + giftUi.modalHtml();
+    window.Common.initIcons();
+}
+
+document.addEventListener('DOMContentLoaded', render);
+</script>
+</body>
+</html>

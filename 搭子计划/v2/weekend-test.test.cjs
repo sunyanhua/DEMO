@@ -144,7 +144,13 @@ function makePageSandbox(options = {}) {
         addEventListener() {}
     };
     const sessionStorage = { getItem: () => null, setItem: () => {}, removeItem: () => {} };
-    const sandbox = { window: {}, document, sessionStorage, setTimeout: (fn) => fn() }; // 同步触发延时回调
+    const sandbox = {
+        window: { location: { search: options.initialSearch || '', href: '', pathname: 'weekend-test.html' } },
+        document,
+        sessionStorage,
+        URLSearchParams,
+        setTimeout: (fn) => fn()
+    }; // 同步触发延时回调
     sandbox.window.sessionStorage = sessionStorage;
     sandbox.window.document = document;
     // Common 桩：若页面调用 renderBottomNav，会渲染出 __bottom_nav__ 标记
@@ -245,6 +251,13 @@ test('结果页配套数据：人格路线映射与同款搭子完整', () => {
         assert.ok(Array.isArray(map[pid]) && map[pid].length >= 2, `人格 ${pid} 应映射至少 2 条路线`);
         for (const rid of map[pid]) assert.ok(routeIds.has(rid), `人格 ${pid} 映射了未知路线 ${rid}`);
     }
+    // 玩法标签映射：8 种人格全覆盖，每种至少 3 个标签
+    const plays = GlobalData.weekendPersonalityPlays;
+    assert.ok(plays, '应有 weekendPersonalityPlays 映射');
+    for (const pid of pids) {
+        assert.ok(Array.isArray(plays[pid]) && plays[pid].length >= 3, `人格 ${pid} 应映射至少 3 个玩法标签`);
+    }
+    assert.deepStrictEqual([...plays.host], ['羽毛球局', '桌游局', '多人火锅', '剧本杀'], '攒局王玩法标签应为示例值');
     const fellows = GlobalData.weekendFellows;
     assert.ok(Array.isArray(fellows) && fellows.length >= 8, '同款搭子 mock 数据应至少 8 人');
     for (const pid of pids) {
@@ -260,6 +273,8 @@ test('引擎查询：人格路线 / 最新活动 / 同款搭子', () => {
     const { WeekendTest } = makePageSandbox();
     const routes = [...WeekendTest.routesForPersonality('hutong')];
     assert.deepStrictEqual(routes.map(r => r.id), ['r2', 'r9', 'r4'], '胡同街溜子应映射鼓楼/什刹海/白塔寺路线');
+    assert.deepStrictEqual([...WeekendTest.playsForPersonality('host')], ['羽毛球局', '桌游局', '多人火锅', '剧本杀'], '攒局王玩法标签应正确');
+    assert.strictEqual(WeekendTest.playsForPersonality('nobody').length, 0, '未知人格玩法应为空');
     const acts = [...WeekendTest.latestActivities(3)];
     assert.strictEqual(acts.length, 3);
     assert.strictEqual(acts[0].id, 'a25', '最新活动应按 id 降序（a25 密室逃脱挑战）');
@@ -278,6 +293,10 @@ test('测试结果页新增区块：分享人格按钮 + 推荐路线 + 热门�
     for (let i = 0; i < 8; i++) Test.answer(1); // 全选 B → 胡同街溜子
     const html = document._html;
     assert.ok(html.includes('分享人格'), '结果页应有分享人格按钮');
+    // 适合你的北京玩法：位于推荐路线之前
+    assert.ok(html.includes('适合你的北京玩法'), '应有适合你的北京玩法区');
+    assert.ok(html.includes('胡同漫游'), '玩法标签应含该人格标签');
+    assert.ok(html.indexOf('适合你的北京玩法') < html.indexOf('推荐周末路线'), '玩法区应位于推荐路线之前');
     assert.ok(html.includes('推荐周末路线'), '应有推荐周末路线区');
     assert.ok(html.includes('鼓楼南锣鼓巷夜景与什刹海小吃'), '推荐路线应含人格映射路线');
     assert.ok(html.includes('weekend-route.html?view=detail&route=r2'), '推荐路线应可深链进路线详情');
@@ -303,6 +322,21 @@ test('分享人格海报：含头像昵称/结果/台词/描述/二维码/扫码
     assert.ok(html.includes('qr-canvas'), '海报应含二维码画布');
     Test.closePoster();
     assert.ok(!document._html.includes('qr-canvas'), '关闭海报后二维码应消失');
+});
+
+test('view=result 模式：直接展示上次测试结果，点击重新测试进入答题', () => {
+    const { Test, document } = makePageSandbox({ initialSearch: '?view=result' });
+    Test.render();
+    let html = document._html;
+    assert.ok(html.includes('你的周末人格'), '应直接展示结果视图');
+    assert.ok(html.includes('胡同街溜子'), '应展示用户上次测试结果人格');
+    assert.ok(html.includes('分享人格'), '结果页应含分享人格按钮');
+    assert.ok(!html.includes('开始鉴定'), '不应是介绍页');
+    // 点击重新测试 → 直接进入第 1 题
+    Test.start();
+    html = document._html;
+    assert.ok(html.includes('第 1/8 题'), '重新测试应进入第 1 题');
+    assert.ok(!html.includes('你的周末人格'), '答题时不应再显示结果');
 });
 
 test('页面不渲染底部主导航（介绍/答题/结果视图均无）', () => {

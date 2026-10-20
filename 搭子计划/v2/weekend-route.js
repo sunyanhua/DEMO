@@ -111,6 +111,50 @@
         return (g.weekendFellows || []).filter(f => Array.isArray(f.routeIds) && f.routeIds.includes(routeId));
     }
 
+    // ---------- 定制记录（localStorage 持久化，最多保留 20 条） ----------
+    const RECORDS_KEY = 'weekend_route_records';
+
+    function getRouteRecords() {
+        try {
+            const raw = typeof localStorage !== 'undefined' ? localStorage.getItem(RECORDS_KEY) : null;
+            const list = JSON.parse(raw || '[]');
+            return Array.isArray(list) ? list : [];
+        } catch (e) {
+            return [];
+        }
+    }
+
+    function saveRouteRecord(selections, routeIds) {
+        const records = getRouteRecords();
+        const record = {
+            id: 'rec_' + Date.now(),
+            time: new Date().toLocaleString('zh-CN', { hour12: false }),
+            selections: { ...(selections || {}) },
+            routeIds: [...(routeIds || [])]
+        };
+        records.unshift(record);
+        const capped = records.slice(0, 20);
+        try {
+            localStorage.setItem(RECORDS_KEY, JSON.stringify(capped));
+        } catch (e) {
+            // 存储失败时忽略（演示环境）
+        }
+        return record;
+    }
+
+    function getRouteRecord(id) {
+        return getRouteRecords().find(r => r.id === id) || null;
+    }
+
+    // 溜搭计划状态：sessionStorage 优先，其次数据默认，未加入返回 'none'
+    function planStatus(routeId) {
+        const saved = (typeof sessionStorage !== 'undefined') ? sessionStorage.getItem('me_plan_' + routeId) : null;
+        if (saved === 'done' || saved === 'pending') return saved;
+        const g = (typeof window !== 'undefined' && window.GlobalData) || {};
+        const item = (g.myPlanRoutes || []).find(p => p.routeId === routeId);
+        return item ? item.status : 'none';
+    }
+
     window.WeekendRoute = {
         TYPE_LABELS,
         TYPE_ORDER,
@@ -120,6 +164,10 @@
         getRecommendationList,
         recommendReasons,
         matchPercent,
-        routeFellowsForRoute
+        routeFellowsForRoute,
+        planStatus,
+        getRouteRecords,
+        saveRouteRecord,
+        getRouteRecord
     };
 })();

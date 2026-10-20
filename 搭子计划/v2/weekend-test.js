@@ -54,6 +54,13 @@
         return { id: pickWinner(scores, random), scores };
     }
 
+    // 适合的北京玩法标签（按人格映射）
+    function playsForPersonality(personalityId) {
+        const g = (typeof window !== 'undefined' && window.GlobalData) || {};
+        const map = g.weekendPersonalityPlays || {};
+        return map[personalityId] || [];
+    }
+
     // 测试结果页配套查询：按人格映射的推荐路线（返回路线对象数组）
     function routesForPersonality(personalityId) {
         const g = (typeof window !== 'undefined' && window.GlobalData) || {};
@@ -78,5 +85,5 @@
         return (g.weekendFellows || []).filter(f => f.personalityId === personalityId);
     }
 
-    window.WeekendTest = { score, pickWinner, calculate, routesForPersonality, latestActivities, fellowsForPersonality };
+    window.WeekendTest = { score, pickWinner, calculate, playsForPersonality, routesForPersonality, latestActivities, fellowsForPersonality };
 })();

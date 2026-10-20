@@ -2,7 +2,7 @@ window.GlobalData = {
     user: {
         id: 'u1',
         name: 'ActiveExplorer',
-        avatarUrl: 'https://picsum.photos/100/100',
+        avatarUrl: 'images/avatar-10.png',
         following: 42,
         followers: 108,
         activities: 5,
@@ -112,6 +112,28 @@ window.GlobalData = {
         }
     ],
 
+    // 首页搭子需求卡片：完成定制周末路线操作的用户（selections 为定制选择的各项下标）
+    demandUsers: [
+        { id: 'd1', timeAgo: '10分钟前', intro: '周末想找个人一起探索三里屯，吃吃喝喝拍拍照。', name: '周末探险家', avatarUrl: 'images/avatar-6.png', selections: { situation: 0, area: 2, time: 1, people: 1, budget: 1, partner: 2, stranger: 1 } },
+        { id: 'd2', timeAgo: '1小时前', intro: '想找个喜欢钻胡同的搭子，边走边聊。', name: '胡同漫游者', avatarUrl: 'images/avatar-7.png', selections: { situation: 0, area: 0, time: 0, people: 0, budget: 0, partner: 0, stranger: 2 } },
+        { id: 'd3', timeAgo: '2小时前', intro: '周五晚上组个精酿局，人多热闹。', name: '精酿小分队', avatarUrl: 'images/avatar-5.png', selections: { situation: 3, area: 1, time: 2, people: 2, budget: 2, partner: 3, stranger: 0 } },
+        { id: 'd4', timeAgo: '3小时前', intro: '第一次来北京，经典路线求带！', name: '首刷北京', avatarUrl: 'images/avatar-8.png', selections: { situation: 1, area: 1, time: 3, people: 1, budget: 3, partner: 1, stranger: 1 } },
+        { id: 'd5', timeAgo: '5小时前', intro: '想去温榆河露营发呆，有帐篷没搭子。', name: '露营发呆员', avatarUrl: 'images/avatar-10.png', selections: { situation: 2, area: 3, time: 3, people: 0, budget: 1, partner: 0, stranger: 2 } },
+        { id: 'd6', timeAgo: '昨天', intro: '每周六上午羽毛球，缺一个固定搭子。', name: '羽毛球搭子', avatarUrl: 'images/avatar-2.png', selections: { situation: 3, area: 2, time: 0, people: 1, budget: 0, partner: 2, stranger: 1 } }
+    ],
+
+    // 周末人格 → 适合的北京玩法标签（测试结果页"适合你的北京玩法"区）
+    weekendPersonalityPlays: {
+        hutong: ['胡同漫游', '咖啡探店', '街边小吃'],
+        beer: ['精酿局', '酒吧巡游', '夜宵搭子'],
+        solo: ['一人食', '独自看展', '书店发呆'],
+        host: ['羽毛球局', '桌游局', '多人火锅', '剧本杀'],
+        tourist: ['经典打卡', '景点巡游', '老字号打卡'],
+        lazy: ['宅家充电', '公园散步', '咖啡书店'],
+        budget: ['免费展览', '平价小吃', '学生折扣'],
+        outdoor: ['骑行', '徒步', '球类运动']
+    },
+
     // 周末人格 → 推荐路线映射（测试结果页展示）
     weekendPersonalityRoutes: {
         hutong: ['r2', 'r9', 'r4'],
@@ -126,18 +148,18 @@ window.GlobalData = {
 
     // 同款搭子 mock（测试结果页按人格过滤展示，参考首页推荐搭子排版）
     weekendFellows: [
-        { id: 'f1', name: '胡同观察员', avatarUrl: 'https://picsum.photos/100/100?random=31', personalityId: 'hutong', distance: '1.2km', tags: ['citywalk', '摄影'], intro: '周末就爱钻胡同，宫门口一带门儿清。', routeIds: ['r2', 'r4', 'r9'] },
-        { id: 'f2', name: '慢速遛弯儿', avatarUrl: 'https://picsum.photos/100/100?random=32', personalityId: 'hutong', distance: '2.5km', tags: ['散步', '咖啡'], intro: '不打卡，只溜达。', routeIds: ['r4', 'r9'] },
-        { id: 'f3', name: '精酿小李', avatarUrl: 'https://picsum.photos/100/100?random=33', personalityId: 'beer', distance: '0.8km', tags: ['精酿', '组局'], intro: '周五晚上北平机器常驻。', routeIds: ['r2', 'r5', 'r6'] },
-        { id: 'f4', name: '微醺电台', avatarUrl: 'https://picsum.photos/100/100?random=34', personalityId: 'beer', distance: '3.1km', tags: ['酒馆', '聊天'], intro: '喝点好的，认识点新的。', routeIds: ['r5', 'r2'] },
-        { id: 'f5', name: '孤勇干饭人', avatarUrl: 'https://picsum.photos/100/100?random=35', personalityId: 'solo', distance: '1.5km', tags: ['一人食', '火锅'], intro: '一个人吃火锅，谁也别劝。', routeIds: ['r7', 'r9'] },
-        { id: 'f6', name: '局王本王', avatarUrl: 'https://picsum.photos/100/100?random=36', personalityId: 'host', distance: '0.9km', tags: ['桌游', '羽毛球'], intro: '缺人喊我，一喊一个准。', routeIds: ['r6', 'r1'] },
-        { id: 'f7', name: '攒局小能手', avatarUrl: 'https://picsum.photos/100/100?random=37', personalityId: 'host', distance: '2.2km', tags: ['剧本杀', '饭局'], intro: '@全体成员是我的日常。', routeIds: ['r6', 'r2'] },
-        { id: 'f8', name: '首刷特种兵', avatarUrl: 'https://picsum.photos/100/100?random=38', personalityId: 'tourist', distance: '4.0km', tags: ['打卡', '拍照'], intro: '第一次来北京，清单还有20项。', routeIds: ['r1', 'r2'] },
-        { id: 'f9', name: '躺平协会会长', avatarUrl: 'https://picsum.photos/100/100?random=39', personalityId: 'lazy', distance: '1.1km', tags: ['宅家', '书店'], intro: '床是本体，出门随缘。', routeIds: ['r4', 'r8'] },
-        { id: 'f10', name: '羊毛薅手', avatarUrl: 'https://picsum.photos/100/100?random=40', personalityId: 'budget', distance: '2.8km', tags: ['优惠券', '免费展'], intro: '免费展清单周更。', routeIds: ['r7', 'r4'] },
-        { id: 'f11', name: '放电侠', avatarUrl: 'https://picsum.photos/100/100?random=41', personalityId: 'outdoor', distance: '3.5km', tags: ['骑行', '徒步'], intro: '奥森一圈起，两圈正常。', routeIds: ['r3', 'r6'] },
-        { id: 'f12', name: '晨跑永动机', avatarUrl: 'https://picsum.photos/100/100?random=42', personalityId: 'outdoor', distance: '1.9km', tags: ['跑步', '球类'], intro: '早上六点的公园见。', routeIds: ['r3', 'r8'] }
+        { id: 'f1', name: '胡同观察员', avatarUrl: 'images/avatar-8.png', personalityId: 'hutong', distance: '1.2km', tags: ['citywalk', '摄影'], intro: '周末就爱钻胡同，宫门口一带门儿清。', routeIds: ['r2', 'r4', 'r9'] },
+        { id: 'f2', name: '慢速遛弯儿', avatarUrl: 'images/avatar-5.png', personalityId: 'hutong', distance: '2.5km', tags: ['散步', '咖啡'], intro: '不打卡，只溜达。', routeIds: ['r4', 'r9'] },
+        { id: 'f3', name: '精酿小李', avatarUrl: 'images/avatar-7.png', personalityId: 'beer', distance: '0.8km', tags: ['精酿', '组局'], intro: '周五晚上北平机器常驻。', routeIds: ['r2', 'r5', 'r6'] },
+        { id: 'f4', name: '微醺电台', avatarUrl: 'images/avatar-10.png', personalityId: 'beer', distance: '3.1km', tags: ['酒馆', '聊天'], intro: '喝点好的，认识点新的。', routeIds: ['r5', 'r2'] },
+        { id: 'f5', name: '孤勇干饭人', avatarUrl: 'images/avatar-8.png', personalityId: 'solo', distance: '1.5km', tags: ['一人食', '火锅'], intro: '一个人吃火锅，谁也别劝。', routeIds: ['r7', 'r9'] },
+        { id: 'f6', name: '局王本王', avatarUrl: 'images/avatar-8.png', personalityId: 'host', distance: '0.9km', tags: ['桌游', '羽毛球'], intro: '缺人喊我，一喊一个准。', routeIds: ['r6', 'r1'] },
+        { id: 'f7', name: '攒局小能手', avatarUrl: 'images/avatar-2.png', personalityId: 'host', distance: '2.2km', tags: ['剧本杀', '饭局'], intro: '@全体成员是我的日常。', routeIds: ['r6', 'r2'] },
+        { id: 'f8', name: '首刷特种兵', avatarUrl: 'images/avatar-7.png', personalityId: 'tourist', distance: '4.0km', tags: ['打卡', '拍照'], intro: '第一次来北京，清单还有20项。', routeIds: ['r1', 'r2'] },
+        { id: 'f9', name: '躺平协会会长', avatarUrl: 'images/avatar-5.png', personalityId: 'lazy', distance: '1.1km', tags: ['宅家', '书店'], intro: '床是本体，出门随缘。', routeIds: ['r4', 'r8'] },
+        { id: 'f10', name: '羊毛薅手', avatarUrl: 'images/avatar-8.png', personalityId: 'budget', distance: '2.8km', tags: ['优惠券', '免费展'], intro: '免费展清单周更。', routeIds: ['r7', 'r4'] },
+        { id: 'f11', name: '放电侠', avatarUrl: 'images/avatar-10.png', personalityId: 'outdoor', distance: '3.5km', tags: ['骑行', '徒步'], intro: '奥森一圈起，两圈正常。', routeIds: ['r3', 'r6'] },
+        { id: 'f12', name: '晨跑永动机', avatarUrl: 'images/avatar-2.png', personalityId: 'outdoor', distance: '1.9km', tags: ['跑步', '球类'], intro: '早上六点的公园见。', routeIds: ['r3', 'r8'] }
     ],
 
     // 定制周末路线：表单配置
@@ -186,7 +208,8 @@ window.GlobalData = {
             merchants: [
                 { name: 'Element Fresh（三里屯店）', budget: '¥120-150/人', district: '三里屯', blurb: '适合想拍照、吃得健康、聊天放松的人。', tip: '周末热门时段座位紧张，建议提前订位。', primary: true },
                 { name: 'Berry Beans（三里屯店）', budget: '¥40-60/人', district: '三里屯', blurb: '胡同风精品咖啡，适合下午茶歇脚。', tip: '座位少，建议下午茶时段错峰前往。', primary: false },
-                { name: '茶百道（三里屯店）', budget: '¥15-25/人', district: '三里屯', blurb: '逛街间隙来一杯，常驻第二杯半价活动。', tip: '周末下午出杯慢，建议小程序先下单。', primary: false, partner: true, image: 'https://images.unsplash.com/photo-1497935586351-b67a49e012bf?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', partnerId: 'm-teabadao-slt' }
+                { name: '茶百道（三里屯店）',
+            businessHours: '10:00-22:00（周一至周日）', budget: '¥15-25/人', district: '三里屯', blurb: '逛街间隙来一杯，常驻第二杯半价活动。', tip: '周末下午出杯慢，建议小程序先下单。', primary: false, partner: true, image: 'https://images.unsplash.com/photo-1497935586351-b67a49e012bf?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', partnerId: 'm-teabadao-slt' }
             ],
             prep: [
                 '核验主推荐店铺营业时间、排队和是否需要预约',
@@ -223,7 +246,8 @@ window.GlobalData = {
             ],
             nearbyActivities: ['a8', 'a11'],
             merchants: [
-                { name: '北平机器（方家胡同店）', budget: '¥80-120/人', district: '方家胡同', blurb: '精酿配老胡同，晚上氛围拉满。', tip: '周末晚间排队，建议先取号再逛。', primary: true, partner: true, image: 'https://images.unsplash.com/photo-1541336032412-2048a678540d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', partnerId: 'm-beiping-fangjia' },
+                { name: '北平机器（方家胡同店）',
+            businessHours: '17:00-次日01:00（周一至周日）', budget: '¥80-120/人', district: '方家胡同', blurb: '精酿配老胡同，晚上氛围拉满。', tip: '周末晚间排队，建议先取号再逛。', primary: true, partner: true, image: 'https://images.unsplash.com/photo-1541336032412-2048a678540d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', partnerId: 'm-beiping-fangjia' },
                 { name: '姚记炒肝店（鼓楼店）', budget: '¥30-50/人', district: '鼓楼', blurb: '老北京味道，适合第一次来北京想体验地道小吃的人。', tip: '饭点排队较长，建议错峰前往。', primary: false },
                 { name: '茶汤李（什刹海店）', budget: '¥20-40/人', district: '什刹海', blurb: '老字号甜品，适合饭后解腻。', tip: '店面小，可打包边走边吃。', primary: false }
             ],
@@ -263,7 +287,8 @@ window.GlobalData = {
             nearbyActivities: ['a3', 'a6'],
             merchants: [
                 { name: '林间野餐盒（奥森公园店）', budget: '¥60-80/人', district: '奥森', blurb: '轻食野餐盒，适合骑行途中补给。', tip: '野餐盒需提前1天下单。', primary: true },
-                { name: '茶百道（奥森南门店）', budget: '¥15-25/人', district: '奥森', blurb: '骑行补给站，冰饮恢复状态。', tip: '运动后别喝太冰，微糖更合适。', primary: false, partner: true, image: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', partnerId: 'm-teabadao-as' },
+                { name: '茶百道（奥森南门店）',
+            businessHours: '09:00-21:00（周一至周日）', budget: '¥15-25/人', district: '奥森', blurb: '骑行补给站，冰饮恢复状态。', tip: '运动后别喝太冰，微糖更合适。', primary: false, partner: true, image: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', partnerId: 'm-teabadao-as' },
                 { name: '温榆河畔农庄餐厅', budget: '¥80-120/人', district: '温榆河', blurb: '骑行终点农家菜，量大实惠。', tip: '距离较远，可打车前往。', primary: false }
             ],
             prep: [
@@ -301,7 +326,8 @@ window.GlobalData = {
             ],
             nearbyActivities: ['a9', 'a18'],
             merchants: [
-                { name: '华熙LIVE商圈', budget: '¥80-120/人', district: '华熙', blurb: '晚餐选择多，夜景热闹，适合收尾一站。', tip: '周末饭点排队，可先取号再逛。', primary: true, partner: true, image: 'https://images.unsplash.com/photo-1501386761578-eac5c94b800a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', partnerId: 'm-huaxi' },
+                { name: '华熙LIVE商圈',
+            businessHours: '10:00-22:00（各店略有差异）', budget: '¥80-120/人', district: '华熙', blurb: '晚餐选择多，夜景热闹，适合收尾一站。', tip: '周末饭点排队，可先取号再逛。', primary: true, partner: true, image: 'https://images.unsplash.com/photo-1501386761578-eac5c94b800a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', partnerId: 'm-huaxi' },
                 { name: '熊煮咖啡（白塔寺店）', budget: '¥35-50/人', district: '白塔寺', blurb: '红墙白塔景观位，适合拍照发呆。', tip: '景观位周末紧俏，建议提前去。', primary: false },
                 { name: '宫门口馒头铺', budget: '¥10-20/人', district: '宫门口', blurb: '老字号主食铺，性价比高。', tip: '下午收摊早，别太晚去。', primary: false }
             ],
@@ -340,7 +366,8 @@ window.GlobalData = {
             ],
             nearbyActivities: ['a10', 'a19'],
             merchants: [
-                { name: '北平机器（798店）', budget: '¥90-130/人', district: '798艺术区', blurb: '厂房风精酿晚餐，看展后收尾首选。', tip: '周末晚餐建议订位。', primary: true, partner: true, image: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', partnerId: 'm-beiping-798' },
+                { name: '北平机器（798店）',
+            businessHours: '11:00-23:00（周一至周日）', budget: '¥90-130/人', district: '798艺术区', blurb: '厂房风精酿晚餐，看展后收尾首选。', tip: '周末晚餐建议订位。', primary: true, partner: true, image: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', partnerId: 'm-beiping-798' },
                 { name: 'VOYAGE COFFEE（798店）', budget: '¥40-60/人', district: '798艺术区', blurb: '厂房改造咖啡馆，适合看展间隙歇脚。', tip: '周末下午人多，建议错峰。', primary: false },
                 { name: '尤伦斯当代艺术中心商店', budget: '¥0-200/人', district: '798艺术区', blurb: '逛展+买周边，文艺感拉满。', tip: '部分展览需提前购票。', primary: false }
             ],
@@ -380,7 +407,8 @@ window.GlobalData = {
             nearbyActivities: ['a1', 'a23'],
             merchants: [
                 { name: '工体夜宵小馆', budget: '¥60-90/人', district: '工体', blurb: '夜跑后补充能量，热闹实惠。', tip: '晚间高峰需排队，可错峰到 21:30。', primary: true },
-                { name: '茶百道（工体店）', budget: '¥15-25/人', district: '工体', blurb: '夜宵搭配冰饮，快乐加倍。', tip: '大杯第二份半价，建议拼单。', primary: false, partner: true, image: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', partnerId: 'm-teabadao-gt' },
+                { name: '茶百道（工体店）',
+            businessHours: '10:00-22:30（周一至周日）', budget: '¥15-25/人', district: '工体', blurb: '夜宵搭配冰饮，快乐加倍。', tip: '大杯第二份半价，建议拼单。', primary: false, partner: true, image: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', partnerId: 'm-teabadao-gt' },
                 { name: '三里屯深夜食堂', budget: '¥50-80/人', district: '三里屯', blurb: '日式深夜食堂，安静收尾。', tip: '凌晨 1 点打烊，别太晚。', primary: false }
             ],
             prep: [
@@ -419,7 +447,8 @@ window.GlobalData = {
             nearbyActivities: ['a8', 'a11'],
             merchants: [
                 { name: '什刹海早点铺', budget: '¥20-35/人', district: '什刹海', blurb: '糖油饼配豆汁，胡同里的清晨味道。', tip: '早上 10 点后部分品类售罄。', primary: true },
-                { name: '北平机器（方家胡同店）', budget: '¥80-120/人', district: '方家胡同', blurb: '白天是安静的胡同咖啡精酿馆。', tip: '上午人少，适合晨骑后歇脚。', primary: false, partner: true, image: 'https://images.unsplash.com/photo-1541336032412-2048a678540d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', partnerId: 'm-beiping-fangjia' },
+                { name: '北平机器（方家胡同店）',
+            businessHours: '17:00-次日01:00（周一至周日）', budget: '¥80-120/人', district: '方家胡同', blurb: '白天是安静的胡同咖啡精酿馆。', tip: '上午人少，适合晨骑后歇脚。', primary: false, partner: true, image: 'https://images.unsplash.com/photo-1541336032412-2048a678540d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', partnerId: 'm-beiping-fangjia' },
                 { name: '鼓楼社区咖啡', budget: '¥30-45/人', district: '鼓楼', blurb: '社区小店，早晨安静出片。', tip: '9 点开门，别去太早。', primary: false }
             ],
             prep: [
@@ -458,7 +487,8 @@ window.GlobalData = {
             nearbyActivities: ['a3', 'a6'],
             merchants: [
                 { name: '温榆河畔茶室', budget: '¥70-100/人', district: '温榆河', blurb: '天幕帐篷下午茶，草地河边都好拍。', tip: '周末帐篷位需提前预约。', primary: true },
-                { name: '茶百道（温榆河店）', budget: '¥15-25/人', district: '温榆河', blurb: '公园门口补给，回程路上带一杯。', tip: '出公园方向顺路，别绕行。', primary: false, partner: true, image: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', partnerId: 'm-teabadao-wyh' },
+                { name: '茶百道（温榆河店）',
+            businessHours: '09:00-20:00（周一至周日）', budget: '¥15-25/人', district: '温榆河', blurb: '公园门口补给，回程路上带一杯。', tip: '出公园方向顺路，别绕行。', primary: false, partner: true, image: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', partnerId: 'm-teabadao-wyh' },
                 { name: '奥森轻食店', budget: '¥40-60/人', district: '奥森', blurb: '返程前的轻食补给。', tip: '晚 7 点后停止点单。', primary: false }
             ],
             prep: [
@@ -496,7 +526,8 @@ window.GlobalData = {
             nearbyActivities: ['a8', 'a11'],
             merchants: [
                 { name: '鼓楼早午餐小馆', budget: '¥80-110/人', district: '鼓楼', blurb: '胡同里的阳光早午餐，适合慢慢吃。', tip: '周末 10 点半后需排队。', primary: true },
-                { name: '茶百道（鼓楼店）', budget: '¥15-25/人', district: '鼓楼', blurb: '饭后一杯，边喝边逛南锣。', tip: '热门款可能售罄，早去。', primary: false, partner: true, image: 'https://images.unsplash.com/photo-1563245372-f21724e3856d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', partnerId: 'm-teabadao-gl' },
+                { name: '茶百道（鼓楼店）',
+            businessHours: '10:00-21:30（周一至周日）', budget: '¥15-25/人', district: '鼓楼', blurb: '饭后一杯，边喝边逛南锣。', tip: '热门款可能售罄，早去。', primary: false, partner: true, image: 'https://images.unsplash.com/photo-1563245372-f21724e3856d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', partnerId: 'm-teabadao-gl' },
                 { name: '南锣手作咖啡', budget: '¥35-50/人', district: '南锣鼓巷', blurb: '手作与咖啡结合的小店，适合慢慢逛。', tip: '店内座位有限。', primary: false }
             ],
             prep: [
@@ -522,7 +553,7 @@ window.GlobalData = {
         }
     ],
 
-    // 个人中心 mock：我报名的活动 / 我收藏的动态与路线 / 我的溜达计划（未出行 pending / 已出行 done）
+    // 个人中心 mock：我报名的活动 / 我收藏的动态与路线 / 我的溜搭计划（未出行 pending / 已出行 done）
     myActivities: ['a1', 'a3', 'a21'],
     myFavoriteMoments: ['mo1', 'mo4'],
     myFavoriteRoutes: ['r1', 'r9'],
@@ -538,6 +569,7 @@ window.GlobalData = {
             id: 'm-teabadao-slt',
             couponMode: 'code',
             name: '茶百道（三里屯店）',
+            businessHours: '10:00-22:00（周一至周日）',
             budget: '¥15-25/人',
             district: '三里屯',
             description: '三里屯核心商圈的连锁鲜果茶店，主打杨枝甘露与招牌奶茶，逛街歇脚首选。门店支持小程序提前点单，出杯快，是三里屯片区的热门饮品补给站。',
@@ -559,6 +591,7 @@ window.GlobalData = {
             id: 'm-beiping-fangjia',
             couponMode: 'qr',
             name: '北平机器（方家胡同店）',
+            businessHours: '17:00-次日01:00（周一至周日）',
             budget: '¥80-120/人',
             district: '方家胡同',
             description: '藏在方家胡同里的精酿酒吧，工业风装修配老胡同院墙，主打自酿 IPA 与酸啤。白天安静适合聊天，晚上气氛热闹，是鼓楼片区精酿爱好者的据点。',
@@ -580,6 +613,7 @@ window.GlobalData = {
             id: 'm-teabadao-as',
             couponMode: 'code',
             name: '茶百道（奥森南门店）',
+            businessHours: '09:00-21:00（周一至周日）',
             budget: '¥15-25/人',
             district: '奥森',
             description: '奥森南门附近的连锁茶饮店，运动前后的补给站。主打清爽果茶系列，骑行、跑步后来一杯恢复状态，支持小程序下单到店自取。',
@@ -600,6 +634,7 @@ window.GlobalData = {
             id: 'm-huaxi',
             couponMode: 'qr',
             name: '华熙LIVE商圈',
+            businessHours: '10:00-22:00（各店略有差异）',
             budget: '¥80-120/人',
             district: '华熙',
             description: '华熙LIVE·五棵松是西四环的大型商业综合体，餐饮、酒吧、Livehouse 聚集，夜晚灯光氛围热闹。商圈内选择多，适合作为路线收尾站，吃逛一体。',
@@ -621,6 +656,7 @@ window.GlobalData = {
             id: 'm-beiping-798',
             couponMode: 'qr',
             name: '北平机器（798店）',
+            businessHours: '11:00-23:00（周一至周日）',
             budget: '¥90-130/人',
             district: '798艺术区',
             description: '北平机器在 798 艺术区的分店，改造自老厂房，挑高空间配工业装置。主打精酿与西式简餐，看展之后来一杯的收尾选择，晚上常有现场演出。',
@@ -641,6 +677,7 @@ window.GlobalData = {
             id: 'm-teabadao-gt',
             couponMode: 'code',
             name: '茶百道（工体店）',
+            businessHours: '10:00-22:30（周一至周日）',
             budget: '¥15-25/人',
             district: '工体',
             description: '工体北门附近的连锁茶饮店，夜跑、看球后的补给点。主打冰饮与果茶，支持小程序点单，高峰期出杯依然稳定。',
@@ -661,6 +698,7 @@ window.GlobalData = {
             id: 'm-teabadao-wyh',
             couponMode: 'code',
             name: '茶百道（温榆河店）',
+            businessHours: '09:00-20:00（周一至周日）',
             budget: '¥15-25/人',
             district: '温榆河',
             description: '温榆河公园附近的连锁茶饮店，露营、散步后的补给站。主打清爽果茶与奶盖系列，出公园方向顺路，支持小程序下单自取。',
@@ -681,6 +719,7 @@ window.GlobalData = {
             id: 'm-teabadao-gl',
             couponMode: 'code',
             name: '茶百道（鼓楼店）',
+            businessHours: '10:00-21:30（周一至周日）',
             budget: '¥15-25/人',
             district: '鼓楼',
             description: '鼓楼东大街上的连锁茶饮店，逛胡同、看鼓楼时的歇脚点。主打杨枝甘露与柠檬茶系列，店内可小坐，窗边位能看街景。',
@@ -785,7 +824,7 @@ window.GlobalData = {
     ],
 
     categories: [
-        { id: 'c1', label: '运动', icon: 'dribbble', color: 'bg-orange-100 text-orange-600' },
+        { id: 'c1', label: '运动', icon: 'dumbbell', color: 'bg-orange-100 text-orange-600' },
         { id: 'c2', label: '户外', icon: 'tent', color: 'bg-green-100 text-green-600' },
         { id: 'c3', label: '饭搭子', icon: 'utensils', color: 'bg-yellow-100 text-yellow-600' },
         { id: 'c7', label: '游戏', icon: 'gamepad-2', color: 'bg-indigo-100 text-indigo-600' },
@@ -800,7 +839,7 @@ window.GlobalData = {
         {
             id: 'p1',
             name: '滑雪大冒险',
-            avatarUrl: 'https://picsum.photos/100/100?random=20',
+            avatarUrl: 'images/avatar-10.png',
             tags: ['单板', '自驾', '摄影'],
             intro: '崇礼周末往返，缺人拼车！',
             distance: '1.2km',
@@ -812,7 +851,7 @@ window.GlobalData = {
         {
             id: 'p2',
             name: 'CoffeeJane',
-            avatarUrl: 'https://picsum.photos/100/100?random=21',
+            avatarUrl: 'images/avatar-8.png',
             tags: ['探店', '手冲', '阅读'],
             intro: '寻找三里屯附近的咖啡搭子。',
             distance: '0.5km',
@@ -824,7 +863,7 @@ window.GlobalData = {
         {
             id: 'p3',
             name: '健身狂魔',
-            avatarUrl: 'https://picsum.photos/100/100?random=22',
+            avatarUrl: 'images/avatar-8.png',
             tags: ['举铁', '增肌', '早起'],
             intro: '每天早上6点健身房见。',
             distance: '3.0km',
@@ -836,7 +875,7 @@ window.GlobalData = {
         {
             id: 'p4',
             name: '剧本杀DM',
-            avatarUrl: 'https://picsum.photos/100/100?random=23',
+            avatarUrl: 'images/avatar-2.png',
             tags: ['推理', '演绎'],
             intro: '缺1人，硬核本，速来！',
             distance: '5.2km',
@@ -858,7 +897,7 @@ window.GlobalData = {
             district: '朝阳区',
             date: '本周六 14:00',
             price: 39,
-            organizer: { id: 'u2', name: '飞盘小队长', avatarUrl: 'https://picsum.photos/50/50?random=2', intro: '拥有3年飞盘经验的快乐修狗' },
+            organizer: { id: 'u2', name: '飞盘小队长', avatarUrl: 'images/avatar-8.png', intro: '拥有3年飞盘经验的快乐修狗' },
             status: 'RECRUITING',
             currentParticipants: 12,
             maxParticipants: 20,
@@ -874,7 +913,7 @@ window.GlobalData = {
             district: '朝阳区',
             date: '本周日 11:00',
             price: 0,
-            organizer: { id: 'u3', name: 'FoodieJane', avatarUrl: 'https://picsum.photos/50/50?random=4', intro: '专注于寻找北京好吃的' },
+            organizer: { id: 'u3', name: 'FoodieJane', avatarUrl: 'images/avatar-7.png', intro: '专注于寻找北京好吃的' },
             status: 'RECRUITING',
             currentParticipants: 3,
             maxParticipants: 6,
@@ -890,7 +929,7 @@ window.GlobalData = {
             district: '朝阳区',
             date: '今晚 19:30',
             price: 0,
-            organizer: { id: 'u4', name: '夜跑达人', avatarUrl: 'https://picsum.photos/50/50?random=6', intro: '自律即自由' },
+            organizer: { id: 'u4', name: '夜跑达人', avatarUrl: 'images/avatar-8.png', intro: '自律即自由' },
             status: 'FULL',
             currentParticipants: 10,
             maxParticipants: 10,
@@ -906,7 +945,7 @@ window.GlobalData = {
             district: '通州区',
             date: '下周五 全天',
             price: 0,
-            organizer: { id: 'u5', name: '魔法师', avatarUrl: 'https://picsum.photos/50/50?random=8', intro: '霍格沃茨在读研究生' },
+            organizer: { id: 'u5', name: '魔法师', avatarUrl: 'images/avatar-10.png', intro: '霍格沃茨在读研究生' },
             status: 'RECRUITING',
             currentParticipants: 1,
             maxParticipants: 3,
@@ -925,7 +964,7 @@ window.GlobalData = {
             organizer: {
                 id: 'u1',
                 name: 'ActiveExplorer',
-                avatarUrl: 'https://picsum.photos/50/50?random=1',
+                avatarUrl: 'images/avatar-8.png',
                 intro: '热爱生活，喜欢探索城市的每一个角落。周末经常出没在各大公园和咖啡馆。',
                 realNameVerified: true,
                 cooperationVerified: false,
@@ -948,7 +987,7 @@ window.GlobalData = {
             district: '海淀区',
             date: '本周日 09:00',
             price: 0,
-            organizer: { id: 'u6', name: '登山爱好者', avatarUrl: 'https://picsum.photos/50/50?random=10', intro: '热爱大自然，每周都会去爬山' },
+            organizer: { id: 'u6', name: '登山爱好者', avatarUrl: 'images/avatar-2.png', intro: '热爱大自然，每周都会去爬山' },
             status: 'RECRUITING',
             currentParticipants: 5,
             maxParticipants: 15,
@@ -964,7 +1003,7 @@ window.GlobalData = {
             district: '河北省',
             date: '下周末 两天一夜',
             price: 680,
-            organizer: { id: 'p5', name: '草原向导', avatarUrl: 'https://picsum.photos/50/50?random=11', intro: '本地牧民，熟悉草原路线' },
+            organizer: { id: 'p5', name: '草原向导', avatarUrl: 'images/avatar-8.png', intro: '本地牧民，熟悉草原路线' },
             status: 'RECRUITING',
             currentParticipants: 3,
             maxParticipants: 8,
@@ -980,7 +1019,7 @@ window.GlobalData = {
             district: '西城区',
             date: '本周六 15:00',
             price: 40,
-            organizer: { id: 'u7', name: '划船达人', avatarUrl: 'https://picsum.photos/50/50?random=12', intro: '喜欢水上运动，擅长划船' },
+            organizer: { id: 'u7', name: '划船达人', avatarUrl: 'images/avatar-8.png', intro: '喜欢水上运动，擅长划船' },
             status: 'RECRUITING',
             currentParticipants: 2,
             maxParticipants: 6,
@@ -996,7 +1035,7 @@ window.GlobalData = {
             district: '东城区',
             date: '本周六 10:00',
             price: 60,
-            organizer: { id: 'u8', name: '历史爱好者', avatarUrl: 'https://picsum.photos/50/50?random=13', intro: '博物馆常客，对历史文物有深入研究' },
+            organizer: { id: 'u8', name: '历史爱好者', avatarUrl: 'images/avatar-10.png', intro: '博物馆常客，对历史文物有深入研究' },
             status: 'RECRUITING',
             currentParticipants: 4,
             maxParticipants: 10,
@@ -1012,7 +1051,7 @@ window.GlobalData = {
             district: '朝阳区',
             date: '本周日 14:00',
             price: 0,
-            organizer: { id: 'u9', name: '艺术策展人', avatarUrl: 'https://picsum.photos/50/50?random=14', intro: '艺术行业从业者，熟悉各大画廊' },
+            organizer: { id: 'u9', name: '艺术策展人', avatarUrl: 'images/avatar-7.png', intro: '艺术行业从业者，熟悉各大画廊' },
             status: 'RECRUITING',
             currentParticipants: 6,
             maxParticipants: 12,
@@ -1028,7 +1067,7 @@ window.GlobalData = {
             district: '东城区',
             date: '下周六 09:30',
             price: 120,
-            organizer: { id: 'p6', name: '故宫讲解员', avatarUrl: 'https://picsum.photos/50/50?random=15', intro: '专业导游，五年故宫讲解经验' },
+            organizer: { id: 'p6', name: '故宫讲解员', avatarUrl: 'images/avatar-5.png', intro: '专业导游，五年故宫讲解经验' },
             status: 'RECRUITING',
             currentParticipants: 8,
             maxParticipants: 15,
@@ -1044,7 +1083,7 @@ window.GlobalData = {
             district: '朝阳区',
             date: '本周五 19:00',
             price: 50,
-            organizer: { id: 'p4', name: '剧本杀DM', avatarUrl: 'https://picsum.photos/50/50?random=23', intro: '缺1人，硬核本，速来！' },
+            organizer: { id: 'p4', name: '剧本杀DM', avatarUrl: 'images/avatar-7.png', intro: '缺1人，硬核本，速来！' },
             status: 'RECRUITING',
             currentParticipants: 7,
             maxParticipants: 12,
@@ -1060,7 +1099,7 @@ window.GlobalData = {
             district: '海淀区',
             date: '本周六 20:00',
             price: 80,
-            organizer: { id: 'u10', name: '电竞迷', avatarUrl: 'https://picsum.photos/50/50?random=16', intro: '资深电竞爱好者，喜欢观看各类比赛' },
+            organizer: { id: 'u10', name: '电竞迷', avatarUrl: 'images/avatar-8.png', intro: '资深电竞爱好者，喜欢观看各类比赛' },
             status: 'RECRUITING',
             currentParticipants: 9,
             maxParticipants: 20,
@@ -1076,7 +1115,7 @@ window.GlobalData = {
             district: '朝阳区',
             date: '本周日 15:00',
             price: 60,
-            organizer: { id: 'u11', name: '游戏主机收藏家', avatarUrl: 'https://picsum.photos/50/50?random=17', intro: '拥有各种游戏主机，喜欢组织游戏派对' },
+            organizer: { id: 'u11', name: '游戏主机收藏家', avatarUrl: 'images/avatar-6.png', intro: '拥有各种游戏主机，喜欢组织游戏派对' },
             status: 'RECRUITING',
             currentParticipants: 4,
             maxParticipants: 8,
@@ -1092,7 +1131,7 @@ window.GlobalData = {
             district: '朝阳区',
             date: '本周六 19:30',
             price: 65,
-            organizer: { id: 'u12', name: '科幻电影迷', avatarUrl: 'https://picsum.photos/50/50?random=18', intro: '热爱科幻电影，尤其是国产科幻' },
+            organizer: { id: 'u12', name: '科幻电影迷', avatarUrl: 'images/avatar-10.png', intro: '热爱科幻电影，尤其是国产科幻' },
             status: 'RECRUITING',
             currentParticipants: 5,
             maxParticipants: 10,
@@ -1108,7 +1147,7 @@ window.GlobalData = {
             district: '朝阳区',
             date: '本周五 20:00',
             price: 100,
-            organizer: { id: 'u13', name: '电影收藏家', avatarUrl: 'https://picsum.photos/50/50?random=19', intro: '收藏了大量经典电影蓝光碟' },
+            organizer: { id: 'u13', name: '电影收藏家', avatarUrl: 'images/avatar-8.png', intro: '收藏了大量经典电影蓝光碟' },
             status: 'RECRUITING',
             currentParticipants: 3,
             maxParticipants: 8,
@@ -1124,7 +1163,7 @@ window.GlobalData = {
             district: '海淀区',
             date: '本周六 22:00',
             price: 0,
-            organizer: { id: 'u14', name: '恐怖片爱好者', avatarUrl: 'https://picsum.photos/50/50?random=20', intro: '阅片无数，尤其喜欢恐怖悬疑片' },
+            organizer: { id: 'u14', name: '恐怖片爱好者', avatarUrl: 'images/avatar-6.png', intro: '阅片无数，尤其喜欢恐怖悬疑片' },
             status: 'RECRUITING',
             currentParticipants: 4,
             maxParticipants: 6,
@@ -1140,7 +1179,7 @@ window.GlobalData = {
             district: '东城区',
             date: '本周六 20:30',
             price: 120,
-            organizer: { id: 'u15', name: '音乐现场常客', avatarUrl: 'https://picsum.photos/50/50?random=21', intro: '每周都会去各种音乐现场' },
+            organizer: { id: 'u15', name: '音乐现场常客', avatarUrl: 'images/avatar-8.png', intro: '每周都会去各种音乐现场' },
             status: 'RECRUITING',
             currentParticipants: 6,
             maxParticipants: 10,
@@ -1156,7 +1195,7 @@ window.GlobalData = {
             district: '朝阳区',
             date: '本周六 14:00',
             price: 70,
-            organizer: { id: 'u16', name: '麦霸', avatarUrl: 'https://picsum.photos/50/50?random=22', intro: 'KTV常客，擅长各种歌曲' },
+            organizer: { id: 'u16', name: '麦霸', avatarUrl: 'images/avatar-5.png', intro: 'KTV常客，擅长各种歌曲' },
             status: 'RECRUITING',
             currentParticipants: 5,
             maxParticipants: 8,
@@ -1172,7 +1211,7 @@ window.GlobalData = {
             district: '西城区',
             date: '下周六 19:30',
             price: 280,
-            organizer: { id: 'u17', name: '古典乐迷', avatarUrl: 'https://picsum.photos/50/50?random=23', intro: '资深古典音乐爱好者，熟悉各大乐团' },
+            organizer: { id: 'u17', name: '古典乐迷', avatarUrl: 'images/avatar-7.png', intro: '资深古典音乐爱好者，熟悉各大乐团' },
             status: 'RECRUITING',
             currentParticipants: 3,
             maxParticipants: 6,
@@ -1188,7 +1227,7 @@ window.GlobalData = {
             district: '朝阳区',
             date: '本周日 16:00',
             price: 40,
-            organizer: { id: 'u18', name: '羽毛球爱好者', avatarUrl: 'https://picsum.photos/50/50?random=24', intro: '每周都会打羽毛球，技术中等' },
+            organizer: { id: 'u18', name: '羽毛球爱好者', avatarUrl: 'images/avatar-10.png', intro: '每周都会打羽毛球，技术中等' },
             status: 'RECRUITING',
             currentParticipants: 6,
             maxParticipants: 12,
@@ -1204,7 +1243,7 @@ window.GlobalData = {
             district: '朝阳区',
             date: '本周六 10:00',
             price: 60,
-            organizer: { id: 'u19', name: '游泳教练', avatarUrl: 'https://picsum.photos/50/50?random=25', intro: '专业游泳教练，擅长教初学者' },
+            organizer: { id: 'u19', name: '游泳教练', avatarUrl: 'images/avatar-8.png', intro: '专业游泳教练，擅长教初学者' },
             status: 'RECRUITING',
             currentParticipants: 4,
             maxParticipants: 8,
@@ -1220,7 +1259,7 @@ window.GlobalData = {
             district: '东城区',
             date: '本周五 18:30',
             price: 0,
-            organizer: { id: 'u20', name: '火锅爱好者', avatarUrl: 'https://picsum.photos/50/50?random=26', intro: '无火锅不欢，每周必吃一次' },
+            organizer: { id: 'u20', name: '火锅爱好者', avatarUrl: 'images/avatar-8.png', intro: '无火锅不欢，每周必吃一次' },
             status: 'RECRUITING',
             currentParticipants: 4,
             maxParticipants: 8,
@@ -1236,7 +1275,7 @@ window.GlobalData = {
             district: '朝阳区',
             date: '本周四 19:00',
             price: 0,
-            organizer: { id: 'u21', name: '日料达人', avatarUrl: 'https://picsum.photos/50/50?random=27', intro: '熟悉各种日料，喜欢居酒屋氛围' },
+            organizer: { id: 'u21', name: '日料达人', avatarUrl: 'images/avatar-2.png', intro: '熟悉各种日料，喜欢居酒屋氛围' },
             status: 'RECRUITING',
             currentParticipants: 3,
             maxParticipants: 6,
@@ -1252,7 +1291,7 @@ window.GlobalData = {
             district: '朝阳区',
             date: '本周六 15:00',
             price: 120,
-            organizer: { id: 'p4', name: '剧本杀DM', avatarUrl: 'https://picsum.photos/50/50?random=23', intro: '缺1人，硬核本，速来！' },
+            organizer: { id: 'p4', name: '剧本杀DM', avatarUrl: 'images/avatar-7.png', intro: '缺1人，硬核本，速来！' },
             status: 'RECRUITING',
             currentParticipants: 3,
             maxParticipants: 6,
@@ -1327,15 +1366,15 @@ window.GlobalData = {
     ],
     
     messages: [
-        { id: 'm1', userId: 'u2', name: '飞盘小队长', avatarUrl: 'https://picsum.photos/50/50?random=2', lastMessage: '这周六记得穿运动鞋哦！', time: '10:30', unread: 2, timestamp: 700 },
-        { id: 'm2', userId: 'u3', name: 'FoodieJane', avatarUrl: 'https://picsum.photos/50/50?random=4', lastMessage: '好的，那就约11点在餐厅门口见。', time: '昨天', unread: 0, timestamp: 600 },
-        { id: 'm3', userId: 'p4', name: '剧本杀DM', avatarUrl: 'https://picsum.photos/50/50?random=23', lastMessage: '我们这边还差一个人，你要来吗？', time: '星期一', unread: 0, timestamp: 300 },
-        { id: 'm4', userId: 'p1', name: '滑雪大冒险', avatarUrl: 'https://picsum.photos/50/50?random=20', lastMessage: '崇礼滑雪周末团，你有兴趣吗？我这边已经有3个人了。', time: '刚刚', unread: 5, timestamp: 900 },
-        { id: 'm5', userId: 'u4', name: '夜跑达人', avatarUrl: 'https://picsum.photos/50/50?random=6', lastMessage: '今晚跑步改成7点，因为天气有点热。', time: '10:20', unread: 1, timestamp: 800 },
-        { id: 'm6', userId: 'u5', name: '魔法师', avatarUrl: 'https://picsum.photos/50/50?random=8', lastMessage: '环球影城的哈利波特园区太棒了，下次一起吧！', time: '昨天', unread: 0, timestamp: 500 },
-        { id: 'm7', userId: 'p2', name: 'CoffeeJane', avatarUrl: 'https://picsum.photos/50/50?random=21', lastMessage: '发现了一家新的手冲咖啡馆，豆子很特别。', time: '星期三', unread: 0, timestamp: 400 },
-        { id: 'm8', userId: 'p3', name: '健身狂魔', avatarUrl: 'https://picsum.photos/50/50?random=22', lastMessage: '早上6点健身房，别忘了带水壶。', time: '2026/2/18', unread: 0, timestamp: 200 },
-        { id: 'm9', userId: 'system', name: '搭子小助手', avatarUrl: 'https://picsum.photos/50/50?random=99', lastMessage: '欢迎使用私信功能，有任何问题可以随时咨询。', time: '2026/2/15', unread: 0, timestamp: 100 }
+        { id: 'm1', userId: 'u2', name: '飞盘小队长', avatarUrl: 'images/avatar-8.png', lastMessage: '这周六记得穿运动鞋哦！', time: '10:30', unread: 2, timestamp: 700 },
+        { id: 'm2', userId: 'u3', name: 'FoodieJane', avatarUrl: 'images/avatar-7.png', lastMessage: '好的，那就约11点在餐厅门口见。', time: '昨天', unread: 0, timestamp: 600 },
+        { id: 'm3', userId: 'p4', name: '剧本杀DM', avatarUrl: 'images/avatar-7.png', lastMessage: '我们这边还差一个人，你要来吗？', time: '星期一', unread: 0, timestamp: 300 },
+        { id: 'm4', userId: 'p1', name: '滑雪大冒险', avatarUrl: 'images/avatar-6.png', lastMessage: '崇礼滑雪周末团，你有兴趣吗？我这边已经有3个人了。', time: '刚刚', unread: 5, timestamp: 900 },
+        { id: 'm5', userId: 'u4', name: '夜跑达人', avatarUrl: 'images/avatar-8.png', lastMessage: '今晚跑步改成7点，因为天气有点热。', time: '10:20', unread: 1, timestamp: 800 },
+        { id: 'm6', userId: 'u5', name: '魔法师', avatarUrl: 'images/avatar-10.png', lastMessage: '环球影城的哈利波特园区太棒了，下次一起吧！', time: '昨天', unread: 0, timestamp: 500 },
+        { id: 'm7', userId: 'p2', name: 'CoffeeJane', avatarUrl: 'images/avatar-8.png', lastMessage: '发现了一家新的手冲咖啡馆，豆子很特别。', time: '星期三', unread: 0, timestamp: 400 },
+        { id: 'm8', userId: 'p3', name: '健身狂魔', avatarUrl: 'images/avatar-5.png', lastMessage: '早上6点健身房，别忘了带水壶。', time: '2026/2/18', unread: 0, timestamp: 200 },
+        { id: 'm9', userId: 'system', name: '搭子小助手', avatarUrl: 'images/avatar-8.png', lastMessage: '欢迎使用私信功能，有任何问题可以随时咨询。', time: '2026/2/15', unread: 0, timestamp: 100 }
     ],
     
     notifications: [
@@ -1373,13 +1412,13 @@ window.GlobalData = {
     ],
 
     users: [
-        { id: 'u1', name: 'ActiveExplorer', avatarUrl: 'https://picsum.photos/100/100', intro: '热爱生活，喜欢探索城市的每一个角落。周末经常出没在各大公园和咖啡馆。' },
-        { id: 'u2', name: '滑雪大冒险', avatarUrl: 'https://picsum.photos/100/100?random=20', intro: '崇礼周末往返，缺人拼车！' },
-        { id: 'u3', name: 'CoffeeJane', avatarUrl: 'https://picsum.photos/100/100?random=21', intro: '寻找三里屯附近的咖啡搭子。' },
-        { id: 'u4', name: '健身狂魔', avatarUrl: 'https://picsum.photos/100/100?random=22', intro: '每天早上6点健身房见。' },
-        { id: 'u5', name: '剧本杀DM', avatarUrl: 'https://picsum.photos/100/100?random=23', intro: '缺1人，硬核本，速来！' },
-        { id: 'u6', name: '夜跑达人', avatarUrl: 'https://picsum.photos/100/100?random=24', intro: '每晚8点奥森公园夜跑，约吗？' },
-        { id: 'u7', name: '魔法师', avatarUrl: 'https://picsum.photos/100/100?random=25', intro: '哈利波特主题酒吧常客。' }
+        { id: 'u1', name: 'ActiveExplorer', avatarUrl: 'images/avatar-6.png', intro: '热爱生活，喜欢探索城市的每一个角落。周末经常出没在各大公园和咖啡馆。' },
+        { id: 'u2', name: '滑雪大冒险', avatarUrl: 'images/avatar-10.png', intro: '崇礼周末往返，缺人拼车！' },
+        { id: 'u3', name: 'CoffeeJane', avatarUrl: 'images/avatar-8.png', intro: '寻找三里屯附近的咖啡搭子。' },
+        { id: 'u4', name: '健身狂魔', avatarUrl: 'images/avatar-8.png', intro: '每天早上6点健身房见。' },
+        { id: 'u5', name: '剧本杀DM', avatarUrl: 'images/avatar-2.png', intro: '缺1人，硬核本，速来！' },
+        { id: 'u6', name: '夜跑达人', avatarUrl: 'images/avatar-6.png', intro: '每晚8点奥森公园夜跑，约吗？' },
+        { id: 'u7', name: '魔法师', avatarUrl: 'images/avatar-8.png', intro: '哈利波特主题酒吧常客。' }
     ],
 
     orders: [

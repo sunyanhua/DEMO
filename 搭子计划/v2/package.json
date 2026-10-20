@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "node weekend-test.test.cjs && node weekend-route.test.cjs && node merchant-detail.test.cjs && node chat.test.cjs && node me.test.cjs"
+    "test": "node index.test.cjs && node weekend-test.test.cjs && node weekend-route.test.cjs && node merchant-detail.test.cjs && node chat.test.cjs && node me.test.cjs && node category.test.cjs"
   },
   "dependencies": {
     "react": "^19.2.4",

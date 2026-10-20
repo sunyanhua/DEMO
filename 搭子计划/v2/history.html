@@ -73,7 +73,7 @@
                     location: '朝阳公园 草坪区',
                     status: 'RECRUITING',
                     price: 0,
-                    organizer: { id: 'u2', name: '飞盘小队长', avatarUrl: 'https://picsum.photos/50/50?random=2' },
+                    organizer: { id: 'u2', name: '飞盘小队长', avatarUrl: 'images/avatar-8.png' },
                     viewedAt: '今天 11:45'
                 },
                 {
@@ -84,7 +84,7 @@
                     location: '雍和宫附近',
                     status: 'RECRUITING',
                     price: 50,
-                    organizer: { id: 'u3', name: 'FoodieJane', avatarUrl: 'https://picsum.photos/50/50?random=4' },
+                    organizer: { id: 'u3', name: 'FoodieJane', avatarUrl: 'images/avatar-7.png' },
                     viewedAt: '今天 10:10'
                 },
                 {
@@ -95,7 +95,7 @@
                     location: '798艺术区',
                     status: 'RECRUITING',
                     price: 120,
-                    organizer: { id: 'p2', name: 'CoffeeJane', avatarUrl: 'https://picsum.photos/100/100?random=21' },
+                    organizer: { id: 'p2', name: 'CoffeeJane', avatarUrl: 'images/avatar-8.png' },
                     viewedAt: '昨天 16:30'
                 }
             ];
@@ -107,7 +107,7 @@
             const getMomentCard = (m) => {
                 const user = window.GlobalData.user.id === m.userId ? window.GlobalData.user :
                              (window.GlobalData.partners.find(p=>p.id===m.userId) ||
-                             { name:'未知用户', avatarUrl:'https://picsum.photos/50/50?random=0' });
+                             { name:'未知用户', avatarUrl:'images/avatar-2.png' });
 
                 return `
                 <div onclick="window.location.href='moment.html?id=${m.id}'" class="break-inside-avoid mb-3 bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100 cursor-pointer group">

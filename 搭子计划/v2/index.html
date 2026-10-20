@@ -57,7 +57,7 @@
                 user: {
                     id: 'u1',
                     name: 'ActiveExplorer',
-                    avatarUrl: 'https://picsum.photos/100/100',
+                    avatarUrl: 'images/avatar-10.png',
                     following: 42,
                     followers: 108,
                     activities: 5
@@ -85,7 +85,7 @@
                     {
                         id: 'p1',
                         name: '滑雪大冒险',
-                        avatarUrl: 'https://picsum.photos/100/100?random=20',
+                        avatarUrl: 'images/avatar-10.png',
                         tags: ['单板', '自驾', '摄影'],
                         intro: '崇礼周末往返，缺人拼车！',
                         distance: '1.2km'
@@ -93,7 +93,7 @@
                     {
                         id: 'p2',
                         name: 'CoffeeJane',
-                        avatarUrl: 'https://picsum.photos/100/100?random=21',
+                        avatarUrl: 'images/avatar-8.png',
                         tags: ['探店', '手冲', '阅读'],
                         intro: '寻找三里屯附近的咖啡搭子。',
                         distance: '0.5km'
@@ -101,7 +101,7 @@
                     {
                         id: 'p3',
                         name: '健身狂魔',
-                        avatarUrl: 'https://picsum.photos/100/100?random=22',
+                        avatarUrl: 'images/avatar-8.png',
                         tags: ['举铁', '增肌', '早起'],
                         intro: '每天早上6点健身房见。',
                         distance: '3.0km'
@@ -109,7 +109,7 @@
                     {
                         id: 'p4',
                         name: '剧本杀DM',
-                        avatarUrl: 'https://picsum.photos/100/100?random=23',
+                        avatarUrl: 'images/avatar-2.png',
                         tags: ['推理', '演绎'],
                         intro: '缺1人，硬核本，速来！',
                         distance: '5.2km'
@@ -126,7 +126,7 @@
                         district: '朝阳区',
                         date: '本周六 14:00',
                         price: 39,
-                        organizer: { id: 'u2', name: '飞盘小队长', avatarUrl: 'https://picsum.photos/50/50?random=2', intro: '拥有3年飞盘经验的快乐修狗' },
+                        organizer: { id: 'u2', name: '飞盘小队长', avatarUrl: 'images/avatar-8.png', intro: '拥有3年飞盘经验的快乐修狗' },
                         status: 'RECRUITING',
                         currentParticipants: 12,
                         maxParticipants: 20,
@@ -142,7 +142,7 @@
                         district: '朝阳区',
                         date: '本周日 11:00',
                         price: 0,
-                        organizer: { id: 'u3', name: 'FoodieJane', avatarUrl: 'https://picsum.photos/50/50?random=4', intro: '专注于寻找北京好吃的' },
+                        organizer: { id: 'u3', name: 'FoodieJane', avatarUrl: 'images/avatar-7.png', intro: '专注于寻找北京好吃的' },
                         status: 'RECRUITING',
                         currentParticipants: 3,
                         maxParticipants: 6,
@@ -158,7 +158,7 @@
                         district: '朝阳区',
                         date: '今晚 19:30',
                         price: 0,
-                        organizer: { id: 'u4', name: '夜跑达人', avatarUrl: 'https://picsum.photos/50/50?random=6', intro: '自律即自由' },
+                        organizer: { id: 'u4', name: '夜跑达人', avatarUrl: 'images/avatar-8.png', intro: '自律即自由' },
                         status: 'FULL',
                         currentParticipants: 10,
                         maxParticipants: 10,
@@ -174,7 +174,7 @@
                         district: '通州区',
                         date: '下周五 全天',
                         price: 0,
-                        organizer: { id: 'u5', name: '魔法师', avatarUrl: 'https://picsum.photos/50/50?random=8', intro: '霍格沃茨在读研究生' },
+                        organizer: { id: 'u5', name: '魔法师', avatarUrl: 'images/avatar-10.png', intro: '霍格沃茨在读研究生' },
                         status: 'RECRUITING',
                         currentParticipants: 1,
                         maxParticipants: 3,
@@ -272,8 +272,8 @@
                 const categories = window.GlobalData?.categories || [];
                 if (categories.length === 0) return '';
                 
-                // 链接到 category.html
-                const displayCats = categories.slice(0, 9);
+                // 链接到 category.html；仅保留前 4 个分类，末位为"更多"（跳发现活动标签页）
+                const displayCats = categories.slice(0, 4);
                 const catsHtml = displayCats.map(cat => `
                     <div class="flex-shrink-0 flex flex-col items-center gap-1.5 cursor-pointer group" onclick="window.location.href='category.html?view=activity&cat=${cat.id}'">
                         <div class="w-11 h-11 ${cat.color} rounded-xl flex items-center justify-center shadow-sm group-active:scale-95 transition-transform">
@@ -288,42 +288,53 @@
                         <div class="w-11 h-11 bg-gray-100 text-gray-500 rounded-xl flex items-center justify-center shadow-sm group-active:scale-95 transition-transform">
                           <i data-lucide="layout-grid" class="w-5 h-5"></i>
                         </div>
-                        <span class="text-[11px] text-gray-600 font-medium tracking-tight">全部</span>
+                        <span class="text-[11px] text-gray-600 font-medium tracking-tight">更多</span>
                     </div>
                 `;
-                return `<div class="px-4 py-2"><div class="flex overflow-x-auto no-scrollbar gap-4 items-start" style="scrollbar-width: none; -ms-overflow-style: none;">${catsHtml}${moreBtnHtml}</div></div>`;
+                return `<div class="px-4 py-2"><div class="grid grid-cols-5 justify-items-center items-start">${catsHtml}${moreBtnHtml}</div></div>`;
             },
 
-            partnerRail() {
-                const partners = window.GlobalData?.partners || [];
-                if (partners.length === 0) return '';
-                
-                const partnersHtml = partners.map(partner => `
-                  <div onclick="window.location.href='profile.html?id=${partner.id}'" class="flex-shrink-0 w-36 bg-white rounded-xl p-3 shadow-sm border border-gray-100 relative overflow-hidden group cursor-pointer">
-                    <div class="absolute -right-4 -top-4 w-16 h-16 bg-gradient-to-br from-brand-orange/10 to-brand-yellow/10 rounded-full blur-xl"></div>
-                    <div class="flex flex-col items-center relative z-10">
-                      <div class="relative mb-2">
-                        <img src="${partner.avatarUrl}" class="w-14 h-14 rounded-full border-2 border-white shadow-md object-cover"/>
-                        <div class="absolute bottom-0 right-0 bg-brand-blue text-[8px] text-white px-1.5 py-0.5 rounded-full border border-white">${partner.distance}</div>
-                      </div>
-                      <h3 class="font-bold text-gray-900 text-sm mb-1 truncate w-full text-center">${partner.name}</h3>
-                      <div class="flex flex-wrap justify-center gap-1 mb-2 h-5 overflow-hidden">
-                        ${partner.tags.slice(0, 2).map(tag => `<span class="text-[9px] px-1.5 py-0.5 bg-gray-50 text-gray-500 rounded-md border border-gray-100">${tag}</span>`).join('')}
-                      </div>
-                      <p class="text-[10px] text-gray-400 text-center line-clamp-2 h-8 leading-tight w-full mb-2 bg-gray-50/50 rounded p-1">"${partner.intro}"</p>
-                      <button class="w-full py-1 bg-gradient-to-r from-gray-900 to-gray-700 text-white text-[10px] font-bold rounded-full shadow-lg shadow-gray-200 active:scale-95 transition-transform flex items-center justify-center gap-1" onclick="event.stopPropagation(); window.location.href='chat.html?uid=${partner.id}&name=${encodeURIComponent(partner.name)}'">
-                        <i data-lucide="message-circle" class="w-2.5 h-2.5"></i><span>搭讪</span>
-                      </button>
+            // 搭子需求卡片：完成定制周末路线操作的用户（头像/昵称/需求胶囊/认识TA/定制同款路线）
+            demandRail() {
+                const users = window.GlobalData?.demandUsers || [];
+                const form = window.GlobalData?.weekendRouteForm;
+                if (users.length === 0 || !form) return '';
+
+                const usersHtml = users.map(u => {
+                    const s = u.selections;
+                    // 需求胶囊：情况/片区/时间/人数/预算（预算带"人均预算"标签与"元"单位）；
+                    // "是否找搭子""是否接受陌生人组局"两个选项不显示
+                    const filterCaps = form.filters.map(f => {
+                        if (f.id === 'partner' || f.id === 'stranger') return null;
+                        return f.id === 'budget' ? `人均预算 ${f.options[s[f.id]]}元` : f.options[s[f.id]];
+                    }).filter(Boolean);
+                    const caps = [
+                        form.situations[s.situation].title,
+                        form.areas[s.area].label.split(' / ')[0],
+                        ...filterCaps
+                    ].map(text => `<span class="px-2 py-0.5 bg-gray-50 text-gray-600 text-[9px] rounded-md border border-gray-100">${text}</span>`).join('');
+                    const params = `s=${s.situation}&a=${s.area}&t=${s.time}&p=${s.people}&b=${s.budget}&pa=${s.partner}&st=${s.stranger}`;
+                    return `
+                    <div class="flex-shrink-0 w-52 bg-white rounded-xl p-3 shadow-sm border border-gray-100">
+                        <div class="flex items-center gap-2 mb-2">
+                            <img src="${u.avatarUrl}" class="w-10 h-10 rounded-full border border-gray-100 object-cover" />
+                            <h3 class="font-bold text-gray-900 text-sm truncate">${u.name}</h3>
+                        </div>
+                        <div class="flex flex-wrap gap-1 mb-3">${caps}</div>
+                        <div class="flex gap-2">
+                            <button onclick="window.location.href='profile.html?id=${u.id}'" class="flex-1 py-1.5 bg-white border border-brand-orange text-brand-orange text-[11px] font-bold rounded-full active:scale-95 transition-transform">认识TA</button>
+                            <button onclick="window.location.href='weekend-route.html?${params}'" class="flex-1 py-1.5 bg-brand-orange text-white text-[11px] font-bold rounded-full active:scale-95 transition-transform">定制同款路线</button>
+                        </div>
                     </div>
-                  </div>
-                `).join('');
+                    `;
+                }).join('');
                 return `
                 <div class="pt-4 pb-2">
                   <div class="px-4 flex items-center justify-between mb-3">
-                    <div class="flex items-center gap-1.5"><div class="p-1 bg-brand-yellow/20 rounded-md"><i data-lucide="sparkles" class="w-4 h-4 text-brand-orange fill-brand-orange"></i></div><h2 class="text-lg font-black text-gray-900">推荐搭子</h2></div>
-                    <button onclick="window.location.href='category.html?view=partner'" class="text-xs text-gray-400 flex items-center">查看更多 <span class="ml-1">&gt;</span></button>
+                    <div class="flex items-center gap-1.5"><div class="p-1 bg-brand-yellow/20 rounded-md"><i data-lucide="users" class="w-4 h-4 text-brand-orange"></i></div><h2 class="text-lg font-black text-gray-900">搭子需求</h2></div>
+                    <button onclick="window.location.href='category.html?view=partner'" class="text-xs text-gray-400 flex items-center">更多 <span class="ml-1">&gt;</span></button>
                   </div>
-                  <div class="flex overflow-x-auto px-4 gap-3 no-scrollbar pb-2" style="scrollbar-width: none; -ms-overflow-style: none;">${partnersHtml}</div>
+                  <div class="flex overflow-x-auto px-4 gap-3 no-scrollbar pb-2" style="scrollbar-width: none; -ms-overflow-style: none;">${usersHtml}</div>
                 </div>
                 `;
             },
@@ -424,7 +435,7 @@
                     <main>
                         ${this.weekendCard()}
                         ${this.categoryGrid()}
-                        ${this.partnerRail()}
+                        ${this.demandRail()}
                         ${this.activityFeed()}
                     </main>
                     ${window.Common ? window.Common.renderBottomNav('home') : ''}

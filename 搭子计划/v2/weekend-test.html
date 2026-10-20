@@ -26,6 +26,7 @@
             started: false, // 是否已点击"开始鉴定"（区分"未开始"与"已开始未作答"）
             showPoster: false, // 是否展示分享人格海报
             resultPersonality: null, // 当前测试结果人格（海报与结果页区块复用）
+            resultMode: false, // ?view=result：直接展示上次测试结果（来自个人中心入口）
 
             get questions() {
                 return (window.GlobalData && window.GlobalData.weekendTestQuestions) || [];
@@ -104,10 +105,28 @@
                 `;
             },
 
+            // 从 URL 恢复模式（?view=result：个人中心"我的周末人格"入口）
+            // 已开始答题（重新测试中）时不再启用结果页模式
+            initFromUrl() {
+                const params = new URLSearchParams(window.location.search);
+                if (params.get('view') === 'result' && !this.started && this.answers.length === 0) {
+                    this.resultMode = true;
+                    if (!this.resultPersonality) {
+                        const pid = (window.GlobalData && window.GlobalData.user && window.GlobalData.user.weekendPersonality) || '';
+                        this.resultPersonality = this.personalities.find(p => p.id === pid) || null;
+                    }
+                }
+            },
+
             resultView() {
-                const { id } = window.WeekendTest.calculate(this.answers);
-                const p = this.personalities.find(item => item.id === id);
-                this.resultPersonality = p; // 供海报与区块复用（避免同分随机重算）
+                let p;
+                if (this.resultMode && this.resultPersonality) {
+                    p = this.resultPersonality; // 结果页模式：展示上次测试结果
+                } else {
+                    const { id } = window.WeekendTest.calculate(this.answers);
+                    p = this.personalities.find(item => item.id === id);
+                    this.resultPersonality = p; // 供海报与区块复用（避免同分随机重算）
+                }
                 const tagsHtml = p.tags.map(tag => `
                     <span class="px-3 py-1 bg-white/20 text-white text-xs font-medium rounded-full border border-white/40">${tag}</span>
                 `).join('');
@@ -138,7 +157,7 @@
                                         <button onclick="Test.openPoster()" class="flex items-center justify-center gap-1.5 py-3 bg-brand-orange/10 text-brand-orange rounded-xl font-bold text-sm active:scale-95 transition-transform">
                                             <i data-lucide="share-2" class="w-4 h-4"></i><span>分享人格</span>
                                         </button>
-                                        <button onclick="Test.restart()" class="py-3 bg-white border border-brand-orange text-brand-orange rounded-xl font-bold text-sm active:scale-95 transition-transform">
+                                        <button onclick="${this.resultMode ? 'Test.start()' : 'Test.restart()'}" class="py-3 bg-white border border-brand-orange text-brand-orange rounded-xl font-bold text-sm active:scale-95 transition-transform">
                                             重新测试
                                         </button>
                                     </div>
@@ -146,6 +165,7 @@
                             </div>
                         </div>
                     </div>
+                    ${this.playsSection()}
                     ${this.recommendRoutesSection()}
                     ${this.hotActivitiesSection()}
                     ${this.fellowsSection()}
@@ -158,6 +178,27 @@
                 <div class="flex items-center gap-1.5 mb-2.5">
                     <div class="w-1 h-4 rounded-full bg-brand-orange"></div>
                     <h2 class="text-base font-black text-gray-900">${text}</h2>
+                </div>
+                `;
+            },
+
+            // 适合你的北京玩法：按人格映射的玩法标签
+            playsSection() {
+                const plays = window.WeekendTest.playsForPersonality(this.resultPersonality.id);
+                if (plays.length === 0) return '';
+                const colors = [
+                    'bg-brand-orange/10 text-brand-orange border-brand-orange/30',
+                    'bg-brand-blue/10 text-brand-blue border-brand-blue/30',
+                    'bg-brand-teal/10 text-brand-teal border-brand-teal/30',
+                    'bg-brand-pink/10 text-brand-pink border-brand-pink/30'
+                ];
+                const chipsHtml = plays.map((play, i) => `
+                    <span class="px-3 py-1.5 ${colors[i % colors.length]} text-xs font-bold rounded-full border">${play}</span>
+                `).join('');
+                return `
+                <div class="px-4 pt-5">
+                    ${this.sectionTitle('适合你的北京玩法')}
+                    <div class="flex flex-wrap gap-2">${chipsHtml}</div>
                 </div>
                 `;
             },
@@ -305,6 +346,7 @@
             },
 
             start() {
+                this.resultMode = false; // 重新测试退出结果页模式
                 this.started = true;
                 this.answers = [];
                 this.currentIndex = 0;
@@ -343,9 +385,12 @@
             },
 
             render() {
+                this.initFromUrl();
                 let view;
                 if (!window.WeekendTest || this.questions.length === 0) {
                     view = this.errorView();
+                } else if (this.resultMode && this.resultPersonality) {
+                    view = this.resultView();
                 } else if (this.answers.length === this.questions.length) {
                     view = this.resultView();
                 } else if (this.started || this.answers.length > 0) {

@@ -47,8 +47,9 @@
                 partner: null,
                 stranger: null
             },
-            view: 'form', // 'form' 表单 | 'list' 路线推荐列表 | 'detail' 路线详情
+            view: 'form', // 'form' 表单 | 'list' 路线推荐列表 | 'detail' 路线详情 | 'records' 定制记录 | 'record' 记录详情
             currentRouteId: null, // 当前展示的路线 id
+            currentRecordId: null, // 当前查看的定制记录 id
             ratingSelected: null, // 已点选的评价项下标
             showShare: false, // 是否展示路线分享卡片
 
@@ -78,17 +79,21 @@
             },
 
             header() {
-                // 表单为入口页返回首页；列表/详情通过浏览器历史逐步后退（状态由 URL 恢复）
+                // 表单为入口页返回首页；其余视图通过浏览器历史逐步后退（状态由 URL 恢复）
                 const backAction = this.view === 'form'
                     ? "window.location.href='index.html'"
                     : 'window.history.back()';
+                // 表单右上角：我的定制记录入口
+                const rightSide = this.view === 'form'
+                    ? '<button onclick="RouteForm.openRecords()" class="text-[11px] text-brand-orange font-bold px-1">我的定制记录</button>'
+                    : '<div class="w-6"></div>'; // 占位保持对称
                 return `
                 <div class="fixed top-0 left-0 right-0 h-[50px] bg-white z-50 flex items-center px-4 shadow-sm border-b border-gray-100">
                     <button onclick="${backAction}" class="p-1.5 rounded-full hover:bg-gray-100 transition">
                         <i data-lucide="chevron-left" class="w-6 h-6 text-gray-800"></i>
                     </button>
                     <div class="flex-1 text-center font-bold text-gray-900">定制周末路线</div>
-                    <div class="w-6"></div> <!-- 占位保持对称 -->
+                    ${rightSide}
                 </div>
                 `;
             },
@@ -207,15 +212,14 @@
                 `).join('');
             },
 
-            listView() {
+            // 路线卡片列表（listView 与 recordView 复用；selections 用于理由/匹配度计算）
+            routeCardsHtml(ordered, selections) {
                 const form = this.form;
-                // 固定推荐 5 条：诚意推荐 1 → 经典必逛 3 → 智能定制 1，同类内按匹配度择优
-                const ordered = window.WeekendRoute.getRecommendationList(form, this.selections, 5);
-                const cardsHtml = ordered.map(r => {
+                return ordered.map(r => {
                     const tagsHtml = r.tags.map(tag => `
                         <span class="px-2 py-0.5 bg-gray-50 text-gray-500 text-[10px] rounded-md border border-gray-100">${tag}</span>
                     `).join('');
-                    const reasons = window.WeekendRoute.recommendReasons(r, form, this.selections);
+                    const reasons = window.WeekendRoute.recommendReasons(r, form, selections);
                     // 智能定制不显示推荐理由，改为 AI 定制提示胶囊
                     const reasonsHtml = r.type === 'smart'
                         ? `<div class="mt-2.5"><span class="inline-block px-2.5 py-1 bg-brand-purple/10 text-brand-purple text-[10px] font-medium rounded-md">根据您的需求AI定制，路线仅供参考</span></div>`
@@ -228,7 +232,7 @@
                             : '');
                     // 诚意推荐与经典必逛显示匹配度，智能定制不显示
                     const showPercent = r.type === 'recommend' || r.type === 'classic';
-                    const percent = window.WeekendRoute.matchPercent(r, form, this.selections);
+                    const percent = window.WeekendRoute.matchPercent(r, form, selections);
                     const percentHtml = showPercent
                         ? `<span class="absolute top-0 right-0 bg-brand-orange text-white text-[10px] font-bold px-2.5 py-1 rounded-bl-xl">匹配度 ${percent}%</span>`
                         : '';
@@ -250,6 +254,11 @@
                     </button>
                     `;
                 }).join('');
+            },
+
+            listView() {
+                // 固定推荐 5 条：诚意推荐 1 → 经典必逛 3 → 智能定制 1，同类内按匹配度择优
+                const ordered = window.WeekendRoute.getRecommendationList(this.form, this.selections, 5);
                 return `
                 <div class="pt-[50px] pb-10 fade-in">
                     <div class="px-4 pt-5">
@@ -265,10 +274,88 @@
                     </div>
                     <div class="px-4 pt-6">
                         ${this.sectionTitle('路线推荐')}
-                        <div class="space-y-3">${cardsHtml}</div>
+                        <div class="space-y-3">${this.routeCardsHtml(ordered, this.selections)}</div>
                     </div>
                 </div>
                 `;
+            },
+
+            // ---------- 定制记录视图 ----------
+
+            recordsView() {
+                const records = window.WeekendRoute.getRouteRecords();
+                const form = this.form;
+                const rowsHtml = records.map(rec => {
+                    const s = rec.selections;
+                    // 每个选项带标题展示（预算加"元"单位）
+                    const chips = [
+                        { label: '情况', value: form.situations[s.situation] ? form.situations[s.situation].title : '' },
+                        { label: '片区', value: form.areas[s.area] ? form.areas[s.area].label.split(' / ')[0] : '' },
+                        ...form.filters.map(f => ({ label: f.label, value: (f.options[s[f.id]] || '') + (f.id === 'budget' ? '元' : '') }))
+                    ].filter(c => c.value).map(c => `<span class="px-2 py-0.5 bg-gray-50 text-gray-600 text-[10px] rounded-md border border-gray-100"><span class="text-gray-400">${c.label}</span> ${c.value}</span>`).join('');
+                    return `
+                    <div onclick="RouteForm.openRecord('${rec.id}')" class="bg-white rounded-xl border border-gray-100 p-3.5 cursor-pointer active:scale-[0.99] transition-transform">
+                        <div class="flex items-center justify-between gap-2">
+                            <span class="text-xs font-bold text-gray-900">${rec.time}</span>
+                            <span class="text-[10px] text-gray-400 flex-shrink-0">${rec.routeIds.length} 条路线</span>
+                        </div>
+                        <div class="flex flex-wrap gap-1.5 mt-2">${chips}</div>
+                        <p class="mt-2 text-[11px] text-brand-orange font-bold flex items-center justify-end gap-0.5">查看推荐路线 <i data-lucide="chevron-right" class="w-3 h-3"></i></p>
+                    </div>
+                    `;
+                }).join('');
+                return `
+                <div class="pt-[50px] pb-10 fade-in">
+                    <div class="px-4 pt-5">
+                        ${this.sectionTitle('定制记录')}
+                        ${records.length > 0
+                            ? `<div class="space-y-2.5">${rowsHtml}</div>`
+                            : '<div class="bg-white rounded-xl border border-gray-100 p-8 text-center text-xs text-gray-400">还没有定制记录，去定制第一条周末路线吧</div>'}
+                    </div>
+                </div>
+                `;
+            },
+
+            recordView() {
+                const record = window.WeekendRoute.getRouteRecord(this.currentRecordId);
+                if (!record) return this.recordsView(); // 无效记录回落记录列表
+                const form = this.form;
+                const routes = record.routeIds
+                    .map(id => window.WeekendRoute.getRoutes().find(r => r.id === id))
+                    .filter(Boolean);
+                const s = record.selections;
+                // 每个选项带标题展示（预算加"元"单位）
+                const chips = [
+                    { label: '情况', value: form.situations[s.situation] ? form.situations[s.situation].title : '' },
+                    { label: '片区', value: form.areas[s.area] ? form.areas[s.area].label : '' },
+                    ...form.filters.map(f => ({ label: f.label, value: (f.options[s[f.id]] || '') + (f.id === 'budget' ? '元' : '') }))
+                ].filter(c => c.value).map(c => `<span class="px-2 py-0.5 bg-gray-50 text-gray-600 text-[10px] rounded-md border border-gray-100"><span class="text-gray-400">${c.label}</span> ${c.value}</span>`).join('');
+                return `
+                <div class="pt-[50px] pb-10 fade-in">
+                    <div class="px-4 pt-5">
+                        <p class="text-xs text-gray-400 mb-2.5">${record.time} 定制</p>
+                        <div class="bg-white rounded-xl border border-gray-100 p-4 mb-4">
+                            <p class="text-sm font-black text-gray-900 mb-2">本次定制条件</p>
+                            <div class="flex flex-wrap gap-2">${chips}</div>
+                        </div>
+                        ${this.sectionTitle('当次推荐路线')}
+                        <div class="space-y-3">${this.routeCardsHtml(routes, record.selections)}</div>
+                    </div>
+                </div>
+                `;
+            },
+
+            openRecords() {
+                this.view = 'records';
+                this.syncUrl(false);
+                this.render(true);
+            },
+
+            openRecord(recordId) {
+                this.currentRecordId = recordId;
+                this.view = 'record';
+                this.syncUrl(false);
+                this.render(true);
             },
 
             // ---------- 路线详情视图 ----------
@@ -520,7 +607,7 @@
                 `;
             },
 
-            // 底部固定悬浮操作栏：收藏 / 分享 / 加入溜达计划
+            // 底部固定悬浮操作栏：收藏 / 分享 / 加入溜搭计划
             actionBar() {
                 return `
                 <div class="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-gray-100 px-4 pt-2 pb-safe">
@@ -533,9 +620,7 @@
                             <i data-lucide="share-2" class="w-5 h-5"></i>
                             <span class="text-[10px] font-medium">分享</span>
                         </button>
-                        <button onclick="RouteForm.joinPlan()" class="flex-1 py-3 bg-brand-orange text-white rounded-xl font-bold text-sm shadow-lg shadow-brand-orange/30 active:scale-95 transition-transform">
-                            加入溜达计划
-                        </button>
+                        ${this.planButton()}
                     </div>
                 </div>
                 `;
@@ -545,8 +630,31 @@
                 if (window.Common) window.Common.showToast('收藏成功，可前往个人中心我的收藏查看');
             },
 
+            // 溜搭计划按钮：按路线状态显示 加入溜搭计划 / 标记为已出行 / 已出行
+            planButton() {
+                const route = this.currentRoute();
+                const status = route ? window.WeekendRoute.planStatus(route.id) : 'none';
+                if (status === 'done') {
+                    return '<div class="flex-1 py-3 bg-gray-200 text-gray-400 rounded-xl font-bold text-sm text-center">已出行</div>';
+                }
+                if (status === 'pending') {
+                    return '<button onclick="RouteForm.markPlanDone()" class="flex-1 py-3 bg-brand-orange text-white rounded-xl font-bold text-sm shadow-lg shadow-brand-orange/30 active:scale-95 transition-transform">标记为已出行</button>';
+                }
+                return '<button onclick="RouteForm.joinPlan()" class="flex-1 py-3 bg-brand-orange text-white rounded-xl font-bold text-sm shadow-lg shadow-brand-orange/30 active:scale-95 transition-transform">加入溜搭计划</button>';
+            },
+
             joinPlan() {
-                if (window.Common) window.Common.showToast('已加入你的溜达计划，可前往个人中心查看，安排你的出行');
+                const route = this.currentRoute();
+                if (route) sessionStorage.setItem('me_plan_' + route.id, 'pending');
+                if (window.Common) window.Common.showToast('已加入你的溜搭计划，可前往个人中心查看，安排你的出行');
+                this.render();
+            },
+
+            markPlanDone() {
+                const route = this.currentRoute();
+                if (route) sessionStorage.setItem('me_plan_' + route.id, 'done');
+                if (window.Common) window.Common.showToast('已标记为已出行');
+                this.render();
             },
 
             openShare() {
@@ -653,6 +761,7 @@
                     if (this.selections[key] != null) params.set(short, this.selections[key]);
                 }
                 if (this.currentRouteId) params.set('route', this.currentRouteId);
+                if (this.currentRecordId) params.set('record', this.currentRecordId);
                 const qs = params.toString();
                 const url = qs ? '?' + qs : window.location.pathname;
                 if (replace) window.history.replaceState({}, '', url);
@@ -663,13 +772,14 @@
             restoreFromUrl() {
                 const params = new URLSearchParams(window.location.search);
                 const view = params.get('view');
-                this.view = ['form', 'list', 'detail'].includes(view) ? view : 'form';
+                this.view = ['form', 'list', 'detail', 'records', 'record'].includes(view) ? view : 'form';
                 const keys = { s: 'situation', a: 'area', t: 'time', p: 'people', b: 'budget', pa: 'partner', st: 'stranger' };
                 for (const [short, key] of Object.entries(keys)) {
                     const value = params.get(short);
                     this.selections[key] = value === null ? null : parseInt(value, 10);
                 }
                 this.currentRouteId = params.get('route');
+                this.currentRecordId = params.get('record');
                 this.ratingSelected = null;
             },
 
@@ -679,6 +789,9 @@
                     if (window.Common) window.Common.showToast('路线数据加载失败，请重试');
                     return;
                 }
+                // 保存定制记录（当次推荐路线）
+                const list = window.WeekendRoute.getRecommendationList(this.form, this.selections, 5);
+                window.WeekendRoute.saveRouteRecord(this.selections, list.map(r => r.id));
                 this.view = 'list';
                 this.syncUrl(false);
                 this.render(true);
@@ -712,6 +825,10 @@
                     view = this.errorView();
                 } else if (this.view === 'detail' && this.currentRoute()) {
                     view = this.routeView();
+                } else if (this.view === 'records') {
+                    view = this.recordsView();
+                } else if (this.view === 'record') {
+                    view = this.recordView();
                 } else if (this.view === 'list') {
                     view = this.listView();
                 } else {

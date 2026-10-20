@@ -485,7 +485,7 @@
                     {
                         id: 'p5',
                         name: '摄影爱好者',
-                        avatarUrl: 'https://picsum.photos/100/100?random=30',
+                        avatarUrl: 'images/avatar-6.png',
                         tags: ['街拍', '人像', '夜景'],
                         intro: '周末一起扫街拍照，交流摄影技巧。',
                         distance: '0.8km'
@@ -493,7 +493,7 @@
                     {
                         id: 'p6',
                         name: '桌游达人',
-                        avatarUrl: 'https://picsum.photos/100/100?random=31',
+                        avatarUrl: 'images/avatar-8.png',
                         tags: ['狼人杀', '剧本杀', '德式'],
                         intro: '每周组织桌游局，新手友好！',
                         distance: '2.3km'
@@ -501,7 +501,7 @@
                     {
                         id: 'p7',
                         name: '瑜伽修行者',
-                        avatarUrl: 'https://picsum.photos/100/100?random=32',
+                        avatarUrl: 'images/avatar-5.png',
                         tags: ['瑜伽', '冥想', '正念'],
                         intro: '清晨瑜伽练习，寻找同频伙伴。',
                         distance: '1.5km'
@@ -509,7 +509,7 @@
                     {
                         id: 'p8',
                         name: '美食地图',
-                        avatarUrl: 'https://picsum.photos/100/100?random=33',
+                        avatarUrl: 'images/avatar-7.png',
                         tags: ['探店', '火锅', '甜品'],
                         intro: '吃遍北京所有网红店，一起打卡！',
                         distance: '3.2km'
@@ -623,7 +623,7 @@
                     const getMomentCard = (m) => {
                         const user = window.GlobalData.user.id === m.userId ? window.GlobalData.user :
                             (window.GlobalData.partners.find(p => p.id === m.userId) ||
-                                { name: '未知用户', avatarUrl: 'https://picsum.photos/50/50?random=0' });
+                                { name: '未知用户', avatarUrl: 'images/avatar-2.png' });
 
                         const highlightedContent = highlightKeyword(m.content, query);
                         const highlightedLocation = highlightKeyword(m.location, query);
