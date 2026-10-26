@@ -4,8 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>用户主页</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link rel="stylesheet" href="tailwind.css">
+    <script src="vendor/lucide.min.js"></script>
     <link rel="stylesheet" href="style.css">
     <style>
         .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -54,13 +54,13 @@
                         };
                     } else if (window.GlobalData.moments.find(m => m.userId === userId)) {
                          // From moments
-                         user = { id: userId, name: '活跃用户', avatarUrl: 'https://picsum.photos/100/100?random=88', intro:'热爱分享动态', tags:['分享'], followers: 20, following: 5, level: 2, points: 600 };
+                         user = { id: userId, name: '活跃用户', avatarUrl: 'images/avatar-9.png', intro:'热爱分享动态', tags:['分享'], followers: 20, following: 5, level: 2, points: 600 };
                     } else {
                         // Fallback
                         user = {
                             id: userId,
                             name: '神秘搭子',
-                            avatarUrl: 'https://picsum.photos/100/100?random=99',
+                            avatarUrl: 'images/avatar-8.png',
                             intro: '这个用户很低调。',
                             tags: [],
                             followers: 0,
@@ -172,7 +172,7 @@
                 <div class="relative">
                     <!-- 顶部背景图 -->
                     <div class="h-48 w-full overflow-hidden">
-                        <img src="https://picsum.photos/800/400?blur=5" class="w-full h-full object-cover opacity-80" />
+                        <img src="images/cover-2.png" class="w-full h-full object-cover opacity-80" />
                         <div class="absolute inset-0 bg-gradient-to-b from-transparent to-white"></div>
                         
                         <!-- 导航栏 -->
@@ -263,10 +263,10 @@
         function changeProfileBackground() {
             // 模拟更换背景图片
             const backgroundImages = [
-                'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-                'https://images.unsplash.com/photo-1469474968028-56623f02e42e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-                'https://images.unsplash.com/photo-1501854140801-50d01698950b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-                'https://images.unsplash.com/photo-1439066615861-d1af74d74000?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+                'images/cover-2.png',
+                'images/cover-12.png',
+                'images/cover-16.png',
+                'images/cover-3.png'
             ];
 
             // 随机选择一张背景图片

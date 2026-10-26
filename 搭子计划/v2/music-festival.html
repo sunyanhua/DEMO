@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>大运河音乐节 - 搭子计划</title>
 
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link rel="stylesheet" href="tailwind.css">
+    <script src="vendor/lucide.min.js"></script>
     <link rel="stylesheet" href="style.css">
 
     <style>
@@ -343,14 +343,14 @@
         // 上大屏预置动态（合照放在第 0/3/6/9 位，与照片纵向交错且左右错落）
         var FEED_POSTS = [
             { id: 'fp1', name: '摇滚小野', avatar: 'images/avatar-2.png', text: '现场太炸了！我的AI合照已经上大屏，谁懂啊！！', image: 'music_new.png', likes: 328, comments: 45, time: '10分钟前', onScreen: true },
-            { id: 'fp5', name: '阿梨', avatar: 'images/avatar-7.png', text: '富士直出！现场的晚霞和舞台美到失语', image: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', likes: 156, comments: 21, time: '25分钟前', onScreen: false },
-            { id: 'fp6', name: '小满不吃辣', avatar: 'images/avatar-6.png', text: '美食区打卡完毕，冰粉烤肠都好吃，冲！', image: 'https://images.unsplash.com/photo-1497935586351-b67a49e012bf?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', likes: 98, comments: 14, time: '50分钟前', onScreen: false },
+            { id: 'fp5', name: '阿梨', avatar: 'images/avatar-7.png', text: '富士直出！现场的晚霞和舞台美到失语', image: 'images/cover-6.png', likes: 156, comments: 21, time: '25分钟前', onScreen: false },
+            { id: 'fp6', name: '小满不吃辣', avatar: 'images/avatar-6.png', text: '美食区打卡完毕，冰粉烤肠都好吃，冲！', image: 'images/cover-8.png', likes: 98, comments: 14, time: '50分钟前', onScreen: false },
             { id: 'fp2', name: '运河边的民谣客', avatar: 'images/avatar-10.png', text: '运河的风配上万青的歌，绝了。合照已登屏📸', image: 'music_new1.png', likes: 256, comments: 32, time: '1小时前', onScreen: true },
-            { id: 'fp7', name: '粥粥爱吃鱼', avatar: 'images/avatar-8.png', text: '应援物交换摊开张啦，快来A区找我换手幅！', image: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', likes: 212, comments: 33, time: '1小时前', onScreen: false },
-            { id: 'fp8', name: '盘尼西林针不戳', avatar: 'images/avatar-8.png', text: '野餐垫一铺，中场休息区就是我们的', image: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', likes: 134, comments: 18, time: '1小时前', onScreen: false },
+            { id: 'fp7', name: '粥粥爱吃鱼', avatar: 'images/avatar-8.png', text: '应援物交换摊开张啦，快来A区找我换手幅！', image: 'images/cover-6.png', likes: 212, comments: 33, time: '1小时前', onScreen: false },
+            { id: 'fp8', name: '盘尼西林针不戳', avatar: 'images/avatar-8.png', text: '野餐垫一铺，中场休息区就是我们的', image: 'images/cover-2.png', likes: 134, comments: 18, time: '1小时前', onScreen: false },
             { id: 'fp3', name: '老狼头号歌迷', avatar: 'images/avatar-8.png', text: '速来A区集合！我的AI合照上大屏啦！', image: 'music_new2.png', likes: 189, comments: 27, time: '2小时前', onScreen: true },
-            { id: 'fp9', name: '运河散步员', avatar: 'images/avatar-10.png', text: '运河边吹风等安可，这一刻太治愈了', image: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', likes: 87, comments: 9, time: '2小时前', onScreen: false },
-            { id: 'fp10', name: 'ONER后援会小队长', avatar: 'images/avatar-5.png', text: '灯牌就位！今晚一起为ONER打call！', image: 'https://images.unsplash.com/photo-1563245372-f21724e3856d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', likes: 267, comments: 41, time: '2小时前', onScreen: false },
+            { id: 'fp9', name: '运河散步员', avatar: 'images/avatar-10.png', text: '运河边吹风等安可，这一刻太治愈了', image: 'images/cover-1.png', likes: 87, comments: 9, time: '2小时前', onScreen: false },
+            { id: 'fp10', name: 'ONER后援会小队长', avatar: 'images/avatar-5.png', text: '灯牌就位！今晚一起为ONER打call！', image: 'images/cover-5.png', likes: 267, comments: 41, time: '2小时前', onScreen: false },
             { id: 'fp4', name: '二手玫瑰不是花', avatar: 'images/avatar-5.png', text: '宝贝儿们，今晚大屏见！', image: 'music_new3.png', likes: 401, comments: 88, time: '2小时前', onScreen: true }
         ];
 

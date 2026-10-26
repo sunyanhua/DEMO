@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>搭子就位·奇遇华熙 - 搭子计划</title>
 
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link rel="stylesheet" href="tailwind.css">
+    <script src="vendor/lucide.min.js"></script>
     <link rel="stylesheet" href="style.css">
 
     <style>
@@ -332,14 +332,14 @@
 
         // 打卡墙预置动态
         var CHECKIN_POSTS = [
-            { id: 'ck1', name: '华熙夜行者', avatar: 'images/avatar-2.png', text: '夜骑到华熙，霓虹和晚风都刚刚好', image: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', likes: 186, comments: 23, time: '8分钟前' },
-            { id: 'ck2', name: '奶茶三分糖', avatar: 'images/avatar-8.png', text: '茶百道新品打卡成功，第一口是秋天的味道', image: 'https://images.unsplash.com/photo-1497935586351-b67a49e012bf?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', likes: 152, comments: 18, time: '20分钟前' },
-            { id: 'ck3', name: '胶片旅人', avatar: 'images/avatar-8.png', text: '胶片直出，华熙的夜比想象中更浪漫', image: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', likes: 233, comments: 31, time: '35分钟前' },
-            { id: 'ck4', name: '五棵松地头蛇', avatar: 'images/avatar-10.png', text: '华熙新开的街区亮了，遛弯路线更新！', image: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', likes: 98, comments: 12, time: '1小时前' },
-            { id: 'ck5', name: '看展搭子酱', avatar: 'images/avatar-7.png', text: '今天的展太灵了，出片率极高', image: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', likes: 167, comments: 20, time: '1小时前' },
-            { id: 'ck6', name: '火锅搭子', avatar: 'images/avatar-5.png', text: '华熙火锅吃到扶墙出，快乐就是这么简单', image: 'https://images.unsplash.com/photo-1563245372-f21724e3856d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', likes: 121, comments: 15, time: '2小时前' },
-            { id: 'ck7', name: '买手店常客', avatar: 'images/avatar-10.png', text: '今日OOTD打卡，华熙真的太好逛了', image: 'https://images.unsplash.com/photo-1541336032412-2048a678540d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', likes: 289, comments: 42, time: '2小时前' },
-            { id: 'ck8', name: '剧本杀侦探', avatar: 'images/avatar-6.png', text: '华熙夜景机位分享，来晚就没了', image: 'https://images.unsplash.com/photo-1501386761578-eac5c94b800a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', likes: 76, comments: 9, time: '3小时前' }
+            { id: 'ck1', name: '华熙夜行者', avatar: 'images/avatar-2.png', text: '夜骑到华熙，霓虹和晚风都刚刚好', image: 'images/cover-6.png', likes: 186, comments: 23, time: '8分钟前' },
+            { id: 'ck2', name: '奶茶三分糖', avatar: 'images/avatar-8.png', text: '茶百道新品打卡成功，第一口是秋天的味道', image: 'images/cover-8.png', likes: 152, comments: 18, time: '20分钟前' },
+            { id: 'ck3', name: '胶片旅人', avatar: 'images/avatar-8.png', text: '胶片直出，华熙的夜比想象中更浪漫', image: 'images/cover-6.png', likes: 233, comments: 31, time: '35分钟前' },
+            { id: 'ck4', name: '五棵松地头蛇', avatar: 'images/avatar-10.png', text: '华熙新开的街区亮了，遛弯路线更新！', image: 'images/cover-2.png', likes: 98, comments: 12, time: '1小时前' },
+            { id: 'ck5', name: '看展搭子酱', avatar: 'images/avatar-7.png', text: '今天的展太灵了，出片率极高', image: 'images/cover-1.png', likes: 167, comments: 20, time: '1小时前' },
+            { id: 'ck6', name: '火锅搭子', avatar: 'images/avatar-5.png', text: '华熙火锅吃到扶墙出，快乐就是这么简单', image: 'images/cover-5.png', likes: 121, comments: 15, time: '2小时前' },
+            { id: 'ck7', name: '买手店常客', avatar: 'images/avatar-10.png', text: '今日OOTD打卡，华熙真的太好逛了', image: 'images/cover-14.png', likes: 289, comments: 42, time: '2小时前' },
+            { id: 'ck8', name: '剧本杀侦探', avatar: 'images/avatar-6.png', text: '华熙夜景机位分享，来晚就没了', image: 'images/cover-14.png', likes: 76, comments: 9, time: '3小时前' }
         ];
 
         // 打卡文案"自动生成"池

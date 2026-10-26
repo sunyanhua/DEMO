@@ -6,9 +6,9 @@
     <title>搭子计划 - 首页</title>
     
     <!-- 引入资源 -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="tailwind.css">
     <!-- 核心修复：使用 jsdelivr 引用 UMD 版本 -->
-    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+    <script src="vendor/lucide.min.js"></script>
     <link rel="stylesheet" href="style.css">
     
     <!-- 强制隐藏滚动条样式 -->
@@ -21,16 +21,6 @@
             scrollbar-width: none;
         }
     </style>
-<script type="importmap">
-{
-  "imports": {
-    "react": "https://esm.sh/react@^19.2.4",
-    "lucide-react": "https://esm.sh/lucide-react@^0.574.0",
-    "react/": "https://esm.sh/react@^19.2.4/"
-  }
-}
-</script>
-<link rel="stylesheet" href="/index.css">
 </head>
 <body class="bg-gray-50 text-gray-900 antialiased selection:bg-brand-orange selection:text-white pb-20">
 
@@ -71,7 +61,7 @@
                     ]
                 },
                 categories: [
-                    { id: 'c1', label: '运动', icon: 'dribbble', color: 'bg-orange-100 text-orange-600' },
+                    { id: 'c1', label: '运动', icon: 'dumbbell', color: 'bg-orange-100 text-orange-600' },
                     { id: 'c2', label: '户外', icon: 'tent', color: 'bg-green-100 text-green-600' },
                     { id: 'c3', label: '饭搭子', icon: 'utensils', color: 'bg-yellow-100 text-yellow-600' },
                     { id: 'c7', label: '游戏', icon: 'gamepad-2', color: 'bg-indigo-100 text-indigo-600' },
@@ -121,7 +111,7 @@
                         title: '朝阳公园飞盘新手局',
                         description: '欢迎萌新！有专业教练指导，并在活动后一起聚餐。不用担心接不到盘，主要是为了快乐流汗！',
                         category: 'SPORTS',
-                        imageUrl: 'https://images.unsplash.com/photo-1531415074968-036ba1b575da?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                        imageUrl: 'images/cover-20.png',
                         location: '朝阳公园南门草坪',
                         district: '朝阳区',
                         date: '本周六 14:00',
@@ -137,7 +127,7 @@
                         title: '三里屯Bistro早午餐',
                         description: '打卡网红Bistro，聊聊最近的工作和生活，寻找志同道合的朋友。餐厅环境很好，适合拍照。',
                         category: 'DINING',
-                        imageUrl: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                        imageUrl: 'images/cover-6.png',
                         location: '三里屯太古里北区',
                         district: '朝阳区',
                         date: '本周日 11:00',
@@ -153,7 +143,7 @@
                         title: '奥森公园5km慢跑+拉伸',
                         description: '不仅是跑步，更是为了呼吸新鲜空气。配速600，不卷。跑完会在草地上带大家做15分钟拉伸。',
                         category: 'SPORTS',
-                        imageUrl: 'https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                        imageUrl: 'images/cover-6.png',
                         location: '奥林匹克森林公园南门',
                         district: '朝阳区',
                         date: '今晚 19:30',
@@ -169,7 +159,7 @@
                         title: '环球影城一日游搭子',
                         description: '主要想刷霸天虎过山车，有没有一起的？最好有优速通。我性格随和，会拍照。',
                         category: 'ENTERTAINMENT',
-                        imageUrl: 'https://images.unsplash.com/photo-1513883049090-d0b7439799bf?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                        imageUrl: 'images/cover-11.png',
                         location: '北京环球度假区',
                         district: '通州区',
                         date: '下周五 全天',
@@ -186,7 +176,7 @@
                         id: 'mo1',
                         userId: 'u1',
                         content: '今天天气真好，在亮马河边发呆，有没有一起喝咖啡的？☕️ #亮马河 #咖啡',
-                        images: ['https://images.unsplash.com/photo-1497935586351-b67a49e012bf?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'],
+                        images: ['images/cover-8.png'],
                         likes: 45,
                         comments: 12,
                         time: '10分钟前',
@@ -197,8 +187,8 @@
                         userId: 'p1',
                         content: '崇礼万龙开板啦！雪质无敌！这个周末还要来冲！🎿',
                         images: [
-                            'https://images.unsplash.com/photo-1551698618-1dfe5d97d256?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-                            'https://images.unsplash.com/photo-1565992441121-4367c2967103?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+                            'images/cover-2.png',
+                            'images/cover-4.png'
                         ],
                         likes: 128,
                         comments: 34,
@@ -461,6 +451,5 @@
 
         document.addEventListener('DOMContentLoaded', () => View.render());
     </script>
-<script type="module" src="/index.tsx"></script>
 </body>
 </html>

@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>大运河音乐节 - 搭子计划</title>
 
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link rel="stylesheet" href="tailwind.css">
+    <script src="vendor/lucide.min.js"></script>
     <link rel="stylesheet" href="style.css">
 
     <style>
@@ -302,23 +302,23 @@
 
         // 可匹配的现场搭子池
         var BUDDY_POOL = [
-            { id: 'mf1', name: '粥粥爱吃鱼', gender: '女', age: 24, category: 'support',    tags: ['拍照', '干饭'], intro: '第三次来运河音乐节，现场攻略我门儿清！', avatarUrl: 'https://picsum.photos/100/100?random=20' },
-            { id: 'mf2', name: '运河边的吉他手', gender: '男', age: 27, category: 'afterparty', tags: ['老乐迷', '会吉他'], intro: '散场后组局约饭复盘，现场气氛组担当。', avatarUrl: 'https://picsum.photos/100/100?random=21' },
-            { id: 'mf3', name: '小满不吃辣', gender: '女', age: 23, category: 'food',       tags: ['美食家', '拍照'], intro: '音乐节美食地图已经做好攻略，跟我走不踩雷。', avatarUrl: 'https://picsum.photos/100/100?random=22' },
-            { id: 'mf4', name: '前排钉子户', gender: '男', age: 25, category: 'care',       tags: ['热心肠', '体力好'], intro: '现场百事通，帮带东西、互相照应，靠谱。', avatarUrl: 'https://picsum.photos/100/100?random=23' },
-            { id: 'mf5', name: '阿梨', gender: '女', age: 22, category: 'photo',      tags: ['人像摄影', '富士党'], intro: '带相机帮你拍音乐节大片，出片率超高！', avatarUrl: 'https://picsum.photos/100/100?random=24' },
-            { id: 'mf6', name: '老狼头号歌迷', gender: '男', age: 31, category: 'carpool',    tags: ['自驾'], intro: '从市区开车去运河，顺路可以捎上你。', avatarUrl: 'https://picsum.photos/100/100?random=25' },
-            { id: 'mf7', name: '盘尼西林针不戳', gender: '男', age: 26, category: 'gear',      tags: ['装备党', '野餐垫'], intro: '野餐垫、折叠凳、充电宝都带齐了，缺啥找我要。', avatarUrl: 'https://picsum.photos/100/100?random=26' },
-            { id: 'mf8', name: 'ONER后援会小队长', gender: '女', age: 21, category: 'support',   tags: ['应援', '手幅', '站姐'], intro: '手幅应援物管够，欢迎来换！', avatarUrl: 'https://picsum.photos/100/100?random=27' },
-            { id: 'mf9', name: '二手玫瑰不是花', gender: '女', age: 28, category: 'merch',      tags: ['周边控', '拼单'], intro: '专辑周边拼单找我就对了，便宜不少。', avatarUrl: 'https://picsum.photos/100/100?random=28' },
-            { id: 'mf10', name: '运河散步员', gender: '男', age: 24, category: 'afterparty', tags: ['氛围组', '好相处'], intro: '蹦完别急着走，一起宵夜续摊攒个局！', avatarUrl: 'https://picsum.photos/100/100?random=29' },
-            { id: 'mf11', name: '小鹿乱撞', gender: '女', age: 23, category: 'support', tags: ['应援', '手幅'], intro: '自制应援手幅超多，欢迎来交换！', avatarUrl: 'https://picsum.photos/100/100?random=30' },
-            { id: 'mf12', name: '干饭不积极', gender: '男', age: 26, category: 'food', tags: ['吃货', '探店'], intro: '美食区排队路线已规划好，跟我吃就对了。', avatarUrl: 'https://picsum.photos/100/100?random=31' },
-            { id: 'mf13', name: '富士山下', gender: '女', age: 25, category: 'photo', tags: ['摄影', '胶片'], intro: '胶片机出片，帮你拍出复古质感大片。', avatarUrl: 'https://picsum.photos/100/100?random=32' },
-            { id: 'mf14', name: '暖心学姐', gender: '女', age: 27, category: 'care', tags: ['热心', '互助'], intro: '第一次来的朋友别慌，缺啥少啥喊我。', avatarUrl: 'https://picsum.photos/100/100?random=33' },
-            { id: 'mf15', name: '运河顺风车', gender: '男', age: 29, category: 'carpool', tags: ['自驾', '顺路'], intro: '市区往返运河，后排还有两个空位。', avatarUrl: 'https://picsum.photos/100/100?random=34' },
-            { id: 'mf16', name: '装备大师兄', gender: '男', age: 24, category: 'gear', tags: ['充电宝', '野餐垫'], intro: '移动电源、折叠椅全套，缺装备找我。', avatarUrl: 'https://picsum.photos/100/100?random=35' },
-            { id: 'mf17', name: '拼单小能手', gender: '女', age: 22, category: 'merch', tags: ['拼单', '周边'], intro: '官方周边拼单差人，一起上车更划算。', avatarUrl: 'https://picsum.photos/100/100?random=36' }
+            { id: 'mf1', name: '粥粥爱吃鱼', gender: '女', age: 24, category: 'support',    tags: ['拍照', '干饭'], intro: '第三次来运河音乐节，现场攻略我门儿清！', avatarUrl: 'images/avatar-1.png' },
+            { id: 'mf2', name: '运河边的吉他手', gender: '男', age: 27, category: 'afterparty', tags: ['老乐迷', '会吉他'], intro: '散场后组局约饭复盘，现场气氛组担当。', avatarUrl: 'images/avatar-7.png' },
+            { id: 'mf3', name: '小满不吃辣', gender: '女', age: 23, category: 'food',       tags: ['美食家', '拍照'], intro: '音乐节美食地图已经做好攻略，跟我走不踩雷。', avatarUrl: 'images/avatar-5.png' },
+            { id: 'mf4', name: '前排钉子户', gender: '男', age: 25, category: 'care',       tags: ['热心肠', '体力好'], intro: '现场百事通，帮带东西、互相照应，靠谱。', avatarUrl: 'images/avatar-11.png' },
+            { id: 'mf5', name: '阿梨', gender: '女', age: 22, category: 'photo',      tags: ['人像摄影', '富士党'], intro: '带相机帮你拍音乐节大片，出片率超高！', avatarUrl: 'images/avatar-6.png' },
+            { id: 'mf6', name: '老狼头号歌迷', gender: '男', age: 31, category: 'carpool',    tags: ['自驾'], intro: '从市区开车去运河，顺路可以捎上你。', avatarUrl: 'images/avatar-8.png' },
+            { id: 'mf7', name: '盘尼西林针不戳', gender: '男', age: 26, category: 'gear',      tags: ['装备党', '野餐垫'], intro: '野餐垫、折叠凳、充电宝都带齐了，缺啥找我要。', avatarUrl: 'images/avatar-10.png' },
+            { id: 'mf8', name: 'ONER后援会小队长', gender: '女', age: 21, category: 'support',   tags: ['应援', '手幅', '站姐'], intro: '手幅应援物管够，欢迎来换！', avatarUrl: 'images/avatar-4.png' },
+            { id: 'mf9', name: '二手玫瑰不是花', gender: '女', age: 28, category: 'merch',      tags: ['周边控', '拼单'], intro: '专辑周边拼单找我就对了，便宜不少。', avatarUrl: 'images/avatar-7.png' },
+            { id: 'mf10', name: '运河散步员', gender: '男', age: 24, category: 'afterparty', tags: ['氛围组', '好相处'], intro: '蹦完别急着走，一起宵夜续摊攒个局！', avatarUrl: 'images/avatar-1.png' },
+            { id: 'mf11', name: '小鹿乱撞', gender: '女', age: 23, category: 'support', tags: ['应援', '手幅'], intro: '自制应援手幅超多，欢迎来交换！', avatarUrl: 'images/avatar-6.png' },
+            { id: 'mf12', name: '干饭不积极', gender: '男', age: 26, category: 'food', tags: ['吃货', '探店'], intro: '美食区排队路线已规划好，跟我吃就对了。', avatarUrl: 'images/avatar-8.png' },
+            { id: 'mf13', name: '富士山下', gender: '女', age: 25, category: 'photo', tags: ['摄影', '胶片'], intro: '胶片机出片，帮你拍出复古质感大片。', avatarUrl: 'images/avatar-10.png' },
+            { id: 'mf14', name: '暖心学姐', gender: '女', age: 27, category: 'care', tags: ['热心', '互助'], intro: '第一次来的朋友别慌，缺啥少啥喊我。', avatarUrl: 'images/avatar-12.png' },
+            { id: 'mf15', name: '运河顺风车', gender: '男', age: 29, category: 'carpool', tags: ['自驾', '顺路'], intro: '市区往返运河，后排还有两个空位。', avatarUrl: 'images/avatar-1.png' },
+            { id: 'mf16', name: '装备大师兄', gender: '男', age: 24, category: 'gear', tags: ['充电宝', '野餐垫'], intro: '移动电源、折叠椅全套，缺装备找我。', avatarUrl: 'images/avatar-11.png' },
+            { id: 'mf17', name: '拼单小能手', gender: '女', age: 22, category: 'merch', tags: ['拼单', '周边'], intro: '官方周边拼单差人，一起上车更划算。', avatarUrl: 'images/avatar-9.png' }
         ];
 
         // 数组洗牌（匹配结果随机化）
@@ -342,16 +342,16 @@
 
         // 上大屏预置动态（合照放在第 0/3/6/9 位，与照片纵向交错且左右错落）
         var FEED_POSTS = [
-            { id: 'fp1', name: '摇滚小野', avatar: 'https://picsum.photos/100/100?random=61', text: '现场太炸了！我的AI合照已经上大屏，谁懂啊！！', image: 'music_new.png', likes: 328, comments: 45, time: '10分钟前', onScreen: true },
-            { id: 'fp5', name: '阿梨', avatar: 'https://picsum.photos/100/100?random=65', text: '富士直出！现场的晚霞和舞台美到失语', image: 'https://picsum.photos/seed/mf-fp5/400/520', likes: 156, comments: 21, time: '25分钟前', onScreen: false },
-            { id: 'fp6', name: '小满不吃辣', avatar: 'https://picsum.photos/100/100?random=66', text: '美食区打卡完毕，冰粉烤肠都好吃，冲！', image: 'https://picsum.photos/seed/mf-fp6/400/300', likes: 98, comments: 14, time: '50分钟前', onScreen: false },
-            { id: 'fp2', name: '运河边的民谣客', avatar: 'https://picsum.photos/100/100?random=62', text: '运河的风配上万青的歌，绝了。合照已登屏📸', image: 'music_new1.png', likes: 256, comments: 32, time: '1小时前', onScreen: true },
-            { id: 'fp7', name: '粥粥爱吃鱼', avatar: 'https://picsum.photos/100/100?random=67', text: '应援物交换摊开张啦，快来A区找我换手幅！', image: 'https://picsum.photos/seed/mf-fp7/400/560', likes: 212, comments: 33, time: '1小时前', onScreen: false },
-            { id: 'fp8', name: '盘尼西林针不戳', avatar: 'https://picsum.photos/100/100?random=68', text: '野餐垫一铺，中场休息区就是我们的', image: 'https://picsum.photos/seed/mf-fp8/400/450', likes: 134, comments: 18, time: '1小时前', onScreen: false },
-            { id: 'fp3', name: '老狼头号歌迷', avatar: 'https://picsum.photos/100/100?random=63', text: '速来A区集合！我的AI合照上大屏啦！', image: 'music_new2.png', likes: 189, comments: 27, time: '2小时前', onScreen: true },
-            { id: 'fp9', name: '运河散步员', avatar: 'https://picsum.photos/100/100?random=69', text: '运河边吹风等安可，这一刻太治愈了', image: 'https://picsum.photos/seed/mf-fp9/400/320', likes: 87, comments: 9, time: '2小时前', onScreen: false },
-            { id: 'fp10', name: 'ONER后援会小队长', avatar: 'https://picsum.photos/100/100?random=70', text: '灯牌就位！今晚一起为ONER打call！', image: 'https://picsum.photos/seed/mf-fp10/400/500', likes: 267, comments: 41, time: '2小时前', onScreen: false },
-            { id: 'fp4', name: '二手玫瑰不是花', avatar: 'https://picsum.photos/100/100?random=64', text: '宝贝儿们，今晚大屏见！', image: 'music_new3.png', likes: 401, comments: 88, time: '2小时前', onScreen: true }
+            { id: 'fp1', name: '摇滚小野', avatar: 'images/avatar-3.png', text: '现场太炸了！我的AI合照已经上大屏，谁懂啊！！', image: 'music_new.png', likes: 328, comments: 45, time: '10分钟前', onScreen: true },
+            { id: 'fp5', name: '阿梨', avatar: 'images/avatar-4.png', text: '富士直出！现场的晚霞和舞台美到失语', image: 'images/cover-4.png', likes: 156, comments: 21, time: '25分钟前', onScreen: false },
+            { id: 'fp6', name: '小满不吃辣', avatar: 'images/avatar-10.png', text: '美食区打卡完毕，冰粉烤肠都好吃，冲！', image: 'images/cover-15.png', likes: 98, comments: 14, time: '50分钟前', onScreen: false },
+            { id: 'fp2', name: '运河边的民谣客', avatar: 'images/avatar-5.png', text: '运河的风配上万青的歌，绝了。合照已登屏📸', image: 'music_new1.png', likes: 256, comments: 32, time: '1小时前', onScreen: true },
+            { id: 'fp7', name: '粥粥爱吃鱼', avatar: 'images/avatar-8.png', text: '应援物交换摊开张啦，快来A区找我换手幅！', image: 'images/cover-2.png', likes: 212, comments: 33, time: '1小时前', onScreen: false },
+            { id: 'fp8', name: '盘尼西林针不戳', avatar: 'images/avatar-11.png', text: '野餐垫一铺，中场休息区就是我们的', image: 'images/cover-1.png', likes: 134, comments: 18, time: '1小时前', onScreen: false },
+            { id: 'fp3', name: '老狼头号歌迷', avatar: 'images/avatar-3.png', text: '速来A区集合！我的AI合照上大屏啦！', image: 'music_new2.png', likes: 189, comments: 27, time: '2小时前', onScreen: true },
+            { id: 'fp9', name: '运河散步员', avatar: 'images/avatar-9.png', text: '运河边吹风等安可，这一刻太治愈了', image: 'images/cover-10.png', likes: 87, comments: 9, time: '2小时前', onScreen: false },
+            { id: 'fp10', name: 'ONER后援会小队长', avatar: 'images/avatar-2.png', text: '灯牌就位！今晚一起为ONER打call！', image: 'images/cover-4.png', likes: 267, comments: 41, time: '2小时前', onScreen: false },
+            { id: 'fp4', name: '二手玫瑰不是花', avatar: 'images/avatar-6.png', text: '宝贝儿们，今晚大屏见！', image: 'music_new3.png', likes: 401, comments: 88, time: '2小时前', onScreen: true }
         ];
 
         // 上大屏"自动生成"文案池（与大运河音乐节相关）

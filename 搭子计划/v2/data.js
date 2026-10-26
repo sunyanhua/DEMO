@@ -209,7 +209,7 @@ window.GlobalData = {
                 { name: 'Element Fresh（三里屯店）', budget: '¥120-150/人', district: '三里屯', blurb: '适合想拍照、吃得健康、聊天放松的人。', tip: '周末热门时段座位紧张，建议提前订位。', primary: true },
                 { name: 'Berry Beans（三里屯店）', budget: '¥40-60/人', district: '三里屯', blurb: '胡同风精品咖啡，适合下午茶歇脚。', tip: '座位少，建议下午茶时段错峰前往。', primary: false },
                 { name: '茶百道（三里屯店）',
-            businessHours: '10:00-22:00（周一至周日）', budget: '¥15-25/人', district: '三里屯', blurb: '逛街间隙来一杯，常驻第二杯半价活动。', tip: '周末下午出杯慢，建议小程序先下单。', primary: false, partner: true, image: 'https://images.unsplash.com/photo-1497935586351-b67a49e012bf?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', partnerId: 'm-teabadao-slt' }
+            businessHours: '10:00-22:00（周一至周日）', budget: '¥15-25/人', district: '三里屯', blurb: '逛街间隙来一杯，常驻第二杯半价活动。', tip: '周末下午出杯慢，建议小程序先下单。', primary: false, partner: true, image: 'images/cover-8.png', partnerId: 'm-teabadao-slt' }
             ],
             prep: [
                 '核验主推荐店铺营业时间、排队和是否需要预约',
@@ -247,7 +247,7 @@ window.GlobalData = {
             nearbyActivities: ['a8', 'a11'],
             merchants: [
                 { name: '北平机器（方家胡同店）',
-            businessHours: '17:00-次日01:00（周一至周日）', budget: '¥80-120/人', district: '方家胡同', blurb: '精酿配老胡同，晚上氛围拉满。', tip: '周末晚间排队，建议先取号再逛。', primary: true, partner: true, image: 'https://images.unsplash.com/photo-1541336032412-2048a678540d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', partnerId: 'm-beiping-fangjia' },
+            businessHours: '17:00-次日01:00（周一至周日）', budget: '¥80-120/人', district: '方家胡同', blurb: '精酿配老胡同，晚上氛围拉满。', tip: '周末晚间排队，建议先取号再逛。', primary: true, partner: true, image: 'images/cover-14.png', partnerId: 'm-beiping-fangjia' },
                 { name: '姚记炒肝店（鼓楼店）', budget: '¥30-50/人', district: '鼓楼', blurb: '老北京味道，适合第一次来北京想体验地道小吃的人。', tip: '饭点排队较长，建议错峰前往。', primary: false },
                 { name: '茶汤李（什刹海店）', budget: '¥20-40/人', district: '什刹海', blurb: '老字号甜品，适合饭后解腻。', tip: '店面小，可打包边走边吃。', primary: false }
             ],
@@ -288,7 +288,7 @@ window.GlobalData = {
             merchants: [
                 { name: '林间野餐盒（奥森公园店）', budget: '¥60-80/人', district: '奥森', blurb: '轻食野餐盒，适合骑行途中补给。', tip: '野餐盒需提前1天下单。', primary: true },
                 { name: '茶百道（奥森南门店）',
-            businessHours: '09:00-21:00（周一至周日）', budget: '¥15-25/人', district: '奥森', blurb: '骑行补给站，冰饮恢复状态。', tip: '运动后别喝太冰，微糖更合适。', primary: false, partner: true, image: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', partnerId: 'm-teabadao-as' },
+            businessHours: '09:00-21:00（周一至周日）', budget: '¥15-25/人', district: '奥森', blurb: '骑行补给站，冰饮恢复状态。', tip: '运动后别喝太冰，微糖更合适。', primary: false, partner: true, image: 'images/cover-2.png', partnerId: 'm-teabadao-as' },
                 { name: '温榆河畔农庄餐厅', budget: '¥80-120/人', district: '温榆河', blurb: '骑行终点农家菜，量大实惠。', tip: '距离较远，可打车前往。', primary: false }
             ],
             prep: [
@@ -327,7 +327,7 @@ window.GlobalData = {
             nearbyActivities: ['a9', 'a18'],
             merchants: [
                 { name: '华熙LIVE商圈',
-            businessHours: '10:00-22:00（各店略有差异）', budget: '¥80-120/人', district: '华熙', blurb: '晚餐选择多，夜景热闹，适合收尾一站。', tip: '周末饭点排队，可先取号再逛。', primary: true, partner: true, image: 'https://images.unsplash.com/photo-1501386761578-eac5c94b800a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', partnerId: 'm-huaxi' },
+            businessHours: '10:00-22:00（各店略有差异）', budget: '¥80-120/人', district: '华熙', blurb: '晚餐选择多，夜景热闹，适合收尾一站。', tip: '周末饭点排队，可先取号再逛。', primary: true, partner: true, image: 'images/cover-14.png', partnerId: 'm-huaxi' },
                 { name: '熊煮咖啡（白塔寺店）', budget: '¥35-50/人', district: '白塔寺', blurb: '红墙白塔景观位，适合拍照发呆。', tip: '景观位周末紧俏，建议提前去。', primary: false },
                 { name: '宫门口馒头铺', budget: '¥10-20/人', district: '宫门口', blurb: '老字号主食铺，性价比高。', tip: '下午收摊早，别太晚去。', primary: false }
             ],
@@ -367,7 +367,7 @@ window.GlobalData = {
             nearbyActivities: ['a10', 'a19'],
             merchants: [
                 { name: '北平机器（798店）',
-            businessHours: '11:00-23:00（周一至周日）', budget: '¥90-130/人', district: '798艺术区', blurb: '厂房风精酿晚餐，看展后收尾首选。', tip: '周末晚餐建议订位。', primary: true, partner: true, image: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', partnerId: 'm-beiping-798' },
+            businessHours: '11:00-23:00（周一至周日）', budget: '¥90-130/人', district: '798艺术区', blurb: '厂房风精酿晚餐，看展后收尾首选。', tip: '周末晚餐建议订位。', primary: true, partner: true, image: 'images/cover-1.png', partnerId: 'm-beiping-798' },
                 { name: 'VOYAGE COFFEE（798店）', budget: '¥40-60/人', district: '798艺术区', blurb: '厂房改造咖啡馆，适合看展间隙歇脚。', tip: '周末下午人多，建议错峰。', primary: false },
                 { name: '尤伦斯当代艺术中心商店', budget: '¥0-200/人', district: '798艺术区', blurb: '逛展+买周边，文艺感拉满。', tip: '部分展览需提前购票。', primary: false }
             ],
@@ -408,7 +408,7 @@ window.GlobalData = {
             merchants: [
                 { name: '工体夜宵小馆', budget: '¥60-90/人', district: '工体', blurb: '夜跑后补充能量，热闹实惠。', tip: '晚间高峰需排队，可错峰到 21:30。', primary: true },
                 { name: '茶百道（工体店）',
-            businessHours: '10:00-22:30（周一至周日）', budget: '¥15-25/人', district: '工体', blurb: '夜宵搭配冰饮，快乐加倍。', tip: '大杯第二份半价，建议拼单。', primary: false, partner: true, image: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', partnerId: 'm-teabadao-gt' },
+            businessHours: '10:00-22:30（周一至周日）', budget: '¥15-25/人', district: '工体', blurb: '夜宵搭配冰饮，快乐加倍。', tip: '大杯第二份半价，建议拼单。', primary: false, partner: true, image: 'images/cover-6.png', partnerId: 'm-teabadao-gt' },
                 { name: '三里屯深夜食堂', budget: '¥50-80/人', district: '三里屯', blurb: '日式深夜食堂，安静收尾。', tip: '凌晨 1 点打烊，别太晚。', primary: false }
             ],
             prep: [
@@ -448,7 +448,7 @@ window.GlobalData = {
             merchants: [
                 { name: '什刹海早点铺', budget: '¥20-35/人', district: '什刹海', blurb: '糖油饼配豆汁，胡同里的清晨味道。', tip: '早上 10 点后部分品类售罄。', primary: true },
                 { name: '北平机器（方家胡同店）',
-            businessHours: '17:00-次日01:00（周一至周日）', budget: '¥80-120/人', district: '方家胡同', blurb: '白天是安静的胡同咖啡精酿馆。', tip: '上午人少，适合晨骑后歇脚。', primary: false, partner: true, image: 'https://images.unsplash.com/photo-1541336032412-2048a678540d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', partnerId: 'm-beiping-fangjia' },
+            businessHours: '17:00-次日01:00（周一至周日）', budget: '¥80-120/人', district: '方家胡同', blurb: '白天是安静的胡同咖啡精酿馆。', tip: '上午人少，适合晨骑后歇脚。', primary: false, partner: true, image: 'images/cover-14.png', partnerId: 'm-beiping-fangjia' },
                 { name: '鼓楼社区咖啡', budget: '¥30-45/人', district: '鼓楼', blurb: '社区小店，早晨安静出片。', tip: '9 点开门，别去太早。', primary: false }
             ],
             prep: [
@@ -488,7 +488,7 @@ window.GlobalData = {
             merchants: [
                 { name: '温榆河畔茶室', budget: '¥70-100/人', district: '温榆河', blurb: '天幕帐篷下午茶，草地河边都好拍。', tip: '周末帐篷位需提前预约。', primary: true },
                 { name: '茶百道（温榆河店）',
-            businessHours: '09:00-20:00（周一至周日）', budget: '¥15-25/人', district: '温榆河', blurb: '公园门口补给，回程路上带一杯。', tip: '出公园方向顺路，别绕行。', primary: false, partner: true, image: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', partnerId: 'm-teabadao-wyh' },
+            businessHours: '09:00-20:00（周一至周日）', budget: '¥15-25/人', district: '温榆河', blurb: '公园门口补给，回程路上带一杯。', tip: '出公园方向顺路，别绕行。', primary: false, partner: true, image: 'images/cover-6.png', partnerId: 'm-teabadao-wyh' },
                 { name: '奥森轻食店', budget: '¥40-60/人', district: '奥森', blurb: '返程前的轻食补给。', tip: '晚 7 点后停止点单。', primary: false }
             ],
             prep: [
@@ -527,7 +527,7 @@ window.GlobalData = {
             merchants: [
                 { name: '鼓楼早午餐小馆', budget: '¥80-110/人', district: '鼓楼', blurb: '胡同里的阳光早午餐，适合慢慢吃。', tip: '周末 10 点半后需排队。', primary: true },
                 { name: '茶百道（鼓楼店）',
-            businessHours: '10:00-21:30（周一至周日）', budget: '¥15-25/人', district: '鼓楼', blurb: '饭后一杯，边喝边逛南锣。', tip: '热门款可能售罄，早去。', primary: false, partner: true, image: 'https://images.unsplash.com/photo-1563245372-f21724e3856d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', partnerId: 'm-teabadao-gl' },
+            businessHours: '10:00-21:30（周一至周日）', budget: '¥15-25/人', district: '鼓楼', blurb: '饭后一杯，边喝边逛南锣。', tip: '热门款可能售罄，早去。', primary: false, partner: true, image: 'images/cover-5.png', partnerId: 'm-teabadao-gl' },
                 { name: '南锣手作咖啡', budget: '¥35-50/人', district: '南锣鼓巷', blurb: '手作与咖啡结合的小店，适合慢慢逛。', tip: '店内座位有限。', primary: false }
             ],
             prep: [
@@ -575,9 +575,9 @@ window.GlobalData = {
             description: '三里屯核心商圈的连锁鲜果茶店，主打杨枝甘露与招牌奶茶，逛街歇脚首选。门店支持小程序提前点单，出杯快，是三里屯片区的热门饮品补给站。',
             notes: '周末下午出杯较慢，建议小程序提前下单，高峰时段建议外带。',
             images: [
-                'https://images.unsplash.com/photo-1497935586351-b67a49e012bf?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-                'https://images.unsplash.com/photo-1511512578047-dfb367046420?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-                'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+                'images/cover-8.png',
+                'images/cover-2.png',
+                'images/cover-6.png'
             ],
             address: '北京市朝阳区三里屯太古里南区 B1 层',
             location: { lng: 116.455, lat: 39.937 },
@@ -597,10 +597,10 @@ window.GlobalData = {
             description: '藏在方家胡同里的精酿酒吧，工业风装修配老胡同院墙，主打自酿 IPA 与酸啤。白天安静适合聊天，晚上气氛热闹，是鼓楼片区精酿爱好者的据点。',
             notes: '周末晚间人多，建议先取号再逛，部分酒款度数偏高请适量。',
             images: [
-                'https://images.unsplash.com/photo-1541336032412-2048a678540d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-                'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-                'https://images.unsplash.com/photo-1563245372-f21724e3856d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-                'https://images.unsplash.com/photo-1546519638-68e109498ffc?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+                'images/cover-14.png',
+                'images/cover-1.png',
+                'images/cover-5.png',
+                'images/cover-19.png'
             ],
             address: '北京市东城区方家胡同 46 号院',
             location: { lng: 116.407, lat: 39.939 },
@@ -619,9 +619,9 @@ window.GlobalData = {
             description: '奥森南门附近的连锁茶饮店，运动前后的补给站。主打清爽果茶系列，骑行、跑步后来一杯恢复状态，支持小程序下单到店自取。',
             notes: '运动后建议选择微糖或去冰，周末午后排队，建议上午前往。',
             images: [
-                'https://images.unsplash.com/photo-1511512578047-dfb367046420?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-                'https://images.unsplash.com/photo-1497935586351-b67a49e012bf?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-                'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+                'images/cover-2.png',
+                'images/cover-8.png',
+                'images/cover-6.png'
             ],
             address: '北京市朝阳区奥林匹克森林公园南门东侧',
             location: { lng: 116.393, lat: 40.011 },
@@ -640,9 +640,9 @@ window.GlobalData = {
             description: '华熙LIVE·五棵松是西四环的大型商业综合体，餐饮、酒吧、Livehouse 聚集，夜晚灯光氛围热闹。商圈内选择多，适合作为路线收尾站，吃逛一体。',
             notes: '周末饭点热门餐厅排队，建议先取号再逛，并提前看好店铺位置。',
             images: [
-                'https://images.unsplash.com/photo-1501386761578-eac5c94b800a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-                'https://images.unsplash.com/photo-1511379938547-c1f69419868d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-                'https://images.unsplash.com/photo-1550745165-9bc0b252726f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+                'images/cover-14.png',
+                'images/cover-8.png',
+                'images/cover-1.png'
             ],
             address: '北京市海淀区复兴路 69 号',
             location: { lng: 116.271, lat: 39.906 },
@@ -662,9 +662,9 @@ window.GlobalData = {
             description: '北平机器在 798 艺术区的分店，改造自老厂房，挑高空间配工业装置。主打精酿与西式简餐，看展之后来一杯的收尾选择，晚上常有现场演出。',
             notes: '周末晚餐建议提前订位，园区步行距离较远请预留时间。',
             images: [
-                'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-                'https://images.unsplash.com/photo-1541336032412-2048a678540d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-                'https://images.unsplash.com/photo-1563245372-f21724e3856d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+                'images/cover-1.png',
+                'images/cover-14.png',
+                'images/cover-5.png'
             ],
             address: '北京市朝阳区酒仙桥路 4 号 798 艺术区 751 园区',
             location: { lng: 116.497, lat: 39.984 },
@@ -683,9 +683,9 @@ window.GlobalData = {
             description: '工体北门附近的连锁茶饮店，夜跑、看球后的补给点。主打冰饮与果茶，支持小程序点单，高峰期出杯依然稳定。',
             notes: '赛事日晚间客流大，建议提前下单并选择外带。',
             images: [
-                'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-                'https://images.unsplash.com/photo-1497935586351-b67a49e012bf?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-                'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+                'images/cover-6.png',
+                'images/cover-8.png',
+                'images/cover-6.png'
             ],
             address: '北京市朝阳区工体北路 8 号',
             location: { lng: 116.444, lat: 39.932 },
@@ -704,9 +704,9 @@ window.GlobalData = {
             description: '温榆河公园附近的连锁茶饮店，露营、散步后的补给站。主打清爽果茶与奶盖系列，出公园方向顺路，支持小程序下单自取。',
             notes: '公园旺季周末排队较长，奶盖系列建议尽快饮用。',
             images: [
-                'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-                'https://images.unsplash.com/photo-1511512578047-dfb367046420?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-                'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+                'images/cover-6.png',
+                'images/cover-2.png',
+                'images/cover-6.png'
             ],
             address: '北京市顺义区温榆河公园西园入口旁',
             location: { lng: 116.527, lat: 40.032 },
@@ -725,9 +725,9 @@ window.GlobalData = {
             description: '鼓楼东大街上的连锁茶饮店，逛胡同、看鼓楼时的歇脚点。主打杨枝甘露与柠檬茶系列，店内可小坐，窗边位能看街景。',
             notes: '热门款下午可能售罄建议早去，周末店内座位紧张。',
             images: [
-                'https://images.unsplash.com/photo-1563245372-f21724e3856d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-                'https://images.unsplash.com/photo-1497935586351-b67a49e012bf?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-                'https://images.unsplash.com/photo-1511512578047-dfb367046420?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+                'images/cover-5.png',
+                'images/cover-8.png',
+                'images/cover-2.png'
             ],
             address: '北京市东城区鼓楼东大街 120 号',
             location: { lng: 116.397, lat: 39.945 },
@@ -892,7 +892,7 @@ window.GlobalData = {
             title: '朝阳公园飞盘新手局',
             description: '欢迎萌新！有专业教练指导，并在活动后一起聚餐。不用担心接不到盘，主要是为了快乐流汗！',
             category: 'SPORTS',
-            imageUrl: 'https://images.unsplash.com/photo-1531415074968-036ba1b575da?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+            imageUrl: 'images/cover-20.png',
             location: '朝阳公园南门草坪',
             district: '朝阳区',
             date: '本周六 14:00',
@@ -908,7 +908,7 @@ window.GlobalData = {
             title: '三里屯Bistro早午餐',
             description: '打卡网红Bistro，聊聊最近的工作和生活，寻找志同道合的朋友。餐厅环境很好，适合拍照。',
             category: 'DINING',
-            imageUrl: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+            imageUrl: 'images/cover-6.png',
             location: '三里屯太古里北区',
             district: '朝阳区',
             date: '本周日 11:00',
@@ -924,7 +924,7 @@ window.GlobalData = {
             title: '奥森公园5km慢跑+拉伸',
             description: '不仅是跑步，更是为了呼吸新鲜空气。配速600，不卷。跑完会在草地上带大家做15分钟拉伸。',
             category: 'SPORTS',
-            imageUrl: 'https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+            imageUrl: 'images/cover-6.png',
             location: '奥林匹克森林公园南门',
             district: '朝阳区',
             date: '今晚 19:30',
@@ -940,7 +940,7 @@ window.GlobalData = {
             title: '环球影城一日游搭子',
             description: '主要想刷霸天虎过山车，有没有一起的？最好有优速通。我性格随和，会拍照。',
             category: 'ENTERTAINMENT',
-            imageUrl: 'https://images.unsplash.com/photo-1513883049090-d0b7439799bf?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+            imageUrl: 'images/cover-11.png',
             location: '北京环球度假区',
             district: '通州区',
             date: '下周五 全天',
@@ -956,7 +956,7 @@ window.GlobalData = {
             title: '周末咖啡馆读书会',
             description: '寻找喜欢阅读的小伙伴，每周六下午在咖啡馆一起读书、分享心得。不限制书籍类型，重点是享受阅读时光。',
             category: 'READING',
-            imageUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+            imageUrl: 'images/cover-14.png',
             location: '五道口雕刻时光咖啡馆',
             district: '海淀区',
             date: '每周六 14:00',
@@ -982,7 +982,7 @@ window.GlobalData = {
             title: '香山公园徒步登山',
             description: '周末一起去香山爬山，欣赏秋日红叶。路线为经典香山环线，适合初级徒步爱好者。',
             category: 'OUTDOORS',
-            imageUrl: 'https://images.unsplash.com/photo-1551632811-561732d1e306?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+            imageUrl: 'images/cover-8.png',
             location: '香山公园东门',
             district: '海淀区',
             date: '本周日 09:00',
@@ -998,7 +998,7 @@ window.GlobalData = {
             title: '坝上草原骑马体验',
             description: '周末坝上草原两日游，体验骑马、篝火晚会、星空露营。适合想要逃离城市喧嚣的朋友。',
             category: 'OUTDOORS',
-            imageUrl: 'https://images.unsplash.com/photo-1500462918059-b1a0cb512f1d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+            imageUrl: 'images/cover-3.png',
             location: '丰宁坝上草原',
             district: '河北省',
             date: '下周末 两天一夜',
@@ -1014,7 +1014,7 @@ window.GlobalData = {
             title: '北海公园划船赏荷',
             description: '夏日荷花盛开，一起在北海公园划船，欣赏湖光山色，拍照留念。',
             category: 'OUTDOORS',
-            imageUrl: 'https://images.unsplash.com/photo-1565992441121-4367c2967103?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+            imageUrl: 'images/cover-4.png',
             location: '北海公园游船码头',
             district: '西城区',
             date: '本周六 15:00',
@@ -1030,7 +1030,7 @@ window.GlobalData = {
             title: '国家博物馆文物展参观',
             description: '参观国家博物馆最新特展「中国古代青铜器」，有专业讲解员带领，深入了解历史文化。',
             category: 'CULTURE',
-            imageUrl: 'https://images.unsplash.com/photo-1534008897995-27a23e859048?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+            imageUrl: 'images/cover-6.png',
             location: '国家博物馆',
             district: '东城区',
             date: '本周六 10:00',
@@ -1046,7 +1046,7 @@ window.GlobalData = {
             title: '798艺术区画廊巡游',
             description: '一起探索798艺术区的当代艺术画廊，打卡网红展览，交流艺术观点。',
             category: 'CULTURE',
-            imageUrl: 'https://images.unsplash.com/photo-1541961017774-22349e4a1262?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+            imageUrl: 'images/cover-2.png',
             location: '798艺术区',
             district: '朝阳区',
             date: '本周日 14:00',
@@ -1062,7 +1062,7 @@ window.GlobalData = {
             title: '故宫深度游览讲解',
             description: '由资深导游带领，深度游览故宫，了解宫廷历史、建筑艺术和文物故事。',
             category: 'CULTURE',
-            imageUrl: 'https://images.unsplash.com/photo-1541336032412-2048a678540d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+            imageUrl: 'images/cover-14.png',
             location: '故宫博物院午门',
             district: '东城区',
             date: '下周六 09:30',
@@ -1078,7 +1078,7 @@ window.GlobalData = {
             title: '桌游之夜：狼人杀局',
             description: '周末桌游局，主打狼人杀，也有其他桌游可选。新手老手都欢迎，有主持人带玩。',
             category: 'GAMING',
-            imageUrl: 'https://images.unsplash.com/photo-1616091216791-a5360b5fc78a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+            imageUrl: 'images/cover-14.png',
             location: '望京桌游吧',
             district: '朝阳区',
             date: '本周五 19:00',
@@ -1094,7 +1094,7 @@ window.GlobalData = {
             title: '电竞观赛：英雄联盟决赛',
             description: '一起在电竞酒吧观看英雄联盟全球总决赛，为喜欢的战队加油，氛围热烈。',
             category: 'GAMING',
-            imageUrl: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+            imageUrl: 'images/cover-2.png',
             location: '五道口电竞主题酒吧',
             district: '海淀区',
             date: '本周六 20:00',
@@ -1110,7 +1110,7 @@ window.GlobalData = {
             title: 'Switch游戏派对',
             description: '提供多台Switch游戏机，可玩马里奥赛车、舞力全开、任天堂明星大乱斗等游戏。',
             category: 'GAMING',
-            imageUrl: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+            imageUrl: 'images/cover-1.png',
             location: '三里屯游戏体验馆',
             district: '朝阳区',
             date: '本周日 15:00',
@@ -1126,7 +1126,7 @@ window.GlobalData = {
             title: 'IMAX影院《流浪地球3》观影',
             description: '一起观看科幻大片《流浪地球3》IMAX版，观影后可以一起讨论剧情和特效。',
             category: 'MOVIE',
-            imageUrl: 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+            imageUrl: 'images/cover-2.png',
             location: '朝阳大悦城金逸影城',
             district: '朝阳区',
             date: '本周六 19:30',
@@ -1142,7 +1142,7 @@ window.GlobalData = {
             title: '经典老电影放映会',
             description: '在私人影院放映《罗马假日》、《卡萨布兰卡》等经典老电影，配红酒和小食。',
             category: 'MOVIE',
-            imageUrl: 'https://images.unsplash.com/photo-1478720568477-152d9b164e26?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+            imageUrl: 'images/cover-19.png',
             location: '三里屯私人影院',
             district: '朝阳区',
             date: '本周五 20:00',
@@ -1158,7 +1158,7 @@ window.GlobalData = {
             title: '恐怖片之夜',
             description: '胆子大的朋友一起来看恐怖片！备有毛毯和零食，保证刺激又安全。',
             category: 'MOVIE',
-            imageUrl: 'https://images.unsplash.com/photo-1531259683007-016a7b628fc3?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+            imageUrl: 'images/cover-5.png',
             location: '朋友家的家庭影院',
             district: '海淀区',
             date: '本周六 22:00',
@@ -1174,7 +1174,7 @@ window.GlobalData = {
             title: 'Livehouse独立音乐现场',
             description: '去MAO Livehouse观看独立乐队演出，感受现场音乐的魅力。',
             category: 'MUSIC',
-            imageUrl: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+            imageUrl: 'images/cover-13.png',
             location: 'MAO Livehouse',
             district: '东城区',
             date: '本周六 20:30',
@@ -1190,7 +1190,7 @@ window.GlobalData = {
             title: 'KTV欢唱三小时',
             description: '周末放松一下，去KTV欢唱三小时，可以点各种风格的歌曲，有自助餐和饮料。',
             category: 'MUSIC',
-            imageUrl: 'https://images.unsplash.com/photo-1511379938547-c1f69419868d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+            imageUrl: 'images/cover-8.png',
             location: '钱柜KTV国贸店',
             district: '朝阳区',
             date: '本周六 14:00',
@@ -1206,7 +1206,7 @@ window.GlobalData = {
             title: '古典音乐会欣赏',
             description: '在国家大剧院欣赏古典音乐会，曲目包括贝多芬、莫扎特等大师作品。',
             category: 'MUSIC',
-            imageUrl: 'https://images.unsplash.com/photo-1501386761578-eac5c94b800a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+            imageUrl: 'images/cover-14.png',
             location: '国家大剧院音乐厅',
             district: '西城区',
             date: '下周六 19:30',
@@ -1222,7 +1222,7 @@ window.GlobalData = {
             title: '羽毛球双打局',
             description: '周末羽毛球活动，主要打双打，有场地和球提供，适合各个水平的玩家。',
             category: 'SPORTS',
-            imageUrl: 'https://images.unsplash.com/photo-1551632811-561732d1e306?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+            imageUrl: 'images/cover-8.png',
             location: '工人体育馆羽毛球馆',
             district: '朝阳区',
             date: '本周日 16:00',
@@ -1238,7 +1238,7 @@ window.GlobalData = {
             title: '游泳健身局',
             description: '一起去游泳馆游泳，锻炼身体，放松心情。提供基础游泳指导。',
             category: 'SPORTS',
-            imageUrl: 'https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+            imageUrl: 'images/cover-6.png',
             location: '水立方游泳馆',
             district: '朝阳区',
             date: '本周六 10:00',
@@ -1254,7 +1254,7 @@ window.GlobalData = {
             title: '火锅聚餐局',
             description: '冬天就是要吃火锅！去海底捞享受美味的火锅，聊聊天，认识新朋友。',
             category: 'DINING',
-            imageUrl: 'https://images.unsplash.com/photo-1563245372-f21724e3856d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+            imageUrl: 'images/cover-5.png',
             location: '海底捞火锅王府井店',
             district: '东城区',
             date: '本周五 18:30',
@@ -1270,7 +1270,7 @@ window.GlobalData = {
             title: '日式居酒屋小酌',
             description: '下班后去居酒屋放松一下，品尝日式烤串、刺身和清酒，聊聊工作和生活。',
             category: 'DINING',
-            imageUrl: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+            imageUrl: 'images/cover-1.png',
             location: '三里屯居酒屋',
             district: '朝阳区',
             date: '本周四 19:00',
@@ -1286,7 +1286,7 @@ window.GlobalData = {
             title: '密室逃脱挑战',
             description: '挑战最新的恐怖主题密室逃脱，团队合作解谜，考验智力和勇气。',
             category: 'ENTERTAINMENT',
-            imageUrl: 'https://images.unsplash.com/photo-1551632811-561732d1e306?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+            imageUrl: 'images/cover-8.png',
             location: '朝阳区密室逃脱馆',
             district: '朝阳区',
             date: '本周六 15:00',
@@ -1304,7 +1304,7 @@ window.GlobalData = {
             id: 'mo1',
             userId: 'u1',
             content: '今天天气真好，在亮马河边发呆，有没有一起喝咖啡的？☕️ #亮马河 #咖啡',
-            images: ['https://images.unsplash.com/photo-1497935586351-b67a49e012bf?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'],
+            images: ['images/cover-8.png'],
             likes: 45,
             comments: 12,
             time: '10分钟前',
@@ -1315,8 +1315,8 @@ window.GlobalData = {
             userId: 'p1',
             content: '崇礼万龙开板啦！雪质无敌！这个周末还要来冲！🎿',
             images: [
-                'https://images.unsplash.com/photo-1551698618-1dfe5d97d256?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-                'https://images.unsplash.com/photo-1565992441121-4367c2967103?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+                'images/cover-2.png',
+                'images/cover-4.png'
             ],
             likes: 128,
             comments: 34,
@@ -1327,7 +1327,7 @@ window.GlobalData = {
             id: 'mo3',
             userId: 'u3',
             content: '发现一家宝藏Brunch，班尼迪克蛋绝绝子！',
-            images: ['https://images.unsplash.com/photo-1600093463592-8e36ae95ef56?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'],
+            images: ['images/cover-16.png'],
             likes: 89,
             comments: 5,
             time: '2小时前',
@@ -1337,7 +1337,7 @@ window.GlobalData = {
             id: 'mo4',
             userId: 'u2',
             content: '飞盘局大合影！大家都太棒了！下周继续约起！🥏',
-            images: ['https://images.unsplash.com/photo-1566737236500-c8ac43014a67?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'],
+            images: ['images/cover-5.png'],
             likes: 210,
             comments: 56,
             time: '昨天',
@@ -1347,7 +1347,7 @@ window.GlobalData = {
             id: 'mo5',
             userId: 'p4',
             content: '新的剧本到了，《古木吟》，周五晚车位充足，来硬核玩家！',
-            images: ['https://images.unsplash.com/photo-1616091216791-a5360b5fc78a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'],
+            images: ['images/cover-14.png'],
             likes: 12,
             comments: 8,
             time: '昨天',
@@ -1357,7 +1357,7 @@ window.GlobalData = {
             id: 'mo6',
             userId: 'u5',
             content: '环球影城的黄油啤酒真的太好喝了！',
-            images: ['https://images.unsplash.com/photo-1618331835717-801e976710b2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'],
+            images: ['images/cover-18.png'],
             likes: 67,
             comments: 2,
             time: '2天前',

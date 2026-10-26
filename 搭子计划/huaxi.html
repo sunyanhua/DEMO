@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>搭子就位·奇遇华熙 - 搭子计划</title>
 
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link rel="stylesheet" href="tailwind.css">
+    <script src="vendor/lucide.min.js"></script>
     <link rel="stylesheet" href="style.css">
 
     <style>
@@ -296,22 +296,22 @@
 
         // 可匹配的华熙搭子池
         var BUDDY_POOL = [
-            { id: 'hx1',  name: '华熙滑板少年', gender: '男', age: 22, category: 'sport',    tags: ['滑板', '夜场'], intro: '华熙广场每晚滑板，新手老手都带。', avatarUrl: 'https://picsum.photos/100/100?random=80' },
-            { id: 'hx2',  name: '奶茶三分糖',   gender: '女', age: 24, category: 'coffee',   tags: ['奶茶控', '探店'], intro: '茶百道、喜茶、奈雪全线测评中，跟我喝不踩雷。', avatarUrl: 'https://picsum.photos/100/100?random=81' },
-            { id: 'hx3',  name: '夜跑小旋风',   gender: '男', age: 26, category: 'ride',     tags: ['夜骑', '耐力好'], intro: '华熙出发夜骑长安街，路线我门儿清。', avatarUrl: 'https://picsum.photos/100/100?random=82' },
-            { id: 'hx4',  name: '买手店常客',   gender: '女', age: 23, category: 'shopping', tags: ['穿搭', '会挑'], intro: '华熙买手店地图在手，帮你搭出今日OOTD。', avatarUrl: 'https://picsum.photos/100/100?random=83' },
-            { id: 'hx5',  name: '看展搭子酱',   gender: '女', age: 25, category: 'show',     tags: ['艺术生', '讲解'], intro: '看展专业户，边看边给你讲门道。', avatarUrl: 'https://picsum.photos/100/100?random=84' },
-            { id: 'hx6',  name: '火锅搭子',     gender: '男', age: 27, category: 'food',     tags: ['吃货', 'AA制'], intro: '华熙火锅店排队王，跟我吃不用等位。', avatarUrl: 'https://picsum.photos/100/100?random=85' },
-            { id: 'hx7',  name: '胶片旅人',     gender: '女', age: 24, category: 'photo',    tags: ['胶片', '氛围感'], intro: '胶片机在手，华熙夜景出片率百分百。', avatarUrl: 'https://picsum.photos/100/100?random=86' },
-            { id: 'hx8',  name: '剧本杀侦探',   gender: '男', age: 26, category: 'party',    tags: ['推理', '老玩家'], intro: '华熙剧本杀店常驻，缺人喊我。', avatarUrl: 'https://picsum.photos/100/100?random=87' },
-            { id: 'hx9',  name: '五棵松地头蛇', gender: '男', age: 28, category: 'food',     tags: ['本地通', '好相处'], intro: '华熙LIVE吃喝玩乐全攻略，问我就对了。', avatarUrl: 'https://picsum.photos/100/100?random=88' },
-            { id: 'hx10', name: '冰场小王子',   gender: '男', age: 21, category: 'sport',    tags: ['滑冰', '教练'], intro: '华熙冰场常驻，可以带你滑。', avatarUrl: 'https://picsum.photos/100/100?random=89' },
-            { id: 'hx11', name: '甜品测评员',   gender: '女', age: 22, category: 'coffee',   tags: ['甜品', '下午茶'], intro: '华熙甜品店扫雷完毕，约个下午茶慢慢聊。', avatarUrl: 'https://picsum.photos/100/100?random=90' },
-            { id: 'hx12', name: 'Livehouse常驻', gender: '女', age: 25, category: 'show',    tags: ['乐迷', '气氛组'], intro: '华熙演出信息一手掌握，一起冲前排。', avatarUrl: 'https://picsum.photos/100/100?random=91' },
-            { id: 'hx13', name: '骑行老炮',     gender: '男', age: 30, category: 'ride',     tags: ['公路车', '老司机'], intro: '周末骑游团常年招新，华熙集合出发。', avatarUrl: 'https://picsum.photos/100/100?random=92' },
-            { id: 'hx14', name: '蜡笔小星',     gender: '女', age: 23, category: 'photo',    tags: ['手机摄影', 'P图'], intro: '手机也能出大片，华熙机位全知道。', avatarUrl: 'https://picsum.photos/100/100?random=93' },
-            { id: 'hx15', name: '飞盘社社长',   gender: '女', age: 27, category: 'sport',    tags: ['飞盘', '组织'], intro: '华熙附近飞盘局每周两场，新手友好。', avatarUrl: 'https://picsum.photos/100/100?random=94' },
-            { id: 'hx16', name: '华熙夜行者',   gender: '男', age: 24, category: 'party',    tags: ['K歌', '麦霸'], intro: 'K歌、桌游、夜宵一条龙，散场我安排。', avatarUrl: 'https://picsum.photos/100/100?random=95' }
+            { id: 'hx1',  name: '华熙滑板少年', gender: '男', age: 22, category: 'sport',    tags: ['滑板', '夜场'], intro: '华熙广场每晚滑板，新手老手都带。', avatarUrl: 'images/avatar-3.png' },
+            { id: 'hx2',  name: '奶茶三分糖',   gender: '女', age: 24, category: 'coffee',   tags: ['奶茶控', '探店'], intro: '茶百道、喜茶、奈雪全线测评中，跟我喝不踩雷。', avatarUrl: 'images/avatar-5.png' },
+            { id: 'hx3',  name: '夜跑小旋风',   gender: '男', age: 26, category: 'ride',     tags: ['夜骑', '耐力好'], intro: '华熙出发夜骑长安街，路线我门儿清。', avatarUrl: 'images/avatar-11.png' },
+            { id: 'hx4',  name: '买手店常客',   gender: '女', age: 23, category: 'shopping', tags: ['穿搭', '会挑'], intro: '华熙买手店地图在手，帮你搭出今日OOTD。', avatarUrl: 'images/avatar-1.png' },
+            { id: 'hx5',  name: '看展搭子酱',   gender: '女', age: 25, category: 'show',     tags: ['艺术生', '讲解'], intro: '看展专业户，边看边给你讲门道。', avatarUrl: 'images/avatar-12.png' },
+            { id: 'hx6',  name: '火锅搭子',     gender: '男', age: 27, category: 'food',     tags: ['吃货', 'AA制'], intro: '华熙火锅店排队王，跟我吃不用等位。', avatarUrl: 'images/avatar-10.png' },
+            { id: 'hx7',  name: '胶片旅人',     gender: '女', age: 24, category: 'photo',    tags: ['胶片', '氛围感'], intro: '胶片机在手，华熙夜景出片率百分百。', avatarUrl: 'images/avatar-12.png' },
+            { id: 'hx8',  name: '剧本杀侦探',   gender: '男', age: 26, category: 'party',    tags: ['推理', '老玩家'], intro: '华熙剧本杀店常驻，缺人喊我。', avatarUrl: 'images/avatar-10.png' },
+            { id: 'hx9',  name: '五棵松地头蛇', gender: '男', age: 28, category: 'food',     tags: ['本地通', '好相处'], intro: '华熙LIVE吃喝玩乐全攻略，问我就对了。', avatarUrl: 'images/avatar-9.png' },
+            { id: 'hx10', name: '冰场小王子',   gender: '男', age: 21, category: 'sport',    tags: ['滑冰', '教练'], intro: '华熙冰场常驻，可以带你滑。', avatarUrl: 'images/avatar-11.png' },
+            { id: 'hx11', name: '甜品测评员',   gender: '女', age: 22, category: 'coffee',   tags: ['甜品', '下午茶'], intro: '华熙甜品店扫雷完毕，约个下午茶慢慢聊。', avatarUrl: 'images/avatar-12.png' },
+            { id: 'hx12', name: 'Livehouse常驻', gender: '女', age: 25, category: 'show',    tags: ['乐迷', '气氛组'], intro: '华熙演出信息一手掌握，一起冲前排。', avatarUrl: 'images/avatar-6.png' },
+            { id: 'hx13', name: '骑行老炮',     gender: '男', age: 30, category: 'ride',     tags: ['公路车', '老司机'], intro: '周末骑游团常年招新，华熙集合出发。', avatarUrl: 'images/avatar-4.png' },
+            { id: 'hx14', name: '蜡笔小星',     gender: '女', age: 23, category: 'photo',    tags: ['手机摄影', 'P图'], intro: '手机也能出大片，华熙机位全知道。', avatarUrl: 'images/avatar-10.png' },
+            { id: 'hx15', name: '飞盘社社长',   gender: '女', age: 27, category: 'sport',    tags: ['飞盘', '组织'], intro: '华熙附近飞盘局每周两场，新手友好。', avatarUrl: 'images/avatar-7.png' },
+            { id: 'hx16', name: '华熙夜行者',   gender: '男', age: 24, category: 'party',    tags: ['K歌', '麦霸'], intro: 'K歌、桌游、夜宵一条龙，散场我安排。', avatarUrl: 'images/avatar-1.png' }
         ];
 
         // 数组洗牌（匹配结果随机化）
@@ -332,14 +332,14 @@
 
         // 打卡墙预置动态
         var CHECKIN_POSTS = [
-            { id: 'ck1', name: '华熙夜行者', avatar: 'https://picsum.photos/100/100?random=80', text: '夜骑到华熙，霓虹和晚风都刚刚好', image: 'https://picsum.photos/seed/huaxi-1/400/560', likes: 186, comments: 23, time: '8分钟前' },
-            { id: 'ck2', name: '奶茶三分糖', avatar: 'https://picsum.photos/100/100?random=81', text: '茶百道新品打卡成功，第一口是秋天的味道', image: 'https://picsum.photos/seed/huaxi-2/400/400', likes: 152, comments: 18, time: '20分钟前' },
-            { id: 'ck3', name: '胶片旅人', avatar: 'https://picsum.photos/100/100?random=86', text: '胶片直出，华熙的夜比想象中更浪漫', image: 'https://picsum.photos/seed/huaxi-3/400/520', likes: 233, comments: 31, time: '35分钟前' },
-            { id: 'ck4', name: '五棵松地头蛇', avatar: 'https://picsum.photos/100/100?random=88', text: '华熙新开的街区亮了，遛弯路线更新！', image: 'https://picsum.photos/seed/huaxi-4/400/320', likes: 98, comments: 12, time: '1小时前' },
-            { id: 'ck5', name: '看展搭子酱', avatar: 'https://picsum.photos/100/100?random=84', text: '今天的展太灵了，出片率极高', image: 'https://picsum.photos/seed/huaxi-5/400/500', likes: 167, comments: 20, time: '1小时前' },
-            { id: 'ck6', name: '火锅搭子', avatar: 'https://picsum.photos/100/100?random=85', text: '华熙火锅吃到扶墙出，快乐就是这么简单', image: 'https://picsum.photos/seed/huaxi-6/400/340', likes: 121, comments: 15, time: '2小时前' },
-            { id: 'ck7', name: '买手店常客', avatar: 'https://picsum.photos/100/100?random=83', text: '今日OOTD打卡，华熙真的太好逛了', image: 'https://picsum.photos/seed/huaxi-7/400/560', likes: 289, comments: 42, time: '2小时前' },
-            { id: 'ck8', name: '剧本杀侦探', avatar: 'https://picsum.photos/100/100?random=87', text: '华熙夜景机位分享，来晚就没了', image: 'https://picsum.photos/seed/huaxi-8/400/430', likes: 76, comments: 9, time: '3小时前' }
+            { id: 'ck1', name: '华熙夜行者', avatar: 'images/avatar-3.png', text: '夜骑到华熙，霓虹和晚风都刚刚好', image: 'images/cover-17.png', likes: 186, comments: 23, time: '8分钟前' },
+            { id: 'ck2', name: '奶茶三分糖', avatar: 'images/avatar-5.png', text: '茶百道新品打卡成功，第一口是秋天的味道', image: 'images/cover-9.png', likes: 152, comments: 18, time: '20分钟前' },
+            { id: 'ck3', name: '胶片旅人', avatar: 'images/avatar-12.png', text: '胶片直出，华熙的夜比想象中更浪漫', image: 'images/cover-19.png', likes: 233, comments: 31, time: '35分钟前' },
+            { id: 'ck4', name: '五棵松地头蛇', avatar: 'images/avatar-9.png', text: '华熙新开的街区亮了，遛弯路线更新！', image: 'images/cover-2.png', likes: 98, comments: 12, time: '1小时前' },
+            { id: 'ck5', name: '看展搭子酱', avatar: 'images/avatar-12.png', text: '今天的展太灵了，出片率极高', image: 'images/cover-7.png', likes: 167, comments: 20, time: '1小时前' },
+            { id: 'ck6', name: '火锅搭子', avatar: 'images/avatar-10.png', text: '华熙火锅吃到扶墙出，快乐就是这么简单', image: 'images/cover-2.png', likes: 121, comments: 15, time: '2小时前' },
+            { id: 'ck7', name: '买手店常客', avatar: 'images/avatar-1.png', text: '今日OOTD打卡，华熙真的太好逛了', image: 'images/cover-15.png', likes: 289, comments: 42, time: '2小时前' },
+            { id: 'ck8', name: '剧本杀侦探', avatar: 'images/avatar-10.png', text: '华熙夜景机位分享，来晚就没了', image: 'images/cover-6.png', likes: 76, comments: 9, time: '3小时前' }
         ];
 
         // 打卡文案"自动生成"池

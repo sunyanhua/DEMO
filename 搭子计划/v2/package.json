@@ -7,15 +7,17 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "node index.test.cjs && node weekend-test.test.cjs && node weekend-route.test.cjs && node merchant-detail.test.cjs && node chat.test.cjs && node me.test.cjs && node category.test.cjs"
+    "test": "node index.test.cjs && node weekend-test.test.cjs && node weekend-route.test.cjs && node merchant-detail.test.cjs && node chat.test.cjs && node me.test.cjs && node category.test.cjs",
+    "tw": "tailwindcss -c tailwind.config.cjs -i tailwind.input.css -o tailwind.css --minify"
   },
   "dependencies": {
-    "react": "^19.2.4",
-    "lucide-react": "^0.574.0"
+    "lucide-react": "^0.574.0",
+    "react": "^19.2.4"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
     "@vitejs/plugin-react": "^5.0.0",
+    "tailwindcss": "^3.4.17",
     "typescript": "~5.8.2",
     "vite": "^6.2.0"
   }

@@ -4,8 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>聊天</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link rel="stylesheet" href="tailwind.css">
+    <script src="vendor/lucide.min.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="bg-gray-50 text-gray-900 h-screen flex flex-col">
@@ -22,7 +22,7 @@
 
             // 获取对方用户信息
             const otherUser = window.GlobalData.partners.find(p => p.id === userId) ||
-                            { name: userName, avatarUrl: 'https://picsum.photos/50/50?random=0' };
+                            { name: userName, avatarUrl: 'images/avatar-3.png' };
             // 添加在线状态（随机生成）
             otherUser.isOnline = Math.random() > 0.5;
 

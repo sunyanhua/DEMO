@@ -10,21 +10,23 @@
 
 | 项 | 选型 |
 |----|------|
-| 页面语言 | 纯 HTML/CSS/JavaScript（无构建工具，CDN 加载依赖） |
-| 样式方案 | Tailwind CSS（CDN `cdn.tailwindcss.com`）+ 自定义 `style.css` |
-| 图标库 | Lucide Icons（CDN `jsdelivr` UMD 版本） |
+| 页面语言 | 纯 HTML/CSS/JavaScript（无构建工具，零网络依赖） |
+| 样式方案 | Tailwind CSS 静态构建（本地 `tailwind.css`，v3 语义）+ 自定义 `style.css` |
+| 图标库 | Lucide Icons 本地 UMD（`vendor/lucide.min.js`，v1.61.0） |
 | 公共脚本 | `common.js`（品牌色配置、底部导航、Toast、图标初始化等） |
 | 数据模式 | `window.GlobalData` mock 数据（`data.js`），页面内 `var` 声明的局部数据 |
 | 遗留代码 | React 19 + TypeScript + Vite 组件（`components/`、`App.tsx`、`index.tsx` 等，已废弃） |
 
 **注意**：项目的 `components/` 目录中保留有原始 React 组件（`Banner.tsx`、`CategoryGrid.tsx`、`ActivityFeed.tsx` 等），但当前 `App.tsx` 和 `index.tsx` 已标记为 deprecated。所有活跃代码均为 `index.html` + `data.js` + `common.js` 的 vanilla JS 架构。
 
-**每页标准模板**：
+**每页标准模板**（本地化，双击 HTML 文件即可离线预览）：
 ```html
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+<link rel="stylesheet" href="tailwind.css">
+<script src="vendor/lucide.min.js"></script>
 <link rel="stylesheet" href="style.css">
 ```
+
+**新增 Tailwind 类后需重建**：`npm run tw`（配置在 `tailwind.config.cjs`，品牌色与 common.js 原 Play CDN 配置一致；动态拼接类如 `bg-${color}` 需加入 safelist）。
 
 ## 品牌色体系
 
@@ -152,7 +154,13 @@
 | `weekend-test.html` | 🎯 周末人格测试（8 种周末人格、8 题计分制、同分随机；结果页含分享海报/推荐路线/热门活动/同款搭子） | 专题页 |
 | `weekend-route.html` | 🗺️ 定制周末路线（表单就地选择 → 路线推荐列表 → 路线详情 + 质量评价 + 操作占位 + 定制记录） | 专题页 |
 | `merchant-detail.html` | 🏪 合作商家详情页（店面图集/介绍/位置导航/优惠领取） | 详情页 |
-| `style.css` | 全局自定义样式 | 资源 |
+| `style.css` | 全局自定义样式（品牌色变量、动画、浮动装饰等） | 资源 |
+| `tailwind.css` | Tailwind 静态构建产物（本地，`npm run tw` 重建） | 资源 |
+| `tailwind.config.cjs` | 静态构建配置（品牌色/vibrant/字体/safe padding + 动态类 safelist） | 资源 |
+| `tailwind.input.css` | Tailwind 构建入口 | 资源 |
+| `vendor/lucide.min.js` | Lucide 图标本地 UMD（1.61.0，新增图标先确认该版本存在） | 资源 |
+| `images/cover-1~20.png` | 本地活动封面占位图（原外网图片按 crc32 稳定映射，零网络依赖） | 资源 |
+| `images/avatar-1~12.png` | 本地头像 | 资源 |
 | `common.js` | 公共函数库 | 资源 |
 | `data.js` | 全局 mock 数据（含周末人格/测试题/路线表单/9条路线/合作商家注册表） | 资源 |
 | `weekend-test.js` | 周末人格测试计分引擎（纯逻辑，可独立测试） | 资源 |
@@ -184,5 +192,6 @@
 - 所有授权和修改直接进行，无需确认
 - 图片资源统一放在 `images/` 目录下
 - 使用 `window.GlobalData` 取 mock 数据，不在各页面重复声明
-- 每页独立可预览，不需构建
+- 每页独立可预览，不需构建；**零网络依赖**：CSS/图标/图片全部本地，不引用外网 CDN 或图床
+- 新增 Tailwind 类后运行 `npm run tw` 重建 `tailwind.css`
 - 遗留 React 组件不再维护，全部新功能在 vanilla JS 中实现

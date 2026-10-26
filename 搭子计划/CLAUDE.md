@@ -10,21 +10,23 @@
 
 | 项 | 选型 |
 |----|------|
-| 页面语言 | 纯 HTML/CSS/JavaScript（无构建工具，CDN 加载依赖） |
-| 样式方案 | Tailwind CSS（CDN `cdn.tailwindcss.com`）+ 自定义 `style.css` |
-| 图标库 | Lucide Icons（CDN `jsdelivr` UMD 版本） |
+| 页面语言 | 纯 HTML/CSS/JavaScript（无构建工具，零网络依赖） |
+| 样式方案 | Tailwind CSS 静态构建（本地 `tailwind.css`，v3 语义）+ 自定义 `style.css` |
+| 图标库 | Lucide Icons 本地 UMD（`vendor/lucide.min.js`，v1.61.0） |
 | 公共脚本 | `common.js`（品牌色配置、底部导航、Toast、图标初始化等） |
 | 数据模式 | `window.GlobalData` mock 数据（`data.js`），页面内 `var` 声明的局部数据 |
 | 遗留代码 | React 19 + TypeScript + Vite 组件（`components/`、`App.tsx`、`index.tsx` 等，已废弃） |
 
 **注意**：项目的 `components/` 目录中保留有原始 React 组件（`Banner.tsx`、`CategoryGrid.tsx`、`ActivityFeed.tsx` 等），但当前 `App.tsx` 和 `index.tsx` 已标记为 deprecated。所有活跃代码均为 `index.html` + `data.js` + `common.js` 的 vanilla JS 架构。
 
-**每页标准模板**：
+**每页标准模板**（本地化，双击 HTML 文件即可离线预览）：
 ```html
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+<link rel="stylesheet" href="tailwind.css">
+<script src="vendor/lucide.min.js"></script>
 <link rel="stylesheet" href="style.css">
 ```
+
+**新增 Tailwind 类后需重建**：`npm run tw`（配置在 `tailwind.config.cjs`，品牌色与 common.js 原 Play CDN 配置一致；动态拼接类如 `bg-${color}` 需加入 safelist）。
 
 ## 品牌色体系
 
@@ -149,7 +151,19 @@
 | `ground-promo.html` | 🎁 地推活动专题（好运双响炮：注册+订阅，核销领奖） | 专题页 |
 | `music-festival.html` | 🎵 大运河音乐节专题（上大屏 / 我的AI合照 / 找搭子） | 专题页 |
 | `huaxi.html` | 🎡 华熙"搭子就位·奇遇华熙"专题（打个卡 / 找搭子 / 大转盘抽奖 / 奖品核销） | 专题页 |
-| `style.css` | 全局自定义样式 | 资源 |
+| `dumpling.html` | 🥟 天之"饺"子·立冬偷吃饺子小赛专题（主题banner / 内嵌测试→结果摘要 / 横排优惠券（未测试拦截领取，code+qr 使用面板）/ 线下活动报名卡 / 有奖分享规则弹窗 / #我的饺子人格# 动态瀑布流） | 专题页 |
+| `dumpling-test.html` | 🥟 饺子人格测试（8 种饺子人格、8 题计分制、同分随机；结果页含详细路线：类型/行程/沿途/准备/预算/理由/攻略 + 分享海报） | 专题页 |
+| `dumpling-test.js` | 饺子人格测试计分引擎（纯逻辑，可独立测试） | 资源 |
+| `dumpling-data.js` | 饺子专题数据（人格/题目/路线/优惠券/动态，只被饺子页面加载） | 资源 |
+| `dumpling-test.test.cjs` | 饺子人格测试引擎测试（`npm test` 运行） | 资源 |
+| `images/dumpling-banner.png` | 首页 banner 第一张（饺子专题入口图，点击跳 dumpling.html） | 资源 |
+| `style.css` | 全局自定义样式（品牌色变量、动画、浮动装饰等） | 资源 |
+| `tailwind.css` | Tailwind 静态构建产物（本地，`npm run tw` 重建） | 资源 |
+| `tailwind.config.cjs` | 静态构建配置（品牌色/vibrant/字体/safe padding + 动态类 safelist） | 资源 |
+| `tailwind.input.css` | Tailwind 构建入口 | 资源 |
+| `vendor/lucide.min.js` | Lucide 图标本地 UMD（1.61.0，新增图标先确认该版本存在） | 资源 |
+| `images/cover-1~20.png` | 本地内容占位图（原外网内容图按 crc32 稳定映射） | 资源 |
+| `images/avatar-1~12.png` | 本地头像（原 picsum 头像按 crc32 稳定映射） | 资源 |
 | `common.js` | 公共函数库 | 资源 |
 | `data.js` | 全局 mock 数据 | 资源 |
 
@@ -176,5 +190,6 @@
 - 所有授权和修改直接进行，无需确认
 - 图片资源统一放在 `images/` 目录下
 - 使用 `window.GlobalData` 取 mock 数据，不在各页面重复声明
-- 每页独立可预览，不需构建
+- 每页独立可预览，不需构建；**零网络依赖**：CSS/图标/图片全部本地，不引用外网 CDN 或图床
+- 新增 Tailwind 类后运行 `npm run tw` 重建 `tailwind.css`
 - 遗留 React 组件不再维护，全部新功能在 vanilla JS 中实现

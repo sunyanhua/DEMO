@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>秋天的第一个搭子 - 搭子计划</title>
 
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link rel="stylesheet" href="tailwind.css">
+    <script src="vendor/lucide.min.js"></script>
     <link rel="stylesheet" href="style.css">
 
     <style>
@@ -230,7 +230,7 @@
                 title: '🍂 香山红叶季·徒步赏秋',
                 description: '一年一度的香山红叶季来啦！一起徒步登山，欣赏满山红叶，拍最美的秋日照。带相机、穿舒适的鞋，一起感受北京的秋天。',
                 category: 'OUTDOORS',
-                imageUrl: 'https://images.unsplash.com/photo-1506812574050-5e1f5b5f5e5f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                imageUrl: 'images/cover-14.png',
                 location: '香山公园',
                 district: '海淀区',
                 date: '本周六 08:00',
@@ -246,7 +246,7 @@
                 title: '🎃 万圣节南瓜派对',
                 description: '秋季限定万圣节主题派对！南瓜雕刻、变装、趣味游戏，还有主题饮品和小食。快来认识新朋友！',
                 category: 'ENTERTAINMENT',
-                imageUrl: 'https://images.unsplash.com/photo-1509558949475-14e07fb38d1f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                imageUrl: 'images/cover-5.png',
                 location: '三里屯派对空间',
                 district: '朝阳区',
                 date: '下周六 19:00',
@@ -262,7 +262,7 @@
                 title: '🍁 秋日野餐·银杏大道',
                 description: '在最美的银杏大道铺上野餐垫，享受秋日暖阳。带上你的拿手好菜，与搭子们分享美食和故事。',
                 category: 'DINING',
-                imageUrl: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                imageUrl: 'images/cover-1.png',
                 location: '钓鱼台银杏大道',
                 district: '西城区',
                 date: '本周日 11:00',
@@ -278,7 +278,7 @@
                 title: '🍷 秋夜微醺·红酒品鉴',
                 description: '秋夜微凉，来一场温暖的红酒品鉴会。专业侍酒师带你品味三款秋季限定红酒，搭配奶酪和小食。',
                 category: 'DINING',
-                imageUrl: 'https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                imageUrl: 'images/cover-17.png',
                 location: '国贸红酒体验馆',
                 district: '朝阳区',
                 date: '本周五 20:00',
@@ -294,7 +294,7 @@
                 title: '📸 秋日摄影外拍·胡同秋色',
                 description: '跟着专业摄影师穿梭老北京胡同，捕捉秋日的光影和色彩。手机党也欢迎，会教基础构图和调色技巧。',
                 category: 'CULTURE',
-                imageUrl: 'https://images.unsplash.com/photo-1523712999610-f77fbcfc3843?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                imageUrl: 'images/cover-12.png',
                 location: '南锣鼓巷',
                 district: '东城区',
                 date: '本周六 14:00',
@@ -310,7 +310,7 @@
                 title: '🌾 稻田骑行·秋收体验',
                 description: '骑行穿越京郊稻田，感受丰收的喜悦。途中安排农庄午餐和稻谷收割体验，适合周末短途游。',
                 category: 'OUTDOORS',
-                imageUrl: 'https://images.unsplash.com/photo-1470770903676-69b98201ea1c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                imageUrl: 'images/cover-5.png',
                 location: '海淀区上庄稻田',
                 district: '海淀区',
                 date: '下周日 09:00',
@@ -531,7 +531,7 @@
                          class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-300 mb-4 group cursor-pointer relative activity-card-autumn">
                         <div class="relative h-48 w-full overflow-hidden">
                             <img src="${activity.imageUrl}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                                 onerror="this.src='https://images.unsplash.com/photo-1506812574050-5e1f5b5f5e5f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80';" />
+                                 onerror="this.src='images/cover-14.png';" />
                             ${autumnBadge}
                             <div class="absolute top-3 right-3">${statusBadge}</div>
                             <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3 pt-10">
