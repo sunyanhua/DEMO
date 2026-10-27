@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>用户主页</title>
     <link rel="stylesheet" href="tailwind.css">
-    <script src="vendor/lucide.min.js"></script>
+    <script src="../vendor/lucide.min.js"></script>
     <link rel="stylesheet" href="style.css">
     <style>
         .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -54,13 +54,13 @@
                         };
                     } else if (window.GlobalData.moments.find(m => m.userId === userId)) {
                          // From moments
-                         user = { id: userId, name: '活跃用户', avatarUrl: 'images/avatar-10.png', intro:'热爱分享动态', tags:['分享'], followers: 20, following: 5, level: 2, points: 600 };
+                         user = { id: userId, name: '活跃用户', avatarUrl: '../images/avatar-10.png', intro:'热爱分享动态', tags:['分享'], followers: 20, following: 5, level: 2, points: 600 };
                     } else {
                         // Fallback
                         user = {
                             id: userId,
                             name: '神秘搭子',
-                            avatarUrl: 'images/avatar-8.png',
+                            avatarUrl: '../images/avatar-8.png',
                             intro: '这个用户很低调。',
                             tags: [],
                             followers: 0,
@@ -172,7 +172,7 @@
                 <div class="relative">
                     <!-- 顶部背景图 -->
                     <div class="h-48 w-full overflow-hidden">
-                        <img src="images/cover-6.png" class="w-full h-full object-cover opacity-80" />
+                        <img src="../images/cover-6.png" class="w-full h-full object-cover opacity-80" />
                         <div class="absolute inset-0 bg-gradient-to-b from-transparent to-white"></div>
                         
                         <!-- 导航栏 -->
@@ -263,10 +263,10 @@
         function changeProfileBackground() {
             // 模拟更换背景图片
             const backgroundImages = [
-                'images/cover-2.png',
-                'images/cover-12.png',
-                'images/cover-16.png',
-                'images/cover-3.png'
+                '../images/cover-2.png',
+                '../images/cover-12.png',
+                '../images/cover-16.png',
+                '../images/cover-3.png'
             ];
 
             // 随机选择一张背景图片

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>聊天</title>
     <link rel="stylesheet" href="tailwind.css">
-    <script src="vendor/lucide.min.js"></script>
+    <script src="../vendor/lucide.min.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="bg-gray-50 text-gray-900 h-screen flex flex-col">
@@ -32,7 +32,7 @@
             // 获取对方用户信息（同款搭子来自 weekendFellows）
             const otherUser = (window.GlobalData.weekendFellows || []).find(f => f.id === userId) ||
                 window.GlobalData.partners.find(p => p.id === userId) ||
-                { name: userName, avatarUrl: 'images/avatar-2.png' };
+                { name: userName, avatarUrl: '../images/avatar-2.png' };
             // 添加在线状态（随机生成）
             otherUser.isOnline = Math.random() > 0.5;
 

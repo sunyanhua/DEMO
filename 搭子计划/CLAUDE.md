@@ -162,7 +162,7 @@
 | `tailwind.config.cjs` | 静态构建配置（品牌色/vibrant/字体/safe padding + 动态类 safelist） | 资源 |
 | `tailwind.input.css` | Tailwind 构建入口 | 资源 |
 | `vendor/lucide.min.js` | Lucide 图标本地 UMD（1.61.0，新增图标先确认该版本存在） | 资源 |
-| `images/cover-1~20.png` | 本地内容占位图（原外网内容图按 crc32 稳定映射） | 资源 |
+| `images/` | 全站图片统一目录：avatar-1~12 / cover-1~20 / dumpling-banner / music_* / music_template* / autumn2026.jpg / ground-promo-banner.png（v2 经 `../images/` 共享） | 资源 |
 | `images/avatar-1~12.png` | 本地头像（原 picsum 头像按 crc32 稳定映射） | 资源 |
 | `common.js` | 公共函数库 | 资源 |
 | `data.js` | 全局 mock 数据 | 资源 |

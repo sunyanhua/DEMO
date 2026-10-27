@@ -22,13 +22,6 @@
         const ANSWER_DELAY_MS = 250;
         const ACTIVITY_ID = 'a26'; // 11月14日 JKFUN 线下活动
 
-        // 发布动态"自动生成"文案池（饺子主题）
-        const AUTO_TEXTS = [
-            '立冬偷吃饺子成功，测出来是', '今天的饺子局，我负责偷吃', '谁能拒绝一锅热腾腾的饺子呢',
-            '偷吃饺子的快乐，谁懂啊', '立冬不端饺子碗，冻掉耳朵没人管', '我的饺子人格已出，坐等同款搭子',
-            '饺子就酒，越吃越有', '偷吃一时爽，一直偷吃一直爽'
-        ];
-
         function escapeHtml(str) {
             return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
         }
@@ -117,7 +110,7 @@
                     </button>
                 `).join('');
                 return `
-                <div class="px-4 pt-4 fade-in">
+                <div class="px-4 pt-4 min-h-screen fade-in">
                     <div class="flex items-center justify-between mb-2">
                         <span class="text-xs text-gray-400 font-medium">第 ${this.quiz.currentIndex + 1}/${total} 题</span>
                         <span class="text-xs text-gray-400">${progress}%</span>
@@ -135,7 +128,8 @@
                 const p = this.resultPersonality;
                 return `
                 <div class="px-4 pt-4 fade-in">
-                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 relative">
+                        <button onclick="View.clearTest()" class="absolute top-2.5 right-3 text-[10px] text-gray-400 border border-gray-200 rounded-full px-2 py-0.5 bg-white active:scale-95 transition-transform">清空（仅演示）</button>
                         <div class="flex items-center gap-4">
                             <div class="w-16 h-16 rounded-2xl bg-gradient-to-br ${p.color} flex items-center justify-center text-3xl flex-shrink-0 shadow-md">${p.emoji}</div>
                             <div class="min-w-0">
@@ -193,13 +187,12 @@
 
             finishQuiz() {
                 const { id } = window.DumplingTest.calculate(this.quiz.answers);
-                this.resultPersonality = this.personalities.find(p => p.id === id) || null;
                 // 保存测试状态：详情页复用 + 优惠券领取门槛 + 页面重进恢复摘要
                 sessionStorage.setItem('dumpling_test_done', '1');
                 sessionStorage.setItem('dumpling_test_answers', JSON.stringify(this.quiz.answers));
                 sessionStorage.setItem('dumpling_test_result', id);
-                this.stage = 'summary';
-                this.render();
+                // 测试完成直接进入测试结果详情页
+                window.location.href = 'dumpling-test.html';
             },
 
             // 页面重进（刷新/返回）时恢复测试完成状态
@@ -209,6 +202,16 @@
                     this.resultPersonality = this.personalities.find(p => p.id === rid) || null;
                     if (this.resultPersonality) this.stage = 'summary';
                 }
+            },
+
+            // 清空测试结果（仅演示）：回到未测试引导态，优惠券领取门槛恢复
+            clearTest() {
+                sessionStorage.removeItem('dumpling_test_done');
+                sessionStorage.removeItem('dumpling_test_answers');
+                sessionStorage.removeItem('dumpling_test_result');
+                this.resultPersonality = null;
+                this.stage = 'idle';
+                this.render();
             },
 
             // ============ 商户优惠券：票券样式横排 + 领取门槛 + 使用面板 ============
@@ -222,16 +225,17 @@
                         : `<button onclick="View.claimCoupon('${c.id}')" class="mt-3 w-full py-2 rounded-xl text-xs font-bold bg-brand-orange text-white active:scale-95 transition-transform">领取</button>`;
                     return `
                     <div class="w-64 flex-shrink-0 bg-white rounded-xl shadow-sm border border-gray-100 relative">
-                        <!-- 撕票缺口 -->
-                        <div class="absolute -left-1.5 -top-1.5 w-3 h-3 rounded-full bg-gray-50 border border-gray-200 z-10"></div>
-                        <div class="absolute -left-1.5 -bottom-1.5 w-3 h-3 rounded-full bg-gray-50 border border-gray-200 z-10"></div>
                         <div class="flex items-stretch rounded-xl overflow-hidden">
                             <!-- 左侧竖向"优惠券" -->
                             <div class="flex-shrink-0 w-10 bg-gradient-to-b from-brand-orange to-brand-yellow flex items-center justify-center">
                                 <span class="text-white text-xs font-black tracking-widest py-3" style="writing-mode: vertical-rl; letter-spacing: 3px;">优惠券</span>
                             </div>
-                            <!-- 撕票虚线 -->
-                            <div class="border-l-2 border-dashed border-gray-200"></div>
+                            <!-- 撕票虚线 + 圆洞（圆洞相对虚线定位，位于卡片内部上下） -->
+                            <div class="relative self-stretch">
+                                <div class="border-l-2 border-dashed border-gray-200 h-full"></div>
+                                <div class="absolute -left-[5px] top-3 w-3 h-3 rounded-full bg-gray-50 border border-gray-200"></div>
+                                <div class="absolute -left-[5px] bottom-3 w-3 h-3 rounded-full bg-gray-50 border border-gray-200"></div>
+                            </div>
                             <!-- 右侧主区：店名标题在卡片区内 -->
                             <div class="flex-1 p-3.5">
                                 <h3 class="text-sm font-black text-gray-900">${c.shop}</h3>
@@ -530,8 +534,8 @@
                 if (!this.showPublish) return '';
                 const d = this.publishDraft || { image: '', text: '' };
                 const preview = d.image
-                    ? `<img src="${d.image}" class="w-full h-28 object-cover rounded-xl border border-gray-100"/>`
-                    : `<div class="w-full h-28 rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 flex flex-col items-center justify-center text-gray-300"><i data-lucide="image" class="w-6 h-6 mb-1"></i><span class="text-[10px]">选择一张图片</span></div>`;
+                    ? `<img src="${d.image}" class="w-full h-28 object-cover rounded-xl border border-gray-100 cursor-pointer" onclick="document.getElementById('publishFileInput').click()"/>`
+                    : `<div class="w-full h-28 rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 flex flex-col items-center justify-center text-gray-300 cursor-pointer active:bg-gray-100 transition" onclick="document.getElementById('publishFileInput').click()"><i data-lucide="image" class="w-6 h-6 mb-1"></i><span class="text-[10px]">选择一张图片</span></div>`;
                 return `
                 <div class="fixed inset-0 bg-black/45 z-[90] flex items-end justify-center fade-in" onclick="View.closePublish()">
                     <div class="bg-white w-full max-w-md rounded-t-3xl p-5 pb-8 fade-in max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
@@ -542,29 +546,16 @@
                             </button>
                         </div>
 
-                        <!-- 图片 -->
+                        <!-- 图片：点击直接执行上传 -->
                         <div class="mb-4">
                             <label class="text-xs font-bold text-gray-500 mb-2 block">图片</label>
                             ${preview}
-                            <div class="flex gap-2 mt-2">
-                                <button onclick="document.getElementById('publishFileInput').click()"
-                                        class="flex-1 py-2.5 rounded-xl text-sm font-bold border border-brand-orange text-brand-orange bg-brand-orange/5 active:scale-95 transition-transform">
-                                    📷 上传照片
-                                </button>
-                            </div>
                             <input type="file" id="publishFileInput" accept="image/*" class="hidden" onchange="View.pickFeedImage(this)"/>
                         </div>
 
                         <!-- 内容 -->
                         <div class="mb-4">
-                            <div class="flex items-center justify-between mb-2">
-                                <label class="text-xs font-bold text-gray-500">我的偷吃现场</label>
-                                <button onclick="View.autoGenerateCaption()"
-                                        class="text-[11px] font-bold px-2.5 py-1 rounded-full bg-brand-orange/10 text-brand-orange flex items-center gap-1 active:scale-95 transition-transform">
-                                    <i data-lucide="wand-sparkles" class="w-3 h-3"></i>
-                                    自动生成
-                                </button>
-                            </div>
+                            <label class="text-xs font-bold text-gray-500 mb-2 block">我的偷吃现场</label>
                             <textarea id="publishText" maxlength="100" rows="3"
                                       class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-brand-orange resize-none"
                                       placeholder="说说你的偷吃现场…">${escapeHtml(d.text || '')}</textarea>
@@ -594,13 +585,6 @@
                 };
                 update();
                 textarea.addEventListener('input', update);
-            },
-
-            autoGenerateCaption() {
-                const sentence = AUTO_TEXTS[Math.floor(Math.random() * AUTO_TEXTS.length)];
-                this.publishDraft.text = sentence;
-                this.render();
-                this.syncPublishInput();
             },
 
             // 图片压缩：等比缩放并转 JPEG，控制存储体积（同华熙）
@@ -665,15 +649,17 @@
             },
 
             render() {
+                // 答题中：完整独立界面，不渲染优惠券/活动/动态等区块
+                const isQuiz = this.stage === 'quiz';
+                const main = isQuiz
+                    ? this.quizView()
+                    : `${this.testSection()}${this.couponsSection()}${this.activityCard()}${this.momentsSection()}`;
                 document.getElementById('app').innerHTML = `
                     ${this.header()}
                     <div class="pt-[50px]">
-                        ${this.testSection()}
-                        ${this.couponsSection()}
-                        ${this.activityCard()}
-                        ${this.momentsSection()}
+                        ${main}
                     </div>
-                    ${this.fab()}
+                    ${isQuiz ? '' : this.fab()}
                     ${this.usageModal()}
                     ${this.rulesModal()}
                     ${this.publishModal()}

@@ -60,7 +60,7 @@ test('合作商家注册表：id 唯一且详情字段齐全', () => {
         assert.ok(m.description && m.description.length > 20, `${m.id} 店面介绍过短`);
         assert.ok(typeof m.notes === 'string' && m.notes.length > 10, `${m.id} 注意事项应为一句话`);
         assert.ok(Array.isArray(m.images) && m.images.length >= 3, `${m.id} 店面图应至少 3 张`);
-        for (const img of m.images) assert.ok(img.startsWith('images/cover-'), `${m.id} 图片应使用本地图源`);
+        for (const img of m.images) assert.ok(img.startsWith('../images/cover-'), `${m.id} 图片应使用本地图源（共享主站）`);
         assert.ok(m.address, `${m.id} 缺少地址`);
         assert.ok(m.location && typeof m.location.lng === 'number' && typeof m.location.lat === 'number', `${m.id} 应有经纬度`);
         assert.ok(Array.isArray(m.coupons) && m.coupons.length >= 2, `${m.id} 优惠应至少 2 项`);

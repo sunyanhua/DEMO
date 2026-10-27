@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>浏览历史 - 搭子计划</title>
     <link rel="stylesheet" href="tailwind.css">
-    <script src="vendor/lucide.min.js"></script>
+    <script src="../vendor/lucide.min.js"></script>
     <link rel="stylesheet" href="style.css">
     <style>
         .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -29,7 +29,7 @@
                     id: 'mo1',
                     userId: 'u1',
                     content: '今天天气真好，在亮马河边发呆，有没有一起喝咖啡的？☕️ #亮马河 #咖啡',
-                    images: ['images/cover-8.png'],
+                    images: ['../images/cover-8.png'],
                     likes: 45,
                     comments: 12,
                     time: '2小时前',
@@ -41,8 +41,8 @@
                     userId: 'p1',
                     content: '崇礼万龙开板啦！雪质无敌！这个周末还要来冲！🎿',
                     images: [
-                        'images/cover-2.png',
-                        'images/cover-4.png'
+                        '../images/cover-2.png',
+                        '../images/cover-4.png'
                     ],
                     likes: 128,
                     comments: 34,
@@ -54,7 +54,7 @@
                     id: 'mo3',
                     userId: 'u4',
                     content: '晨跑5公里完成，神清气爽！🏃‍♂️',
-                    images: ['images/cover-10.png'],
+                    images: ['../images/cover-10.png'],
                     likes: 89,
                     comments: 8,
                     time: '昨天',
@@ -68,34 +68,34 @@
                 {
                     id: 'a1',
                     title: '朝阳公园飞盘新手局',
-                    imageUrl: 'images/cover-19.png',
+                    imageUrl: '../images/cover-19.png',
                     date: '本周六 14:00-16:00',
                     location: '朝阳公园 草坪区',
                     status: 'RECRUITING',
                     price: 0,
-                    organizer: { id: 'u2', name: '飞盘小队长', avatarUrl: 'images/avatar-8.png' },
+                    organizer: { id: 'u2', name: '飞盘小队长', avatarUrl: '../images/avatar-8.png' },
                     viewedAt: '今天 11:45'
                 },
                 {
                     id: 'a2',
                     title: '胡同美食探索团',
-                    imageUrl: 'images/cover-6.png',
+                    imageUrl: '../images/cover-6.png',
                     date: '本周日 18:00-20:00',
                     location: '雍和宫附近',
                     status: 'RECRUITING',
                     price: 50,
-                    organizer: { id: 'u3', name: 'FoodieJane', avatarUrl: 'images/avatar-7.png' },
+                    organizer: { id: 'u3', name: 'FoodieJane', avatarUrl: '../images/avatar-7.png' },
                     viewedAt: '今天 10:10'
                 },
                 {
                     id: 'a3',
                     title: '零基础油画体验课',
-                    imageUrl: 'images/cover-2.png',
+                    imageUrl: '../images/cover-2.png',
                     date: '下周六 15:00-17:30',
                     location: '798艺术区',
                     status: 'RECRUITING',
                     price: 120,
-                    organizer: { id: 'p2', name: 'CoffeeJane', avatarUrl: 'images/avatar-8.png' },
+                    organizer: { id: 'p2', name: 'CoffeeJane', avatarUrl: '../images/avatar-8.png' },
                     viewedAt: '昨天 16:30'
                 }
             ];
@@ -107,7 +107,7 @@
             const getMomentCard = (m) => {
                 const user = window.GlobalData.user.id === m.userId ? window.GlobalData.user :
                              (window.GlobalData.partners.find(p=>p.id===m.userId) ||
-                             { name:'未知用户', avatarUrl:'images/avatar-2.png' });
+                             { name:'未知用户', avatarUrl:'../images/avatar-2.png' });
 
                 return `
                 <div onclick="window.location.href='moment.html?id=${m.id}'" class="break-inside-avoid mb-3 bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100 cursor-pointer group">

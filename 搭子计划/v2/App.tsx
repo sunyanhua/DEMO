@@ -1,1 +1,0 @@
-// Deprecated: Project migrated to vanilla JS in index.html
