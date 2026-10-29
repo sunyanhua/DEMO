@@ -19,7 +19,6 @@
     <script>
         const TOPIC = '#我的饺子人格#';
         const OPTION_KEYS = ['A', 'B', 'C', 'D'];
-        const ANSWER_DELAY_MS = 250;
         const ACTIVITY_ID = 'a26'; // 11月14日 JKFUN 线下活动
 
         function escapeHtml(str) {
@@ -29,13 +28,14 @@
         const View = {
             liked: {},               // 动态点赞状态（会话内）
             stage: 'idle',           // idle: 未测试 | quiz: 答题中 | summary: 结果摘要
-            quiz: { answers: [], currentIndex: 0, locked: false },
+            quiz: { answers: [], currentIndex: 0 },
             resultPersonality: null, // 测试结果人格
             claimed: new Set(JSON.parse(sessionStorage.getItem('dumpling_coupon_claimed') || '[]')),
             usageCouponId: null,     // 优惠券使用面板
             showRules: false,        // 活动规则弹窗
             showPublish: false,      // 有奖发布弹窗
             publishDraft: null,      // 发布草稿 { image, text }
+            activeTab: 'activities', // 内容 TAB：activities 精选活动 / share 有奖分享
 
             get dumpling() {
                 return (window.GlobalData && window.GlobalData.dumpling) || {};
@@ -102,17 +102,24 @@
             quizView() {
                 const total = this.questions.length;
                 const q = this.questions[this.quiz.currentIndex];
+                const selected = this.quiz.answers[this.quiz.currentIndex];
+                const answeredCount = this.quiz.answers.filter(a => a !== undefined && a !== null).length;
                 const progress = Math.round((this.quiz.currentIndex / total) * 100);
-                const optionsHtml = q.options.map((opt, i) => `
-                    <button onclick="View.answer(${i})" class="w-full flex items-center gap-3 bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-left active:scale-[0.98] transition-transform hover:border-brand-orange/40">
-                        <span class="w-8 h-8 flex-shrink-0 rounded-full bg-brand-orange/10 text-brand-orange font-bold text-sm flex items-center justify-center">${OPTION_KEYS[i]}</span>
+                const optionsHtml = q.options.map((opt, i) => {
+                    const isSelected = selected === i;
+                    return `
+                    <button onclick="View.answer(${i})" class="w-full flex items-center gap-3 bg-white rounded-xl p-4 shadow-sm border text-left active:scale-[0.98] transition-transform hover:border-brand-orange/40 ${isSelected ? 'border-brand-orange bg-brand-orange/5 ring-1 ring-brand-orange' : 'border-gray-100'}">
+                        <span class="w-8 h-8 flex-shrink-0 rounded-full ${isSelected ? 'bg-brand-orange text-white' : 'bg-brand-orange/10 text-brand-orange'} font-bold text-sm flex items-center justify-center">${OPTION_KEYS[i]}</span>
                         <span class="text-sm text-gray-800 leading-snug">${opt.text}</span>
                     </button>
-                `).join('');
+                    `;
+                }).join('');
+                const isFirst = this.quiz.currentIndex === 0;
+                const isLast = this.quiz.currentIndex === total - 1;
                 return `
                 <div class="px-4 pt-4 min-h-screen fade-in">
                     <div class="flex items-center justify-between mb-2">
-                        <span class="text-xs text-gray-400 font-medium">第 ${this.quiz.currentIndex + 1}/${total} 题</span>
+                        <span class="text-xs text-gray-400 font-medium">第 ${this.quiz.currentIndex + 1}/${total} 题 · 已答 ${answeredCount}/${total}</span>
                         <span class="text-xs text-gray-400">${progress}%</span>
                     </div>
                     <div class="h-1.5 bg-gray-100 rounded-full overflow-hidden">
@@ -120,6 +127,10 @@
                     </div>
                     <h2 class="mt-5 text-xl font-black text-gray-900 leading-snug">${q.text}</h2>
                     <div class="mt-6 space-y-3">${optionsHtml}</div>
+                    <div class="mt-6 flex items-center justify-between">
+                        ${isFirst ? '<span></span>' : `<button onclick="View.prevQuestion()" class="flex items-center gap-1 text-sm text-gray-500 font-medium active:opacity-70 transition"><i data-lucide="chevron-left" class="w-4 h-4"></i><span>上一题</span></button>`}
+                        ${isLast ? `<button onclick="View.nextQuestion()" class="px-5 py-2.5 bg-brand-orange text-white rounded-xl text-sm font-bold active:scale-95 transition-transform shadow-lg shadow-brand-orange/20">完成测试</button>` : `<button onclick="View.nextQuestion()" class="flex items-center gap-1 text-sm text-brand-orange font-bold active:opacity-70 transition"><span>下一题</span><i data-lucide="chevron-right" class="w-4 h-4"></i></button>`}
+                    </div>
                 </div>
                 `;
             },
@@ -141,12 +152,9 @@
                         <div class="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand-yellow/15 text-brand-orange rounded-full text-xs font-bold border border-brand-yellow/40">
                             <i data-lucide="utensils" class="w-3.5 h-3.5"></i><span>偷吃作案方式：${p.method}</span>
                         </div>
-                        <div class="mt-4 flex gap-2.5">
-                            <button onclick="window.location.href='dumpling-test.html'" class="flex-1 py-3 bg-brand-orange text-white rounded-xl font-bold text-sm active:scale-95 transition-transform shadow-lg shadow-brand-orange/20">
+                        <div class="mt-4">
+                            <button onclick="window.location.href='dumpling-test.html'" class="w-full py-3 bg-brand-orange text-white rounded-xl font-bold text-sm active:scale-95 transition-transform shadow-lg shadow-brand-orange/20">
                                 查看详情
-                            </button>
-                            <button onclick="View.startQuiz()" class="flex-1 py-3 bg-white border border-brand-orange text-brand-orange rounded-xl font-bold text-sm active:scale-95 transition-transform">
-                                重新测试
                             </button>
                         </div>
                     </div>
@@ -155,37 +163,47 @@
             },
 
             startQuiz() {
-                this.quiz = { answers: [], currentIndex: 0, locked: false };
+                this.quiz = { answers: [], currentIndex: 0 };
                 this.stage = 'quiz';
                 this.render();
             },
 
+            // 记录当前题选择（可改选），上一题/下一题手动跳转
             answer(optionIndex) {
-                if (this.quiz.locked) return;
-                this.quiz.locked = true;
-                this.quiz.answers.push(optionIndex);
+                this.quiz.answers[this.quiz.currentIndex] = optionIndex;
+                this.render();
+            },
 
-                const buttons = document.querySelectorAll('#app button[onclick^="View.answer"]');
-                buttons.forEach((btn, i) => {
-                    if (i === optionIndex) {
-                        btn.className = btn.className.replace('border-gray-100', 'border-brand-orange bg-brand-orange/5 ring-1 ring-brand-orange');
-                    } else {
-                        btn.className += ' opacity-40';
-                    }
-                });
+            prevQuestion() {
+                if (this.quiz.currentIndex <= 0) return;
+                this.quiz.currentIndex--;
+                this.render();
+            },
 
-                setTimeout(() => {
+            nextQuestion() {
+                if (this.quiz.currentIndex < this.questions.length - 1) {
                     this.quiz.currentIndex++;
-                    this.quiz.locked = false;
-                    if (this.quiz.answers.length === this.questions.length) {
-                        this.finishQuiz();
-                    } else {
-                        this.render();
-                    }
-                }, ANSWER_DELAY_MS);
+                    this.render();
+                    return;
+                }
+                this.finishQuiz();
             },
 
             finishQuiz() {
+                // 未答完：提示并跳到第一道未答题（逐槽检查，覆盖短数组与稀疏洞）
+                const total = this.questions.length;
+                let unansweredIndex = -1;
+                for (let i = 0; i < total; i++) {
+                    const a = this.quiz.answers[i];
+                    if (a === undefined || a === null) { unansweredIndex = i; break; }
+                }
+                if (unansweredIndex !== -1) {
+                    const missing = total - this.quiz.answers.filter(a => a !== undefined && a !== null).length;
+                    this.quiz.currentIndex = unansweredIndex;
+                    if (window.Common) window.Common.showToast('还有 ' + missing + ' 题未作答');
+                    this.render();
+                    return;
+                }
                 const { id } = window.DumplingTest.calculate(this.quiz.answers);
                 // 保存测试状态：详情页复用 + 优惠券领取门槛 + 页面重进恢复摘要
                 sessionStorage.setItem('dumpling_test_done', '1');
@@ -335,34 +353,70 @@
                 }
             },
 
-            // ============ 活动报名卡片：11月14日 JKFUN 落地活动 ============
-            activityCard() {
-                const activities = (window.GlobalData && window.GlobalData.activities) || [];
-                const activity = activities.find(a => a.id === ACTIVITY_ID);
-                if (!activity) return '';
+            // ============ 内容 TAB：精选活动 / 有奖分享 ============
+            tabsSection() {
+                const tabs = [
+                    { id: 'activities', label: '精选活动', icon: 'sparkles' },
+                    { id: 'share', label: '有奖分享', icon: 'gift' }
+                ];
+                const barHtml = tabs.map(t => {
+                    const active = this.activeTab === t.id;
+                    return `<button onclick="View.switchTab('${t.id}')" class="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-black transition active:scale-[0.98] ${active ? 'bg-gradient-to-r from-brand-orange to-brand-yellow text-white shadow-md shadow-brand-orange/40' : 'text-brand-orange/80 active:bg-white/60'}">
+                        <i data-lucide="${t.icon}" class="w-4 h-4"></i><span>${t.label}</span>
+                    </button>`;
+                }).join('');
+                const content = this.activeTab === 'share' ? this.momentsSection() : this.activitiesTabContent();
                 return `
                 <div class="px-4 pt-3">
-                    <div onclick="window.location.href='detail.html?id=${ACTIVITY_ID}'" class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden cursor-pointer active:scale-[0.99] transition-transform">
-                        <div class="relative">
-                            <img src="${activity.imageUrl}" class="w-full h-32 object-cover" />
-                            <span class="absolute top-2 left-2 bg-brand-orange text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow">立冬限定</span>
-                            <span class="absolute top-2 right-2 bg-black/50 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">${activity.currentParticipants}/${activity.maxParticipants}人</span>
+                    <div class="bg-brand-orange/10 border border-brand-orange/25 rounded-2xl p-1.5 flex gap-1.5 shadow-sm">${barHtml}</div>
+                </div>
+                ${content}
+                `;
+            },
+
+            switchTab(id) {
+                this.activeTab = id;
+                this.render();
+            },
+
+            // 精选活动列表：与首页共享 GlobalData.activities 数据，精选若干场
+            activitiesTabContent() {
+                const FEATURED_IDS = ['a26', 'a25', 'a23', 'a21', 'a15', 'a12'];
+                const activities = (window.GlobalData && window.GlobalData.activities) || [];
+                const featured = FEATURED_IDS.map(id => activities.find(a => a.id === id)).filter(Boolean);
+                const cardsHtml = featured.map(a => this.renderActivityCard(a)).join('');
+                return `
+                <div class="px-4 pt-3 pb-10">
+                    ${cardsHtml}
+                    <div class="text-center text-gray-400 text-xs pt-2">—— 更多活动去首页逛逛 🥟 ——</div>
+                </div>
+                `;
+            },
+
+            // 活动卡片：仅保留详情按钮（右下角），整卡可点进详情页
+            renderActivityCard(activity) {
+                const isDumpling = activity.id === ACTIVITY_ID;
+                return `
+                <div onclick="window.location.href='detail.html?id=${activity.id}'" class="mb-3 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden cursor-pointer active:scale-[0.99] transition-transform">
+                    <div class="relative">
+                        <img src="${activity.imageUrl}" class="w-full h-32 object-cover" />
+                        ${isDumpling ? '<span class="absolute top-2 left-2 bg-brand-orange text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow">立冬限定</span>' : ''}
+                        <span class="absolute top-2 right-2 bg-black/50 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">${activity.currentParticipants}/${activity.maxParticipants}人</span>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="text-sm font-black text-gray-900 line-clamp-1">${activity.title}</h3>
+                        <div class="mt-1.5 flex items-center gap-1 text-[11px] text-gray-500">
+                            <i data-lucide="calendar" class="w-3 h-3"></i><span>${activity.date}</span>
                         </div>
-                        <div class="p-4">
-                            <div class="flex items-center gap-1 text-[11px] text-gray-500">
-                                <i data-lucide="calendar" class="w-3 h-3"></i><span>${activity.date}</span>
+                        <div class="mt-0.5 flex items-center gap-1 text-[11px] text-gray-500">
+                            <i data-lucide="map-pin" class="w-3 h-3"></i><span>${activity.district} · ${activity.location}</span>
+                        </div>
+                        <div class="mt-3 flex items-center justify-between gap-2">
+                            <div onclick="event.stopPropagation(); window.location.href='profile.html?id=${activity.organizer.id}'" class="flex items-center gap-2 min-w-0 cursor-pointer active:opacity-70">
+                                <img src="${activity.organizer.avatarUrl}" class="w-6 h-6 rounded-full border border-gray-200 object-cover flex-shrink-0" />
+                                <span class="text-xs text-gray-500 truncate">${activity.organizer.name}</span>
                             </div>
-                            <div class="mt-0.5 flex items-center gap-1 text-[11px] text-gray-500">
-                                <i data-lucide="map-pin" class="w-3 h-3"></i><span>${activity.district} · ${activity.location}</span>
-                            </div>
-                            <div class="mt-3 flex gap-2.5">
-                                <button onclick="event.stopPropagation(); window.location.href='detail.html?id=${ACTIVITY_ID}'" class="flex-1 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl text-xs font-bold active:scale-95 transition-transform">
-                                    查看活动详情
-                                </button>
-                                <button onclick="event.stopPropagation(); window.location.href='detail.html?id=${ACTIVITY_ID}'" class="flex-1 py-2.5 bg-brand-orange text-white rounded-xl text-xs font-bold shadow-lg shadow-brand-orange/20 active:scale-95 transition-transform">
-                                    立即报名
-                                </button>
-                            </div>
+                            <button onclick="event.stopPropagation(); window.location.href='detail.html?id=${activity.id}'" class="flex-shrink-0 px-4 py-2 bg-brand-orange/10 text-brand-orange rounded-lg text-xs font-bold active:scale-95 transition-transform">查看详情</button>
                         </div>
                     </div>
                 </div>
@@ -433,7 +487,7 @@
                 `;
             },
 
-            // ============ #我的饺子人格# 动态列表（瀑布流，我的动态在前） ============
+            // ============ 有奖分享 TAB：分享卡片 + #我的饺子人格# 动态瀑布流（我的动态在前） ============
             momentsSection() {
                 const preset = this.dumpling.moments || [];
                 const moments = [...this.myMoments, ...preset];
@@ -653,13 +707,13 @@
                 const isQuiz = this.stage === 'quiz';
                 const main = isQuiz
                     ? this.quizView()
-                    : `${this.testSection()}${this.couponsSection()}${this.activityCard()}${this.momentsSection()}`;
+                    : `${this.testSection()}${this.couponsSection()}${this.tabsSection()}`;
                 document.getElementById('app').innerHTML = `
                     ${this.header()}
                     <div class="pt-[50px]">
                         ${main}
                     </div>
-                    ${isQuiz ? '' : this.fab()}
+                    ${isQuiz ? '' : (this.activeTab === 'share' ? this.fab() : '')}
                     ${this.usageModal()}
                     ${this.rulesModal()}
                     ${this.publishModal()}

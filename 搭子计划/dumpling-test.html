@@ -18,13 +18,12 @@
     <script src="dumpling-test.js?v=2"></script>
     <script>
         const OPTION_KEYS = ['A', 'B', 'C', 'D'];
-        const ANSWER_DELAY_MS = 250;
 
         const Test = {
             answers: [],
             currentIndex: 0,
-            locked: false,
             started: false,
+            finished: false,   // 已完成测试：只展示结果，不允许重新测试
             resultPersonality: null,
             showPoster: false,
 
@@ -51,6 +50,8 @@
 
             // 从专题页"查看详情"进入：恢复已保存的答案直接展示结果
             restoreFromStorage() {
+                // 已测试用户直接进结果页（演示清空后才会回到介绍页）
+                if (sessionStorage.getItem('dumpling_test_done') === '1') this.finished = true;
                 if (this.answers.length > 0) return;
                 try {
                     const raw = sessionStorage.getItem('dumpling_test_answers');
@@ -95,18 +96,25 @@
             quizView() {
                 const total = this.questions.length;
                 const q = this.questions[this.currentIndex];
+                const selected = this.answers[this.currentIndex];
+                const answeredCount = this.answers.filter(a => a !== undefined && a !== null).length;
                 const progress = Math.round((this.currentIndex / total) * 100);
-                const optionsHtml = q.options.map((opt, i) => `
-                    <button onclick="Test.answer(${i})" class="w-full flex items-center gap-3 bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-left active:scale-[0.98] transition-transform hover:border-brand-orange/40">
-                        <span class="w-8 h-8 flex-shrink-0 rounded-full bg-brand-orange/10 text-brand-orange font-bold text-sm flex items-center justify-center">${OPTION_KEYS[i]}</span>
+                const optionsHtml = q.options.map((opt, i) => {
+                    const isSelected = selected === i;
+                    return `
+                    <button onclick="Test.answer(${i})" class="w-full flex items-center gap-3 bg-white rounded-xl p-4 shadow-sm border text-left active:scale-[0.98] transition-transform hover:border-brand-orange/40 ${isSelected ? 'border-brand-orange bg-brand-orange/5 ring-1 ring-brand-orange' : 'border-gray-100'}">
+                        <span class="w-8 h-8 flex-shrink-0 rounded-full ${isSelected ? 'bg-brand-orange text-white' : 'bg-brand-orange/10 text-brand-orange'} font-bold text-sm flex items-center justify-center">${OPTION_KEYS[i]}</span>
                         <span class="text-sm text-gray-800 leading-snug">${opt.text}</span>
                     </button>
-                `).join('');
+                    `;
+                }).join('');
+                const isFirst = this.currentIndex === 0;
+                const isLast = this.currentIndex === total - 1;
                 return `
                 <div class="pt-[50px] min-h-screen fade-in">
                     <div class="px-4 pt-5">
                         <div class="flex items-center justify-between mb-2">
-                            <span class="text-xs text-gray-400 font-medium">第 ${this.currentIndex + 1}/${total} 题</span>
+                            <span class="text-xs text-gray-400 font-medium">第 ${this.currentIndex + 1}/${total} 题 · 已答 ${answeredCount}/${total}</span>
                             <span class="text-xs text-gray-400">${progress}%</span>
                         </div>
                         <div class="h-1.5 bg-gray-100 rounded-full overflow-hidden">
@@ -116,6 +124,10 @@
                     <div class="px-4 mt-7">
                         <h2 class="text-xl font-black text-gray-900 leading-snug">${q.text}</h2>
                         <div class="mt-6 space-y-3">${optionsHtml}</div>
+                        <div class="mt-6 flex items-center justify-between">
+                            ${isFirst ? '<span></span>' : `<button onclick="Test.prevQuestion()" class="flex items-center gap-1 text-sm text-gray-500 font-medium active:opacity-70 transition"><i data-lucide="chevron-left" class="w-4 h-4"></i><span>上一题</span></button>`}
+                            ${isLast ? `<button onclick="Test.complete()" class="px-5 py-2.5 bg-brand-orange text-white rounded-xl text-sm font-bold active:scale-95 transition-transform shadow-lg shadow-brand-orange/20">完成测试</button>` : `<button onclick="Test.nextQuestion()" class="flex items-center gap-1 text-sm text-brand-orange font-bold active:opacity-70 transition"><span>下一题</span><i data-lucide="chevron-right" class="w-4 h-4"></i></button>`}
+                        </div>
                     </div>
                 </div>
                 `;
@@ -153,12 +165,9 @@
                                 <div class="mt-4 inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand-yellow/15 text-brand-orange rounded-full text-xs font-bold border border-brand-yellow/40">
                                     <i data-lucide="utensils" class="w-3.5 h-3.5"></i><span>偷吃作案方式：${p.method}</span>
                                 </div>
-                                <div class="mt-6 flex gap-2.5">
-                                    <button onclick="Test.openPoster()" class="flex-1 py-3 bg-brand-orange/10 text-brand-orange rounded-xl font-bold text-sm active:scale-95 transition-transform flex items-center justify-center gap-1.5">
+                                <div class="mt-6">
+                                    <button onclick="Test.openPoster()" class="w-full py-3 bg-brand-orange/10 text-brand-orange rounded-xl font-bold text-sm active:scale-95 transition-transform flex items-center justify-center gap-1.5">
                                         <i data-lucide="share-2" class="w-4 h-4"></i><span>分享我的饺子人格</span>
-                                    </button>
-                                    <button onclick="Test.restart()" class="flex-1 py-3 bg-white border border-brand-orange text-brand-orange rounded-xl font-bold text-sm active:scale-95 transition-transform">
-                                        重新测试
                                     </button>
                                 </div>
                             </div>
@@ -360,39 +369,53 @@
                 this.started = true;
                 this.answers = [];
                 this.currentIndex = 0;
-                this.locked = false;
+                this.finished = false;
                 this.render();
             },
 
-            restart() {
-                // 重新测试：清掉保存的答案，回到介绍页
-                sessionStorage.removeItem('dumpling_test_answers');
-                this.started = false;
-                this.answers = [];
-                this.currentIndex = 0;
-                this.locked = false;
-                this.render();
-            },
-
+            // 记录当前题选择（可改选），上一题/下一题手动跳转
             answer(optionIndex) {
-                if (this.locked) return;
-                this.locked = true;
-                this.answers.push(optionIndex);
+                this.answers[this.currentIndex] = optionIndex;
+                this.render();
+            },
 
-                const buttons = document.querySelectorAll('#app button[onclick^="Test.answer"]');
-                buttons.forEach((btn, i) => {
-                    if (i === optionIndex) {
-                        btn.className = btn.className.replace('border-gray-100', 'border-brand-orange bg-brand-orange/5 ring-1 ring-brand-orange');
-                    } else {
-                        btn.className += ' opacity-40';
-                    }
-                });
+            prevQuestion() {
+                if (this.currentIndex <= 0) return;
+                this.currentIndex--;
+                this.render();
+            },
 
-                setTimeout(() => {
+            nextQuestion() {
+                if (this.currentIndex < this.questions.length - 1) {
                     this.currentIndex++;
-                    this.locked = false;
                     this.render();
-                }, ANSWER_DELAY_MS);
+                    return;
+                }
+                this.complete();
+            },
+
+            complete() {
+                // 未答完：提示并跳到第一道未答题（逐槽检查，覆盖短数组与稀疏洞）
+                const total = this.questions.length;
+                let unansweredIndex = -1;
+                for (let i = 0; i < total; i++) {
+                    const a = this.answers[i];
+                    if (a === undefined || a === null) { unansweredIndex = i; break; }
+                }
+                if (unansweredIndex !== -1) {
+                    const missing = total - this.answers.filter(a => a !== undefined && a !== null).length;
+                    this.currentIndex = unansweredIndex;
+                    if (window.Common) window.Common.showToast('还有 ' + missing + ' 题未作答');
+                    this.render();
+                    return;
+                }
+                const { id } = window.DumplingTest.calculate(this.answers);
+                // 与专题页保持一致的完成状态：优惠券门槛 + 禁止重新测试
+                sessionStorage.setItem('dumpling_test_done', '1');
+                sessionStorage.setItem('dumpling_test_answers', JSON.stringify(this.answers));
+                sessionStorage.setItem('dumpling_test_result', id);
+                this.finished = true;
+                this.render();
             },
 
             render() {
@@ -400,7 +423,7 @@
                 let view;
                 if (!window.DumplingTest || this.questions.length === 0) {
                     view = this.errorView();
-                } else if (this.answers.length === this.questions.length) {
+                } else if (this.finished && this.answers.length === this.questions.length) {
                     view = this.resultView();
                 } else if (this.started || this.answers.length > 0) {
                     view = this.quizView();
