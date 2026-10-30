@@ -1,6 +1,6 @@
 /**
  * 天之"饺"子专题页 + 测试详情页 页面流程测试（node dumpling-page.test.cjs）
- * 在浏览器语义沙箱中执行 data.js + dumpling-data.js + dumpling-test.js + 页面内联脚本，
+ * 在浏览器语义沙箱中执行 data.js + dumpling-quiz-data.js + dumpling-data.js + dumpling-test.js + 页面内联脚本，
  * 覆盖：上一题/下一题手动跳转、完成前拦截、完成后禁止重新测试（保留演示清空）、
  * 活动卡片仅详情按钮、精选活动/有奖分享双TAB。
  */
@@ -34,10 +34,11 @@ function makeDocument() {
     return document;
 }
 
-// 加载 data.js + dumpling-data.js + dumpling-test.js
+// 加载 data.js + dumpling-quiz-data.js + dumpling-data.js + dumpling-test.js
 function runBase(sandbox) {
     vm.createContext(sandbox);
     vm.runInContext(fs.readFileSync(path.join(dir, 'data.js'), 'utf8'), sandbox);
+    vm.runInContext(fs.readFileSync(path.join(dir, 'dumpling-quiz-data.js'), 'utf8'), sandbox);
     vm.runInContext(fs.readFileSync(path.join(dir, 'dumpling-data.js'), 'utf8'), sandbox);
     vm.runInContext(fs.readFileSync(path.join(dir, 'dumpling-test.js'), 'utf8'), sandbox);
 }

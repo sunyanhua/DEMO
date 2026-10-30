@@ -15,6 +15,7 @@ const sandbox = { window: {}, sessionStorage };
 sandbox.window.sessionStorage = sessionStorage;
 vm.createContext(sandbox);
 vm.runInContext(fs.readFileSync(path.join(dir, 'data.js'), 'utf8'), sandbox);
+vm.runInContext(fs.readFileSync(path.join(dir, 'dumpling-quiz-data.js'), 'utf8'), sandbox);
 vm.runInContext(fs.readFileSync(path.join(dir, 'dumpling-data.js'), 'utf8'), sandbox);
 vm.runInContext(fs.readFileSync(path.join(dir, 'dumpling-test.js'), 'utf8'), sandbox);
 
@@ -22,6 +23,21 @@ const { GlobalData, DumplingTest } = sandbox.window;
 const { score, pickWinner, calculate, routeForPersonality } = DumplingTest;
 
 const PIDS = ['squid', 'tomatoegg', 'cucumber', 'beef', 'pork', 'chive', 'suancai', 'sanxian'];
+
+test('测验数据与 JSON 唯一来源一致（dumpling-quiz-data.json ↔ 运行时）', () => {
+    const json = JSON.parse(fs.readFileSync(path.join(dir, 'dumpling-quiz-data.json'), 'utf8'));
+    // vm 跨域对象原型不同，JSON 序列化后比较
+    assert.deepStrictEqual(
+        JSON.parse(JSON.stringify(GlobalData.dumpling.personalities)),
+        json.personalities,
+        '人格结果数据应与 JSON 一致（改 JSON 后运行 npm run quiz:sync）'
+    );
+    assert.deepStrictEqual(
+        JSON.parse(JSON.stringify(GlobalData.dumpling.questions)),
+        json.questions,
+        '人格测试题数据应与 JSON 一致（改 JSON 后运行 npm run quiz:sync）'
+    );
+});
 
 test('人格数据完整：8 种饺子人格且字段齐全', () => {
     const ps = GlobalData.dumpling.personalities;

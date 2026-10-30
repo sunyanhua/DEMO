@@ -154,7 +154,10 @@
 | `dumpling.html` | 🥟 天之"饺"子·立冬偷吃饺子小赛专题（内嵌测试：上一题/下一题手动跳转、完成后禁止重测（仅演示可清空）→结果摘要 / 横排优惠券（未测试拦截领取，code+qr 使用面板）/ 精选活动+有奖分享双TAB（渐变图标切换条；活动与首页共享 GlobalData.activities，卡片底部左发起人头像昵称+右查看详情按钮）/ 有奖分享规则弹窗 / #我的饺子人格# 动态瀑布流） | 专题页 |
 | `dumpling-test.html` | 🥟 饺子人格测试（8 种饺子人格、8 题计分制、同分随机；上一题/下一题手动跳转、完成后禁止重测；结果页含详细路线：类型/行程/沿途/准备/预算/理由/攻略 + 分享海报） | 专题页 |
 | `dumpling-test.js` | 饺子人格测试计分引擎（纯逻辑，可独立测试） | 资源 |
-| `dumpling-data.js` | 饺子专题数据（人格/题目/路线/优惠券/动态，只被饺子页面加载） | 资源 |
+| `dumpling-data.js` | 饺子专题数据（路线/优惠券/分享规则/动态，只被饺子页面加载；人格与题目引用 dumplingQuiz） | 资源 |
+| `dumpling-quiz-data.json` | 🥟 人格测试题+人格结果数据**唯一来源**（JSON，开发用；改后运行 `npm run quiz:sync`） | 资源 |
+| `dumpling-quiz-data.js` | 测验数据运行时文件（由 `npm run quiz:sync` 从 JSON 生成，勿手改） | 资源 |
+| `dumpling-quiz-sync.cjs` | 测验数据同步脚本（JSON → JS，`npm run quiz:sync`） | 资源 |
 | `dumpling-test.test.cjs` | 饺子人格测试引擎测试（`npm test` 运行） | 资源 |
 | `dumpling-page.test.cjs` | 饺子专题页+测试详情页流程测试：上/下一题跳转、完成拦截、禁止重测（演示清空）、活动卡片、双TAB（`npm test` 运行） | 资源 |
 | `images/dumpling-banner.png` | 首页 banner 第一张（饺子专题入口图，点击跳 dumpling.html） | 资源 |
@@ -193,4 +196,5 @@
 - 使用 `window.GlobalData` 取 mock 数据，不在各页面重复声明
 - 每页独立可预览，不需构建；**零网络依赖**：CSS/图标/图片全部本地，不引用外网 CDN 或图床
 - 新增 Tailwind 类后运行 `npm run tw` 重建 `tailwind.css`
+- 修改饺子人格测试题/人格结果：编辑 `dumpling-quiz-data.json` 后运行 `npm run quiz:sync`（`npm test` 会校验一致性）
 - 遗留 React 组件不再维护，全部新功能在 vanilla JS 中实现

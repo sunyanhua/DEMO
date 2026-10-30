@@ -8,6 +8,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "node dumpling-test.test.cjs && node dumpling-page.test.cjs",
+    "quiz:sync": "node dumpling-quiz-sync.cjs",
     "tw": "tailwindcss -c tailwind.config.cjs -i tailwind.input.css -o tailwind.css --minify"
   },
   "dependencies": {
