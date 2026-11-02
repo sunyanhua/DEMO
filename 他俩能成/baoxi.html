@@ -59,6 +59,25 @@ var photoData=null;
 var certData=null; // 结婚证照片（非必填）
 var reportData=null;
 
+// 入口页带入的TA（如首页匹配卡/资料页"报喜"按钮）：清洗参数、补入候选并预选
+(function(){
+  try{
+    var q=new URLSearchParams(window.location.search);
+    // 名称去标签与引号防注入，限长；与当前用户同名时忽略（避免自己和自己报喜）
+    var qn=(q.get('name')||'').replace(/[<>"'&]/g,'').slice(0,20);
+    if(qn && qn!==CURRENT.name){
+      var qg=q.get('gender')==='female'?'female':'male';
+      var qp=q.get('photo')||'';
+      // 照片仅接受站内图片路径，其余回退为按性别的默认头像
+      if(!/^images\/photo\//.test(qp))qp=qg==='female'?D.PHOTOS_F[0]:D.PHOTOS_M[0];
+      var hit=MATCHED.filter(function(u){return u.name===qn;})[0];
+      if(hit){hit.photo=qp;hit.gender=qg;}
+      else{MATCHED.unshift({name:qn,gender:qg,photo:qp});}
+      selUser=MATCHED.filter(function(u){return u.name===qn;})[0]||null;
+    }
+  }catch(e){}
+})();
+
 var NOTICE='《他俩能成》很荣幸成为你们缘分的起点，一路见证了你和TA从相遇到相识的每一步。此刻，请把这份喜讯分享给我们——我们将为你和TA生成一份专属结缘海报，定格心动瞬间，珍藏一生。<br/><br/>注：您的报喜内容将在广播节目及平台进行展示，您的姓名等隐私信息将严格保密、不予公布。';
 
 

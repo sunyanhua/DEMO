@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>我的靠谱值 - 他俩能成</title>
+<script src="lib/tailwind.min.js"></script>
+<script src="lib/lucide.min.js"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-white text-gray-900 antialiased pb-2">
+<div class="bg-decoration"><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div></div><div id="app" class="relative z-[1]"></div>
+
+<script src="common.js"></script>
+<script src="lib/kaopu-data.js"></script>
+<script>
+function deltaHtml(d){
+  return '<span class="text-sm font-black '+(d>0?'text-brand-pink':'text-red-500')+'">'+(d>0?'+':'')+d+'</span>';
+}
+
+function ruleNoteHtml(note){
+  if(note==='一次性')return'<span class="text-[9px] px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-500 font-medium flex-shrink-0">一次性</span>';
+  return'';
+}
+
+function render(){
+  var K=window.KaopuData;
+
+  var rules=K.rules.map(function(r){
+    var vCls=r.value.indexOf('+')===0?'text-brand-pink':(r.value.indexOf('-')===0?'text-red-500':'text-gray-400');
+    return '<div class="py-2.5 border-b border-gray-50 last:border-0">'+
+      '<div class="flex items-center justify-between">'+
+        '<div class="flex items-center gap-2 min-w-0"><span class="text-sm text-gray-700">'+r.label+'</span>'+ruleNoteHtml(r.note)+'</div>'+
+        '<span class="text-xs font-bold flex-shrink-0 '+vCls+'">'+r.value+'</span>'+
+      '</div>'+
+      (r.desc?'<div class="text-[11px] text-gray-400 mt-1 leading-relaxed">'+r.desc+'</div>':'')+
+    '</div>';
+  }).join('');
+
+  var records=K.records.slice().reverse().map(function(r){
+    return '<div class="flex items-center gap-3 py-3 border-b border-gray-50 last:border-0">'+
+      '<div class="flex-1 min-w-0">'+
+        '<div class="text-sm text-gray-800 leading-snug">'+r.label+'</div>'+
+        '<div class="text-[11px] text-gray-400 mt-0.5">'+r.time+'</div>'+
+      '</div>'+
+      deltaHtml(r.delta)+
+    '</div>';
+  }).join('');
+
+  document.getElementById('app').innerHTML=
+    '<div class="sticky top-0 z-40 bg-white/95 backdrop-blur-md px-4 py-3 flex items-center justify-between">'+
+      '<span onclick="window.history.back()" class="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center cursor-pointer"><i data-lucide="chevron-left" class="w-5 h-5 text-gray-600"></i></span>'+
+      '<span class="font-black text-gray-800 text-base">我的靠谱值</span>'+
+      '<span class="w-9"></span>'+
+    '</div>'+
+    '<div class="px-4 pt-4 pb-6">'+
+      '<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-4 text-center">'+
+        '<div class="flex items-center justify-center gap-2 text-sm font-bold text-gray-700"><span class="text-lg">🛡️</span>靠谱值总额</div>'+
+        '<div class="text-4xl font-black text-brand-pink mt-2">'+K.total+'<span class="text-sm text-gray-400 font-medium ml-1">分</span></div>'+
+        '<div class="text-[11px] text-gray-400 mt-2">靠谱值根据资料认证与活动行为累计，认证越全、参与越多，靠谱值越高</div>'+
+        '<div class="text-[11px] text-gray-400 mt-1">更新于 '+K.updatedAt+' · 每周日20:00更新并进行排行</div>'+
+      '</div>'+
+      '<div onclick="window.Common.showPopup(\x27kaopu-rules-popup\x27)" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-4 flex items-center justify-between cursor-pointer card-hover">'+
+        '<span class="flex items-center gap-2 text-sm font-bold text-gray-700"><span class="text-lg">📋</span>靠谱值规则说明</span>'+
+        '<i data-lucide="chevron-right" class="w-4 h-4 text-gray-300"></i>'+
+      '</div>'+
+      '<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">'+
+        '<h3 class="font-bold text-gray-800 mb-2">积累记录</h3>'+
+        records+
+      '</div>'+
+    '</div>'+
+    '<div id="kaopu-rules-popup" class="fixed inset-0 bg-black/40 z-[160] hidden items-center justify-center" onclick="window.Common.closePopup(event,\x27kaopu-rules-popup\x27)">'+
+      '<div class="bg-white rounded-2xl p-5 mx-auto w-80 shadow-xl max-h-[80vh] overflow-y-auto" onclick="event.stopPropagation()">'+
+        '<h3 class="text-base font-black text-gray-800 mb-3 text-center">📋 靠谱值规则说明</h3>'+
+        '<div class="text-xs text-gray-400 mb-2 text-center">一次性：仅首次完成时加分；/次：每次发生均计分</div>'+
+        '<div class="text-sm text-gray-600">'+rules+'</div>'+
+        '<div class="mt-4 w-full py-2.5 rounded-xl bg-brand-pink text-white font-bold text-sm card-hover text-center cursor-pointer" onclick="window.Common.hidePopup(\x27kaopu-rules-popup\x27)">我知道了</div>'+
+      '</div>'+
+    '</div>';
+  window.Common.initIcons();
+}
+
+document.addEventListener('DOMContentLoaded',function(){render()});
+</script>
+</body>
+</html>

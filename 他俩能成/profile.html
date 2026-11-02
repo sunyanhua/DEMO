@@ -86,19 +86,20 @@
 </div></div>
 
 <script src="common.js"></script>
+<script src="lib/kaopu-data.js"></script>
 <script>
 // ====== Data ======
 var profile={
   name:'甜心小鹿',gender:'female',age:26,cons:'天秤座',marital:'未婚',id:'10000135',
   photos:['images/photo/female/crop.0.67.1079.1438.0.750.1000.jpg','images/photo/female/crop.0.61.723.964.0.750.1000.jpg','images/photo/female/crop.0.0.4896.6528.0.750.1000.jpg'],
-  matchScore:1314,matchYes:4,matchNo:1,
+  matchScore:(Math.random()>0.5?1314:900+Math.floor(Math.random()*400)),matchYes:4,matchNo:1,
   fateEvents:[
     {html:'2天前，热心用户 <b class="text-brand-pink mx-0.5">阳光骑士</b> 开启了你们的缘分'},
     {html:'昨天，你关注了TA，并在之后对TA心动 了 <b class="text-brand-pink mx-0.5">2</b> 次'},
     {html:'昨天，TA关注了你，并在之后对你心动 了 <b class="text-brand-pink mx-0.5">1</b> 次'},
     {html:'今天，用户 <b class="text-brand-pink mx-0.5">真是郭炜</b> 为你们送上神助攻'},
   ],
-  popularity:507,followers:3,heartTimes:3,familyCount:0,joinedFamily:false,
+  popularity:507,kaopu:(window.KaopuData&&window.KaopuData.total)||Math.round((60+Math.random()*40)*10)/10,followers:3,heartTimes:3,familyCount:0,joinedFamily:false,
   gifts:[
     {icon:'images/gift1.png',name:'菜小宝',score:100,price:100,count:3},
     {icon:'images/gift2.gif',name:'听小北-爱你',score:150,price:200,count:2},
@@ -133,7 +134,8 @@ function pickCerts(){
 }
 
 var certs=pickCerts();
-profile.fateCard=Math.random()>0.5?'success':'pending';
+// 达到1314即成（与缘分记录展示保持一致）；未达到时保留随机状态
+profile.fateCard=profile.matchScore>=1314?'success':(Math.random()>0.5?'success':'pending');
 
 var liked=false,followed=false,hearted=false;
 
@@ -240,7 +242,13 @@ function render(){
   // (hardcoded in HTML, update below)
   var fateCard='';
   if(profile.fateCard==='success'){
-    fateCard='<div class="flex items-center justify-between bg-brand-pink/5 rounded-xl px-4 py-3 mt-3 border border-pink-100"><span class="text-sm font-black text-brand-pink">你们成了！恭喜！</span><span class="px-4 py-1.5 rounded-full bg-gradient-to-r from-brand-pink to-brand-orange text-white text-xs font-bold card-hover" onclick="window.location.href=\'chat.html?name='+encodeURIComponent(profile.name)+'\'">联系TA</span></div>';
+    fateCard='<div class="bg-brand-pink/5 rounded-xl px-4 py-3 mt-3 border border-pink-100">'+
+      '<div class="flex items-center justify-between"><span class="text-sm font-black text-brand-pink">你们成了！恭喜！</span><span class="px-4 py-1.5 rounded-full bg-gradient-to-r from-brand-pink to-brand-orange text-white text-xs font-bold card-hover cursor-pointer" onclick="window.location.href=\'chat.html?name='+encodeURIComponent(profile.name)+'\'">联系TA</span></div>'+
+      (profile.matchScore>=1314?'<div class="flex items-center justify-between mt-2 pt-2 border-t border-pink-100">'+
+        '<span class="text-xs text-gray-600">匹配度已达1314，去报喜让大家为你们送上祝福 🎉</span>'+
+        '<span class="px-3 py-1 rounded-full bg-white border-2 border-brand-pink text-brand-pink text-xs font-bold card-hover cursor-pointer flex-shrink-0" onclick="window.Common.goBaoxi(\''+profile.name+'\',\''+profile.photos[0]+'\',\''+profile.gender+'\')">去报喜</span>'+
+      '</div>':'')+
+    '</div>';
   }else{
     fateCard='<div class="flex items-center justify-between bg-brand-pink/5 rounded-xl px-4 py-3 mt-3 border border-pink-100"><span class="text-sm font-black text-brand-pink">你们已经相互心动，就差最后一步！</span><span class="px-4 py-1.5 rounded-full bg-gradient-to-r from-brand-pink to-brand-orange text-white text-xs font-bold card-hover" onclick="showHelp()">找助力</span></div>';
   }
@@ -323,6 +331,10 @@ var aboutWide=[['兴趣爱好',ab.hobbies],['才　　艺',ab.talent],['自我�
 
     '<div class="pb-1" id="pop-section">'+
       '<div class="px-4 py-3 border-b border-gray-100">'+
+        '<div class="flex items-center justify-between rounded-xl px-4 py-3 mb-3 border border-pink-100" style="background:rgba(224,77,44,0.05);">'+
+          '<div class="flex items-center gap-2"><span class="text-lg">🛡️</span><span class="text-sm font-bold text-gray-700">靠谱值</span></div>'+
+          '<div class="text-xl font-black text-brand-pink">'+profile.kaopu+'<span class="text-xs text-gray-400 font-medium ml-0.5">分</span></div>'+
+        '</div>'+
         '<div class="flex items-center justify-between mb-3"><h3 class="text-base font-black text-gray-800">🔥 TA的人气指数</h3><span class="text-xs text-brand-pink font-medium bg-brand-pink/5 px-3 py-1 rounded-full card-hover" onclick="goMatchmaker()">帮TA牵线</span></div>'+
         popHtml+
         '<div class="mt-3"><div class="text-sm font-bold text-gray-700 mb-2 pl-4">TA收到的礼物</div>'+giftsHtml+'</div>'+

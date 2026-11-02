@@ -26,34 +26,43 @@ var giftUi = window.BaoxiGifts.createUi({ render: render });
 function cardHtml(pair) {
     var gifts = window.BaoxiGifts.getGifts(pair.id);
     var money = gifts.reduce(function (s, g) { return s + (g.amount || 0); }, 0);
+    // 报喜图片：报喜人上传的双人合影，暂无上传时用双人合影SVG占位
+    var reportPhoto = pair.reportPhoto || window.BaoxiData.photoPlaceholder;
     return `
-    <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 mb-4">
-        <div class="flex items-center gap-2.5">
-            <div class="flex -space-x-2.5">
-                <img src="${pair.avatars[0]}" class="w-11 h-11 rounded-full border-2 border-white object-cover shadow-sm"/>
-                <img src="${pair.avatars[1]}" class="w-11 h-11 rounded-full border-2 border-white object-cover shadow-sm"/>
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 mb-4 overflow-hidden">
+        <img src="${reportPhoto}" alt="报喜合影" loading="lazy" class="w-full h-44 object-cover" onerror="this.onerror=null;this.src=window.BaoxiData.photoPlaceholder"/>
+        <div class="p-4">
+            <div class="flex items-center gap-2.5">
+                <div class="flex -space-x-2.5">
+                    <img src="${pair.avatars[0]}" class="w-11 h-11 rounded-full border-2 border-white object-cover shadow-sm"/>
+                    <img src="${pair.avatars[1]}" class="w-11 h-11 rounded-full border-2 border-white object-cover shadow-sm"/>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-bold text-gray-800">${pair.names[0]} <span style="color:#E85D3A;">❤</span> ${pair.names[1]}</p>
+                    <p class="text-[10px] text-gray-400 mt-0.5">${pair.time} 官宣</p>
+                </div>
+                <span class="px-2 py-1 rounded-full text-[10px] font-bold flex-shrink-0" style="background:#FFF0EC;color:#E85D3A;">已收 ${gifts.length} 份 · ¥${money.toFixed(2)}</span>
             </div>
-            <div class="flex-1 min-w-0">
-                <p class="text-sm font-bold text-gray-800">${pair.names[0]} <span style="color:#E85D3A;">❤</span> ${pair.names[1]}</p>
-                <p class="text-[10px] text-gray-400 mt-0.5">${pair.time} 官宣</p>
+            <p class="text-xs text-gray-500 leading-relaxed mt-2.5 line-clamp-2">"${pair.story}"</p>
+            <div class="flex gap-2 mt-3">
+                <span onclick="window.location.href='baoxi-detail.html?id=${pair.id}'" class="flex-1 text-center py-2 rounded-full text-xs font-bold cursor-pointer card-hover" style="background:#FFF0EC;color:#E85D3A;">查看结缘海报</span>
+                <span onclick="giftUi.open('${pair.id}')" class="flex-1 text-center py-2 rounded-full bg-gradient-to-tr from-brand-pink to-brand-orange text-white text-xs font-bold cursor-pointer card-hover">我要随份子</span>
             </div>
-            <span class="px-2 py-1 rounded-full text-[10px] font-bold flex-shrink-0" style="background:#FFF0EC;color:#E85D3A;">已收 ${gifts.length} 份 · ¥${money.toFixed(2)}</span>
-        </div>
-        <p class="text-xs text-gray-500 leading-relaxed mt-2.5 line-clamp-2">"${pair.story}"</p>
-        <div class="flex gap-2 mt-3">
-            <span onclick="window.location.href='baoxi-detail.html?id=${pair.id}'" class="flex-1 text-center py-2 rounded-full text-xs font-bold cursor-pointer card-hover" style="background:#FFF0EC;color:#E85D3A;">查看结缘海报</span>
-            <span onclick="giftUi.open('${pair.id}')" class="flex-1 text-center py-2 rounded-full bg-gradient-to-tr from-brand-pink to-brand-orange text-white text-xs font-bold cursor-pointer card-hover">我要随份子</span>
         </div>
     </div>
     `;
 }
 
 function listView() {
+    // 完成报喜（标记在且记录完好）后按钮变为"我的报喜"，否则为"我要报喜"
+    var reported = window.Common.isBaoxiSubmitted() && window.Common.hasBaoxiReport();
     var cards = window.BaoxiData.pairs.map(cardHtml).join('');
-    // 完成报喜后按钮变为"我的报喜"（查看自己的结缘海报），否则为"我要报喜"
-    var submitted = false;
-    try { submitted = localStorage.getItem('baoxi_submitted') === '1'; } catch (e) {}
-    var floatBtn = submitted
+    // 已报喜用户不再提示报喜（悬浮按钮已是"我的报喜"入口）
+    var guideCard = reported ? '' : window.Common.baoxiGuideCard(
+        '在一起了吗？快来报喜 🎉',
+        '如果你们已经走到了一起，欢迎主动报喜，让全站见证你们的幸福！审核通过后，平台将送上520元官方红包祝贺'
+    );
+    var floatBtn = reported
         ? `<div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 px-6 py-3 rounded-full bg-gradient-to-tr from-brand-pink to-brand-orange text-white font-bold text-sm shadow-xl shadow-brand-pink/30 card-hover cursor-pointer flex items-center gap-2" onclick="window.location.href='baoxi-detail.html?id=mine'">
             <i data-lucide="heart" class="w-4 h-4"></i>我的报喜
           </div>`
@@ -67,6 +76,7 @@ function listView() {
         <span class="w-9"></span>
     </div>
     <div class="px-4 pt-4 pb-28">
+        ${guideCard}
         <p class="text-xs text-gray-400 mb-3 text-center">以下喜讯均已通过平台审核，欢迎随份子送祝福 🎉</p>
         ${cards}
     </div>

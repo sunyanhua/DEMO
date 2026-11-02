@@ -144,7 +144,8 @@
 
 | 文件 | 功能 |
 |------|------|
-| `index.html` | 首页（Banner+快捷入口+用户Tab+底部导航） |
+| `index.html` | 首页（Banner+快捷入口+用户Tab+我的匹配已成卡报喜入口+底部导航） |
+| `my-1314.html` | 我的1314（已达1314的匹配用户列表 + 顶部报喜引导卡） |
 | `broadcast.html` | 广播节目（投稿+抽奖） |
 | `chaoyang.html` | 朝阳相伴专区（介绍+活动+申请加入） |
 | `qingai.html` | 青爱团专区（介绍+活动+申请加入） |
@@ -152,12 +153,16 @@
 | `shoufa-interact.html` | 首发有约在线互动（留言板+我要留言） |
 | `activity.html` | 活动列表（筛选：全部/朝阳相伴/青爱团） |
 | `activity-detail.html` | 活动详情+报名 |
-| `ranking.html` | 排行榜（人气榜/礼物榜/牵线榜） |
-| `profile.html` | 用户个人主页 |
+| `ranking.html` | 排行榜（靠谱榜/人气榜/礼物榜/牵线榜；靠谱榜按靠谱值60-100分排名、分全部/男女、切换在右侧、默认全部、无周榜总榜） |
+| `profile.html` | 用户个人主页（缘分记录匹配度达1314有去报喜引导；TA的人气指数区：靠谱值显示在标题上方，与我的靠谱值同源） |
+| `me.html` | 个人中心（靠谱值卡片在"我的脱单档案"链接上方 → 我的靠谱值页；"我的认证"下方"我要举报"→弹窗提交举报） |
+| `profile-edit.html` | 我的脱单档案 |
+| `my-kaopu.html` | 我的靠谱值（靠谱值总额+更新时间（每周日20:00）+ 规则说明按钮→弹窗（牵线玩法说明样式）+ 积累记录，活动记录含活动名、含登录扣减记录） |
+| `lib/kaopu-data.js` | 靠谱值规则与记录 mock（注册/认证一次性加分，活动按次计分，被举报-15，长期未登录按档扣减5%-50%，每周日20:00更新排行；总额=记录求和） |
 | `interact.html` | 缘分速配（主玩法） |
 | `matchmaker.html` | 牵线玩法（CP推荐+投票） |
 | `fate-detail.html` | 缘分详情页 |
-| `baoxi-list.html` | 报喜喜讯列表（卡片 → 报喜详情页；随份子：虚拟礼物/现金红包/官方首礼520 + 悬浮我要报喜） |
+| `baoxi-list.html` | 报喜喜讯列表（上方报喜引导说明卡 + 卡片报喜图片SVG占位 → 报喜详情页；随份子：虚拟礼物/现金红包/官方首礼520 + 悬浮我要报喜） |
 | `baoxi-detail.html` | 报喜详情页（完整结缘海报 + 海报内随礼列表/我要随份子 + 底部返回按钮） |
 | `lib/baoxi-data.js` | 报喜 mock 数据（4 对审核通过报喜，列表/详情共用） |
 | `lib/baoxi-gifts.js` | 随份子模块（数据规则 + 弹窗状态机，列表/详情共用） |
@@ -167,7 +172,7 @@
 | `message.html` | 消息（通知+私信） |
 | `chat.html` | 私信对话 |
 | `style.css` | 全局自定义样式 |
-| `common.js` | 公共函数库 |
+| `common.js` | 公共函数库（含 Common.goBaoxi：已报喜→我的报喜/未报喜→报喜表单+TA预选参数；isBaoxiSubmitted；baoxiGuideCard） |
 | `lib/tailwind.min.js` | Tailwind CSS 本地副本 |
 | `lib/lucide.min.js` | Lucide Icons 本地副本 |
 

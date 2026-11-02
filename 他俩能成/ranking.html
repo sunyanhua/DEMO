@@ -14,6 +14,7 @@
 <div id="app" class="relative z-[1]"></div>
 
 <script src="common.js"></script>
+<script src="lib/kaopu-data.js"></script>
 <script>
 var PHOTOS_M=['images/photo/male/crop.17.0.1224.1632.0.750.1000.jpg','images/photo/male/crop.194.56.917.1222.0.750.1000.jpg','images/photo/male/crop.0.0.1078.1438.0.750.1000.jpg','images/photo/male/crop.0.875.2143.2857.0.750.1000.jpg','images/photo/male/crop.1033.0.3000.4000.0.750.1000.jpg','images/photo/male/crop.0.501.960.1280.0.750.1000.jpg','images/photo/male/crop.0.237.1080.1440.0.750.1000.jpg','images/photo/male/crop.0.54.942.1256.0.750.1000.jpg','images/photo/male/crop.1.0.3877.5170.0.750.1000.jpg','images/photo/male/crop.0.0.1773.2364.0.750.1000.jpg'];
 var PHOTOS_F=['images/photo/female/crop.70.444.1537.2050.0.750.1000.jpg','images/photo/female/crop.0.67.1079.1438.0.750.1000.jpg','images/photo/female/crop.0.61.723.964.0.750.1000.jpg','images/photo/female/crop.0.0.4896.6528.0.750.1000.jpg','images/photo/female/crop.384.0.2304.3072.0.750.1000.jpg','images/photo/female/crop.0.0.2267.3023.0.750.1000.jpg','images/photo/female/crop.0.479.2160.2880.0.750.1000.jpg','images/photo/female/crop.0.181.1064.1418.0.750.1000.jpg','images/photo/female/crop.882.0.2266.3022.0.750.1000.jpg','images/photo/female/crop.0.0.3456.4608.0.750.1000.jpg'];
@@ -38,15 +39,31 @@ function giftData(n){return buildUsers(n).map(function(u,i){return {rank:i+1, na
 function getTitle(s){
   if(s>50001)return'嘑学传奇';if(s>=20001)return'嘑学宗师';if(s>=10001)return'嘑学大神';if(s>=5001)return'嘑学行家';if(s>=2001)return'嘑学高手';if(s>=1001)return'嘑学爱好者';if(s>=101)return'嘑学门生';if(s>=0)return'嘑学菜鸟';if(s>=-100)return'嘑学门外汉';if(s>=-1000)return'反嘑学分子';if(s>=-10000)return'高级拆家';return'当代法海';
 }
-function kexueData(n,sign){
-  var d=buildUsers(n).map(function(u){return {name:u.name,gender:u.gender,age:u.age,cons:u.cons,photo:u.photo,score:sign*(Math.floor(Math.random()*80000))}});
-  d.forEach(function(u){u.title=getTitle(u.score)});
+function rankDesc(d){
   d.sort(function(a,b){return b.score-a.score});
   d.forEach(function(u,i){u.rank=i+1});
   return d;
 }
+function kexueData(n,sign){
+  var d=buildUsers(n).map(function(u){return {name:u.name,gender:u.gender,age:u.age,cons:u.cons,photo:u.photo,score:sign*(Math.floor(Math.random()*80000))}});
+  d.forEach(function(u){u.title=getTitle(u.score)});
+  return rankDesc(d);
+}
+function kaopuUsers(){
+  var all=[];
+  NM.forEach(function(name,i){all.push({name:name,gender:'male',age:23+r(11),cons:CONS[r(12)],photo:PHOTOS_M[i%PHOTOS_M.length],score:Math.round((60+Math.random()*40)*10)/10})});
+  NF.forEach(function(name,i){all.push({name:name,gender:'female',age:22+r(11),cons:CONS[r(12)],photo:PHOTOS_F[i%PHOTOS_F.length],score:Math.round((60+Math.random()*40)*10)/10})});
+  // 与我的靠谱值同源：当前用户（甜心小鹿）的榜单靠谱值使用其真实总额
+  if(window.KaopuData&&window.KaopuData.total){all.forEach(function(u){if(u.name==='甜心小鹿')u.score=window.KaopuData.total})}
+  return all;
+}
+// 同一份用户池派生全部/男/女三榜，同一用户在各榜分数一致
+var KAOPU_USERS=kaopuUsers();
 
 var DATA={
+  'kp-all':rankDesc(KAOPU_USERS.slice()),
+  'kp-m':rankDesc(KAOPU_USERS.filter(function(u){return u.gender==='male'})),
+  'kp-f':rankDesc(KAOPU_USERS.filter(function(u){return u.gender==='female'})),
   'p-week-all':popularData(20),'p-week-m':popularData(20).filter(function(u){return u.gender==='male'}).map(function(u,i){u.rank=i+1;return u}).slice(0,15),
   'p-week-f':popularData(20).filter(function(u){return u.gender==='female'}).map(function(u,i){u.rank=i+1;return u}).slice(0,15),
   'p-total-all':popularData(20),'p-total-m':popularData(20).filter(function(u){return u.gender==='male'}).map(function(u,i){u.rank=i+1;return u}).slice(0,15),
@@ -55,10 +72,10 @@ var DATA={
   'k-week-pos':kexueData(20,1),'k-week-neg':kexueData(20,-1),'k-total-pos':kexueData(20,1),'k-total-neg':kexueData(20,-1),
 };
 
-var TITLE_MAP={popular:'人气榜',gift:'礼物榜',kexue:'牵线榜'};
+var TITLE_MAP={kaopu:'靠谱榜',popular:'人气榜',gift:'礼物榜',kexue:'牵线榜'};
 
 window.View={
-  m:'popular',p:'week',sg:'all',
+  m:'kaopu',p:'week',sg:'all',
 
   rankIcon: function(r){
     if(r===1)return'🥇';if(r===2)return'🥈';if(r===3)return'🥉';
@@ -70,11 +87,12 @@ window.View={
   getKey: function(){
     if(this.m==='popular')return'p-'+this.p+'-'+this.sg;
     if(this.m==='gift')return'g-'+this.p;
+    if(this.m==='kaopu')return'kp-'+this.sg;
     return'k-'+this.p+'-'+this.sg;
   },
   mainTabs: function(){
     var sel=this;
-    return[{k:'popular',l:'人气榜'},{k:'gift',l:'礼物榜'},{k:'kexue',l:'牵线榜'}].map(function(x){
+    return[{k:'kaopu',l:'靠谱榜'},{k:'popular',l:'人气榜'},{k:'gift',l:'礼物榜'},{k:'kexue',l:'牵线榜'}].map(function(x){
       var act=sel.m===x.k;
       var cls='flex-1 text-center text-base pb-2.5 font-bold transition-colors duration-200 '+(act?'text-brand-pink border-b-[3px] border-brand-pink':'text-gray-400 border-b-[3px] border-transparent');
       return'<span onclick="View.mainClick(\''+x.k+'\')" class="'+cls+'">'+x.l+'</span>';
@@ -88,9 +106,12 @@ window.View={
     '</div>';
   },
   genderTabs: function(){
-    if(this.m!=='popular')return'';
+    var items=[];
+    if(this.m==='popular')items=[{k:'all',l:'总'},{k:'m',l:'男'},{k:'f',l:'女'}];
+    else if(this.m==='kaopu')items=[{k:'all',l:'全部'},{k:'m',l:'男'},{k:'f',l:'女'}];
+    if(!items.length)return'';
     var sel=this;
-    return'<div class="flex gap-1">'+[{k:'all',l:'总'},{k:'m',l:'男'},{k:'f',l:'女'}].map(function(x){
+    return'<div class="flex gap-1">'+items.map(function(x){
       var act=sel.sg===x.k;
       return'<span onclick="View.genderClick(\''+x.k+'\')" class="px-3 py-1.5 text-xs rounded-full font-medium transition-all '+(act?'bg-brand-pink text-white':'bg-gray-100 text-gray-500')+'">'+x.l+'</span>';
     }).join('')+'</div>';
@@ -107,7 +128,8 @@ window.View={
     var now=new Date();
     return now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0')+' '+String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
   },
-  popularRow: function(u){
+  popularRow: function(u,icon,label){
+    icon=icon||'🔥';label=label||'人气值';
     return'<div class="flex items-center gap-3 py-3 px-1 border-b border-gray-200 cursor-pointer card-hover" onclick="window.location.href=\x27profile.html\x27">'+
       '<div class="flex-shrink-0">'+this.rankIcon(u.rank)+'</div>'+
       '<img src="'+u.photo+'" class="w-10 h-10 rounded-full object-cover border border-gray-100 flex-shrink-0"/>'+
@@ -120,8 +142,8 @@ window.View={
         '</div>'+
       '</div>'+
       '<div class="flex-shrink-0 text-right">'+
-        '<div class="text-sm font-black text-brand-pink flex items-center gap-1 justify-end">🔥'+u.score.toLocaleString()+'</div>'+
-        '<div class="text-[10px] text-gray-400">人气值</div>'+
+        '<div class="text-sm font-black text-brand-pink flex items-center gap-1 justify-end">'+icon+u.score.toLocaleString()+'</div>'+
+        '<div class="text-[10px] text-gray-400">'+label+'</div>'+
       '</div>'+
     '</div>';
   },
@@ -173,18 +195,21 @@ window.View={
     var rows='';
     if(this.m==='popular')rows=data.map(function(u){return self.popularRow(u)}).join('');
     else if(this.m==='gift')rows=data.map(function(u){return self.giftRow(u)}).join('');
+    else if(this.m==='kaopu')rows=data.map(function(u){return self.popularRow(u,'🛡️','靠谱值')}).join('');
     else if(this.m==='kexue')rows=data.map(function(u){return self.kexueRow(u)}).join('');
     return'<div class="space-y-0">'+rows+'</div>';
   },
   topBar: function(){
-    var pt=this.periodToggle();
+    var pt=this.m==='kaopu'?'':this.periodToggle();
     var sub=this.genderTabs()||this.pnTabs()||'';
-    return'<div class="flex items-center justify-between mb-3">'+pt+sub+'</div>';
+    return'<div class="flex items-center justify-between mb-3">'+pt+(sub?'<div class="ml-auto">'+sub+'</div>':'')+'</div>';
   },
   timeLabel: function(){
     var ts=this.timeStr();
-    var gl=this.m==='popular'?(this.sg==='m'?'·男':this.sg==='f'?'·女':'·总'):'';
-    var pl=this.p==='week'?'周排行':'总排行';
+    var gl='';
+    if(this.m==='popular')gl=this.sg==='m'?'·男':this.sg==='f'?'·女':'·总';
+    else if(this.m==='kaopu')gl=this.sg==='m'?'·男':this.sg==='f'?'·女':'·全部';
+    var pl=this.m==='kaopu'?'靠谱榜':(this.p==='week'?'周排行':'总排行');
     return'<div class="flex items-center justify-between mb-2 px-3 py-2 rounded-lg border border-gray-200 bg-gray-50/50"><span class="text-[11px] text-gray-400">更新时间：'+ts+'</span><span class="text-[11px] text-gray-500 font-medium">'+pl+gl+'</span></div>';
   },
   render: function(){
@@ -204,6 +229,7 @@ window.View={
     this.m=key;
     if(key==='gift'){this.p='week';this.sg='';}
     else if(key==='popular'){this.p='week';this.sg='all';}
+    else if(key==='kaopu'){this.sg='all';}
     else{this.p='week';this.sg='pos';}
     this.render();
   },
@@ -211,6 +237,7 @@ window.View={
     this.p=key;
     if(this.m==='gift')this.sg='';
     else if(this.m==='popular')this.sg='all';
+    else if(this.m==='kaopu')this.sg='all';
     else this.sg='pos';
     this.render();
   },

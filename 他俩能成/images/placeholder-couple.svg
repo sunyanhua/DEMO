@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 420" role="img" aria-label="双人合影占位图">
+  <defs>
+    <linearGradient id="pbg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFE7DC"/>
+      <stop offset="1" stop-color="#FFF8F4"/>
+    </linearGradient>
+    <linearGradient id="pm" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#E85D3A"/>
+      <stop offset="1" stop-color="#C43E20"/>
+    </linearGradient>
+    <linearGradient id="pf" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F06840"/>
+      <stop offset="1" stop-color="#D95030"/>
+    </linearGradient>
+    <linearGradient id="ph" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FF6B4A"/>
+      <stop offset="1" stop-color="#E04D2C"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="800" height="420" fill="url(#pbg)"/>
+
+  <!-- 装饰圆点 -->
+  <circle cx="150" cy="88" r="7" fill="#F06840" opacity="0.5"/>
+  <circle cx="665" cy="78" r="8" fill="#E04D2C" opacity="0.45"/>
+  <circle cx="120" cy="290" r="5" fill="#FFB08F" opacity="0.8"/>
+  <circle cx="688" cy="300" r="6" fill="#FFB08F" opacity="0.7"/>
+  <circle cx="208" cy="60" r="4" fill="#E04D2C" opacity="0.5"/>
+  <circle cx="585" cy="52" r="5" fill="#F06840" opacity="0.45"/>
+  <circle cx="90" cy="180" r="3" fill="#E04D2C" opacity="0.6"/>
+  <circle cx="716" cy="190" r="4" fill="#F06840" opacity="0.5"/>
+  <circle cx="400" cy="40" r="5" fill="#E04D2C" opacity="0.4"/>
+
+  <!-- 小爱心点缀 -->
+  <path d="M 0 23 C -15 8 -32 -6 -31 -15 C -30 -23 -23 -25 -17 -20 C -12 -16 -6 -11 0 -4 C 6 -11 12 -16 17 -20 C 23 -25 30 -23 31 -15 C 32 -6 15 8 0 23 Z" transform="translate(140,250) scale(0.35)" fill="#E04D2C" opacity="0.5"/>
+  <path d="M 0 23 C -15 8 -32 -6 -31 -15 C -30 -23 -23 -25 -17 -20 C -12 -16 -6 -11 0 -4 C 6 -11 12 -16 17 -20 C 23 -25 30 -23 31 -15 C 32 -6 15 8 0 23 Z" transform="translate(672,262) scale(0.4)" fill="#F06840" opacity="0.5"/>
+
+  <!-- 男（左） -->
+  <circle cx="290" cy="148" r="46" fill="#B23A1B"/>
+  <path d="M 210 420 C 213 300 233 236 268 224 L 312 224 C 347 236 367 300 370 420 Z" fill="url(#pm)"/>
+  <circle cx="290" cy="166" r="42" fill="url(#pm)"/>
+
+  <!-- 女（右，长发；长发在躯干之后绘制以免被遮挡） -->
+  <circle cx="510" cy="148" r="46" fill="#C04A2B"/>
+  <circle cx="553" cy="138" r="18" fill="#C04A2B"/>
+  <path d="M 432 420 C 435 300 454 236 486 224 L 534 224 C 566 236 585 300 588 420 Z" fill="url(#pf)"/>
+  <path d="M 544 196 C 558 250 560 330 552 420 L 524 420 C 532 330 530 250 520 200 Z" fill="#C04A2B"/>
+  <circle cx="510" cy="166" r="40" fill="url(#pf)"/>
+
+  <!-- 中间爱心 -->
+  <circle cx="400" cy="186" r="44" fill="#FFFFFF" opacity="0.5"/>
+  <path d="M 400 208 C 385 193 368 179 369 170 C 370 162 377 160 383 165 C 388 169 394 174 400 181 C 406 174 412 169 417 165 C 423 160 430 162 431 170 C 432 179 415 193 400 208 Z" fill="url(#ph)"/>
+
+  <!-- 照片占位角标（相机） -->
+  <g transform="translate(724,344)">
+    <rect width="46" height="46" rx="12" fill="#FFFFFF" opacity="0.9"/>
+    <rect x="11" y="15" width="24" height="17" rx="4" fill="none" stroke="#E04D2C" stroke-width="2.5"/>
+    <circle cx="23" cy="23.5" r="5" fill="none" stroke="#E04D2C" stroke-width="2.5"/>
+    <path d="M17 15 L20 11 H26 L29 15" fill="none" stroke="#E04D2C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <!-- 虚线内框（占位感） -->
+  <rect x="16" y="16" width="768" height="388" rx="18" fill="none" stroke="#F5B29E" stroke-width="2" stroke-dasharray="12 10" opacity="0.7"/>
+</svg>

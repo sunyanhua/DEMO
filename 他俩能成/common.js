@@ -121,6 +121,40 @@ window.Common = {
             }
         }, { threshold: 0 });
         observer.observe(sentinel);
+    },
+
+    // --- 是否已报喜（baoxi_submitted 标记） ---
+    isBaoxiSubmitted() {
+        try { return localStorage.getItem('baoxi_submitted') === '1'; } catch (e) { return false; }
+    },
+
+    // --- 报喜记录是否完好（可解析且含双人姓名） ---
+    hasBaoxiReport() {
+        try {
+            var raw = localStorage.getItem('baoxi_my_report');
+            if (!raw) return false;
+            var d = JSON.parse(raw);
+            return !!d && typeof d === 'object' && Array.isArray(d.names) && d.names.length === 2;
+        } catch (e) { return false; }
+    },
+
+    // --- 报喜入口：已报喜且记录完好去"我的报喜"，否则去报喜表单（可带TA预选参数） ---
+    goBaoxi(name, photo, gender) {
+        if (this.isBaoxiSubmitted() && this.hasBaoxiReport()) { window.location.href = 'baoxi-detail.html?id=mine'; return; }
+        var q = name ? ('?name=' + encodeURIComponent(name) + '&photo=' + encodeURIComponent(photo || '') + '&gender=' + encodeURIComponent(gender || '')) : '';
+        window.location.href = 'baoxi.html' + q;
+    },
+
+    // --- 报喜引导卡（报喜列表/我的1314 共用） ---
+    baoxiGuideCard(title, desc) {
+        return '<div onclick="window.Common.goBaoxi()" class="bg-gradient-to-tr from-brand-pink-light to-brand-orange-light border border-pink-100 rounded-2xl p-4 mb-3 flex items-center gap-3 cursor-pointer card-hover">'+
+            '<div class="w-10 h-10 rounded-full bg-white flex items-center justify-center flex-shrink-0 shadow-sm text-lg">💌</div>'+
+            '<div class="flex-1 min-w-0">'+
+                '<p class="text-sm font-bold text-brand-pink">'+title+'</p>'+
+                '<p class="text-xs text-gray-600 mt-0.5 leading-relaxed">'+desc+'</p>'+
+            '</div>'+
+            '<i data-lucide="chevron-right" class="w-5 h-5 flex-shrink-0 text-brand-pink"></i>'+
+        '</div>';
     }
 
 };

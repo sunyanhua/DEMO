@@ -38,6 +38,7 @@ function render(){
   document.getElementById('app').innerHTML=
     '<div class="sticky top-0 z-40 bg-white/95 backdrop-blur-md px-4 py-2.5 shadow-sm flex items-center"><i data-lucide="sparkles" class="w-3.5 h-3.5 text-brand-pink mr-2"></i><h1 class="text-sm font-bold text-gray-900">我的1314</h1></div>'+
     '<div class="px-4 pt-3 pb-6">'+
+      (window.Common.isBaoxiSubmitted()?'':window.Common.baoxiGuideCard('已经成了？快来报喜 🎉','你们已经达到1314，欢迎主动报喜，让全站见证你们的幸福！审核通过后，平台将送上520元官方红包祝贺'))+
       '<div class="bg-white rounded-2xl shadow-sm border border-gray-100">'+rows+'</div>'+
     '</div>';
   window.Common.initIcons();
