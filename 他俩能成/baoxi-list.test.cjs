@@ -163,7 +163,7 @@ test('列表页：上方报喜引导说明 + 卡片报喜图片SVG占位', () =>
     const altCount = (html.match(/alt="报喜合影"/g) || []).length;
     assert.strictEqual(altCount, pairs.length, '每张卡片占位图均应有报喜合影说明（alt）');
     // 报喜图片加载失败应回退占位图
-    const onerrorCount = (html.match(/this\.onerror=null;this\.src=window\.BaoxiData\.photoPlaceholder/g) || []).length;
+    const onerrorCount = (html.match(/this\.onerror=null;this\.src='images\/placeholder-couple\.svg'/g) || []).length;
     assert.strictEqual(onerrorCount, pairs.length, '每张卡片报喜图片均应有加载失败回退占位图');
 });
 

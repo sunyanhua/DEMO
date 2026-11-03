@@ -27,10 +27,10 @@ function cardHtml(pair) {
     var gifts = window.BaoxiGifts.getGifts(pair.id);
     var money = gifts.reduce(function (s, g) { return s + (g.amount || 0); }, 0);
     // 报喜图片：报喜人上传的双人合影，暂无上传时用双人合影SVG占位
-    var reportPhoto = pair.reportPhoto || window.BaoxiData.photoPlaceholder;
+    var reportPhoto = pair.reportPhoto || 'images/placeholder-couple.svg';
     return `
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 mb-4 overflow-hidden">
-        <img src="${reportPhoto}" alt="报喜合影" loading="lazy" class="w-full h-44 object-cover" onerror="this.onerror=null;this.src=window.BaoxiData.photoPlaceholder"/>
+        <img src="${reportPhoto}" alt="报喜合影" loading="lazy" class="w-full h-44 object-cover" onerror="this.onerror=null;this.src='images/placeholder-couple.svg'"/>
         <div class="p-4">
             <div class="flex items-center gap-2.5">
                 <div class="flex -space-x-2.5">

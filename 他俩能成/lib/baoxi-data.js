@@ -70,8 +70,6 @@ var BAOXI_PAIRS = [
 
 window.BaoxiData = {
     pairs: BAOXI_PAIRS,
-    // 报喜图片占位图（列表卡 src 回退与 onerror 回退共用）
-    photoPlaceholder: 'images/placeholder-couple.svg',
     getPair: function (id) {
         return BAOXI_PAIRS.filter(function (p) { return p.id === id; })[0] || null;
     }
