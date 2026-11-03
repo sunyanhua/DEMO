@@ -367,6 +367,63 @@ test('我的靠谱值：总额+规则弹窗+积累记录（活动含活动名）
     assert.strictEqual(vm.runInContext('profile.kaopu', envProfile.sandbox), envProfile.sandbox.window.KaopuData.total, '资料页靠谱值应与我的靠谱值总额一致');
 });
 
+test('首页快捷入口：青爱团与朝阳相伴恢复，合作专区与能成报告入口移除', () => {
+    clearStore();
+    const { sandbox } = makeSandbox('index.html');
+    const btns = vm.runInContext('View.iconButtons()', sandbox);
+    assert.ok(btns.includes('青爱团') && btns.includes('qingai.html'), '应有青爱团快捷入口');
+    assert.ok(btns.includes('朝阳相伴') && btns.includes('chaoyang.html'), '应有朝阳相伴快捷入口');
+    assert.ok(!btns.includes('合作专区') && !btns.includes('zones.html'), '不应再有合作专区入口');
+    const src = fs.readFileSync(path.join(dir, 'index.html'), 'utf8');
+    assert.ok(!src.includes('report.html'), '首页不应再有能成报告入口');
+});
+
+test('随份子弹窗：选择礼物/金额就地刷新，不重载整页', () => {
+    clearStore();
+    const { document, sandbox } = makeSandbox('baoxi-list.html');
+    vm.runInContext('render()', sandbox);
+    vm.runInContext("window.__GIFT_UI__.open('bx1')", sandbox);
+    assert.ok(document._html.includes('gift-modal-body'), '弹窗应有就地更新容器');
+    vm.runInContext("window.__GIFT_UI__.selectGiftType('money')", sandbox);
+    assert.ok(document._html.includes('自定义金额'), '切换现金红包后内容可用');
+    vm.runInContext("window.__GIFT_UI__.selectMoney('5.20')", sandbox);
+    assert.ok(document._html.includes('value="5.20"'), '选择预设金额后输入框应显示金额');
+    vm.runInContext("window.__GIFT_UI__.selectGiftType('gift')", sandbox);
+    vm.runInContext("window.__GIFT_UI__.selectGift('🌹','玫瑰')", sandbox);
+    assert.ok(document._html.includes('border-brand-pink bg-brand-pink/10'), '选择礼物应有选中态');
+    // 源码防回归：选择操作走就地刷新而非整页重渲染
+    const src = fs.readFileSync(path.join(dir, 'lib/baoxi-gifts.js'), 'utf8');
+    assert.ok(src.includes('gift-modal-body') && src.includes('this.refresh()'), '选择操作应就地刷新弹窗');
+});
+
+test('首页我的匹配：已成优先排在前面', () => {
+    clearStore();
+    const { sandbox } = makeSandbox('index.html');
+    // 已成卡排最前，其余保持原顺序
+    const sorted = vm.runInContext("sortChengFirst([{name:'a',capsule:'你们已经互相关注'},{name:'b',capsule:'你和TA已成'},{name:'c',capsule:'只待最后助攻'},{name:'d',capsule:'你和TA已成'}])", sandbox);
+    assert.deepStrictEqual(Array.from(sorted, u => u.capsule), ['你和TA已成', '你和TA已成', '你们已经互相关注', '只待最后助攻'], '已成应优先排在前面');
+    // 页面数据应用了排序：所有已成卡都在非已成卡之前
+    const gd = vm.runInContext('window.GlobalData.matchUsers', sandbox);
+    const firstDoneIdx = gd.findIndex(u => u.capsule === '你和TA已成');
+    const firstOtherIdx = gd.findIndex(u => u.capsule !== '你和TA已成');
+    if (firstDoneIdx !== -1 && firstOtherIdx !== -1) {
+        assert.ok(firstDoneIdx < firstOtherIdx, '全局匹配数据应已成优先');
+    }
+});
+
+test('海报下载：上传大图压缩入快照 + 幸福时刻区域纯白检测兜底', () => {
+    clearStore();
+    // 快照路径依赖真实浏览器渲染（vm 沙箱无 canvas/DOM 布局），以源码断言防回归
+    const src = fs.readFileSync(path.join(dir, 'lib/baoxi-poster.js'), 'utf8');
+    assert.ok(src.includes("src.indexOf('data:image/')===0") && src.includes('src.length>150000'), '快照应压缩大体积上传图');
+    assert.ok(src.includes("toDataURL('image/jpeg'"), '压缩应输出 JPEG dataURL');
+    assert.ok(src.includes('photoOk') && src.includes('fallbackPoster(drawData)'), '幸福时刻区域纯白应转手绘兜底');
+    // 报喜页与详情页共用该下载模块
+    for (const f of ['baoxi.html', 'baoxi-detail.html']) {
+        assert.ok(fs.readFileSync(path.join(dir, f), 'utf8').includes('lib/baoxi-poster.js'), f + ' 应加载海报下载模块');
+    }
+});
+
 test('个人中心：我的认证下方有我要举报入口，弹窗提交举报并提示', () => {
     clearStore();
     const { document, sandbox, toasts } = makeSandbox('me.html');
@@ -499,6 +556,7 @@ test('报喜页：结婚证照片（非必填）+ 审核红包提示 + 共享海
     assert.ok(html.includes('结婚证照片'), '报喜页应有结婚证照片上传');
     assert.ok(html.includes('非必填'), '结婚证照片应标注非必填');
     assert.ok(html.includes('520元官方红包'), '应有审核通过送 520 官方红包提示');
+    assert.ok(html.includes('text-sm font-bold text-red-500'), '红包提示应加红加粗放大');
     const src = fs.readFileSync(path.join(dir, 'baoxi.html'), 'utf8');
     assert.ok(src.includes('lib/baoxi-report.js'), '报喜页应引用共享海报模块');
     assert.ok(src.includes('已收到您的喜讯，我们核实后将会有大礼相赠！'), '报喜提交后界面应有喜讯状态提示');

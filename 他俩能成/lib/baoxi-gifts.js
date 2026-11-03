@@ -101,9 +101,15 @@ function createGiftUi(page) {
             page.render();
         },
         close: function () { state.show = false; page.render(); },
-        selectGiftType: function (t) { state.giftType = t; page.render(); },
-        selectGift: function (icon, name) { state.giftType = 'gift'; state.selectedGift = { icon: icon, name: name }; page.render(); },
-        selectMoney: function (m) { state.giftType = 'money'; state.customAmount = m; page.render(); },
+        // 就地更新弹窗内容（避免整页重渲染导致弹窗收起再弹出；沙箱无真实 DOM 时回退整页渲染）
+        refresh: function () {
+            var body = document.getElementById('gift-modal-body');
+            if (!body || body === document) { page.render(); return; }
+            body.innerHTML = this.modalBodyHtml();
+        },
+        selectGiftType: function (t) { state.giftType = t; this.refresh(); },
+        selectGift: function (icon, name) { state.giftType = 'gift'; state.selectedGift = { icon: icon, name: name }; this.refresh(); },
+        selectMoney: function (m) { state.giftType = 'money'; state.customAmount = m; this.refresh(); },
         onAmount: function (v) { state.customAmount = v; },
         submit: function () {
             var ok;
@@ -119,8 +125,7 @@ function createGiftUi(page) {
                 page.render();
             }
         },
-        modalHtml: function () {
-            if (!state.show || !state.pairId) return '';
+        modalBodyHtml: function () {
             var pair = window.BaoxiData.getPair(state.pairId);
             if (!pair) return '';
             var giftChips = VIRTUAL_GIFTS.map(function (g) {
@@ -139,22 +144,29 @@ function createGiftUi(page) {
                 `;
             }).join('');
             return `
+                <p class="font-black text-gray-800 text-base text-center">随份子 · ${pair.names[0]} × ${pair.names[1]}</p>
+                <p class="text-[10px] text-gray-400 text-center mt-1">每个报喜只能随一次，心意与红包任选其一</p>
+                <div class="flex gap-2 mt-4">
+                    <span onclick="__GIFT_UI__.selectGiftType('gift')" class="flex-1 py-2 text-center rounded-full text-sm font-bold cursor-pointer card-hover ${state.giftType === 'gift' ? 'bg-gradient-to-tr from-brand-pink to-brand-orange text-white' : 'bg-gray-100 text-gray-500'}">虚拟礼物</span>
+                    <span onclick="__GIFT_UI__.selectGiftType('money')" class="flex-1 py-2 text-center rounded-full text-sm font-bold cursor-pointer card-hover ${state.giftType === 'money' ? 'bg-gradient-to-tr from-brand-pink to-brand-orange text-white' : 'bg-gray-100 text-gray-500'}">现金红包</span>
+                </div>
+                ${state.giftType === 'gift' ? `
+                <div class="grid grid-cols-3 gap-2 mt-4">${giftChips}</div>
+                <p class="text-[10px] text-gray-400 mt-2 text-center">虚拟礼物免费送出，心意无价</p>
+                ` : `
+                <div class="flex flex-wrap gap-2 mt-4">${presetChips}</div>
+                <input id="gift-amount" type="number" placeholder="自定义金额（0.01-520）" value="${state.customAmount}" oninput="__GIFT_UI__.onAmount(this.value)" class="block w-full px-4 py-3 rounded-xl border border-gray-200 text-sm bg-gray-50 focus:outline-none focus:border-brand-pink mt-3"/>
+                `}
+                <span onclick="__GIFT_UI__.submit()" class="block text-center cursor-pointer w-full py-3.5 rounded-full bg-gradient-to-tr from-brand-pink to-brand-orange text-white font-bold text-base shadow-lg shadow-brand-pink/30 card-hover mt-4">送出份子</span>
+            `;
+        },
+        modalHtml: function () {
+            if (!state.show || !state.pairId) return '';
+            if (!window.BaoxiData.getPair(state.pairId)) return '';
+            return `
             <div class="fixed inset-0 bg-black/40 z-[200] flex items-end" onclick="__GIFT_UI__.close()">
-                <div class="bg-white rounded-t-2xl w-full px-4 py-4 pb-8 animate-slide-up max-h-[85vh] overflow-y-auto no-scrollbar" onclick="event.stopPropagation()">
-                    <p class="font-black text-gray-800 text-base text-center">随份子 · ${pair.names[0]} × ${pair.names[1]}</p>
-                    <p class="text-[10px] text-gray-400 text-center mt-1">每个报喜只能随一次，心意与红包任选其一</p>
-                    <div class="flex gap-2 mt-4">
-                        <span onclick="__GIFT_UI__.selectGiftType('gift')" class="flex-1 py-2 text-center rounded-full text-sm font-bold cursor-pointer card-hover ${state.giftType === 'gift' ? 'bg-gradient-to-tr from-brand-pink to-brand-orange text-white' : 'bg-gray-100 text-gray-500'}">虚拟礼物</span>
-                        <span onclick="__GIFT_UI__.selectGiftType('money')" class="flex-1 py-2 text-center rounded-full text-sm font-bold cursor-pointer card-hover ${state.giftType === 'money' ? 'bg-gradient-to-tr from-brand-pink to-brand-orange text-white' : 'bg-gray-100 text-gray-500'}">现金红包</span>
-                    </div>
-                    ${state.giftType === 'gift' ? `
-                    <div class="grid grid-cols-3 gap-2 mt-4">${giftChips}</div>
-                    <p class="text-[10px] text-gray-400 mt-2 text-center">虚拟礼物免费送出，心意无价</p>
-                    ` : `
-                    <div class="flex flex-wrap gap-2 mt-4">${presetChips}</div>
-                    <input id="gift-amount" type="number" placeholder="自定义金额（0.01-520）" value="${state.customAmount}" oninput="__GIFT_UI__.onAmount(this.value)" class="block w-full px-4 py-3 rounded-xl border border-gray-200 text-sm bg-gray-50 focus:outline-none focus:border-brand-pink mt-3"/>
-                    `}
-                    <span onclick="__GIFT_UI__.submit()" class="block text-center cursor-pointer w-full py-3.5 rounded-full bg-gradient-to-tr from-brand-pink to-brand-orange text-white font-bold text-base shadow-lg shadow-brand-pink/30 card-hover mt-4">送出份子</span>
+                <div id="gift-modal-body" class="bg-white rounded-t-2xl w-full px-4 py-4 pb-8 animate-slide-up max-h-[85vh] overflow-y-auto no-scrollbar" onclick="event.stopPropagation()">
+                    ${this.modalBodyHtml()}
                 </div>
             </div>
             `;

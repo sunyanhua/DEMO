@@ -240,10 +240,24 @@ function snapshotPoster(){
   var animateEls=[poster].concat(Array.prototype.slice.call(poster.querySelectorAll('*')));
   animateEls.forEach(function(el){el.style.setProperty('animation','none','important');});
   var clone=poster.cloneNode(true);
-  // 图片替换为内嵌 data URL，保证快照自包含、canvas 不被污染
-  Array.prototype.forEach.call(clone.querySelectorAll('img'),function(img){
+  // 图片替换为内嵌 data URL，保证快照自包含、canvas 不被污染；
+  // 用户上传的大体积 dataURL 先压缩为小尺寸 JPEG，避免 SVG 图片内渲染失败导致空白
+  var liveImgs=poster.querySelectorAll('img');
+  Array.prototype.forEach.call(clone.querySelectorAll('img'),function(img,i){
     var src=img.getAttribute('src');
-    if(window.IMG_DATA&&window.IMG_DATA[src])img.setAttribute('src',window.IMG_DATA[src]);
+    if(window.IMG_DATA&&window.IMG_DATA[src]){img.setAttribute('src',window.IMG_DATA[src]);return;}
+    if(src&&src.indexOf('data:image/')===0&&src.length>150000){
+      try{
+        var li=liveImgs[i];
+        if(li&&li.naturalWidth){
+          var maxW=700,s=Math.min(1,maxW/li.naturalWidth);
+          var c=document.createElement('canvas');
+          c.width=Math.round(li.naturalWidth*s);c.height=Math.round(li.naturalHeight*s);
+          c.getContext('2d').drawImage(li,0,0,c.width,c.height);
+          img.setAttribute('src',c.toDataURL('image/jpeg',0.85));
+        }
+      }catch(e){}
+    }
   });
   // 挂到与海报等宽的离屏容器中，先内联视觉样式，再按页面几何冻结布局
   var holder=document.createElement('div');
@@ -293,6 +307,18 @@ function downloadPoster(drawData){
           var nonEmpty=false;
           for(var i=3;i<data.length;i+=4000){if(data[i]>0){nonEmpty=true;break;}}
           if(!nonEmpty){fallbackPoster(drawData);return;}
+          // 幸福时刻区域检测：上传照片在 SVG 快照中渲染失败时该区域为纯白，转手绘兜底
+          var pw=(snap.w-32)*scale,ph=(snap.h-32)*scale;
+          var x1=Math.round((16+0.30*pw)),x2=Math.round((16+0.70*pw));
+          var y1=Math.round((16+0.60*ph)),y2=Math.round((16+0.68*ph));
+          var photoOk=false;
+          for(var yy=y1;yy<y2&&!photoOk;yy+=Math.max(4,Math.round((y2-y1)/24))){
+            for(var xx=x1;xx<x2;xx+=Math.max(4,Math.round((x2-x1)/24))){
+              var idx=(yy*canvas.width+xx)*4;
+              if(data[idx]<250||data[idx+1]<250||data[idx+2]<250){photoOk=true;break;}
+            }
+          }
+          if(!photoOk){fallbackPoster(drawData);return;}
           saveCanvas(canvas);
         }catch(e){
           fallbackPoster(drawData);
