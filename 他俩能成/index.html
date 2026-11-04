@@ -183,7 +183,7 @@
                         ? `<img src="${b.icon}" alt="${b.label}" class="w-9 h-9 object-contain" />`
                         : `<span class="text-[26px] leading-none">${b.icon}</span>`;
                     return `
-                    <div class="flex flex-col items-center gap-1.5 cursor-pointer card-hover" onclick="window.location.href='${b.href}'">
+                    <div class="flex flex-col items-center gap-1.5 cursor-pointer card-hover" onclick="window.Common.href='${b.href}'">
                         <div class="w-16 h-16 rounded-2xl bg-white flex items-center justify-center border border-orange-100/80" style="box-shadow:0 1px 3px rgba(0,0,0,0.04);">
                             ${iconHtml}
                         </div>
@@ -214,7 +214,7 @@
                     ? '<span class="text-[9px] px-1.5 py-0.5 rounded-full bg-gradient-to-r from-brand-pink to-brand-orange text-white font-medium flex items-center gap-0.5"><i data-lucide="badge-check" class="w-2.5 h-2.5"></i>已实名</span>'
                     : '';
                 return `
-                <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 card-hover flex flex-col cursor-pointer" onclick="window.location.href='profile.html'">
+                <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 card-hover flex flex-col cursor-pointer" onclick="window.Common.href='profile.html'">
                     <div class="relative w-full photo-3x4 overflow-hidden bg-gray-100 flex-shrink-0">
                         <img src="${u.photo}" alt="${u.name}" class="w-full h-full object-cover" onerror="this.replaceWith(function(){var d=document.createElement('div');d.className='w-full h-full flex items-center justify-center bg-pink-50';d.innerHTML='<span class=text-brand-pink>暂无照片</span>';return d}())" />
                         <div class="absolute top-2 right-2 flex flex-col gap-1 items-end">
@@ -241,7 +241,7 @@
                     : '<span class="text-[9px] px-1 py-0.5 rounded-full bg-pink-50 text-brand-pink font-medium inline-flex items-center"><i data-lucide="venus" class="w-2.5 h-2.5"></i></span>';
                 var showBaoxi = u.capsule === MATCH_DONE_CAPSULE && !window.Common.isBaoxiSubmitted();
                 return `
-                <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 card-hover flex flex-col flex-shrink-0 cursor-pointer" style="width:148px;" onclick="window.location.href='profile.html'">
+                <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 card-hover flex flex-col flex-shrink-0 cursor-pointer" style="width:148px;" onclick="window.Common.href='profile.html'">
                     <div class="relative w-full overflow-hidden bg-gray-100 flex-shrink-0" style="height:185px;">
                         <img src="${u.photo}" alt="${u.name}" class="w-full h-full object-cover" onerror="this.replaceWith(function(){var d=document.createElement('div');d.className='w-full h-full flex items-center justify-center bg-pink-50';d.innerHTML='<span class=text-brand-pink>暂无照片</span>';return d}())" />
                         ${u.verified ? `<div class="absolute top-2 right-2"><span class="text-[8px] px-1 py-0.5 rounded-full bg-gradient-to-r from-brand-pink to-brand-orange text-white font-medium">已实名</span></div>` : ''}
@@ -267,7 +267,7 @@
                         <h2 class="text-base font-black text-gray-800 flex items-center gap-1.5">
                             <span class="text-brand-pink">💞</span>和TA有缘
                         </h2>
-                        <span class="text-xs text-brand-pink font-medium cursor-pointer" onclick="window.location.href='interact.html'">更多 &gt;</span>
+                        <span class="text-xs text-brand-pink font-medium cursor-pointer" onclick="window.Common.href='interact.html'">更多 &gt;</span>
                     </div>
                     <div class="flex overflow-x-auto pl-4 gap-3 no-scrollbar pb-2">
                         ${cards}
@@ -285,7 +285,7 @@
                         <h2 class="text-base font-black text-gray-800 flex items-center gap-1.5">
                             <span class="text-brand-pink">💘</span>我的匹配
                         </h2>
-                        <span class="text-xs text-brand-pink font-medium cursor-pointer" onclick="window.location.href='my-1314.html'">更多 &gt;</span>
+                        <span class="text-xs text-brand-pink font-medium cursor-pointer" onclick="window.Common.href='my-1314.html'">更多 &gt;</span>
                     </div>
                     <div class="flex overflow-x-auto pl-4 gap-3 no-scrollbar pb-2">
                         ${cards}
@@ -306,14 +306,14 @@
                         <h2 class="text-lg font-black text-gray-800 flex items-center gap-1.5">
                             <span class="text-brand-pink">❤</span>推荐用户
                         </h2>
-                        <div class="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center cursor-pointer" onclick="window.location.href='user-list.html'">
+                        <div class="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center cursor-pointer" onclick="window.Common.href='user-list.html'">
                             <i data-lucide="search" class="w-4 h-4 text-gray-400"></i>
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-3">
                         ${cards}
                     </div>
-                    <div class="mt-4 mb-2 w-full py-3 rounded-2xl bg-gradient-to-r from-brand-pink-light to-brand-orange-light border border-brand-pink/20 shadow-sm text-center cursor-pointer card-hover" onclick="window.location.href='user-list.html'">
+                    <div class="mt-4 mb-2 w-full py-3 rounded-2xl bg-gradient-to-r from-brand-pink-light to-brand-orange-light border border-brand-pink/20 shadow-sm text-center cursor-pointer card-hover" onclick="window.Common.href='user-list.html'">
                         <span class="text-sm font-bold text-brand-pink flex items-center justify-center gap-1">
                             查看更多推荐 <i data-lucide="arrow-right" class="w-4 h-4"></i>
                         </span>
@@ -364,8 +364,8 @@
                         ${itemsHtml}
                     </div>
                     <div class="flex gap-3 mt-4">
-                        <span class="flex-1 text-center py-2.5 rounded-xl bg-gradient-to-tr from-brand-pink to-brand-orange text-white text-sm font-bold shadow-lg shadow-brand-pink/20 card-hover cursor-pointer" onclick="window.location.href='matchmaker.html'">💕 继续嗑</span>
-                        <span class="flex-1 text-center py-2.5 rounded-xl bg-brand-pink/10 border border-brand-pink/20 text-brand-pink text-sm font-bold card-hover cursor-pointer" onclick="window.location.href='assist.html'">⚡ 神助攻</span>
+                        <span class="flex-1 text-center py-2.5 rounded-xl bg-gradient-to-tr from-brand-pink to-brand-orange text-white text-sm font-bold shadow-lg shadow-brand-pink/20 card-hover cursor-pointer" onclick="window.Common.href='matchmaker.html'">💕 继续嗑</span>
+                        <span class="flex-1 text-center py-2.5 rounded-xl bg-brand-pink/10 border border-brand-pink/20 text-brand-pink text-sm font-bold card-hover cursor-pointer" onclick="window.Common.href='assist.html'">⚡ 神助攻</span>
                     </div>
                 </div>`;
 
@@ -380,9 +380,9 @@
                         <h3 class="text-base font-black text-gray-800 flex items-center gap-1.5">
                             <span class="text-brand-pink">💕</span>CP推荐
                         </h3>
-                        <span class="text-xs text-brand-pink font-medium cursor-pointer" onclick="window.location.href='matchmaker.html'">更多 &gt;</span>
+                        <span class="text-xs text-brand-pink font-medium cursor-pointer" onclick="window.Common.href='matchmaker.html'">更多 &gt;</span>
                     </div>
-                    <div class="relative flex items-center cursor-pointer" onclick="window.location.href='matchmaker.html'">
+                    <div class="relative flex items-center cursor-pointer" onclick="window.Common.href='matchmaker.html'">
                         <div class="grid grid-cols-2 gap-3 w-full">
                             ${this.userCard(cpMale)}
                             ${this.userCard(cpFemale)}

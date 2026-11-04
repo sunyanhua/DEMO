@@ -100,7 +100,7 @@ function render(){
 
   document.getElementById('app').innerHTML=
     '<div class="sticky top-0 z-40 bg-white/95 backdrop-blur-md px-4 py-2.5 shadow-sm flex items-center"><i data-lucide="book-open" class="w-3.5 h-3.5 text-brand-pink mr-2"></i><h1 class="text-sm font-bold text-gray-900">嗑学分</h1></div>'+
-    '<div class="px-4 pt-3 pb-6">'+scoreCard+reportCard+'<span class="block text-center w-full py-3 rounded-xl bg-white border border-brand-pink/30 text-brand-pink font-bold text-sm card-hover cursor-pointer mt-4" onclick="window.location.href=\x27history.html\x27">📋 查看牵线记录</span></div>';
+    '<div class="px-4 pt-3 pb-6">'+scoreCard+reportCard+'<span class="block text-center w-full py-3 rounded-xl bg-white border border-brand-pink/30 text-brand-pink font-bold text-sm card-hover cursor-pointer mt-4" onclick="window.Common.href=\x27history.html\x27">📋 查看牵线记录</span></div>';
   window.Common.initIcons();
 }
 document.addEventListener('DOMContentLoaded',function(){render()});

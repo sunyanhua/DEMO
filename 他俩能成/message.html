@@ -27,10 +27,10 @@ var unreadSysCount=notifications.filter(function(n){return n.unread}).length;
 
 var categoryEntries=[
   {icon:'bell',bg:'bg-blue-50',tc:'text-blue-500',label:'系统通知',count:unreadSysCount,click:"renderSysNotifs()"},
-  {icon:'heart',bg:'bg-red-50',tc:'text-red-500',label:'新的心动',count:3,click:"window.location.href='my-lists.html?tab=heart&sub=toMe'"},
-  {icon:'user-plus',bg:'bg-blue-50',tc:'text-blue-500',label:'新增关注',count:5,click:"window.location.href='my-lists.html?tab=follow&sub=toMe'"},
-  {icon:'gift',bg:'bg-amber-50',tc:'text-amber-500',label:'收到礼物',count:2,click:"window.location.href='my-gifts.html'"},
-  {icon:'sparkles',bg:'bg-brand-pink/10',tc:'text-brand-pink',label:'达到1314',count:1,click:"window.location.href='my-1314.html'"},
+  {icon:'heart',bg:'bg-red-50',tc:'text-red-500',label:'新的心动',count:3,click:"window.Common.href='my-lists.html?tab=heart&sub=toMe'"},
+  {icon:'user-plus',bg:'bg-blue-50',tc:'text-blue-500',label:'新增关注',count:5,click:"window.Common.href='my-lists.html?tab=follow&sub=toMe'"},
+  {icon:'gift',bg:'bg-amber-50',tc:'text-amber-500',label:'收到礼物',count:2,click:"window.Common.href='my-gifts.html'"},
+  {icon:'sparkles',bg:'bg-brand-pink/10',tc:'text-brand-pink',label:'达到1314',count:1,click:"window.Common.href='my-1314.html'"},
 ];
 
 var chats=[
@@ -134,7 +134,7 @@ function doUnsubscribe(){
 function chatListHtml(){
   return chats.map(function(c){
     var unreadBadge=c.unread>0?'<span class="text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full bg-red-500 absolute -top-1 -right-1 border border-white">'+c.unread+'</span>':'';
-    return'<div class="p-4 bg-white border-b border-gray-50 cursor-pointer card-hover" onclick="window.location.href=\'chat.html?name='+encodeURIComponent(c.name)+'&avatar='+encodeURIComponent(c.avatar)+'\'">'+
+    return'<div class="p-4 bg-white border-b border-gray-50 cursor-pointer card-hover" onclick="window.Common.href=\'chat.html?name='+encodeURIComponent(c.name)+'&avatar='+encodeURIComponent(c.avatar)+'\'">'+
       '<div class="flex items-center gap-3">'+
         '<div class="relative"><img src="'+c.avatar+'" class="w-12 h-12 rounded-full border border-gray-100 object-cover"/>'+unreadBadge+'</div>'+
         '<div class="flex-1 min-w-0">'+
@@ -164,7 +164,7 @@ function render(){
   }
 
   document.getElementById('app').innerHTML=
-    (sysView?'':'<div class="fixed top-0 left-0 right-0 bg-white z-40 px-4 h-[50px] flex items-center justify-center shadow-sm"><div class="flex bg-gray-100 p-1 rounded-lg"><span onclick="window.location.href=\'message.html?tab=notification\'" class="px-6 py-1 text-sm font-bold rounded-md transition-all '+(activeTab==='notification'?'bg-white text-gray-900 shadow-sm':'text-gray-500')+'">通知</span><span onclick="window.location.href=\'message.html?tab=chat\'" class="px-6 py-1 text-sm font-bold rounded-md transition-all '+(activeTab==='chat'?'bg-white text-gray-900 shadow-sm':'text-gray-500')+'">私信</span></div></div>')+
+    (sysView?'':'<div class="fixed top-0 left-0 right-0 bg-white z-40 px-4 h-[50px] flex items-center justify-center shadow-sm"><div class="flex bg-gray-100 p-1 rounded-lg"><span onclick="window.Common.href=\'message.html?tab=notification\'" class="px-6 py-1 text-sm font-bold rounded-md transition-all '+(activeTab==='notification'?'bg-white text-gray-900 shadow-sm':'text-gray-500')+'">通知</span><span onclick="window.Common.href=\'message.html?tab=chat\'" class="px-6 py-1 text-sm font-bold rounded-md transition-all '+(activeTab==='chat'?'bg-white text-gray-900 shadow-sm':'text-gray-500')+'">私信</span></div></div>')+
     '<div'+(sysView?'':' class="pt-[50px]"')+'>'+inner+'</div>'+
     (sysView?'':window.Common.renderBottomNav('message'));
   window.Common.initIcons();

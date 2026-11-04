@@ -38,12 +38,12 @@ var KAOPU_RECORDS = [
     { time: '2026年10月11日', label: '报名线下活动 · 周末单身俱乐部·剧本杀专场', delta: 1 },
 ];
 
-// 长期未登录扣减：以上累计值的10%（mock：超过1个月未登录），在最近一次周日20:00更新时扣除
+// 长期未登录扣减：以上累计值的5%（最近一次活动距今已超1星期，符合扣减档位），在最近一次周日20:00更新时扣除
 var KAOPU_DEDUCT_BASE = KAOPU_RECORDS.reduce(function (s, r) { return s + r.delta; }, 0);
 KAOPU_RECORDS.push({
     time: KAOPU_LAST_UPDATE,
-    label: '长期未登录扣减（超过1个月未登录 · 扣减10%）',
-    delta: -Math.round(KAOPU_DEDUCT_BASE * 0.1 * 10) / 10
+    label: '长期未登录扣减（超过1星期未登录 · 扣减5%）',
+    delta: -Math.round(KAOPU_DEDUCT_BASE * 0.05 * 10) / 10
 });
 
 window.KaopuData = {

@@ -188,7 +188,7 @@ function submitWizard(skip){
     for(var k in sels){if(!wizardData[k]){window.Common.showToast('请选择'+sels[k]);return}}
   }
   window.Common.showToast('脱单档案已保存');
-  setTimeout(function(){window.location.href='me.html'},1000);
+  setTimeout(function(){window.Common.href='me.html'},1000);
 }
 
 document.addEventListener('DOMContentLoaded',function(){render()});

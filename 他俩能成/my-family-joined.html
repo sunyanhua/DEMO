@@ -28,11 +28,11 @@ function render(){
       '<p>您最多只能加入<span class="text-brand-pink font-bold mx-1">5</span>个用户的亲友团，加入后不能取消。</p>'+
       '<p>请您准确搜索打开您的亲友的个人主页，在主页中加入。</p>'+
     '</div>'+
-    '<span class="block text-center w-full py-2.5 rounded-xl bg-gradient-to-tr from-brand-pink to-brand-orange text-white font-bold text-sm shadow-lg shadow-brand-pink/20 card-hover cursor-pointer mt-4" onclick="window.location.href=\x27user-list.html\x27"><i data-lucide="search" class="w-3.5 h-3.5 inline mr-1"></i>搜索用户</span>'+
+    '<span class="block text-center w-full py-2.5 rounded-xl bg-gradient-to-tr from-brand-pink to-brand-orange text-white font-bold text-sm shadow-lg shadow-brand-pink/20 card-hover cursor-pointer mt-4" onclick="window.Common.href=\x27user-list.html\x27"><i data-lucide="search" class="w-3.5 h-3.5 inline mr-1"></i>搜索用户</span>'+
   '</div>';
 
   var rows=joinedUsers.map(function(u){
-    return'<div class="flex items-center gap-3 px-4 py-4 border-b border-gray-50 cursor-pointer card-hover" onclick="window.location.href=\x27profile.html\x27">'+
+    return'<div class="flex items-center gap-3 px-4 py-4 border-b border-gray-50 cursor-pointer card-hover" onclick="window.Common.href=\x27profile.html\x27">'+
       '<img src="'+u.photo+'" class="w-12 h-12 rounded-full object-cover border border-gray-100 flex-shrink-0"/>'+
       '<div class="flex-1 min-w-0">'+
         '<div class="flex items-center gap-1.5"><span class="text-sm font-bold text-gray-800 truncate max-w-[80px]">'+u.name+'</span>'+gb(u.gender)+'</div>'+

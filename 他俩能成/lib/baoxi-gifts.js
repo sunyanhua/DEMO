@@ -88,7 +88,8 @@ function giftListHtml(pair) {
     `;
 }
 
-// 随份子弹窗状态机（每页一个实例）
+// 随份子弹窗状态机（每页一个实例；弹窗渲染进页面内静态节点 #gift-modal-root，
+// 开合与提交都不重渲染整页，避免页面滚动位置被重置；沙箱无真实 DOM 时回退整页渲染）
 function createGiftUi(page) {
     var state = { pairId: null, show: false, giftType: 'gift', selectedGift: null, customAmount: '' };
     var ui = {
@@ -98,9 +99,19 @@ function createGiftUi(page) {
             state.giftType = 'gift';
             state.selectedGift = null;
             state.customAmount = '';
-            page.render();
+            this.showModal();
         },
-        close: function () { state.show = false; page.render(); },
+        close: function () { state.show = false; this.hideModal(); },
+        showModal: function () {
+            var root = document.getElementById('gift-modal-root');
+            if (root && root !== document) { root.innerHTML = this.modalHtml(); }
+            else { page.render(); }
+        },
+        hideModal: function () {
+            var root = document.getElementById('gift-modal-root');
+            if (root && root !== document) { root.innerHTML = ''; }
+            else { page.render(); }
+        },
         // 就地更新弹窗内容（避免整页重渲染导致弹窗收起再弹出；沙箱无真实 DOM 时回退整页渲染）
         refresh: function () {
             var body = document.getElementById('gift-modal-body');
@@ -122,7 +133,10 @@ function createGiftUi(page) {
             if (ok) {
                 window.Common.showToast('随份子成功，心意已送达 💝');
                 state.show = false;
-                page.render();
+                this.hideModal();
+                // 页面提供就地回调时只刷新份子清单（避免滚动位置被重置），否则整页渲染
+                if (page.onGiftDone) { page.onGiftDone(); }
+                else { page.render(); }
             }
         },
         modalBodyHtml: function () {

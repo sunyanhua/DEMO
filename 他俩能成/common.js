@@ -128,21 +128,24 @@ window.Common = {
         try { return localStorage.getItem('baoxi_submitted') === '1'; } catch (e) { return false; }
     },
 
-    // --- 报喜记录是否完好（可解析且含双人姓名） ---
+    // --- 报喜记录是否完好（可解析且含双人姓名/头像/结缘历程，缺任一按损坏回退表单，避免详情页渲染报错） ---
     hasBaoxiReport() {
         try {
             var raw = localStorage.getItem('baoxi_my_report');
             if (!raw) return false;
             var d = JSON.parse(raw);
-            return !!d && typeof d === 'object' && Array.isArray(d.names) && d.names.length === 2;
+            return !!d && typeof d === 'object'
+                && Array.isArray(d.names) && d.names.length === 2
+                && Array.isArray(d.avatars) && d.avatars.length === 2
+                && Array.isArray(d.events);
         } catch (e) { return false; }
     },
 
     // --- 报喜入口：已报喜且记录完好去"我的报喜"，否则去报喜表单（可带TA预选参数） ---
     goBaoxi(name, photo, gender) {
-        if (this.isBaoxiSubmitted() && this.hasBaoxiReport()) { window.location.href = 'baoxi-detail.html?id=mine'; return; }
+        if (this.isBaoxiSubmitted() && this.hasBaoxiReport()) { this.href = 'baoxi-detail.html?id=mine'; return; }
         var q = name ? ('?name=' + encodeURIComponent(name) + '&photo=' + encodeURIComponent(photo || '') + '&gender=' + encodeURIComponent(gender || '')) : '';
-        window.location.href = 'baoxi.html' + q;
+        this.href = 'baoxi.html' + q;
     },
 
     // --- 报喜引导卡（报喜列表/我的1314 共用） ---
@@ -155,9 +158,29 @@ window.Common = {
             '</div>'+
             '<i data-lucide="chevron-right" class="w-5 h-5 flex-shrink-0 text-brand-pink"></i>'+
         '</div>';
+    },
+
+    // --- v 参数透传（演示版版本号/渠道参数同步）：入口带 ?v=xxx 后持久化，后续所有站内跳转自动附加 ---
+    getVParam() {
+        try { return localStorage.getItem('site_v') || ''; } catch (e) { return ''; }
+    },
+    addV(url) {
+        url = url == null ? '' : String(url);
+        var v = this.getVParam();
+        if (!v || !url) return url;
+        if (/^(https?:|javascript:|tel:|mailto:|#)/i.test(url) || url.indexOf('v=') > -1) return url;
+        return url + (url.indexOf('?') < 0 ? '?' : '&') + 'v=' + encodeURIComponent(v);
     }
 
 };
+
+// Common.href 为赋值式跳转属性：window.Common.href='xx.html' 即导航并自动附加 v 参数
+// （与全站原 window.location.href= 用法完全兼容，含字符串拼接等任意表达式）
+Object.defineProperty(window.Common, 'href', {
+    set: function (url) { window.location.href = window.Common.addV(url); },
+    get: function () { return window.location.href; },
+    configurable: true
+});
 
 // ============================================
 //   公共数据（mock data 统一入口）
@@ -214,5 +237,22 @@ window.Common.floatToast = function(message) {
     var style = document.createElement('style');
     style.textContent = '@keyframes floatUp{0%{opacity:0;transform:translateX(-50%) translateY(16px)}12%{opacity:1;transform:translateX(-50%) translateY(0)}65%{opacity:1;transform:translateX(-50%) translateY(0)}100%{opacity:0;transform:translateX(-50%) translateY(0)}}@keyframes scoreUp{0%{opacity:0;transform:translateX(-50%) scale(0.3)}20%{opacity:1;transform:translateX(-50%) translateY(-10%) scale(1.15)}40%{transform:translateX(-50%) translateY(-30%) scale(1)}100%{opacity:0;transform:translateX(-50%) translateY(-80%) scale(0.5)}}';
     document.head.appendChild(style);
+})();
+
+// --- v 参数透传初始化：入口 URL 带 ?v=xxx 时持久化；静态 <a href> 站内链接捕获阶段改写（动态注入同样生效） ---
+(function() {
+    try {
+        var m = window.location.search.match(/[?&]v=([^&#]*)/);
+        if (m) localStorage.setItem('site_v', decodeURIComponent(m[1]));
+    } catch (e) {}
+    document.addEventListener('click', function (e) {
+        var t = e.target;
+        var a = (t && t.closest) ? t.closest('a[href]') : null;
+        if (!a) return;
+        var h = a.getAttribute('href') || '';
+        if (!h) return;
+        var nh = window.Common.addV(h);
+        if (nh !== h) a.setAttribute('href', nh);
+    }, true);
 })();
 

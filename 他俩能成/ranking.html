@@ -40,6 +40,8 @@ function getTitle(s){
   if(s>50001)return'嘑学传奇';if(s>=20001)return'嘑学宗师';if(s>=10001)return'嘑学大神';if(s>=5001)return'嘑学行家';if(s>=2001)return'嘑学高手';if(s>=1001)return'嘑学爱好者';if(s>=101)return'嘑学门生';if(s>=0)return'嘑学菜鸟';if(s>=-100)return'嘑学门外汉';if(s>=-1000)return'反嘑学分子';if(s>=-10000)return'高级拆家';return'当代法海';
 }
 function rankDesc(d){
+  // 浅拷贝后排序排名：避免派生榜单（男/女榜）改写共享用户对象的 rank，破坏全部榜
+  d=d.map(function(u){return Object.assign({},u)});
   d.sort(function(a,b){return b.score-a.score});
   d.forEach(function(u,i){u.rank=i+1});
   return d;
@@ -130,7 +132,7 @@ window.View={
   },
   popularRow: function(u,icon,label){
     icon=icon||'🔥';label=label||'人气值';
-    return'<div class="flex items-center gap-3 py-3 px-1 border-b border-gray-200 cursor-pointer card-hover" onclick="window.location.href=\x27profile.html\x27">'+
+    return'<div class="flex items-center gap-3 py-3 px-1 border-b border-gray-200 cursor-pointer card-hover" onclick="window.Common.href=\x27profile.html\x27">'+
       '<div class="flex-shrink-0">'+this.rankIcon(u.rank)+'</div>'+
       '<img src="'+u.photo+'" class="w-10 h-10 rounded-full object-cover border border-gray-100 flex-shrink-0"/>'+
       '<div class="flex-1 min-w-0">'+
@@ -148,7 +150,7 @@ window.View={
     '</div>';
   },
   giftRow: function(u){
-    return'<div class="py-3 px-1 border-b border-gray-200 cursor-pointer card-hover" onclick="window.location.href=\x27profile.html\x27">'+
+    return'<div class="py-3 px-1 border-b border-gray-200 cursor-pointer card-hover" onclick="window.Common.href=\x27profile.html\x27">'+
       '<div class="flex items-center gap-3">'+
         '<div class="flex-shrink-0">'+this.rankIcon(u.rank)+'</div>'+
         '<img src="'+u.photo+'" class="w-10 h-10 rounded-full object-cover border border-gray-100 flex-shrink-0"/>'+
@@ -168,12 +170,12 @@ window.View={
       '<div class="mt-2 flex items-center gap-2 rounded-lg px-3 py-2" style="margin-left:34px;background:rgba(224,77,44,0.12);">'+
         '<span class="text-[11px] text-gray-500">TA的榜一：</span>'+
         '<span class="text-[11px] font-bold text-gray-700">'+u.patron+'</span>'+
-        '<span class="text-[10px] text-brand-pink underline cursor-pointer ml-auto" onclick="event.stopPropagation();window.location.href=\x27profile.html\x27">查看</span>'+
+        '<span class="text-[10px] text-brand-pink underline cursor-pointer ml-auto" onclick="event.stopPropagation();window.Common.href=\x27profile.html\x27">查看</span>'+
       '</div>'+
     '</div>';
   },
   kexueRow: function(u){
-    return'<div class="flex items-center gap-3 py-3 px-1 border-b border-gray-200 cursor-pointer card-hover" onclick="window.location.href=\x27profile.html\x27">'+
+    return'<div class="flex items-center gap-3 py-3 px-1 border-b border-gray-200 cursor-pointer card-hover" onclick="window.Common.href=\x27profile.html\x27">'+
       '<div class="flex-shrink-0">'+this.rankIcon(u.rank)+'</div>'+
       '<img src="'+u.photo+'" class="w-10 h-10 rounded-full object-cover border border-gray-100 flex-shrink-0"/>'+
       '<div class="flex-1 min-w-0">'+
@@ -205,7 +207,8 @@ window.View={
     return'<div class="flex items-center justify-between mb-3">'+pt+(sub?'<div class="ml-auto">'+sub+'</div>':'')+'</div>';
   },
   timeLabel: function(){
-    var ts=this.timeStr();
+    // 靠谱榜与"我的靠谱值"同源：更新时间使用最近一次周日20:00，而非当前时间
+    var ts=(this.m==='kaopu'&&window.KaopuData&&window.KaopuData.updatedAt)?window.KaopuData.updatedAt:this.timeStr();
     var gl='';
     if(this.m==='popular')gl=this.sg==='m'?'·男':this.sg==='f'?'·女':'·总';
     else if(this.m==='kaopu')gl=this.sg==='m'?'·男':this.sg==='f'?'·女':'·全部';

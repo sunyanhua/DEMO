@@ -397,7 +397,7 @@ function shuffle(a) { for(var i=a.length-1;i>0;i--){ var j=r(i+1);[a[i],a[j]]=[a
 
 ```html
 <div class="flex items-center gap-3 px-4 py-4 border-b border-gray-50 cursor-pointer card-hover"
-     onclick="window.location.href='profile.html'">
+     onclick="window.Common.href='profile.html'">
   <div class="relative flex-shrink-0">
     <img src="..." class="w-12 h-12 rounded-full object-cover border border-gray-100"/>
   </div>
@@ -456,10 +456,10 @@ JS 字符串中嵌入 `onclick` 属性时，用 `\x27` 替代单引号：
 
 ```javascript
 // ✅ 对
-'<span onclick="window.location.href=\x27page.html\x27">文字</span>'
+'<span onclick="window.Common.href=\x27page.html\x27">文字</span>'
 
 // ❌ 错 — 页面报 SyntaxError
-'<span onclick="window.location.href=\'page.html\'">文字</span>'
+'<span onclick="window.Common.href=\'page.html\'">文字</span>'
 ```
 
 ### 10.2 图标初始化

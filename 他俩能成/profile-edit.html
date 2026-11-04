@@ -123,7 +123,7 @@ function doSave(){
   if(!document.getElementById('hometown').value){window.Common.showToast('请选择家乡');return}
   saved=true;
   window.Common.showToast('资料保存成功');
-  setTimeout(function(){window.location.href='me.html'},800);
+  setTimeout(function(){window.Common.href='me.html'},800);
   render();
 }
 document.addEventListener('DOMContentLoaded',function(){render()});

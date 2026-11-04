@@ -40,7 +40,7 @@ function submitAddress(){
 function render(){
   var rows=prizes.map(function(p){
     var action;
-    if(p.type==='cash')action='<span class="px-3 py-1.5 rounded-full bg-green-50 text-green-600 text-xs font-bold card-hover cursor-pointer inline-block" onclick="window.location.href=\x27wallet-cash.html\x27">✓ 已加入钱包余额</span>';
+    if(p.type==='cash')action='<span class="px-3 py-1.5 rounded-full bg-green-50 text-green-600 text-xs font-bold card-hover cursor-pointer inline-block" onclick="window.Common.href=\x27wallet-cash.html\x27">✓ 已加入钱包余额</span>';
     else if(p.type==='coupon')action='<span class="px-3 py-1.5 rounded-full bg-brand-pink/10 text-brand-pink text-xs font-bold card-hover cursor-pointer inline-block" onclick="showCoupon(prizes['+prizes.indexOf(p)+'])">使用说明</span>';
     else action='<span class="px-3 py-1.5 rounded-full bg-brand-pink/10 text-brand-pink text-xs font-bold card-hover cursor-pointer inline-block" onclick="window.Common.showPopup(\x27address-popup\x27)">填写地址</span>';
     return'<div class="flex items-center gap-3 px-4 py-4 border-b border-gray-50"><div class="text-2xl">'+p.icon+'</div><div class="flex-1 min-w-0"><div class="text-sm font-bold text-gray-800">'+p.name+'</div><div class="text-xs text-gray-400 mt-0.5">'+p.source+'</div><div class="text-xs text-gray-400">'+p.time+'</div></div>'+action+'</div>';

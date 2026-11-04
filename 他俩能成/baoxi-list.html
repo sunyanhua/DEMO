@@ -15,12 +15,69 @@
 <div class="bg-decoration" style="z-index:0;"><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div></div>
 
 <div id="app" class="relative z-[1]"></div>
+<div id="gift-modal-root"></div>
 
 <script src="common.js"></script>
 <script src="lib/baoxi-data.js"></script>
 <script src="lib/baoxi-gifts.js"></script>
 <script>
 var giftUi = window.BaoxiGifts.createUi({ render: render });
+
+// 随机模拟：当前用户未注册脱单资料 → 底部按钮变为"邀请报喜"（邀请自己神助攻过的组合来报喜）
+var NO_PROFILE = Math.random() < 0.5;
+
+// 当前用户神助攻过的组合记录（mock）
+var ASSIST_PAIRS = [
+    { time:'2026年10月6日', male:{name:'阳光骑士',photo:'images/photo/male/crop.17.0.1224.1632.0.750.1000.jpg'}, female:{name:'栀子花开',photo:'images/photo/female/crop.0.61.723.964.0.750.1000.jpg'} },
+    { time:'2026年9月21日', male:{name:'清风徐来',photo:'images/photo/male/crop.0.0.1078.1438.0.750.1000.jpg'}, female:{name:'棉花糖',photo:'images/photo/female/crop.0.0.2267.3023.0.750.1000.jpg'} },
+    { time:'2026年9月3日', male:{name:'北辰',photo:'images/photo/male/crop.194.56.917.1222.0.750.1000.jpg'}, female:{name:'薄荷微光',photo:'images/photo/female/crop.0.0.4896.6528.0.750.1000.jpg'} },
+    { time:'2026年8月18日', male:{name:'追风少年',photo:'images/photo/male/crop.0.237.1080.1440.0.750.1000.jpg'}, female:{name:'雪落无声',photo:'images/photo/female/crop.384.0.2304.3072.0.750.1000.jpg'} },
+    { time:'2026年8月2日', male:{name:'咖啡不加糖',photo:'images/photo/male/crop.0.501.960.1280.0.750.1000.jpg'}, female:{name:'浅笑安然',photo:'images/photo/female/crop.0.67.1079.1438.0.750.1000.jpg'} }
+];
+
+function inviteOne(mn, fn) {
+    window.Common.showToast('已向对方发出邀请！');
+}
+
+function openInvite() {
+    document.getElementById('invite-popup').style.display = 'flex';
+}
+
+function closeInvite() {
+    document.getElementById('invite-popup').style.display = 'none';
+}
+
+function inviteHtml() {
+    var rows = ASSIST_PAIRS.map(function (r) {
+        return `
+        <div class="bg-white rounded-2xl border border-gray-100 p-3 mb-3">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center min-w-0">
+                    <img src="${r.male.photo}" class="w-10 h-10 rounded-full object-cover border-2 border-blue-100 flex-shrink-0"/>
+                    <img src="${r.female.photo}" class="w-10 h-10 rounded-full object-cover border-2 border-pink-100 -ml-3 flex-shrink-0"/>
+                    <div class="ml-2 min-w-0">
+                        <p class="text-sm font-bold text-gray-800">${r.male.name} ❤ ${r.female.name}</p>
+                        <p class="text-[10px] text-gray-400 mt-0.5">你于${r.time}为他俩送上神助攻</p>
+                    </div>
+                </div>
+                <span onclick="inviteOne('${r.male.name}','${r.female.name}')" class="flex-shrink-0 ml-2 px-3 py-1.5 rounded-full bg-gradient-to-tr from-brand-pink to-brand-orange text-white text-xs font-bold cursor-pointer card-hover">邀请报喜</span>
+            </div>
+        </div>
+        `;
+    }).join('');
+    return `
+    <div id="invite-popup" style="display:none;position:fixed;inset:0;z-index:100;background:rgba(0,0,0,0.45);align-items:flex-end;justify-content:center;" onclick="closeInvite()">
+        <div class="w-full bg-white rounded-t-2xl animate-slide-up px-4 pt-4 pb-8" style="max-height:75vh;overflow-y:auto;" onclick="event.stopPropagation()">
+            <div class="flex items-center justify-between mb-1">
+                <span class="font-black text-gray-800 text-base">邀请报喜</span>
+                <span onclick="closeInvite()" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center cursor-pointer"><i data-lucide="x" class="w-4 h-4 text-gray-500"></i></span>
+            </div>
+            <p class="text-xs text-gray-400 mb-3">您神助攻过的组合，邀请他们来报喜，共享幸福 🎉</p>
+            ${rows}
+        </div>
+    </div>
+    `;
+}
 
 // ====== 列表卡片（简洁样式，暖色点缀） ======
 function cardHtml(pair) {
@@ -45,12 +102,18 @@ function cardHtml(pair) {
             </div>
             <p class="text-xs text-gray-500 leading-relaxed mt-2.5 line-clamp-2">"${pair.story}"</p>
             <div class="flex gap-2 mt-3">
-                <span onclick="window.location.href='baoxi-detail.html?id=${pair.id}'" class="flex-1 text-center py-2 rounded-full text-xs font-bold cursor-pointer card-hover" style="background:#FFF0EC;color:#E85D3A;">查看结缘海报</span>
+                <span onclick="window.Common.href='baoxi-detail.html?id=${pair.id}'" class="flex-1 text-center py-2 rounded-full text-xs font-bold cursor-pointer card-hover" style="background:#FFF0EC;color:#E85D3A;">查看结缘海报</span>
                 <span onclick="giftUi.open('${pair.id}')" class="flex-1 text-center py-2 rounded-full bg-gradient-to-tr from-brand-pink to-brand-orange text-white text-xs font-bold cursor-pointer card-hover">我要随份子</span>
             </div>
         </div>
     </div>
     `;
+}
+
+// 未注册脱单资料分支仅在未报喜时生效（已报喜用户必然注册过资料，仍走"我的报喜"）
+function isNoProfileMode() {
+    var reported = window.Common.isBaoxiSubmitted() && window.Common.hasBaoxiReport();
+    return NO_PROFILE && !reported;
 }
 
 function listView() {
@@ -62,11 +125,15 @@ function listView() {
         '在一起了吗？快来报喜 🎉',
         '如果你们已经走到了一起，欢迎主动报喜，让全站见证你们的幸福！审核通过后，平台将送上520元官方红包祝贺'
     );
-    var floatBtn = reported
-        ? `<div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 px-6 py-3 rounded-full bg-gradient-to-tr from-brand-pink to-brand-orange text-white font-bold text-sm shadow-xl shadow-brand-pink/30 card-hover cursor-pointer flex items-center gap-2" onclick="window.location.href='baoxi-detail.html?id=mine'">
+    var floatBtn = isNoProfileMode()
+        ? `<div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 px-6 py-3 rounded-full bg-gradient-to-tr from-brand-pink to-brand-orange text-white font-bold text-sm shadow-xl shadow-brand-pink/30 card-hover cursor-pointer flex items-center gap-2" onclick="openInvite()">
+            <i data-lucide="send" class="w-4 h-4"></i>邀请报喜
+          </div>`
+        : reported
+        ? `<div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 px-6 py-3 rounded-full bg-gradient-to-tr from-brand-pink to-brand-orange text-white font-bold text-sm shadow-xl shadow-brand-pink/30 card-hover cursor-pointer flex items-center gap-2" onclick="window.Common.href='baoxi-detail.html?id=mine'">
             <i data-lucide="heart" class="w-4 h-4"></i>我的报喜
           </div>`
-        : `<div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 px-6 py-3 rounded-full bg-gradient-to-tr from-brand-pink to-brand-orange text-white font-bold text-sm shadow-xl shadow-brand-pink/30 card-hover cursor-pointer flex items-center gap-2" onclick="window.location.href='baoxi.html'">
+        : `<div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 px-6 py-3 rounded-full bg-gradient-to-tr from-brand-pink to-brand-orange text-white font-bold text-sm shadow-xl shadow-brand-pink/30 card-hover cursor-pointer flex items-center gap-2" onclick="window.Common.href='baoxi.html'">
             <i data-lucide="party-popper" class="w-4 h-4"></i>我要报喜
           </div>`;
     return `
@@ -85,7 +152,7 @@ function listView() {
 }
 
 function render() {
-    document.getElementById('app').innerHTML = listView() + giftUi.modalHtml();
+    document.getElementById('app').innerHTML = listView() + giftUi.modalHtml() + (isNoProfileMode() ? inviteHtml() : '');
     window.Common.initIcons();
 }
 

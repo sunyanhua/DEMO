@@ -71,7 +71,7 @@ var goldItems=[
 
 var goldRows=goldItems.map(function(g){
   var val=g.value?'<span class="text-sm font-bold text-brand-pink">'+g.value+'</span>':'';
-  return'<div class="flex items-center gap-3 py-2.5 cursor-pointer card-hover" onclick="window.location.href=\x27'+g.href+'\x27"><div class="w-8 h-8 rounded-xl '+g.color+' flex items-center justify-center"><i data-lucide="'+g.icon+'" class="w-3.5 h-3.5"></i></div><span class="flex-1 text-sm text-gray-600">'+g.label+'</span>'+val+'<i data-lucide="chevron-right" class="w-4 h-4 text-gray-300 ml-1"></i></div>';
+  return'<div class="flex items-center gap-3 py-2.5 cursor-pointer card-hover" onclick="window.Common.href=\x27'+g.href+'\x27"><div class="w-8 h-8 rounded-xl '+g.color+' flex items-center justify-center"><i data-lucide="'+g.icon+'" class="w-3.5 h-3.5"></i></div><span class="flex-1 text-sm text-gray-600">'+g.label+'</span>'+val+'<i data-lucide="chevron-right" class="w-4 h-4 text-gray-300 ml-1"></i></div>';
 }).join('<div class="border-t border-gray-100"></div>');
 
 function render(){
@@ -90,7 +90,7 @@ function render(){
 
   // User card
   var u='<div class="px-4 pt-4 pb-1"><div class="bg-white rounded-2xl shadow-sm border border-gray-100 pt-4 px-4 pb-2">'+
-    '<div class="flex items-center gap-4 cursor-pointer card-hover" onclick="window.location.href=\x27edit-profile.html\x27"><img src="images/photo/female/crop.0.67.1079.1438.0.750.1000.jpg" class="w-16 h-16 rounded-full object-cover border-2 border-brand-pink/20"/><div class="flex-1 min-w-0"><div class="flex items-center gap-2"><span class="text-lg font-black text-gray-800">甜心小鹿</span><span class="text-[10px] px-1.5 py-0.5 rounded-full bg-pink-50 text-brand-pink font-medium inline-flex items-center gap-0.5"><i data-lucide="venus" class="w-2.5 h-2.5"></i>女</span></div><div class="text-xs text-gray-400 mt-0.5 flex items-center gap-1"><i data-lucide="edit-3" class="w-3 h-3"></i>编辑资料</div></div></div>'+
+    '<div class="flex items-center gap-4 cursor-pointer card-hover" onclick="window.Common.href=\x27edit-profile.html\x27"><img src="images/photo/female/crop.0.67.1079.1438.0.750.1000.jpg" class="w-16 h-16 rounded-full object-cover border-2 border-brand-pink/20"/><div class="flex-1 min-w-0"><div class="flex items-center gap-2"><span class="text-lg font-black text-gray-800">甜心小鹿</span><span class="text-[10px] px-1.5 py-0.5 rounded-full bg-pink-50 text-brand-pink font-medium inline-flex items-center gap-0.5"><i data-lucide="venus" class="w-2.5 h-2.5"></i>女</span></div><div class="text-xs text-gray-400 mt-0.5 flex items-center gap-1"><i data-lucide="edit-3" class="w-3 h-3"></i>编辑资料</div></div></div>'+
     '<div class="border-t border-gray-100 mt-3 pt-1">'+goldRows+'</div>'+
   '</div></div>';
 
@@ -115,7 +115,7 @@ function render(){
         {icon:'heart-handshake',label:'成了',value:3,href:'my-1314.html'},
       ];
       var jStatsHtml='<div class="flex justify-around px-4 py-4 bg-brand-pink/5 rounded-xl mx-3 my-1">'+joinedStats.map(function(st){
-        var h=st.href==='#'?'':' onclick="window.location.href=\x27'+st.href+'\x27"';
+        var h=st.href==='#'?'':' onclick="window.Common.href=\x27'+st.href+'\x27"';
         return'<div class="text-center cursor-pointer card-hover"'+h+'><div class="text-2xl font-black text-brand-pink">'+st.value+'</div><div class="flex items-center justify-center gap-1 text-xs text-gray-500 mt-1.5"><i data-lucide="'+st.icon+'" class="w-3 h-3"></i>'+st.label+'</div></div>'
       }).join('')+'</div>';
 
@@ -131,18 +131,18 @@ function render(){
         {icon:'flag',label:'我要举报',click:'showReport()'},
       ];
       var jMenuHtml=jMenus.map(function(it){
-        var act=it.href?('window.location.href=\x27'+it.href+'\x27'):it.click;
+        var act=it.href?('window.Common.href=\x27'+it.href+'\x27'):it.click;
         return'<div class="flex items-center gap-3 p-3 border-b border-gray-50 cursor-pointer card-hover" onclick="'+act+'"><i data-lucide="'+it.icon+'" class="w-4 h-4 text-brand-pink"></i><span class="text-sm text-gray-700">'+it.label+'</span><i data-lucide="chevron-right" class="w-4 h-4 text-gray-300 ml-auto"></i></div>';
       }).join('');
 
       var jBtns='<div class="px-4 pb-4 pt-2"><span class="block text-center py-2.5 rounded-xl bg-red-50 text-red-500 text-sm font-bold card-hover cursor-pointer" onclick="quitTuodan()">退出脱单</span></div>';
 
       funcContent='<div class="bg-white rounded-2xl shadow-sm border border-gray-100 mx-4 mt-3 deco-card">'+
-        '<div class="flex items-center justify-between px-4 pt-4 pb-2"><span class="text-xs text-gray-500">能成ID：10000135 <span class="text-brand-pink cursor-pointer" onclick="window.Common.showToast(\x27已复制\x27)">[复制]</span></span><span class="inline-flex items-center gap-1 text-xs text-brand-pink font-bold bg-brand-pink/5 px-3 py-1 rounded-full cursor-pointer card-hover" onclick="window.location.href=\x27profile.html\x27"><i data-lucide="user" class="w-3 h-3"></i>个人主页</span></div>'+
+        '<div class="flex items-center justify-between px-4 pt-4 pb-2"><span class="text-xs text-gray-500">能成ID：10000135 <span class="text-brand-pink cursor-pointer" onclick="window.Common.showToast(\x27已复制\x27)">[复制]</span></span><span class="inline-flex items-center gap-1 text-xs text-brand-pink font-bold bg-brand-pink/5 px-3 py-1 rounded-full cursor-pointer card-hover" onclick="window.Common.href=\x27profile.html\x27"><i data-lucide="user" class="w-3 h-3"></i>个人主页</span></div>'+
         '<div class="border-t border-gray-200 mx-4"></div>'+
         jStatsHtml+
         '<div class="border-t border-gray-100 mx-4"></div>'+
-        '<div class="flex items-center gap-3 p-3 border-b border-gray-50 cursor-pointer card-hover" onclick="window.location.href=\x27my-kaopu.html\x27"><div class="w-8 h-8 rounded-xl bg-brand-pink/10 flex items-center justify-center"><i data-lucide="shield-check" class="w-4 h-4 text-brand-pink"></i></div><span class="text-sm text-gray-700">靠谱值</span><span class="flex-1 text-right text-sm font-black text-brand-pink">'+kaopuTotal+'分</span><i data-lucide="chevron-right" class="w-4 h-4 text-gray-300 ml-1"></i></div>'+
+        '<div class="flex items-center gap-3 p-3 border-b border-gray-50 cursor-pointer card-hover" onclick="window.Common.href=\x27my-kaopu.html\x27"><div class="w-8 h-8 rounded-xl bg-brand-pink/10 flex items-center justify-center"><i data-lucide="shield-check" class="w-4 h-4 text-brand-pink"></i></div><span class="text-sm text-gray-700">靠谱值</span><span class="flex-1 text-right text-sm font-black text-brand-pink">'+kaopuTotal+'分</span><i data-lucide="chevron-right" class="w-4 h-4 text-gray-300 ml-1"></i></div>'+
         jMenuHtml+
         '<div class="border-t border-gray-100 mx-4"></div>'+
         jBtns+
@@ -151,13 +151,13 @@ function render(){
       funcContent='<div class="bg-white rounded-2xl shadow-sm border border-gray-100 mx-4 mt-3 py-8 text-center deco-card">'+
         '<div class="w-16 h-16 rounded-full bg-brand-pink/10 flex items-center justify-center mx-auto mb-3"><i data-lucide="file-text" class="w-8 h-8 text-brand-pink"></i></div>'+
         '<p class="text-sm text-gray-500">请先填写你的脱单档案<br/>寻找属于你的缘分</p>'+
-        '<span class="inline-block mt-4 px-8 py-2.5 rounded-full bg-gradient-to-tr from-brand-pink to-brand-orange text-white font-bold text-sm shadow-lg shadow-brand-pink/20 card-hover cursor-pointer" onclick="window.location.href=\x27profile-wizard.html\x27">马上填写</span>'+
+        '<span class="inline-block mt-4 px-8 py-2.5 rounded-full bg-gradient-to-tr from-brand-pink to-brand-orange text-white font-bold text-sm shadow-lg shadow-brand-pink/20 card-hover cursor-pointer" onclick="window.Common.href=\x27profile-wizard.html\x27">马上填写</span>'+
       '</div>';
     }
   }else{
     var keScore=28850,keWeek=420,keTitle='嗑学宗师';
     funcContent='<div class="bg-white rounded-2xl shadow-sm border border-gray-100 mx-4 mt-3 p-4 deco-card">'+
-      '<div class="flex items-center justify-between mb-3"><span class="text-sm font-bold text-gray-700">📋 嗑学分</span><span class="text-xs text-brand-pink font-medium cursor-pointer" onclick="window.location.href=\x27kexue.html\x27">查看详情 &gt;</span></div>'+
+      '<div class="flex items-center justify-between mb-3"><span class="text-sm font-bold text-gray-700">📋 嗑学分</span><span class="text-xs text-brand-pink font-medium cursor-pointer" onclick="window.Common.href=\x27kexue.html\x27">查看详情 &gt;</span></div>'+
       '<div class="text-center mb-4"><span class="text-3xl font-black text-brand-pink">'+keScore.toLocaleString()+'</span><div class="text-xs text-gray-400 mt-1">本周 +'+keWeek+'</div></div>'+
       '<div class="bg-brand-pink/5 rounded-xl p-3 text-center mb-4"><span class="text-sm font-bold text-brand-pink">当前头衔：'+keTitle+'</span></div>'+
       '<div class="border-t border-gray-100 pt-2">';
@@ -167,7 +167,7 @@ function render(){
       {icon:'heart-handshake',label:'我加入的亲友团',href:'my-family-joined.html'},
     ];
     qMenus.forEach(function(it){
-      funcContent+='<div class="flex items-center gap-3 p-3 border-b border-gray-50 cursor-pointer card-hover" onclick="window.location.href=\x27'+it.href+'\x27"><i data-lucide="'+it.icon+'" class="w-4 h-4 text-brand-pink"></i><span class="text-sm text-gray-700">'+it.label+'</span><i data-lucide="chevron-right" class="w-4 h-4 text-gray-300 ml-auto"></i></div>';
+      funcContent+='<div class="flex items-center gap-3 p-3 border-b border-gray-50 cursor-pointer card-hover" onclick="window.Common.href=\x27'+it.href+'\x27"><i data-lucide="'+it.icon+'" class="w-4 h-4 text-brand-pink"></i><span class="text-sm text-gray-700">'+it.label+'</span><i data-lucide="chevron-right" class="w-4 h-4 text-gray-300 ml-auto"></i></div>';
     });
     funcContent+='</div></div>';
   }
@@ -213,7 +213,7 @@ function submitReport(){
 }
 function doPhoneAuth(){
   window.Common.hidePopup('phone-auth-overlay');
-  setTimeout(function(){window.location.href='register.html'},300);
+  setTimeout(function(){window.Common.href='register.html'},300);
 }
 document.addEventListener('DOMContentLoaded',function(){render()});
 </script>

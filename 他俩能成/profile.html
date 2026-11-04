@@ -46,14 +46,14 @@
 <div id="assist-success-popup" class="fixed inset-0 bg-black/40 z-[155] hidden items-center justify-center" onclick="hideAssistSuccess(event)">
 <div class="bg-white rounded-2xl p-5 mx-auto w-80 shadow-xl text-center" onclick="event.stopPropagation()">
 <div class="text-4xl mb-3">⚡</div><p class="text-sm text-gray-700 mb-4">求助攻成功，请前往神助攻页面查看</p>
-<div class="space-y-2"><span class="block text-center cursor-pointer w-full py-2.5 rounded-xl bg-brand-pink text-white font-bold text-sm card-hover" onclick="window.location.href='assist.html'">马上查看</span><span class="block text-center cursor-pointer w-full py-2.5 rounded-xl bg-gray-100 text-gray-500 font-bold text-sm card-hover" onclick="hideAssistSuccess()">我知道了</span></div>
+<div class="space-y-2"><span class="block text-center cursor-pointer w-full py-2.5 rounded-xl bg-brand-pink text-white font-bold text-sm card-hover" onclick="window.Common.href='assist.html'">马上查看</span><span class="block text-center cursor-pointer w-full py-2.5 rounded-xl bg-gray-100 text-gray-500 font-bold text-sm card-hover" onclick="hideAssistSuccess()">我知道了</span></div>
 </div></div>
 
 <!-- COMPLETE PROFILE POPUP -->
 <div id="complete-popup" class="fixed inset-0 bg-black/40 z-[150] hidden items-center justify-center" onclick="hideComplete(event)">
 <div class="bg-white rounded-2xl p-5 mx-auto w-80 shadow-xl text-center" onclick="event.stopPropagation()">
 <div class="text-4xl mb-3">📝</div><p class="text-sm text-gray-700 mb-4">您需要先完善脱单资料</p>
-<div class="space-y-2"><span class="block text-center cursor-pointer w-full py-2.5 rounded-xl bg-brand-pink text-white font-bold text-sm card-hover" onclick="window.location.href='profile-wizard.html';hideComplete()">马上完善</span><span class="block text-center cursor-pointer w-full py-2.5 rounded-xl bg-gray-100 text-gray-500 font-bold text-sm card-hover" onclick="hideComplete()">我再想想</span></div>
+<div class="space-y-2"><span class="block text-center cursor-pointer w-full py-2.5 rounded-xl bg-brand-pink text-white font-bold text-sm card-hover" onclick="window.Common.href='profile-wizard.html';hideComplete()">马上完善</span><span class="block text-center cursor-pointer w-full py-2.5 rounded-xl bg-gray-100 text-gray-500 font-bold text-sm card-hover" onclick="hideComplete()">我再想想</span></div>
 </div></div>
 
 <!-- HEART CONFIRM POPUP -->
@@ -134,8 +134,11 @@ function pickCerts(){
 }
 
 var certs=pickCerts();
-// 达到1314即成（与缘分记录展示保持一致）；未达到时保留随机状态
-profile.fateCard=profile.matchScore>=1314?'success':(Math.random()>0.5?'success':'pending');
+// 达到1314即成（与缘分记录展示保持一致）；未达到时不显示"你们成了"
+profile.fateCard=profile.matchScore>=1314?'success':'pending';
+
+// 缘分对象（mock）：去报喜时带入TA预选。不能传当前用户本人（报喜页会忽略同名预选）
+var FATE_TA={name:'追风少年',photo:'images/photo/male/crop.1.0.3877.5170.0.750.1000.jpg',gender:'male'};
 
 var liked=false,followed=false,hearted=false;
 
@@ -212,7 +215,7 @@ function copyId(){
 }
 
 function goMatchmaker(){
-  window.location.href='matchmaker.html?lock=profile&name='+encodeURIComponent(profile.name)+'&gender='+encodeURIComponent(profile.gender);
+  window.Common.href='matchmaker.html?lock=profile&name='+encodeURIComponent(profile.name)+'&gender='+encodeURIComponent(profile.gender);
 }
 
 function render(){
@@ -243,10 +246,10 @@ function render(){
   var fateCard='';
   if(profile.fateCard==='success'){
     fateCard='<div class="bg-brand-pink/5 rounded-xl px-4 py-3 mt-3 border border-pink-100">'+
-      '<div class="flex items-center justify-between"><span class="text-sm font-black text-brand-pink">你们成了！恭喜！</span><span class="px-4 py-1.5 rounded-full bg-gradient-to-r from-brand-pink to-brand-orange text-white text-xs font-bold card-hover cursor-pointer" onclick="window.location.href=\'chat.html?name='+encodeURIComponent(profile.name)+'\'">联系TA</span></div>'+
+      '<div class="flex items-center justify-between"><span class="text-sm font-black text-brand-pink">你们成了！恭喜！</span><span class="px-4 py-1.5 rounded-full bg-gradient-to-r from-brand-pink to-brand-orange text-white text-xs font-bold card-hover cursor-pointer" onclick="window.Common.href=\'chat.html?name='+encodeURIComponent(profile.name)+'\'">联系TA</span></div>'+
       (profile.matchScore>=1314?'<div class="flex items-center justify-between mt-2 pt-2 border-t border-pink-100">'+
         '<span class="text-xs text-gray-600">匹配度已达1314，去报喜让大家为你们送上祝福 🎉</span>'+
-        '<span class="px-3 py-1 rounded-full bg-white border-2 border-brand-pink text-brand-pink text-xs font-bold card-hover cursor-pointer flex-shrink-0" onclick="window.Common.goBaoxi(\''+profile.name+'\',\''+profile.photos[0]+'\',\''+profile.gender+'\')">去报喜</span>'+
+        '<span class="px-3 py-1 rounded-full bg-white border-2 border-brand-pink text-brand-pink text-xs font-bold card-hover cursor-pointer flex-shrink-0" onclick="window.Common.goBaoxi(\''+FATE_TA.name+'\',\''+FATE_TA.photo+'\',\''+FATE_TA.gender+'\')">去报喜</span>'+
       '</div>':'')+
     '</div>';
   }else{

@@ -116,7 +116,7 @@ function showHelp(){window.Common.showPopup('help-overlay')}
 function userCard(u,clickable){
   var gb=u.gender==='male'?'<span class="text-xs px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-500 font-medium inline-flex items-center gap-0.5"><i data-lucide="mars" class="w-2.5 h-2.5"></i>男</span>':'<span class="text-xs px-1.5 py-0.5 rounded-full bg-pink-50 text-brand-pink font-medium inline-flex items-center gap-0.5"><i data-lucide="venus" class="w-2.5 h-2.5"></i>女</span>';
   var ver=u.verified?'<span class="absolute top-2 right-2 z-10 text-[9px] px-1.5 py-0.5 rounded-full bg-gradient-to-r from-brand-pink to-brand-orange text-white font-medium">已实名</span>':'';
-  var clickAttr=clickable?' onclick="window.location.href=\'profile.html\'"':'';
+  var clickAttr=clickable?' onclick="window.Common.href=\'profile.html\'"':'';
   return'<div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 flex flex-col card-hover cursor-pointer"'+clickAttr+'><div class="relative"><img src="'+u.photo+'" class="w-full object-cover" style="aspect-ratio:3/4"/>'+ver+'</div><div class="p-3"><div class="flex items-center gap-1.5 mb-1"><span class="text-base font-black text-gray-800 truncate">'+u.name+'</span>'+gb+'</div><div class="text-xs text-gray-500 mb-1">'+u.age+'岁 · '+u.cons+' · '+u.marital+'</div><div class="text-xs text-gray-500 mb-1">属'+u.zodiac+' · '+u.blood+' · '+u.nation+'</div><div class="text-xs text-gray-500 mb-3">'+u.edu+' · '+u.height+'</div><div class="text-xs text-gray-600 leading-relaxed mb-2"><span class="text-gray-400 font-bold">自我介绍：</span>'+u.intro+'</div><div class="text-xs text-gray-600 leading-relaxed"><span class="text-gray-400 font-bold">择偶标准：</span>'+u.standard+'</div></div></div>';
 }
 
@@ -195,7 +195,7 @@ function goToFateDetail(){
     hasHeart:hasHeart,hasFollow:hasFollow,hasDislike:hasDislike
   };
   sessionStorage.setItem('fateData',JSON.stringify(data));
-  window.location.href='fate-detail.html';
+  window.Common.href='fate-detail.html';
 }
 
 function refreshPair(){
@@ -216,7 +216,7 @@ function refreshPair(){
 // ====== Render ======
 function renderCard(){
   el('app').innerHTML=
-    '<div class="pt-3 pb-2 px-4 flex items-center justify-between"><h1 class="text-sm font-bold text-gray-400">💕 推荐CP</h1><div class="flex gap-2"><span class="w-8 h-8 rounded-full bg-white shadow-sm border border-gray-100 flex items-center justify-center cursor-pointer" onclick="showHelp()"><i data-lucide="help-circle" class="w-4 h-4 text-gray-500"></i></span><span class="w-8 h-8 rounded-full bg-white shadow-sm border border-gray-100 flex items-center justify-center cursor-pointer" onclick="window.location.href=\'ranking.html\'"><i data-lucide="trophy" class="w-4 h-4 text-gray-500"></i></span><span class="w-8 h-8 rounded-full bg-white shadow-sm border border-gray-100 flex items-center justify-center cursor-pointer" onclick="window.location.href=\x27user-list.html\x27"><i data-lucide="search" class="w-4 h-4 text-gray-500"></i></span></div></div>'+
+    '<div class="pt-3 pb-2 px-4 flex items-center justify-between"><h1 class="text-sm font-bold text-gray-400">💕 推荐CP</h1><div class="flex gap-2"><span class="w-8 h-8 rounded-full bg-white shadow-sm border border-gray-100 flex items-center justify-center cursor-pointer" onclick="showHelp()"><i data-lucide="help-circle" class="w-4 h-4 text-gray-500"></i></span><span class="w-8 h-8 rounded-full bg-white shadow-sm border border-gray-100 flex items-center justify-center cursor-pointer" onclick="window.Common.href=\'ranking.html\'"><i data-lucide="trophy" class="w-4 h-4 text-gray-500"></i></span><span class="w-8 h-8 rounded-full bg-white shadow-sm border border-gray-100 flex items-center justify-center cursor-pointer" onclick="window.Common.href=\x27user-list.html\x27"><i data-lucide="search" class="w-4 h-4 text-gray-500"></i></span></div></div>'+
     '<div class="px-4 pb-28 fade-in-out"><div class="grid grid-cols-2 gap-1.5 mb-3">'+userCard(male,true)+userCard(female,true)+'</div><div class="grid grid-cols-2 gap-1.5 mb-4"><span id="lock-male" class="py-2.5 rounded-xl bg-white border border-gray-200 text-gray-400 font-bold text-sm card-hover cursor-pointer text-center flex items-center justify-center gap-1.5" onclick="toggleLock(\'male\')"><i data-lucide="lock" class="w-4 h-4"></i>帮TA选</span><span id="lock-female" class="py-2.5 rounded-xl bg-white border border-gray-200 text-gray-400 font-bold text-sm card-hover cursor-pointer text-center flex items-center justify-center gap-1.5" onclick="toggleLock(\'female\')"><i data-lucide="lock" class="w-4 h-4"></i>帮TA选</span></div></div>'+
     '<div class="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-gray-100 px-6 py-3"><div class="flex gap-3"><span class="flex-1 py-3.5 rounded-2xl bg-gray-100 text-gray-600 font-bold text-base card-hover flex items-center justify-center gap-2 shadow-sm" onclick="vote(\'no\')"><i data-lucide="heart-crack" class="w-5 h-5"></i>我觉得不成</span><span class="flex-1 py-3.5 rounded-2xl bg-red-50 text-red-500 font-bold text-base card-hover flex items-center justify-center gap-2 shadow-sm" onclick="vote(\'yes\')"><img src="images/logo.png" class="w-5 h-5 object-contain" onerror="this.style.display=\'none\'"/>我觉得能成</span></div></div>';
   // Restore lock state

@@ -183,7 +183,10 @@ test('报喜引导入口：首页已成卡 + 我的1314引导卡 + 资料页缘�
     assert.strictEqual(sandbox.window.location.href, 'baoxi.html', '记录结构损坏应回退报喜表单');
     store['baoxi_my_report'] = JSON.stringify({ id: 'mine', names: ['甜心小鹿', '陈屿'] });
     sandbox.window.Common.goBaoxi();
-    assert.strictEqual(sandbox.window.location.href, 'baoxi-detail.html?id=mine', '已报喜应去我的报喜');
+    assert.strictEqual(sandbox.window.location.href, 'baoxi.html', '记录缺头像/历程应视为损坏回退报喜表单');
+    store['baoxi_my_report'] = JSON.stringify({ id: 'mine', names: ['甜心小鹿', '陈屿'], avatars: ['a.jpg', 'b.jpg'], events: [{ time: '', html: 'x' }] });
+    sandbox.window.Common.goBaoxi();
+    assert.strictEqual(sandbox.window.location.href, 'baoxi-detail.html?id=mine', '已报喜且记录完好应去我的报喜');
     store['baoxi_my_report'] = null;
     sandbox.window.Common.goBaoxi('星河漫步', 'p.jpg', 'male');
     assert.strictEqual(sandbox.window.location.href, 'baoxi.html?name=' + encodeURIComponent('星河漫步') + '&photo=p.jpg&gender=male', '未报喜应带TA预选参数去报喜表单');
@@ -236,8 +239,13 @@ test('报喜引导入口：首页已成卡 + 我的1314引导卡 + 资料页缘�
     vm.runInContext("profile.matchScore=1314;profile.fateCard='success';render()", envProfile.sandbox);
     assert.ok(envProfile.document._html.includes('匹配度已达1314') && envProfile.document._html.includes('去报喜'), '缘分记录达1314应有报喜引导');
     assert.ok(envProfile.document._html.includes('goBaoxi'), '引导按钮应可点击去报喜');
+    assert.ok(envProfile.document._html.includes("goBaoxi('追风少年'"), '去报喜应带入缘分对象而非当前用户本人');
     vm.runInContext("profile.matchScore=100;profile.fateCard='pending';render()", envProfile.sandbox);
     assert.ok(envProfile.document._html.includes('就差最后一步') && !envProfile.document._html.includes('去报喜'), '未达1314不应显示报喜引导');
+    // 初始状态：固定随机数下匹配度<1314，不应随机出"你们成了"（与1314规则一致）
+    const envProfile2 = makeSandbox('profile.html');
+    assert.ok(vm.runInContext('profile.matchScore', envProfile2.sandbox) < 1314, '固定随机数下匹配度应<1314');
+    assert.strictEqual(vm.runInContext('profile.fateCard', envProfile2.sandbox), 'pending', '未达1314不应显示你们成了');
 });
 
 test('排行榜：靠谱榜为首个TAB，按靠谱值排名，全部/男女切换在右侧且默认全部', () => {
@@ -276,6 +284,10 @@ test('排行榜：靠谱榜为首个TAB，按靠谱值排名，全部/男女切�
     assert.ok(html.includes('靠谱值'), '应展示靠谱值');
     assert.ok(!html.includes('周排行') && !html.includes('总排行'), '靠谱榜不应有周榜/总榜切换');
     assert.ok(html.includes("View.genderClick('all')") && html.includes("View.genderClick('m')") && html.includes("View.genderClick('f')"), '应有全部/男女切换');
+    // 靠谱榜更新时间与"我的靠谱值"同源（周日20:00），且全部榜名次不重复（派生榜单不互相改写名次）
+    assert.ok(html.includes(sandbox.window.KaopuData.updatedAt), '靠谱榜更新时间应与我的靠谱值一致（周日20:00）');
+    const allRanks = Array.from(all, u => u.rank);
+    assert.strictEqual(new Set(allRanks).size, allRanks.length, '全部榜名次不应重复');
     const mlAutoIdx = html.indexOf('<div class="ml-auto">');
     assert.ok(mlAutoIdx !== -1 && mlAutoIdx < html.indexOf("View.genderClick('all')"), '全部/男女切换应放在右侧');
     // 默认全部：男女用户都展示
@@ -418,6 +430,9 @@ test('海报下载：上传大图压缩入快照 + 幸福时刻区域纯白检�
     assert.ok(src.includes("src.indexOf('data:image/')===0") && src.includes('src.length>150000'), '快照应压缩大体积上传图');
     assert.ok(src.includes("toDataURL('image/jpeg'"), '压缩应输出 JPEG dataURL');
     assert.ok(src.includes('photoOk') && src.includes('fallbackPoster(drawData)'), '幸福时刻区域纯白应转手绘兜底');
+    // 空白检测应按快照中照片的真实位置采样（photoRect），而非固定比例猜测的采样带
+    assert.ok(src.includes('photoRect') && src.includes("querySelector('[data-happy-photo]')"), '空白检测应按照片真实位置采样');
+    assert.ok(fs.readFileSync(path.join(dir, 'lib/baoxi-report.js'), 'utf8').includes('data-happy-photo'), '幸福时刻照片应带检测标记');
     // 报喜页与详情页共用该下载模块
     for (const f of ['baoxi.html', 'baoxi-detail.html']) {
         assert.ok(fs.readFileSync(path.join(dir, f), 'utf8').includes('lib/baoxi-poster.js'), f + ' 应加载海报下载模块');
@@ -487,6 +502,7 @@ test('完成报喜：保存我的报喜记录与已报喜标记', () => {
         avatars: ['a.jpg', 'b.jpg'],
         genders: ['female', 'male'],
         couplePhoto: '',
+        certPhoto: 'data:image/jpeg;base64,xxx',
         events: [{ time: '', html: 'x' }]
     })`, sandbox);
     assert.strictEqual(sandbox.localStorage.getItem('baoxi_submitted'), '1', '应写入已报喜标记');
@@ -494,7 +510,11 @@ test('完成报喜：保存我的报喜记录与已报喜标记', () => {
     assert.strictEqual(mine.id, 'mine');
     assert.strictEqual(mine.names[0], '甜心小鹿');
     assert.strictEqual(mine.couplePhoto, '', '无合照时记录留空（详情页负责回退占位图）');
+    assert.strictEqual(mine.certPhoto, 'data:image/jpeg;base64,xxx', '应保存结婚证照片');
     assert.ok(Array.isArray(mine.posterLines) && mine.posterLines.length >= 1, '应保存海报绘制用的历程文案');
+    // 未传结婚证：记录留空（我的报喜页据此展示补传区块）
+    vm.runInContext("saveMyReport({ time:'x', names:['a','b'], avatars:['a.jpg','b.jpg'], genders:['female','male'], couplePhoto:'', events:[{time:'',html:'x'}] })", sandbox);
+    assert.strictEqual(JSON.parse(sandbox.localStorage.getItem('baoxi_my_report')).certPhoto, '', '未传结婚证时记录应留空');
 });
 
 test('列表页悬浮按钮：未报喜显示我要报喜，已报喜显示我的报喜', () => {
@@ -504,7 +524,7 @@ test('列表页悬浮按钮：未报喜显示我要报喜，已报喜显示我�
     assert.ok(document._html.includes('我要报喜') && document._html.includes("href='baoxi.html'"), '未报喜应显示我要报喜');
     assert.ok(!document._html.includes('我的报喜'), '未报喜不应显示我的报喜');
     store['baoxi_submitted'] = '1';
-    store['baoxi_my_report'] = JSON.stringify({ id: 'mine', names: ['甜心小鹿', '陈屿'] });
+    store['baoxi_my_report'] = JSON.stringify({ id: 'mine', names: ['甜心小鹿', '陈屿'], avatars: ['a.jpg', 'b.jpg'], events: [{ time: '', html: 'x' }] });
     vm.runInContext('render()', sandbox);
     assert.ok(document._html.includes('我的报喜') && document._html.includes('baoxi-detail.html?id=mine'), '已报喜应显示我的报喜');
     assert.ok(!document._html.includes('我要报喜'), '已报喜不应再显示我要报喜');
@@ -563,4 +583,154 @@ test('报喜页：结婚证照片（非必填）+ 审核红包提示 + 共享海
     assert.ok(!src.includes('返回首页'), '报喜提交后界面返回首页应改为返回');
     assert.ok(sandbox.window.BaoxiReport && typeof sandbox.window.BaoxiReport.posterHtml === 'function', '共享海报模块应加载');
     assert.ok(sandbox.window.BaoxiPoster && typeof sandbox.window.BaoxiPoster.download === 'function', '海报下载能力应在共享模块中');
+});
+
+test('报喜首页：未注册脱单资料随机分支——底部邀请报喜+神助攻组合弹窗', () => {
+    clearStore();
+    const { document, toasts, sandbox } = makeSandbox('baoxi-list.html');
+    // 默认分支（随机数 0.5 不触发）：有脱单资料 → 我要报喜
+    vm.runInContext('render()', sandbox);
+    assert.ok(document._html.includes('我要报喜') && !document._html.includes('邀请报喜'), '默认分支应显示我要报喜');
+    // 未注册分支：底部按钮变邀请报喜，点击弹出神助攻过的组合记录
+    vm.runInContext('NO_PROFILE=true; render()', sandbox);
+    const html = document._html;
+    assert.ok(html.includes('邀请报喜') && !html.includes('我要报喜') && !html.includes('我的报喜'), '未注册分支底部按钮应为邀请报喜');
+    assert.ok(html.includes('openInvite()'), '邀请报喜按钮应打开底部弹窗');
+    assert.ok(html.includes('invite-popup') && html.includes('您神助攻过的组合'), '应有邀请报喜底部弹窗');
+    const pairCount = vm.runInContext('ASSIST_PAIRS.length', sandbox);
+    assert.strictEqual((html.match(/为他俩送上神助攻/g) || []).length, pairCount, '弹窗应展示神助攻过的组合记录');
+    assert.strictEqual((html.match(/inviteOne\(/g) || []).length, pairCount, '每条组合记录应有邀请报喜按钮');
+    // 点击邀请：提示已向对方发出邀请
+    vm.runInContext("inviteOne('阳光骑士','栀子花开')", sandbox);
+    assert.ok(toasts.includes('已向对方发出邀请！'), '点击邀请应提示已发出邀请');
+    // 已报喜用户必然注册过资料：即使随机到未注册分支，仍显示"我的报喜"
+    store['baoxi_submitted'] = '1';
+    store['baoxi_my_report'] = JSON.stringify({ id: 'mine', names: ['甜心小鹿', '陈屿'], avatars: ['a.jpg', 'b.jpg'], events: [{ time: '', html: 'x' }] });
+    vm.runInContext('render()', sandbox);
+    assert.ok(document._html.includes('我的报喜') && !document._html.includes('邀请报喜'), '已报喜用户不应显示邀请报喜');
+});
+
+test('我的报喜：未传结婚证时海报上方有补传区块（红色加粗大字520红包提示）', () => {
+    clearStore();
+    store['baoxi_my_report'] = JSON.stringify({
+        id: 'mine', time: '2026年10月20日',
+        names: ['甜心小鹿', '陈屿'],
+        avatars: ['images/photo/female/crop.0.67.1079.1438.0.750.1000.jpg', 'images/photo/male/crop.0.0.1078.1438.0.750.1000.jpg'],
+        genders: ['female', 'male'],
+        couplePhoto: '',
+        story: '我们报喜啦！感谢平台见证我们的幸福！',
+        events: [{ time: '', html: '<b>甜心小鹿</b>加入了他俩能成' }]
+    });
+    const { document, sandbox } = makeSandbox('baoxi-detail.html', '?id=mine');
+    vm.runInContext('render()', sandbox);
+    const html = document._html;
+    assert.ok(html.includes('补传结婚证') && html.includes('点击上传结婚证照片'), '未传结婚证应显示补传区块');
+    assert.ok(html.includes('平台审核通过后，将为您送上520元官方红包祝贺'), '应有审核红包提示');
+    assert.ok(html.includes('text-base font-bold text-red-500'), '红包提示应为红色加粗大字');
+    const certIdx = html.indexOf('补传结婚证'), posterIdx = html.indexOf('喜 结 良 缘');
+    assert.ok(certIdx !== -1 && certIdx < posterIdx, '补传区块应位于结缘海报上方');
+    assert.ok(html.includes('onCertPick(this)') && html.includes('id="mine-cert"'), '补传区块应可单独上传结婚证');
+    // 已传结婚证：隐藏补传区块
+    const rec = JSON.parse(store['baoxi_my_report']);
+    rec.certPhoto = 'data:image/jpeg;base64,xxx';
+    store['baoxi_my_report'] = JSON.stringify(rec);
+    vm.runInContext('render()', sandbox);
+    assert.ok(!document._html.includes('补传结婚证'), '已传结婚证不应再显示补传区块');
+    // 他人的报喜详情不受影响
+    const env2 = makeSandbox('baoxi-detail.html', '?id=bx1');
+    vm.runInContext('render()', env2.sandbox);
+    assert.ok(!env2.document._html.includes('补传结婚证'), '他人的报喜详情不应显示补传区块');
+});
+
+test('我的报喜：底部可删除报喜（仅演示），删除后回到未报喜状态', () => {
+    clearStore();
+    store['baoxi_submitted'] = '1';
+    store['baoxi_my_report'] = JSON.stringify({
+        id: 'mine', time: '2026年10月20日',
+        names: ['甜心小鹿', '陈屿'],
+        avatars: ['images/photo/female/crop.0.67.1079.1438.0.750.1000.jpg', 'images/photo/male/crop.0.0.1078.1438.0.750.1000.jpg'],
+        genders: ['female', 'male'],
+        couplePhoto: '',
+        story: '我们报喜啦！感谢平台见证我们的幸福！',
+        events: [{ time: '', html: '<b>甜心小鹿</b>加入了他俩能成' }]
+    });
+    const { document, toasts, sandbox } = makeSandbox('baoxi-detail.html', '?id=mine');
+    vm.runInContext('render()', sandbox);
+    const html = document._html;
+    assert.ok(html.includes('删除报喜（仅演示）') && html.includes('deleteMyReport()'), '我的报喜底部应有删除报喜按钮');
+    // 删除后：标记与记录清除，回到未报喜引导
+    vm.runInContext('deleteMyReport()', sandbox);
+    assert.strictEqual(store['baoxi_submitted'], undefined, '删除后应清除已报喜标记');
+    assert.strictEqual(store['baoxi_my_report'], undefined, '删除后应清除报喜记录');
+    assert.ok(document._html.includes('你还未报喜') && document._html.includes('去报喜'), '删除后应回到未报喜引导');
+    assert.ok(toasts.includes('报喜信息已删除'), '删除后应提示已删除');
+    // 他人的报喜详情不应有删除按钮
+    const env2 = makeSandbox('baoxi-detail.html', '?id=bx1');
+    vm.runInContext('render()', env2.sandbox);
+    assert.ok(!env2.document._html.includes('删除报喜'), '他人的报喜详情不应有删除按钮');
+});
+
+test('报喜页：第一步选择TA支持按能成ID或昵称搜索并可清空', () => {
+    clearStore();
+    const { document, sandbox } = makeSandbox('baoxi.html');
+    vm.runInContext('renderForm()', sandbox);
+    let html = document._html;
+    assert.ok(html.includes('输入能成ID或昵称') && html.includes('pick-search') && html.includes('applySearch()'), '应有搜索框与搜索按钮');
+    // 候选用户均应有唯一能成ID，卡片展示ID
+    const ids = vm.runInContext('MATCHED.map(function(u){return u.id;})', sandbox);
+    assert.ok(Array.from(ids).every(Boolean), '候选用户均应有能成ID');
+    assert.strictEqual(new Set(Array.from(ids)).size, Array.from(ids).length, '能成ID应唯一');
+    assert.ok(html.includes('ID:10000136'), '候选卡片应展示能成ID');
+    // 候选性别一致：均为男性，卡片不显示性别标识
+    assert.ok(vm.runInContext("MATCHED.every(function(u){return u.gender==='male';})", sandbox), '1314候选应均为男性');
+    const railHtml = vm.runInContext('railHtml()', sandbox);
+    assert.ok(!railHtml.includes('bg-blue-50') && !railHtml.includes('bg-pink-50') && !railHtml.includes('data-lucide="mars"') && !railHtml.includes('data-lucide="venus"'), '候选卡片不应显示性别标识');
+    // 按昵称关键词过滤：只保留符合关键词的用户，并显示结果数与清空入口
+    const secHtml = vm.runInContext("(function(){searchKw='风';return pickSectionHtml();})()", sandbox);
+    assert.ok(secHtml.includes('清风徐来') && secHtml.includes('追风少年'), '昵称含关键词的用户应保留');
+    assert.ok(!secHtml.includes('阳光骑士') && !secHtml.includes('奶茶妹妹'), '昵称不含关键词的用户应被过滤');
+    assert.ok(secHtml.includes('找到 <b>2</b>') && secHtml.includes('清空搜索'), '应有结果数与清空搜索入口');
+    // 按能成ID搜索：精确命中
+    const byId = vm.runInContext("(function(){searchKw='10000137';return visibleUsers().map(function(u){return u.name;});})()", sandbox);
+    assert.deepStrictEqual(Array.from(byId), ['清风徐来'], '按能成ID搜索应精确命中');
+    // 无匹配：返回空并提示
+    assert.strictEqual(vm.runInContext("(function(){searchKw='不存在';return visibleUsers().length;})()", sandbox), 0, '无匹配应返回空列表');
+    const noneHtml = vm.runInContext("(function(){searchKw='不存在';return pickSectionHtml();})()", sandbox);
+    assert.ok(noneHtml.includes('没有找到符合条件的用户'), '无匹配应有空结果提示');
+    // 清空搜索条件：恢复全部候选
+    vm.runInContext("searchKw='不存在'; clearSearch()", sandbox);
+    assert.strictEqual(vm.runInContext('searchKw', sandbox), '', '清空后搜索词应为空');
+    assert.strictEqual(vm.runInContext('visibleUsers().length', sandbox), vm.runInContext('MATCHED.length', sandbox), '清空后应显示全部候选');
+    // 搜索词转义防注入
+    const escHtml = vm.runInContext("(function(){searchKw='<b>';return pickSectionHtml();})()", sandbox);
+    assert.ok(escHtml.includes('value="&lt;b&gt;"'), '搜索词应转义防注入');
+});
+
+test('v参数透传：入口带v后持久化，站内跳转自动附加', () => {
+    clearStore();
+    // 带 v 进入页面：持久化参数
+    const env = makeSandbox('baoxi-list.html', '?v=20261104');
+    assert.strictEqual(env.sandbox.window.Common.getVParam(), '20261104', '入口v参数应被持久化');
+    // 赋值式跳转自动附加 v（无查询参数用?，有查询参数用&）
+    env.sandbox.window.Common.href = 'baoxi.html';
+    assert.strictEqual(env.sandbox.window.location.href, 'baoxi.html?v=20261104', '站内跳转应附加v参数');
+    env.sandbox.window.Common.href = 'baoxi-detail.html?id=mine';
+    assert.strictEqual(env.sandbox.window.location.href, 'baoxi-detail.html?id=mine&v=20261104', '带查询参数的跳转应以&连接v参数');
+    // 外链/锚点/已带v 不附加
+    env.sandbox.window.Common.href = 'https://example.com/x';
+    assert.strictEqual(env.sandbox.window.location.href, 'https://example.com/x', '外链不应附加v参数');
+    env.sandbox.window.Common.href = '#top';
+    assert.strictEqual(env.sandbox.window.location.href, '#top', '锚点不应附加v参数');
+    env.sandbox.window.Common.href = 'baoxi.html?v=999';
+    assert.strictEqual(env.sandbox.window.location.href, 'baoxi.html?v=999', '已带v参数的地址不重复附加');
+    // goBaoxi 跳转同样带 v
+    env.sandbox.window.Common.goBaoxi();
+    assert.strictEqual(env.sandbox.window.location.href, 'baoxi.html?v=20261104', 'goBaoxi跳转应附加v参数');
+    // 后续页面即使不带 v 进入，也继续透传（持久化读取）
+    const env2 = makeSandbox('index.html');
+    env2.sandbox.window.Common.href = 'ranking.html';
+    assert.strictEqual(env2.sandbox.window.location.href, 'ranking.html?v=20261104', '后续页面应继续透传v参数');
+    // 新的入口 v 参数覆盖旧值
+    const env3 = makeSandbox('ranking.html', '?v=20261225');
+    assert.strictEqual(env3.sandbox.window.Common.getVParam(), '20261225', '新的入口v参数应覆盖旧值');
 });

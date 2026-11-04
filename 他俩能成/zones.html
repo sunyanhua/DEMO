@@ -40,7 +40,7 @@ var ZONES=[
 function render(){
   var html=ZONES.map(function(z){
     var tags=z.tags.map(function(t){return'<span class="text-[10px] px-2 py-0.5 rounded-full bg-gray-50 text-gray-500 border border-gray-100">'+t+'</span>'}).join('');
-    return '<div class="bg-white rounded-2xl p-4 shadow-sm deco-card cursor-pointer card-hover mb-4" onclick="window.location.href=\''+z.href+'\'">'+
+    return '<div class="bg-white rounded-2xl p-4 shadow-sm deco-card cursor-pointer card-hover mb-4" onclick="window.Common.href=\''+z.href+'\'">'+
       '<div class="flex items-start gap-3.5">'+
         '<img src="'+z.icon+'" class="w-14 h-14 rounded-2xl object-contain bg-gray-50 border border-gray-100 flex-shrink-0"/>'+
         '<div class="flex-1 min-w-0">'+

@@ -268,10 +268,20 @@ function snapshotPoster(){
   Array.prototype.forEach.call(clone.querySelectorAll('*'),inlineStyles);
   clone.style.marginBottom='0';
   freezeGeometry(poster,clone);
+  // 幸福时刻照片在快照中的真实位置（空白检测用它，而非固定比例猜测的采样带）
+  var pad=16;
+  var photoRect=null;
+  var hp=clone.querySelector('[data-happy-photo]');
+  if(hp){
+    var pr=clone.getBoundingClientRect();
+    var hr=hp.getBoundingClientRect();
+    if(hr.width>=20&&hr.height>=20){
+      photoRect={x:hr.left-pr.left+pad,y:hr.top-pr.top+pad,w:hr.width,h:hr.height};
+    }
+  }
   holder.removeChild(clone);
   document.body.removeChild(holder);
   animateEls.forEach(function(el){el.style.removeProperty('animation');});
-  var pad=16;
   // 海报整体偏移留白，四周对称（绝对定位不受 wrapper padding 影响，需显式偏移）
   clone.style.left=pad+'px';
   clone.style.top=pad+'px';
@@ -283,7 +293,7 @@ function snapshotPoster(){
     '<div xmlns="http://www.w3.org/1999/xhtml" style="width:'+w+'px;height:'+(h+pad*2)+'px;padding:'+pad+'px;box-sizing:content-box;font-family:'+bodyFont+';">'+
     html+
     '</div></foreignObject></svg>';
-  return {uri:'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg),w:w+pad*2,h:h+pad*2};
+  return {uri:'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg),w:w+pad*2,h:h+pad*2,photoRect:photoRect};
 }
 
 function fallbackPoster(drawData){
@@ -307,18 +317,22 @@ function downloadPoster(drawData){
           var nonEmpty=false;
           for(var i=3;i<data.length;i+=4000){if(data[i]>0){nonEmpty=true;break;}}
           if(!nonEmpty){fallbackPoster(drawData);return;}
-          // 幸福时刻区域检测：上传照片在 SVG 快照中渲染失败时该区域为纯白，转手绘兜底
-          var pw=(snap.w-32)*scale,ph=(snap.h-32)*scale;
-          var x1=Math.round((16+0.30*pw)),x2=Math.round((16+0.70*pw));
-          var y1=Math.round((16+0.60*ph)),y2=Math.round((16+0.68*ph));
-          var photoOk=false;
-          for(var yy=y1;yy<y2&&!photoOk;yy+=Math.max(4,Math.round((y2-y1)/24))){
-            for(var xx=x1;xx<x2;xx+=Math.max(4,Math.round((x2-x1)/24))){
-              var idx=(yy*canvas.width+xx)*4;
-              if(data[idx]<250||data[idx+1]<250||data[idx+2]<250){photoOk=true;break;}
+          // 幸福时刻区域检测：上传照片在 SVG 快照中渲染失败时该区域为纯白，转手绘兜底。
+          // 采样带取自快照中照片的真实位置（photoRect），向内收缩避开圆角与卡片边框的白色。
+          if(snap.photoRect){
+            var x1=Math.max(0,Math.round(snap.photoRect.x*scale)),x2=Math.min(canvas.width,Math.round((snap.photoRect.x+snap.photoRect.w)*scale));
+            var y1=Math.max(0,Math.round(snap.photoRect.y*scale)),y2=Math.min(canvas.height,Math.round((snap.photoRect.y+snap.photoRect.h)*scale));
+            var ix=Math.round((x2-x1)*0.12),iy=Math.round((y2-y1)*0.12);
+            x1+=ix;x2-=ix;y1+=iy;y2-=iy;
+            var photoOk=false;
+            for(var yy=y1;yy<y2&&!photoOk;yy+=Math.max(4,Math.round((y2-y1)/24))){
+              for(var xx=x1;xx<x2;xx+=Math.max(4,Math.round((x2-x1)/24))){
+                var idx=(yy*canvas.width+xx)*4;
+                if(data[idx]<250||data[idx+1]<250||data[idx+2]<250){photoOk=true;break;}
+              }
             }
+            if(!photoOk){fallbackPoster(drawData);return;}
           }
-          if(!photoOk){fallbackPoster(drawData);return;}
           saveCanvas(canvas);
         }catch(e){
           fallbackPoster(drawData);

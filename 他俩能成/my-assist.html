@@ -32,11 +32,11 @@ for(var i=0;i<5;i++){
 function render(){
   var balanceCard='<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-3 deco-card">'+
     '<div class="text-center mb-4"><span class="text-xs text-gray-500">神助攻次数</span><div class="text-5xl font-black text-brand-pink my-2">'+assistCount+'</div><span class="text-xs text-gray-400">次</span></div>'+
-    '<div class="flex gap-3"><span class="flex-1 text-center py-2.5 rounded-xl bg-brand-pink/10 text-brand-pink text-sm font-bold card-hover cursor-pointer border border-brand-pink/20" onclick="window.Common.showPopup(\x27guide-popup\x27)">操作说明</span><span class="flex-1 text-center py-2.5 rounded-xl bg-gradient-to-tr from-brand-pink to-brand-orange text-white text-sm font-bold card-hover cursor-pointer shadow-lg shadow-brand-pink/20" onclick="window.location.href=\x27assist.html\x27">前去助攻</span></div>'+
+    '<div class="flex gap-3"><span class="flex-1 text-center py-2.5 rounded-xl bg-brand-pink/10 text-brand-pink text-sm font-bold card-hover cursor-pointer border border-brand-pink/20" onclick="window.Common.showPopup(\x27guide-popup\x27)">操作说明</span><span class="flex-1 text-center py-2.5 rounded-xl bg-gradient-to-tr from-brand-pink to-brand-orange text-white text-sm font-bold card-hover cursor-pointer shadow-lg shadow-brand-pink/20" onclick="window.Common.href=\x27assist.html\x27">前去助攻</span></div>'+
   '</div>';
 
   var listRows=records.map(function(r){
-    return'<div class="border-b border-gray-50 cursor-pointer card-hover" onclick="window.location.href=\x27fate-detail.html\x27">'+
+    return'<div class="border-b border-gray-50 cursor-pointer card-hover" onclick="window.Common.href=\x27fate-detail.html\x27">'+
       '<div class="flex items-center justify-between px-4 py-4">'+
         '<div class="flex flex-col items-center gap-1" style="width:70px">'+
           '<img src="'+r.male.photo+'" class="w-14 h-14 rounded-full object-cover border-2 border-blue-100"/>'+

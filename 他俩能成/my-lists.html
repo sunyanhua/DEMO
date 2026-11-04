@@ -128,7 +128,7 @@ function render(){
 
   function row(u,info,right,isNew){
     var dot=isNew?'<span class="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white" style="top:-0.05rem;right:-0.05rem;"></span>':'';
-    return'<div class="flex items-center gap-3 py-3 border-b border-gray-200 cursor-pointer card-hover" onclick="window.location.href=\x27profile.html\x27">'+
+    return'<div class="flex items-center gap-3 py-3 border-b border-gray-200 cursor-pointer card-hover" onclick="window.Common.href=\x27profile.html\x27">'+
       '<div class="relative flex-shrink-0"><img src="'+u.photo+'" class="w-10 h-10 rounded-full object-cover border border-gray-100"/>'+dot+'</div>'+
       '<div class="flex-1 min-w-0">'+
         '<div class="flex items-center gap-1.5"><span class="text-sm font-bold text-gray-800 truncate max-w-[72px]">'+u.name+'</span>'+gb(u)+'</div>'+

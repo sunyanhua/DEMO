@@ -67,7 +67,7 @@ function doRegister(){
   registered=true;
   window.Common.showToast('注册成功！即将返回个人中心');
   render();
-  setTimeout(function(){window.location.href='me.html'},1200);
+  setTimeout(function(){window.Common.href='me.html'},1200);
 }
 document.addEventListener('DOMContentLoaded',function(){render()});
 </script>

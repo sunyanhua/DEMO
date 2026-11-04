@@ -15,6 +15,7 @@
 <div class="bg-decoration" style="z-index:0;"><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div></div>
 
 <div id="app" class="relative z-[1]"></div>
+<div id="gift-modal-root"></div>
 
 <script src="common.js"></script>
 <script src="lib/baoxi-data.js"></script>
@@ -25,23 +26,88 @@
 <script>
 var rawId = new URLSearchParams(window.location.search).get('id');
 var pair = window.BaoxiData.getPair(rawId);
-// 我的报喜：读取自己完成报喜后保存的记录
-if (!pair && rawId === 'mine') {
+// 我的报喜：读取自己完成报喜后保存的记录（每次渲染重新读取，补传结婚证等更新即时生效）
+function loadMine() {
     try { pair = JSON.parse(localStorage.getItem('baoxi_my_report') || 'null'); } catch (e) { pair = null; }
+    // 记录结构不完整（缺头像/历程）按未报喜处理，避免渲染时报错白屏
+    if (pair && (!Array.isArray(pair.avatars) || pair.avatars.length !== 2 || !Array.isArray(pair.events))) pair = null;
     if (pair && !pair.couplePhoto) pair.couplePhoto = 'images/logo_center.png';
 }
-var giftUi = window.BaoxiGifts.createUi({ render: render });
+if (!pair && rawId === 'mine') loadMine();
+var giftUi = window.BaoxiGifts.createUi({ render: render, onGiftDone: refreshGiftSection });
 
 // 海报最下方区域：随礼列表 + 我要随份子（我的报喜与报喜提交后界面一致，不显示）
 function giftSectionHtml() {
     if (pair.id === 'mine') return '';
+    return '<div id="gift-section">' + giftSectionInnerHtml() + '</div>';
+}
+function giftSectionInnerHtml() {
     var action = window.BaoxiGifts.myGiftDone(pair.id)
         ? '<span class="block text-center w-full py-3 rounded-full bg-gray-100 text-gray-400 font-bold text-sm">已随过啦，心意已送达 💝</span>'
         : '<span onclick="giftUi.open(\'' + pair.id + '\')" class="block text-center cursor-pointer w-full py-3 rounded-full bg-gradient-to-tr from-brand-pink to-brand-orange text-white font-bold text-sm shadow-lg shadow-brand-pink/30 card-hover">我要随份子</span>';
     return window.BaoxiGifts.giftListHtml(pair) + '<div class="mt-3">' + action + '</div>';
 }
+// 随份子成功后就地刷新份子清单，避免整页渲染把页面滚回顶部
+function refreshGiftSection() {
+    var gs = document.getElementById('gift-section');
+    if (gs && gs !== document) { gs.innerHTML = giftSectionInnerHtml(); }
+    else { render(); }
+}
+
+// 补传结婚证：我的报喜未传结婚证时，结缘海报上方展示补传区块
+function certUploadHtml() {
+    return '<div class="px-4 pt-4">' +
+        '<div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 mb-4">' +
+            '<div class="flex items-center gap-2 mb-3"><span class="w-6 h-6 rounded-full bg-brand-pink/10 text-brand-pink flex items-center justify-center flex-shrink-0"><i data-lucide="file-text" class="w-4 h-4"></i></span><span class="font-black text-gray-800 text-sm">补传结婚证</span></div>' +
+            '<label for="mine-cert" class="block cursor-pointer card-hover">' +
+                '<input type="file" id="mine-cert" accept="image/*" class="hidden" onchange="onCertPick(this)"/>' +
+                '<div class="border-2 border-dashed border-brand-pink/40 rounded-xl py-6 flex flex-col items-center justify-center gap-2" style="background:#FFF9F7;">' +
+                    '<div class="w-12 h-12 rounded-full bg-brand-pink/10 flex items-center justify-center"><i data-lucide="image-plus" class="w-6 h-6 text-brand-pink"></i></div>' +
+                    '<span class="text-sm font-bold text-gray-700">点击上传结婚证照片</span>' +
+                    '<span class="text-xs text-gray-400">审核通过后将隐藏展示</span>' +
+                '</div>' +
+            '</label>' +
+            '<p class="text-base font-bold text-red-500 mt-3 flex items-center gap-1"><i data-lucide="info" class="w-4 h-4 flex-shrink-0"></i>平台审核通过后，将为您送上520元官方红包祝贺</p>' +
+        '</div>' +
+    '</div>';
+}
+
+function onCertPick(input) {
+    var f = input.files && input.files[0];
+    if (!f) return;
+    var r = new FileReader();
+    r.onload = function () {
+        var data = r.result;
+        if (String(data).length > 500000) { window.Common.showToast('图片过大，请重新选择'); if (input) input.value = ''; return; }
+        var ok = false;
+        try {
+            pair.certPhoto = data;
+            localStorage.setItem('baoxi_my_report', JSON.stringify(pair));
+            ok = true;
+        } catch (e) {}
+        // 写入成功才提示成功（写入失败时 render 会重新读回旧记录，上传的照片并不存在）
+        if (ok) {
+            render();
+            window.Common.showToast('结婚证已补传，等待平台审核');
+        } else {
+            window.Common.showToast('保存失败，请重试');
+        }
+    };
+    r.readAsDataURL(f);
+}
+
+// 删除报喜（仅演示）：清除已报喜标记与报喜记录，回到未报喜状态
+function deleteMyReport() {
+    try {
+        localStorage.removeItem('baoxi_submitted');
+        localStorage.removeItem('baoxi_my_report');
+    } catch (e) {}
+    render();
+    window.Common.showToast('报喜信息已删除');
+}
 
 function render() {
+    if (rawId === 'mine') loadMine();
     var header = `
     <div class="sticky top-0 z-40 bg-white/90 backdrop-blur-md px-4 py-3 flex items-center justify-between">
         <span onclick="window.history.back()" class="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center cursor-pointer"><i data-lucide="chevron-left" class="w-5 h-5 text-gray-600"></i></span>
@@ -54,7 +120,7 @@ function render() {
             ? '<div class="text-center py-16 px-8">' +
                 '<p class="text-4xl mb-3">🎉</p>' +
                 '<p class="text-sm text-gray-400 mb-5">你还未报喜，完成报喜后即可在这里查看自己的结缘海报</p>' +
-                '<span class="block text-center cursor-pointer w-full py-3 rounded-full bg-gradient-to-tr from-brand-pink to-brand-orange text-white font-bold text-sm shadow-lg shadow-brand-pink/30 card-hover" onclick="window.location.href=\'baoxi.html\'">去报喜</span>' +
+                '<span class="block text-center cursor-pointer w-full py-3 rounded-full bg-gradient-to-tr from-brand-pink to-brand-orange text-white font-bold text-sm shadow-lg shadow-brand-pink/30 card-hover" onclick="window.Common.href=\'baoxi.html\'">去报喜</span>' +
               '</div>'
             : '<div class="text-center py-16 text-sm text-gray-400">未找到该报喜喜讯</div>';
         document.getElementById('app').innerHTML = header + notFound + giftUi.modalHtml();
@@ -72,12 +138,16 @@ function render() {
             '</div>' +
           '</div>'
         : '';
+    // 我的报喜：未传结婚证时，结缘海报上方展示补传区块
+    var certBlock = (isMine && !pair.certPhoto) ? certUploadHtml() : '';
     var bottom = isMine
         ? '<span class="block text-center cursor-pointer w-full py-3.5 rounded-full bg-gradient-to-tr from-brand-pink to-brand-orange text-white font-bold text-base shadow-lg shadow-brand-pink/30 card-hover flex items-center justify-center gap-2" onclick="downloadMinePoster()"><i data-lucide="download" class="w-5 h-5"></i>下载结缘海报</span>' +
-          '<p class="text-center text-xs mt-4"><a href="javascript:;" onclick="window.history.back()" style="color:#C8B0A8;text-decoration:underline;">返回</a></p>'
+          '<p class="text-center text-xs mt-4"><a href="javascript:;" onclick="window.history.back()" style="color:#C8B0A8;text-decoration:underline;">返回</a></p>' +
+          '<p class="text-center text-xs mt-6"><span onclick="deleteMyReport()" class="inline-block px-5 py-2 rounded-full bg-red-50 text-red-500 font-bold cursor-pointer card-hover">删除报喜（仅演示）</span></p>'
         : '<span class="block text-center cursor-pointer w-full py-3.5 rounded-full bg-gradient-to-tr from-brand-pink to-brand-orange text-white font-bold text-base shadow-lg shadow-brand-pink/30 card-hover flex items-center justify-center gap-2" onclick="window.history.back()"><i data-lucide="chevron-left" class="w-5 h-5"></i>返回</span>';
     document.getElementById('app').innerHTML = header +
         statusBanner +
+        certBlock +
         window.BaoxiReport.posterHtml({
             cn: pair.names[0],
             mn: pair.names[1],

@@ -76,7 +76,7 @@ function reportPosterHtml(data){
           '<div class="text-left mt-4 fade-in">'+
             '<p class="text-sm font-black mb-3 flex items-center gap-1.5" style="color:#3D1F1A;"><span>📷</span>幸福时刻</p>'+
             '<div class="rounded-2xl p-2 bg-white" style="box-shadow:0 8px 24px rgba(200,80,60,0.16);">'+
-              '<img src="'+data.couplePhoto+'" class="w-full rounded-xl object-cover" style="max-height:300px;"/>'+
+              '<img src="'+data.couplePhoto+'" data-happy-photo="1" class="w-full rounded-xl object-cover" style="max-height:300px;"/>'+
             '</div>'+
           '</div>'+
           // 能成祝福（全宽卡片 + 右下角喜字印章）

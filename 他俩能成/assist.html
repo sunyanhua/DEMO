@@ -27,7 +27,7 @@ function applySearch(){
 
 function render(){
   var rows=filteredPairs.map(function(p){
-    return'<div class="border-b border-gray-200 cursor-pointer card-hover" onclick="window.location.href=\x27fate-detail.html\x27">'+
+    return'<div class="border-b border-gray-200 cursor-pointer card-hover" onclick="window.Common.href=\x27fate-detail.html\x27">'+
       '<div class="flex items-start justify-between px-4 py-4">'+
         '<div class="flex flex-col items-center gap-0.5" style="width:70px">'+
           '<img src="'+p.malePhoto+'" class="w-14 h-14 rounded-full object-cover border-2 border-blue-100"/>'+
@@ -48,7 +48,7 @@ function render(){
   }).join('');
 
   document.getElementById('app').innerHTML=
-    '<div class="top-section"><div class="px-4 pt-3 pb-2"><h1 class="text-lg font-black text-gray-800 flex items-center justify-between"><span class="flex items-center gap-1.5"><i data-lucide="zap" class="w-5 h-5 text-brand-pink"></i>神助攻</span><span class="px-4 py-1.5 rounded-full bg-white border-2 border-brand-pink/30 text-brand-pink text-xs font-bold card-hover cursor-pointer shadow-sm" onclick="window.location.href=\x27my-assist.html\x27">我的</span></h1></div></div>'+
+    '<div class="top-section"><div class="px-4 pt-3 pb-2"><h1 class="text-lg font-black text-gray-800 flex items-center justify-between"><span class="flex items-center gap-1.5"><i data-lucide="zap" class="w-5 h-5 text-brand-pink"></i>神助攻</span><span class="px-4 py-1.5 rounded-full bg-white border-2 border-brand-pink/30 text-brand-pink text-xs font-bold card-hover cursor-pointer shadow-sm" onclick="window.Common.href=\x27my-assist.html\x27">我的</span></h1></div></div>'+
     '<div id="search-sentinel" class="rounded-top"></div>'+
     '<div class="content-section">'+
       '<div id="search-bar" class="sticky top-0 z-30 px-4 pt-3 pb-2">'+

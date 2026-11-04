@@ -45,12 +45,12 @@ var D=window.AppData;
 // ====== Mock 数据：当前用户 & 已达1314的TA ======
 var CURRENT={name:'甜心小鹿',gender:'female',photo:D.PHOTOS_F[0]};
 var MATCHED=[
-  {name:'阳光骑士',gender:'male',photo:D.PHOTOS_M[0]},
-  {name:'清风徐来',gender:'male',photo:D.PHOTOS_M[1]},
-  {name:'北辰',gender:'male',photo:D.PHOTOS_M[2]},
-  {name:'奶茶妹妹',gender:'female',photo:D.PHOTOS_F[4]},
-  {name:'月亮不睡',gender:'female',photo:D.PHOTOS_F[8]},
-  {name:'追风少年',gender:'male',photo:D.PHOTOS_M[6]},
+  {name:'阳光骑士',gender:'male',photo:D.PHOTOS_M[0],id:'10000136'},
+  {name:'清风徐来',gender:'male',photo:D.PHOTOS_M[1],id:'10000137'},
+  {name:'北辰',gender:'male',photo:D.PHOTOS_M[2],id:'10000138'},
+  {name:'海的彼岸',gender:'male',photo:D.PHOTOS_M[4],id:'10000139'},
+  {name:'咖啡不加糖',gender:'male',photo:D.PHOTOS_M[5],id:'10000140'},
+  {name:'追风少年',gender:'male',photo:D.PHOTOS_M[6],id:'10000141'},
 ];
 
 // ====== 状态 ======
@@ -68,7 +68,8 @@ var reportData=null;
     if(qn && qn!==CURRENT.name){
       var qg=q.get('gender')==='female'?'female':'male';
       var qp=q.get('photo')||'';
-      // 照片仅接受站内图片路径，其余回退为按性别的默认头像
+      // 照片仅接受站内图片路径（先清洗引号/尖括号防属性逃逸注入），其余回退为按性别的默认头像
+      qp=qp.replace(/[<>"']/g,'').slice(0,200);
       if(!/^images\/photo\//.test(qp))qp=qg==='female'?D.PHOTOS_F[0]:D.PHOTOS_M[0];
       var hit=MATCHED.filter(function(u){return u.name===qn;})[0];
       if(hit){hit.photo=qp;hit.gender=qg;}
@@ -84,8 +85,20 @@ var NOTICE='《他俩能成》很荣幸成为你们缘分的起点，一路见�
 function gb(g){return window.Common.gb(g);}
 
 // ====== 表单 ======
+var searchKw='';
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+
+// 搜索：按能成ID或昵称过滤1314候选（空关键词显示全部）
+function visibleUsers(){
+  var kw=searchKw.trim();
+  if(!kw)return MATCHED;
+  return MATCHED.filter(function(u){
+    return u.name.indexOf(kw)>-1 || String(u.id||'').indexOf(kw)>-1;
+  });
+}
+
 function railHtml(){
-  return MATCHED.map(function(u){
+  return visibleUsers().map(function(u){
     var sel=selUser&&selUser.name===u.name;
     return '<div class="flex-shrink-0 cursor-pointer card-hover" style="width:96px;" onclick="selectUser(\''+u.name+'\')">'+
       '<div class="relative bg-white rounded-2xl overflow-hidden shadow-sm border '+(sel?'border-brand-pink ring-2 ring-brand-pink/30':'border-gray-100')+'">'+
@@ -94,7 +107,10 @@ function railHtml(){
           '<span class="absolute top-1.5 left-1.5 text-[9px] px-1.5 py-0.5 rounded-full bg-gradient-to-r from-brand-pink to-brand-orange text-white font-bold">1314</span>'+
           (sel?'<span class="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-brand-pink text-white flex items-center justify-center"><i data-lucide="check" class="w-3 h-3"></i></span>':'')+
         '</div>'+
-        '<div class="p-2 flex items-center gap-1"><span class="text-xs font-bold text-gray-800 truncate max-w-[52px]">'+u.name+'</span>'+gb(u.gender)+'</div>'+
+        '<div class="p-2">'+
+          '<div class="text-xs font-bold text-gray-800 truncate">'+u.name+'</div>'+
+          '<div class="text-[9px] text-gray-400 mt-0.5">ID:'+esc(u.id||'')+'</div>'+
+        '</div>'+
       '</div>'+
     '</div>';
   }).join('');
@@ -103,6 +119,48 @@ function railHtml(){
 function selectUser(name){
   selUser=MATCHED.filter(function(u){return u.name===name})[0]||null;
   document.getElementById('pick-rail').innerHTML=railHtml();
+  window.Common.initIcons();
+}
+
+// 第一步选择TA：搜索框 + 候选卡片 + 搜索结果提示
+function pickSectionHtml(){
+  var users=visibleUsers();
+  var hasKw=!!searchKw.trim();
+  var clearBtn=hasKw?'<span onclick="clearSearch()" class="absolute right-1.5 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-gray-200 text-gray-500 text-[9px] font-bold flex items-center justify-center cursor-pointer">✕</span>':'';
+  var hint='';
+  if(hasKw){
+    hint=users.length>0
+      ? '找到 <b>'+users.length+'</b> 位符合条件的用户 · <span class="text-brand-pink font-bold cursor-pointer" onclick="clearSearch()">清空搜索</span>'
+      : '没有找到符合条件的用户 · <span class="text-brand-pink font-bold cursor-pointer" onclick="clearSearch()">清空搜索</span>';
+  }
+  return '<div class="flex gap-2 mb-3">'+
+      '<div class="relative flex-1">'+
+        '<input id="pick-search" type="text" value="'+esc(searchKw)+'" placeholder="输入能成ID或昵称" class="w-full pl-3.5 pr-7 py-1.5 rounded-lg border border-gray-200 bg-gray-50 text-xs text-gray-900 focus:outline-none focus:border-brand-pink" onkeydown="if(event.key===\'Enter\')applySearch()"/>'+
+        clearBtn+
+      '</div>'+
+      '<span onclick="applySearch()" class="flex-shrink-0 px-3 py-1.5 flex items-center justify-center rounded-lg bg-gradient-to-tr from-brand-pink to-brand-orange text-white text-xs font-bold cursor-pointer card-hover"><i data-lucide="search" class="w-3.5 h-3.5"></i>搜索</span>'+
+    '</div>'+
+    '<div id="pick-rail" class="flex gap-3 overflow-x-auto no-scrollbar pb-1">'+railHtml()+'</div>'+
+    (hint?'<p class="text-xs text-gray-400 mt-2">'+hint+'</p>':'');
+}
+
+function applySearch(){
+  var el=document.getElementById('pick-search');
+  searchKw=(el&&typeof el.value==='string')?el.value:'';
+  refreshPick();
+}
+
+function clearSearch(){
+  searchKw='';
+  var el=document.getElementById('pick-search');
+  if(el&&el!==document&&typeof el.value==='string')el.value='';
+  refreshPick();
+}
+
+function refreshPick(){
+  var box=document.getElementById('pick-section');
+  if(box&&box!==document){box.innerHTML=pickSectionHtml();}
+  else{renderForm();}
   window.Common.initIcons();
 }
 
@@ -159,7 +217,10 @@ function onCertPick(input){
   if(!f)return;
   var r=new FileReader();
   r.onload=function(){
-    certData=r.result;
+    var data=r.result;
+    // 与保存逻辑一致的尺寸上限，超限立即提示并重置选择，避免提交时被静默丢弃
+    if(String(data).length>500000){window.Common.showToast('图片过大，请重新选择');if(input)input.value='';return;}
+    certData=data;
     document.getElementById('cert-box').innerHTML=certBoxHtml();
     window.Common.initIcons();
   };
@@ -184,7 +245,7 @@ function renderForm(){
       // 1 选择TA
       '<div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 mb-4">'+
         '<div class="flex items-center gap-2 mb-3"><span class="w-6 h-6 rounded-full bg-gradient-to-tr from-brand-pink to-brand-orange text-white text-xs font-bold flex items-center justify-center flex-shrink-0">1</span><span class="font-black text-gray-800 text-sm">选择与您达成1314的TA</span></div>'+
-        '<div id="pick-rail" class="flex gap-3 overflow-x-auto no-scrollbar pb-1">'+railHtml()+'</div>'+
+        '<div id="pick-section">'+pickSectionHtml()+'</div>'+
       '</div>'+
       // 2 上传照片
       '<div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 mb-4">'+
@@ -256,18 +317,20 @@ function onSubmit(){
 // ====== 结缘报告 ======
 function saveMyReport(data){
   try{
-    localStorage.setItem('baoxi_submitted','1');
     var stored={
       id:'mine', time:data.time || fmtDay(new Date()),
       names:[data.names[0],data.names[1]],
       avatars:[data.avatars[0],data.avatars[1]],
       genders:[data.genders[0],data.genders[1]],
       couplePhoto:(data.couplePhoto && String(data.couplePhoto).length<500000)?data.couplePhoto:'',
+      certPhoto:(data.certPhoto && String(data.certPhoto).length<500000)?String(data.certPhoto):'',
       story:'我们报喜啦！感谢平台见证我们的幸福！',
       events:data.events,
       posterLines:(data.events||[]).map(function(e){return String(e.html||'').replace(/<[^>]+>/g,'');})
     };
+    // 先写记录再写标记：记录写入失败时不会留下"已报喜却无记录"的残态
     localStorage.setItem('baoxi_my_report',JSON.stringify(stored));
+    localStorage.setItem('baoxi_submitted','1');
   }catch(e){}
 }
 
@@ -278,6 +341,7 @@ function renderReport(){
     avatars: [CURRENT.photo, selUser.photo],
     genders: [CURRENT.gender || 'female', selUser.gender || 'male'],
     couplePhoto: photoData,
+    certPhoto: certData || '',
     events: reportData.events
   });
   document.getElementById('app').innerHTML=
