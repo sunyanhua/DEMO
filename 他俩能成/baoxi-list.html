@@ -26,13 +26,13 @@ var giftUi = window.BaoxiGifts.createUi({ render: render });
 // 随机模拟：当前用户未注册脱单资料 → 底部按钮变为"邀请报喜"（邀请自己神助攻过的组合来报喜）
 var NO_PROFILE = Math.random() < 0.5;
 
-// 当前用户神助攻过的组合记录（mock）
+// 当前用户助攻/助力过的组合记录（mock）：act 区分神助攻与助力
 var ASSIST_PAIRS = [
-    { time:'2026年10月6日', male:{name:'阳光骑士',photo:'images/photo/male/crop.17.0.1224.1632.0.750.1000.jpg'}, female:{name:'栀子花开',photo:'images/photo/female/crop.0.61.723.964.0.750.1000.jpg'} },
-    { time:'2026年9月21日', male:{name:'清风徐来',photo:'images/photo/male/crop.0.0.1078.1438.0.750.1000.jpg'}, female:{name:'棉花糖',photo:'images/photo/female/crop.0.0.2267.3023.0.750.1000.jpg'} },
-    { time:'2026年9月3日', male:{name:'北辰',photo:'images/photo/male/crop.194.56.917.1222.0.750.1000.jpg'}, female:{name:'薄荷微光',photo:'images/photo/female/crop.0.0.4896.6528.0.750.1000.jpg'} },
-    { time:'2026年8月18日', male:{name:'追风少年',photo:'images/photo/male/crop.0.237.1080.1440.0.750.1000.jpg'}, female:{name:'雪落无声',photo:'images/photo/female/crop.384.0.2304.3072.0.750.1000.jpg'} },
-    { time:'2026年8月2日', male:{name:'咖啡不加糖',photo:'images/photo/male/crop.0.501.960.1280.0.750.1000.jpg'}, female:{name:'浅笑安然',photo:'images/photo/female/crop.0.67.1079.1438.0.750.1000.jpg'} }
+    { time:'2026年10月6日', act:'assist', male:{name:'阳光骑士',photo:'images/photo/male/crop.17.0.1224.1632.0.750.1000.jpg'}, female:{name:'栀子花开',photo:'images/photo/female/crop.0.61.723.964.0.750.1000.jpg'} },
+    { time:'2026年9月21日', act:'help', male:{name:'清风徐来',photo:'images/photo/male/crop.0.0.1078.1438.0.750.1000.jpg'}, female:{name:'棉花糖',photo:'images/photo/female/crop.0.0.2267.3023.0.750.1000.jpg'} },
+    { time:'2026年9月3日', act:'assist', male:{name:'北辰',photo:'images/photo/male/crop.194.56.917.1222.0.750.1000.jpg'}, female:{name:'薄荷微光',photo:'images/photo/female/crop.0.0.4896.6528.0.750.1000.jpg'} },
+    { time:'2026年8月18日', act:'help', male:{name:'追风少年',photo:'images/photo/male/crop.0.237.1080.1440.0.750.1000.jpg'}, female:{name:'雪落无声',photo:'images/photo/female/crop.384.0.2304.3072.0.750.1000.jpg'} },
+    { time:'2026年8月2日', act:'help', male:{name:'咖啡不加糖',photo:'images/photo/male/crop.0.501.960.1280.0.750.1000.jpg'}, female:{name:'浅笑安然',photo:'images/photo/female/crop.0.67.1079.1438.0.750.1000.jpg'} }
 ];
 
 function inviteOne(mn, fn) {
@@ -56,8 +56,8 @@ function inviteHtml() {
                     <img src="${r.male.photo}" class="w-10 h-10 rounded-full object-cover border-2 border-blue-100 flex-shrink-0"/>
                     <img src="${r.female.photo}" class="w-10 h-10 rounded-full object-cover border-2 border-pink-100 -ml-3 flex-shrink-0"/>
                     <div class="ml-2 min-w-0">
-                        <p class="text-sm font-bold text-gray-800">${r.male.name} ❤ ${r.female.name}</p>
-                        <p class="text-[10px] text-gray-400 mt-0.5">你于${r.time}为他俩送上神助攻</p>
+                        <p class="text-sm font-bold text-gray-800">${r.male.name} <span style="color:#E85D3A;">❤</span> ${r.female.name}</p>
+                        <p class="text-[10px] text-gray-400 mt-0.5">你于${r.time}为他俩${r.act === 'help' ? '助力' : '送上神助攻'}</p>
                     </div>
                 </div>
                 <span onclick="inviteOne('${r.male.name}','${r.female.name}')" class="flex-shrink-0 ml-2 px-3 py-1.5 rounded-full bg-gradient-to-tr from-brand-pink to-brand-orange text-white text-xs font-bold cursor-pointer card-hover">邀请报喜</span>
@@ -72,7 +72,7 @@ function inviteHtml() {
                 <span class="font-black text-gray-800 text-base">邀请报喜</span>
                 <span onclick="closeInvite()" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center cursor-pointer"><i data-lucide="x" class="w-4 h-4 text-gray-500"></i></span>
             </div>
-            <p class="text-xs text-gray-400 mb-3">您神助攻过的组合，邀请他们来报喜，共享幸福 🎉</p>
+            <p class="text-xs text-gray-400 mb-3">您助攻或助力过的组合，邀请他们来报喜，共享幸福 🎉</p>
             ${rows}
         </div>
     </div>

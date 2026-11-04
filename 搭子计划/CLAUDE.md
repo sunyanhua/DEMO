@@ -154,12 +154,15 @@
 | `dumpling.html` | 🥟 天之"饺"子·立冬偷吃饺子小赛专题（内嵌测试：上一题/下一题手动跳转、完成后禁止重测（仅演示可清空）→结果摘要 / 横排优惠券（未测试拦截领取，code+qr 使用面板）/ 精选活动+有奖分享双TAB（渐变图标切换条；活动与首页共享 GlobalData.activities，卡片底部左发起人头像昵称+右查看详情按钮）/ 有奖分享规则弹窗 / #我的饺子人格# 动态瀑布流） | 专题页 |
 | `dumpling-test.html` | 🥟 饺子人格测试（8 种饺子人格、8 题计分制、同分随机；上一题/下一题手动跳转、完成后禁止重测；结果页含详细路线：类型/行程/沿途/准备/预算/理由/攻略 + 分享海报） | 专题页 |
 | `dumpling-test.js` | 饺子人格测试计分引擎（纯逻辑，可独立测试） | 资源 |
-| `dumpling-data.js` | 饺子专题数据（路线/优惠券/分享规则/动态，只被饺子页面加载；人格与题目引用 dumplingQuiz） | 资源 |
+| `dumpling-data.js` | 饺子专题数据（路线/优惠券/分享规则/动态，只被饺子页面加载；人格与题目引用 dumplingQuiz）+ **题库内嵌兜底**（文件顶部，由 `npm run quiz:sync` 从 JSON 同步——页面不再引用 dumpling-quiz-data.js，避免部署漏传 404） | 资源 |
 | `dumpling-quiz-data.json` | 🥟 人格测试题+人格结果数据**唯一来源**（JSON，开发用；改后运行 `npm run quiz:sync`） | 资源 |
-| `dumpling-quiz-data.js` | 测验数据运行时文件（由 `npm run quiz:sync` 从 JSON 生成，勿手改） | 资源 |
-| `dumpling-quiz-sync.cjs` | 测验数据同步脚本（JSON → JS，`npm run quiz:sync`） | 资源 |
+| `dumpling-quiz-data.js` | 测验数据运行时文件（由 `npm run quiz:sync` 从 JSON 生成，勿手改；页面已不引用，仅供测试沙箱与本地离线预览用） | 资源 |
+| `dumpling-quiz-sync.cjs` | 测验数据同步脚本（JSON → dumpling-quiz-data.js + dumpling-data.js 内嵌题库，`npm run quiz:sync`） | 资源 |
 | `dumpling-test.test.cjs` | 饺子人格测试引擎测试（`npm test` 运行） | 资源 |
 | `dumpling-page.test.cjs` | 饺子专题页+测试详情页流程测试：上/下一题跳转、完成拦截、禁止重测（演示清空）、活动卡片、双TAB（`npm test` 运行） | 资源 |
+| `qiyu-huaxi.html` | 🎡 奇遇华熙（华熙LIVE）专题页（与天之饺子结构一致、题库完全相同：内嵌饺子人格测试，完成测试后跳详情页带 `?from=qiyu`，详情页返回回本专题 / 优惠券不走直接领取——先经奇遇大转盘抽"运气"（参考 huaxi.html 转盘：SVG 6 段好运+指针+彩带，每人一次），抽中后仅展示该运气的券组（每组多张、仅可领取一张，领取带二次确认+同组已领明显提示），中奖结果只提示运气解锁不出奖品 / 精选活动+有奖分享双TAB（#奇遇华熙#）/ 紫色→粉色霓虹配色区别于饺子橙） | 专题页 |
+| `qiyu-huaxi-data.js` | 奇遇华熙专题数据（六种好运→华熙商户券组映射、分享规则/动态）+ **题库内嵌兜底**（顶部，由 `npm run quiz:sync` 同步；dumplingQuiz/dumpling 缺失时自动补全，页面不依赖 dumpling-quiz-data.js / dumpling-data.js，部署漏传不挂） | 资源 |
+| `qiyu-huaxi.test.cjs` | 奇遇华熙专题页流程测试：题库一致性、转盘门槛/仅一次/持久化、运气解锁领券、重进恢复、分享主体、清空重置（`npm test` 运行） | 资源 |
 | `images/dumpling-banner.png` | 首页 banner 第一张（饺子专题入口图，点击跳 dumpling.html） | 资源 |
 | `style.css` | 全局自定义样式（品牌色变量、动画、浮动装饰等） | 资源 |
 | `tailwind.css` | Tailwind 静态构建产物（本地，`npm run tw` 重建） | 资源 |

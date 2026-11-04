@@ -13,7 +13,9 @@
     <div id="app"></div>
 
     <script src="data.js?v=2"></script>
-    <script src="dumpling-quiz-data.js?v=2"></script>
+    <!-- 题库兜底：qiyu-huaxi-data.js 内嵌题库并在 dumplingQuiz/dumpling 缺失时补全，
+         部署漏传 dumpling-data.js / dumpling-quiz-data.js 时专题页仍可用 -->
+    <script src="qiyu-huaxi-data.js?v=2"></script>
     <script src="dumpling-data.js?v=2"></script>
     <script src="common.js?v=2"></script>
     <script src="dumpling-test.js?v=2"></script>
@@ -120,14 +122,14 @@
                 return `
                 <div class="px-4 pt-4 min-h-screen fade-in">
                     <div class="flex items-center justify-between mb-2">
-                        <span class="text-xs text-gray-400 font-medium">第 ${this.quiz.currentIndex + 1}/${total} 题 · 已答 ${answeredCount}/${total}</span>
+                        <span id="quiz-counter" class="text-xs text-gray-400 font-medium">第 ${this.quiz.currentIndex + 1}/${total} 题 · 已答 ${answeredCount}/${total}</span>
                         <span class="text-xs text-gray-400">${progress}%</span>
                     </div>
                     <div class="h-1.5 bg-gray-100 rounded-full overflow-hidden">
                         <div class="h-full bg-gradient-to-r from-brand-orange to-brand-yellow rounded-full transition-all duration-500" style="width: ${progress}%"></div>
                     </div>
                     <h2 class="mt-5 text-xl font-black text-gray-900 leading-snug">${q.text}</h2>
-                    <div class="mt-6 space-y-3">${optionsHtml}</div>
+                    <div id="quiz-options" class="mt-6 space-y-3">${optionsHtml}</div>
                     <div class="mt-6 flex items-center justify-between">
                         ${isFirst ? '<span></span>' : `<button onclick="View.prevQuestion()" class="flex items-center gap-1 text-sm text-gray-500 font-medium active:opacity-70 transition"><i data-lucide="chevron-left" class="w-4 h-4"></i><span>上一题</span></button>`}
                         ${isLast ? `<button onclick="View.nextQuestion()" class="px-5 py-2.5 bg-brand-orange text-white rounded-xl text-sm font-bold active:scale-95 transition-transform shadow-lg shadow-brand-orange/20">完成测试</button>` : `<button onclick="View.nextQuestion()" class="flex items-center gap-1 text-sm text-brand-orange font-bold active:opacity-70 transition"><span>下一题</span><i data-lucide="chevron-right" class="w-4 h-4"></i></button>`}
@@ -172,7 +174,21 @@
             // 记录当前题选择（可改选），上一题/下一题手动跳转
             answer(optionIndex) {
                 this.quiz.answers[this.quiz.currentIndex] = optionIndex;
-                this.render();
+                // 就地更新选中态：整页重渲染会重播 fade-in，点击选项时页面闪动抖动；
+                // 无真实 DOM（测试沙箱）时回退整页渲染
+                const list = document.getElementById('quiz-options');
+                if (!list || list === document) { this.render(); return; }
+                Array.prototype.forEach.call(list.querySelectorAll('button'), function (btn, i) {
+                    const sel = i === optionIndex;
+                    btn.className = 'w-full flex items-center gap-3 bg-white rounded-xl p-4 shadow-sm border text-left active:scale-[0.98] transition-transform ' + (sel ? 'border-brand-orange bg-brand-orange/5 ring-1 ring-brand-orange' : 'border-gray-100');
+                    const circle = btn.querySelector('span');
+                    if (circle) circle.className = 'w-8 h-8 flex-shrink-0 rounded-full ' + (sel ? 'bg-brand-orange text-white' : 'bg-brand-orange/10 text-brand-orange') + ' font-bold text-sm flex items-center justify-center';
+                });
+                const counter = document.getElementById('quiz-counter');
+                if (counter && counter !== document) {
+                    const answeredCount = this.quiz.answers.filter(a => a !== undefined && a !== null).length;
+                    counter.textContent = '第 ' + (this.quiz.currentIndex + 1) + '/' + this.questions.length + ' 题 · 已答 ' + answeredCount + '/' + this.questions.length;
+                }
             },
 
             prevQuestion() {

@@ -604,9 +604,13 @@ test('报喜首页：未注册脱单资料随机分支——底部邀请报喜+�
     const html = document._html;
     assert.ok(html.includes('邀请报喜') && !html.includes('我要报喜') && !html.includes('我的报喜'), '未注册分支底部按钮应为邀请报喜');
     assert.ok(html.includes('openInvite()'), '邀请报喜按钮应打开底部弹窗');
-    assert.ok(html.includes('invite-popup') && html.includes('您神助攻过的组合'), '应有邀请报喜底部弹窗');
+    assert.ok(html.includes('invite-popup') && html.includes('您助攻或助力过的组合'), '应有邀请报喜底部弹窗');
     const pairCount = vm.runInContext('ASSIST_PAIRS.length', sandbox);
-    assert.strictEqual((html.match(/为他俩送上神助攻/g) || []).length, pairCount, '弹窗应展示神助攻过的组合记录');
+    const assistCount = (html.match(/为他俩送上神助攻/g) || []).length;
+    const helpCount = (html.match(/为他俩助力/g) || []).length;
+    assert.strictEqual(assistCount + helpCount, pairCount, '弹窗应展示助攻/助力过的组合记录');
+    assert.ok(assistCount > 0 && helpCount > 0, '记录应同时含神助攻与助力文案');
+    assert.ok(html.includes('style="color:#E85D3A;">❤</span>'), '昵称之间的桃心应为红色');
     assert.strictEqual((html.match(/inviteOne\(/g) || []).length, pairCount, '每条组合记录应有邀请报喜按钮');
     // 点击邀请：提示已向对方发出邀请
     vm.runInContext("inviteOne('阳光骑士','栀子花开')", sandbox);

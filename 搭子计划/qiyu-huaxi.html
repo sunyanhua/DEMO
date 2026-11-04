@@ -1,0 +1,1121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>奇遇华熙 - 搭子计划</title>
+    <link rel="stylesheet" href="tailwind.css">
+    <script src="vendor/lucide.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* 奇遇华熙专题配色（紫→粉霓虹风，区别于饺子专题的活力橙） */
+        .qy-grad { background: linear-gradient(135deg, #7c4dff, #ff4d88); color: #fff; }
+        .qy-grad-soft { background: rgba(124, 77, 255, 0.10); color: #7c4dff; border: 1px solid rgba(124, 77, 255, 0.30); }
+        .qy-text { color: #7c4dff; }
+        .qy-bar { background: linear-gradient(90deg, #7c4dff, #ff4d88); }
+        .qy-tab { background: linear-gradient(135deg, #7c4dff, #ff4d88); box-shadow: 0 4px 14px rgba(124, 77, 255, 0.35); }
+        .qy-tabbar { background: rgba(124, 77, 255, 0.10); border: 1px solid rgba(124, 77, 255, 0.25); }
+        .qy-fab { background: linear-gradient(135deg, #7c4dff, #ff4d88); box-shadow: 0 6px 20px rgba(124, 77, 255, 0.45); }
+        .qy-share { background: linear-gradient(135deg, #241a5c, #7c4dff); }
+        .qy-chip { background: rgba(255, 77, 136, 0.08); color: #d63384; border: 1px solid rgba(255, 77, 136, 0.30); }
+        /* 答题选项：选中态与悬停态 */
+        .qy-option:hover { border-color: rgba(124, 77, 255, 0.40); }
+        .qy-selected { border-color: #7c4dff !important; background: rgba(124, 77, 255, 0.05); box-shadow: 0 0 0 1px #7c4dff; }
+        .qy-circle { background: #7c4dff; color: #fff; }
+        .qy-circle-soft { background: rgba(124, 77, 255, 0.10); color: #7c4dff; }
+        /* 中奖彩带 */
+        @keyframes confetti-fall {
+            0% { transform: translateY(-30px) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(320px) rotate(540deg); opacity: 0; }
+        }
+        .confetti {
+            position: absolute;
+            top: 0;
+            font-size: 18px;
+            animation: confetti-fall 1.9s ease-in forwards;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900 antialiased" style="background: linear-gradient(180deg, #f3efff 0%, #f3efff 40%, #fdf5f9 70%, #fff7f0 100%);">
+
+    <div id="app"></div>
+
+    <script src="data.js?v=2"></script>
+    <script src="qiyu-huaxi-data.js?v=2"></script>
+    <script src="common.js?v=2"></script>
+    <script src="dumpling-test.js?v=2"></script>
+    <script>
+        const TOPIC = '#奇遇华熙#';
+        const OPTION_KEYS = ['A', 'B', 'C', 'D'];
+
+        function escapeHtml(str) {
+            return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+
+        const View = {
+            liked: {},               // 动态点赞状态（会话内）
+            stage: 'idle',           // idle: 未测试 | quiz: 答题中 | summary: 结果摘要
+            quiz: { answers: [], currentIndex: 0 },
+            resultPersonality: null, // 测试结果人格
+            // 转盘抽好运：每人一次，抽中哪种运气解锁对应优惠券
+            spinLuck: null,          // 已抽中的运气 id
+            spinning: false,         // 转盘旋转中，防止重复点击
+            wheelRotation: 0,        // 转盘累计旋转角度（保持连续旋转）
+            spinSafetyTimer: null,   // 旋转结束兜底定时器
+            showWheel: false,        // 大转盘弹窗
+            claimed: new Set(JSON.parse(sessionStorage.getItem('qiyu_coupon_claimed') || '[]')),
+            confirmCouponId: null,   // 领取二次确认中的券 id
+            usageCouponId: null,     // 优惠券使用面板
+            showRules: false,        // 活动规则弹窗
+            showPublish: false,      // 有奖发布弹窗
+            publishDraft: null,      // 发布草稿 { image, text }
+            activeTab: 'activities', // 内容 TAB：activities 精选活动 / share 有奖分享
+
+            get qiyu() {
+                return (window.GlobalData && window.GlobalData.qiyuHuaxi) || {};
+            },
+            get fortunes() {
+                return this.qiyu.fortunes || [];
+            },
+            get coupons() {
+                return this.qiyu.coupons || [];
+            },
+            get questions() {
+                return this.qiyu.questions || [];
+            },
+            get personalities() {
+                return this.qiyu.personalities || [];
+            },
+            get testDone() {
+                return sessionStorage.getItem('dumpling_test_done') === '1';
+            },
+            get spinUsed() {
+                return sessionStorage.getItem('qiyu_spin_used') === '1';
+            },
+            get myMoments() {
+                try {
+                    const arr = JSON.parse(sessionStorage.getItem('qiyu_my_moments') || '[]');
+                    return Array.isArray(arr) ? arr : [];
+                } catch (e) {
+                    return [];
+                }
+            },
+
+            fortuneById(id) {
+                return this.fortunes.find(f => f.id === id) || null;
+            },
+
+            luckName(luckId) {
+                const f = this.fortuneById(luckId);
+                return f ? f.name : luckId;
+            },
+
+            header() {
+                return `
+                <div class="fixed top-0 left-0 right-0 h-[50px] bg-white z-50 flex items-center px-4 shadow-sm border-b border-gray-100">
+                    <button onclick="window.location.href='index.html'" class="p-1.5 rounded-full hover:bg-gray-100 transition">
+                        <i data-lucide="chevron-left" class="w-6 h-6 text-gray-800"></i>
+                    </button>
+                    <div class="flex-1 text-center font-bold text-gray-900">奇遇华熙</div>
+                    <div class="w-6"></div> <!-- 占位保持对称 -->
+                </div>
+                `;
+            },
+
+            // ============ 测试区：引导卡片/答题/结果摘要（题目与饺子人格完全一致） ============
+            testSection() {
+                if (this.stage === 'quiz') return this.quizView();
+                if (this.stage === 'summary' && this.resultPersonality) return this.summaryView();
+                const emojiRow = this.personalities.map(p => `
+                    <div class="w-8 h-8 rounded-full bg-white border border-gray-100 shadow-sm flex items-center justify-center text-base">${p.emoji}</div>
+                `).join('');
+                return `
+                <div class="px-4 pt-4">
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 rounded-2xl qy-grad flex items-center justify-center text-2xl flex-shrink-0 rotate-3 shadow-md">🥟</div>
+                            <div class="min-w-0">
+                                <h3 class="text-base font-black text-gray-900">测测你是哪种饺子人格？</h3>
+                                <p class="text-xs text-gray-500 mt-0.5">8道题，看看你偷吃饺子时是什么馅</p>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex items-center justify-between">
+                            <div class="flex -space-x-2">${emojiRow}</div>
+                            <span class="text-[10px] text-gray-400 flex-shrink-0">约1分钟 · 测完抽好运领券</span>
+                        </div>
+                        <button onclick="View.startQuiz()" class="mt-4 w-full py-3 qy-grad rounded-xl font-bold text-sm shadow-lg shadow-purple-500/30 active:scale-95 transition-transform">
+                            马上开始测试
+                        </button>
+                    </div>
+                </div>
+                `;
+            },
+
+            quizView() {
+                const total = this.questions.length;
+                const q = this.questions[this.quiz.currentIndex];
+                const selected = this.quiz.answers[this.quiz.currentIndex];
+                const answeredCount = this.quiz.answers.filter(a => a !== undefined && a !== null).length;
+                const progress = Math.round((this.quiz.currentIndex / total) * 100);
+                const optionsHtml = q.options.map((opt, i) => {
+                    const isSelected = selected === i;
+                    return `
+                    <button onclick="View.answer(${i})" class="w-full flex items-center gap-3 bg-white rounded-xl p-4 shadow-sm border text-left active:scale-[0.98] transition-transform qy-option ${isSelected ? 'qy-selected' : 'border-gray-100'}">
+                        <span class="w-8 h-8 flex-shrink-0 rounded-full ${isSelected ? 'qy-circle' : 'qy-circle-soft'} font-bold text-sm flex items-center justify-center">${OPTION_KEYS[i]}</span>
+                        <span class="text-sm text-gray-800 leading-snug">${opt.text}</span>
+                    </button>
+                    `;
+                }).join('');
+                const isFirst = this.quiz.currentIndex === 0;
+                const isLast = this.quiz.currentIndex === total - 1;
+                return `
+                <div class="px-4 pt-4 min-h-screen fade-in">
+                    <div class="flex items-center justify-between mb-2">
+                        <span id="quiz-counter" class="text-xs text-gray-400 font-medium">第 ${this.quiz.currentIndex + 1}/${total} 题 · 已答 ${answeredCount}/${total}</span>
+                        <span class="text-xs text-gray-400">${progress}%</span>
+                    </div>
+                    <div class="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                        <div class="h-full qy-bar rounded-full transition-all duration-500" style="width: ${progress}%"></div>
+                    </div>
+                    <h2 class="mt-5 text-xl font-black text-gray-900 leading-snug">${q.text}</h2>
+                    <div id="quiz-options" class="mt-6 space-y-3">${optionsHtml}</div>
+                    <div class="mt-6 flex items-center justify-between">
+                        ${isFirst ? '<span></span>' : `<button onclick="View.prevQuestion()" class="flex items-center gap-1 text-sm text-gray-500 font-medium active:opacity-70 transition"><i data-lucide="chevron-left" class="w-4 h-4"></i><span>上一题</span></button>`}
+                        ${isLast ? `<button onclick="View.nextQuestion()" class="px-5 py-2.5 qy-grad rounded-xl text-sm font-bold active:scale-95 transition-transform shadow-lg shadow-purple-500/20">完成测试</button>` : `<button onclick="View.nextQuestion()" class="flex items-center gap-1 text-sm qy-text font-bold active:opacity-70 transition"><span>下一题</span><i data-lucide="chevron-right" class="w-4 h-4"></i></button>`}
+                    </div>
+                </div>
+                `;
+            },
+
+            summaryView() {
+                const p = this.resultPersonality;
+                return `
+                <div class="px-4 pt-4 fade-in">
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 relative">
+                        <button onclick="View.clearTest()" class="absolute top-2.5 right-3 text-[10px] text-gray-400 border border-gray-200 rounded-full px-2 py-0.5 bg-white active:scale-95 transition-transform">清空（仅演示）</button>
+                        <div class="flex items-center gap-4">
+                            <div class="w-16 h-16 rounded-2xl bg-gradient-to-br ${p.color} flex items-center justify-center text-3xl flex-shrink-0 shadow-md">${p.emoji}</div>
+                            <div class="min-w-0">
+                                <p class="text-[11px] text-gray-400 font-semibold tracking-widest">你的饺子人格</p>
+                                <h3 class="mt-0.5 text-lg font-black text-gray-900">${p.title}</h3>
+                                <p class="mt-0.5 text-xs text-gray-500 line-clamp-1">"${p.quote}"</p>
+                            </div>
+                        </div>
+                        <div class="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 qy-chip rounded-full text-xs font-bold">
+                            <i data-lucide="utensils" class="w-3.5 h-3.5"></i><span>偷吃作案方式：${p.method}</span>
+                        </div>
+                        <div class="mt-4">
+                            <button onclick="window.location.href='dumpling-test.html?from=qiyu'" class="w-full py-3 qy-grad rounded-xl font-bold text-sm active:scale-95 transition-transform shadow-lg shadow-purple-500/20">
+                                查看详情
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                `;
+            },
+
+            startQuiz() {
+                this.quiz = { answers: [], currentIndex: 0 };
+                this.stage = 'quiz';
+                this.render();
+            },
+
+            // 记录当前题选择（可改选），上一题/下一题手动跳转
+            answer(optionIndex) {
+                this.quiz.answers[this.quiz.currentIndex] = optionIndex;
+                // 就地更新选中态：整页重渲染会重播 fade-in，点击选项时页面闪动抖动；
+                // 无真实 DOM（测试沙箱）时回退整页渲染
+                const list = document.getElementById('quiz-options');
+                if (!list || list === document) { this.render(); return; }
+                Array.prototype.forEach.call(list.querySelectorAll('button'), function (btn, i) {
+                    const sel = i === optionIndex;
+                    btn.className = 'w-full flex items-center gap-3 bg-white rounded-xl p-4 shadow-sm border text-left active:scale-[0.98] transition-transform qy-option ' + (sel ? 'qy-selected' : 'border-gray-100');
+                    const circle = btn.querySelector('span');
+                    if (circle) circle.className = 'w-8 h-8 flex-shrink-0 rounded-full font-bold text-sm flex items-center justify-center ' + (sel ? 'qy-circle' : 'qy-circle-soft');
+                });
+                const counter = document.getElementById('quiz-counter');
+                if (counter && counter !== document) {
+                    const answeredCount = this.quiz.answers.filter(a => a !== undefined && a !== null).length;
+                    counter.textContent = '第 ' + (this.quiz.currentIndex + 1) + '/' + this.questions.length + ' 题 · 已答 ' + answeredCount + '/' + this.questions.length;
+                }
+            },
+
+            prevQuestion() {
+                if (this.quiz.currentIndex <= 0) return;
+                this.quiz.currentIndex--;
+                this.render();
+            },
+
+            nextQuestion() {
+                if (this.quiz.currentIndex < this.questions.length - 1) {
+                    this.quiz.currentIndex++;
+                    this.render();
+                    return;
+                }
+                this.finishQuiz();
+            },
+
+            finishQuiz() {
+                // 未答完：提示并跳到第一道未答题（逐槽检查，覆盖短数组与稀疏洞）
+                const total = this.questions.length;
+                let unansweredIndex = -1;
+                for (let i = 0; i < total; i++) {
+                    const a = this.quiz.answers[i];
+                    if (a === undefined || a === null) { unansweredIndex = i; break; }
+                }
+                if (unansweredIndex !== -1) {
+                    const missing = total - this.quiz.answers.filter(a => a !== undefined && a !== null).length;
+                    this.quiz.currentIndex = unansweredIndex;
+                    if (window.Common) window.Common.showToast('还有 ' + missing + ' 题未作答');
+                    this.render();
+                    return;
+                }
+                const { id } = window.DumplingTest.calculate(this.quiz.answers);
+                // 保存测试状态：详情页复用 + 抽好运/领券门槛 + 页面重进恢复摘要
+                sessionStorage.setItem('dumpling_test_done', '1');
+                sessionStorage.setItem('dumpling_test_answers', JSON.stringify(this.quiz.answers));
+                sessionStorage.setItem('dumpling_test_result', id);
+                // 测试完成直接进入测试结果详情页（带回源标记，详情页返回时回到本专题）
+                window.location.href = 'dumpling-test.html?from=qiyu';
+            },
+
+            // 页面重进（刷新/返回）时恢复测试完成状态
+            restoreTestState() {
+                if (sessionStorage.getItem('dumpling_test_done') === '1') {
+                    const rid = sessionStorage.getItem('dumpling_test_result') || '';
+                    this.resultPersonality = this.personalities.find(p => p.id === rid) || null;
+                    if (this.resultPersonality) this.stage = 'summary';
+                }
+            },
+
+            // 页面重进时恢复转盘抽奖状态
+            restoreSpinState() {
+                if (this.spinUsed) {
+                    const luckId = sessionStorage.getItem('qiyu_spin_luck') || '';
+                    this.spinLuck = this.fortunes.some(f => f.id === luckId) ? luckId : null;
+                }
+            },
+
+            // 清空测试结果（仅演示）：回到未测试引导态，测试/抽奖/领券状态一并重置
+            clearTest() {
+                sessionStorage.removeItem('dumpling_test_done');
+                sessionStorage.removeItem('dumpling_test_answers');
+                sessionStorage.removeItem('dumpling_test_result');
+                sessionStorage.removeItem('qiyu_spin_used');
+                sessionStorage.removeItem('qiyu_spin_luck');
+                sessionStorage.removeItem('qiyu_coupon_claimed');
+                this.resultPersonality = null;
+                this.spinLuck = null;
+                this.claimed = new Set();
+                this.confirmCouponId = null;
+                this.stage = 'idle';
+                this.render();
+            },
+
+            // ============ 商户优惠券：先转盘抽好运，抽中哪种运气才出该运气的券组（每组仅可领一张） ============
+            couponsSection() {
+                return `
+                <div class="pt-3">
+                    ${this.testDone ? '' : '<div class="px-4 mb-1.5"><span class="text-[10px] text-gray-400">完成人格测试后可参与转盘抽好运领券</span></div>'}
+                    ${this.wheelEntryCard()}
+                    ${this.luckCouponsBlock()}
+                </div>
+                `;
+            },
+
+            // 抽中运气后展示的券组：未抽不展示；同组已领取一张时其余券卡片锁定（不再显示组横幅提示）
+            luckCouponsBlock() {
+                if (!this.spinLuck) return '';
+                const f = this.fortuneById(this.spinLuck);
+                const luckCoupons = this.coupons.filter(c => c.luckId === this.spinLuck);
+                const claimedInGroup = luckCoupons.some(c => this.claimed.has(c.id));
+                const tip = claimedInGroup
+                    ? ''
+                    : `<div class="px-4 mb-1.5"><span class="text-[10px] text-gray-400">「${f ? f.name : ''}」专属好礼 · 同一运气仅可领取一张，请选择</span></div>`;
+                const cardsHtml = luckCoupons.map(c => this.couponCard(c)).join('');
+                return `
+                <div class="mb-2">
+                    ${tip}
+                    <div class="flex overflow-x-auto gap-3 no-scrollbar px-4 pb-1" style="scrollbar-width: none; -ms-overflow-style: none;">${cardsHtml}</div>
+                </div>
+                `;
+            },
+
+            // 转盘入口卡：未抽引导 / 已抽展示运气
+            wheelEntryCard() {
+                const f = this.spinLuck ? this.fortuneById(this.spinLuck) : null;
+                if (f) {
+                    return `
+                    <div class="mx-4 mb-3 rounded-2xl p-4 border flex items-center gap-3" style="background: linear-gradient(135deg, rgba(124,77,255,0.10), rgba(255,77,136,0.10)); border-color: rgba(124,77,255,0.25);">
+                        <div class="w-10 h-10 rounded-full qy-grad flex items-center justify-center text-xl flex-shrink-0">🎡</div>
+                        <div class="min-w-0 flex-1">
+                            <p class="text-xs font-black" style="color:#5f3dc4;">恭喜抽中「${f.name}」</p>
+                            <p class="text-[10px] mt-0.5" style="color:rgba(95,61,196,0.6);">对应好礼已解锁，去下方领取</p>
+                        </div>
+                        <span class="text-[10px] font-bold px-2 py-1 rounded-full flex-shrink-0" style="background:rgba(124,77,255,0.12);color:#7c4dff;">已抽好运</span>
+                    </div>
+                    `;
+                }
+                return `
+                <div class="mx-4 mb-3 rounded-2xl p-4 flex items-center gap-3 qy-share">
+                    <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-xl flex-shrink-0">🎡</div>
+                    <div class="min-w-0 flex-1">
+                        <p class="text-xs font-black text-white">奇遇大转盘 · 抽好运领好礼</p>
+                        <p class="text-[10px] mt-0.5 text-white/70">先转出你的运气，抽中哪种好运就领哪张券</p>
+                    </div>
+                    <button onclick="View.openWheel()" class="flex-shrink-0 px-3.5 py-2 rounded-full text-xs font-bold text-white active:scale-95 transition-transform" style="background: linear-gradient(135deg, #ff4d88, #ffb300); box-shadow: 0 4px 12px rgba(255,77,136,0.4);">转盘抽好运</button>
+                </div>
+                `;
+            },
+
+            // 单张优惠券卡：已领取 / 可领取（同组未领过）/ 同组已领过（锁定并明显提示）
+            couponCard(c) {
+                const claimed = this.claimed.has(c.id);
+                const groupClaimed = this.coupons.some(x => x.luckId === c.luckId && this.claimed.has(x.id));
+                let btnHtml;
+                if (claimed) {
+                    btnHtml = `<button onclick="View.openUsage('${c.id}')" class="mt-3 w-full py-2 rounded-xl text-xs font-bold qy-grad-soft">已领取，去使用</button>`;
+                } else if (groupClaimed) {
+                    btnHtml = `<span class="mt-3 block w-full py-2 rounded-xl text-center text-[10px] font-bold bg-gray-100 text-gray-400"><i data-lucide="lock" class="w-3 h-3 inline -mt-0.5"></i> 该运气已领取一张，不能再领</span>`;
+                } else {
+                    btnHtml = `<button onclick="View.openConfirm('${c.id}')" class="mt-3 w-full py-2 rounded-xl text-xs font-bold qy-grad active:scale-95 transition-transform">领取</button>`;
+                }
+                return `
+                <div class="w-64 flex-shrink-0 bg-white rounded-xl shadow-sm border border-gray-100 relative ${groupClaimed && !claimed ? 'opacity-60' : ''}">
+                    <div class="flex items-stretch rounded-xl overflow-hidden">
+                        <!-- 左侧竖向"优惠券" -->
+                        <div class="flex-shrink-0 w-10 qy-grad flex items-center justify-center">
+                            <span class="text-white text-xs font-black tracking-widest py-3" style="writing-mode: vertical-rl; letter-spacing: 3px;">优惠券</span>
+                        </div>
+                        <!-- 撕票虚线 + 圆洞（圆洞相对虚线定位，位于卡片内部上下） -->
+                        <div class="relative self-stretch">
+                            <div class="border-l-2 border-dashed border-gray-200 h-full"></div>
+                            <div class="absolute -left-[5px] top-3 w-3 h-3 rounded-full bg-gray-50 border border-gray-200"></div>
+                            <div class="absolute -left-[5px] bottom-3 w-3 h-3 rounded-full bg-gray-50 border border-gray-200"></div>
+                        </div>
+                        <!-- 右侧主区：店名标题在卡片区内 -->
+                        <div class="flex-1 p-3.5">
+                            <h3 class="text-sm font-black text-gray-900">${c.shop}</h3>
+                            <p class="mt-1 text-lg font-black qy-text whitespace-nowrap">${c.value}</p>
+                            ${btnHtml}
+                        </div>
+                    </div>
+                </div>
+                `;
+            },
+
+            // 领取二次确认弹窗：同一运气仅可领取一张，领取后不可更换
+            openConfirm(id) {
+                if (!this.testDone) {
+                    if (window.Common) window.Common.showToast('请先完成人格测试');
+                    return;
+                }
+                const coupon = this.coupons.find(c => c.id === id);
+                if (!coupon) return;
+                if (!this.spinLuck || coupon.luckId !== this.spinLuck) {
+                    if (window.Common) window.Common.showToast('请先转盘抽中「' + this.luckName(coupon.luckId) + '」解锁这张券');
+                    return;
+                }
+                this.confirmCouponId = id;
+                this.render();
+            },
+
+            closeConfirm() {
+                this.confirmCouponId = null;
+                this.render();
+            },
+
+            confirmModal() {
+                const coupon = this.coupons.find(c => c.id === this.confirmCouponId);
+                if (!coupon) return '';
+                return `
+                <div class="fixed inset-0 bg-black/40 z-[210] flex items-center justify-center px-6" onclick="View.closeConfirm()">
+                    <div class="bg-white rounded-2xl p-5 w-80" onclick="event.stopPropagation()">
+                        <div class="text-center">
+                            <div class="w-12 h-12 mx-auto rounded-2xl qy-grad flex items-center justify-center text-2xl">🎁</div>
+                            <h3 class="mt-3 font-black text-gray-900">确认领取</h3>
+                            <p class="mt-2 text-xs text-gray-600 leading-relaxed">确定领取 <b>${coupon.shop} · ${coupon.title}</b>（${coupon.value}）吗？</p>
+                            <p class="mt-2 inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-[11px] font-bold" style="background: #fff7e0; color: #8a6d00;">
+                                <i data-lucide="alert-triangle" class="w-3.5 h-3.5"></i>同一运气仅可领取一张，领取后不能更换
+                            </p>
+                        </div>
+                        <div class="flex gap-3 mt-4">
+                            <button onclick="View.closeConfirm()" class="flex-1 py-2.5 rounded-xl bg-gray-100 text-gray-500 text-sm font-bold active:scale-95 transition-transform">再想想</button>
+                            <button onclick="View.claimCoupon('${coupon.id}')" class="flex-1 py-2.5 rounded-xl qy-grad text-sm font-bold active:scale-95 transition-transform">确认领取</button>
+                        </div>
+                    </div>
+                </div>
+                `;
+            },
+
+            claimCoupon(id) {
+                if (!this.testDone) {
+                    if (window.Common) window.Common.showToast('请先完成人格测试');
+                    return;
+                }
+                const coupon = this.coupons.find(c => c.id === id);
+                if (!coupon) return;
+                if (!this.spinLuck || coupon.luckId !== this.spinLuck) {
+                    if (window.Common) window.Common.showToast('请先转盘抽中「' + this.luckName(coupon.luckId) + '」解锁这张券');
+                    return;
+                }
+                // 同一运气仅可领取一张：已领过该运气的好礼则拒绝并明显提示
+                const groupClaimed = this.coupons.some(x => x.luckId === coupon.luckId && this.claimed.has(x.id));
+                if (groupClaimed) {
+                    if (window.Common) window.Common.showToast('「' + this.luckName(coupon.luckId) + '」的好礼只能领取一张，你已经领过啦');
+                    this.confirmCouponId = null;
+                    this.render();
+                    return;
+                }
+                const next = new Set(this.claimed);
+                next.add(id);
+                this.claimed = next;
+                sessionStorage.setItem('qiyu_coupon_claimed', JSON.stringify([...next]));
+                this.confirmCouponId = null;
+                if (window.Common) window.Common.showToast(coupon.shop + '·' + coupon.title + ' 已领取');
+                this.render();
+            },
+
+            // ============ 奇遇大转盘（参考华熙专题：SVG 6 段好运，指针固定顶部） ============
+            openWheel() {
+                if (!this.testDone) {
+                    if (window.Common) window.Common.showToast('请先完成人格测试再转盘抽好运');
+                    return;
+                }
+                if (this.spinUsed) {
+                    if (window.Common) window.Common.showToast('你已经抽过啦，好运已在券里等你');
+                    return;
+                }
+                this.showWheel = true;
+                this.render();
+            },
+
+            closeWheel() {
+                this.showWheel = false;
+                this.render();
+            },
+
+            // 大转盘 SVG（6 段好运，指针固定顶部）
+            renderWheelSvg() {
+                const segs = this.fortunes.map((f, i) => {
+                    const a1 = (i * 60 - 90) * Math.PI / 180;
+                    const a2 = ((i + 1) * 60 - 90) * Math.PI / 180;
+                    const x1 = 150 + 150 * Math.cos(a1), y1 = 150 + 150 * Math.sin(a1);
+                    const x2 = 150 + 150 * Math.cos(a2), y2 = 150 + 150 * Math.sin(a2);
+                    // 文字初始位于顶部（-90°），顺时针旋转 mid 后落在该段中心（i*60-60°）：mid = i*60+30
+                    const mid = i * 60 + 30;
+                    const count = this.coupons.filter(c => c.luckId === f.id).length;
+                    return `
+                    <path d="M150 150 L${x1.toFixed(2)} ${y1.toFixed(2)} A150 150 0 0 1 ${x2.toFixed(2)} ${y2.toFixed(2)} Z"
+                          fill="${f.color}" stroke="#ffffff" stroke-width="2"/>
+                    <g transform="rotate(${mid} 150 150)">
+                        <text x="150" y="34" text-anchor="middle" font-size="16" font-weight="900" fill="#ffffff">${f.name}</text>
+                        <text x="150" y="54" text-anchor="middle" font-size="9.5" fill="rgba(255,255,255,0.88)">好礼×${count}</text>
+                    </g>
+                    `;
+                }).join('');
+                return `
+                <svg viewBox="0 0 300 300" class="w-full h-full">
+                    <circle cx="150" cy="150" r="148" fill="none" stroke="#ffd166" stroke-width="6"/>
+                    ${segs}
+                    <circle cx="150" cy="150" r="52" fill="#fff8ec" stroke="#ffd166" stroke-width="4"/>
+                </svg>
+                `;
+            },
+
+            wheelSpinView() {
+                return `
+                <div class="relative flex flex-col items-center text-center py-1">
+                    <div class="relative w-[272px] h-[272px] mt-2 mb-1">
+                        <!-- 顶部指针 -->
+                        <div class="absolute left-1/2 -translate-x-1/2 -top-2.5 z-20 w-7 h-8" style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.35));">
+                            <svg viewBox="0 0 24 22" class="w-full h-full"><path d="M12 22 L2 2 L22 2 Z" fill="#ff4d88" stroke="#ffffff" stroke-width="2"/></svg>
+                        </div>
+                        <!-- 转盘 -->
+                        <div id="wheelSpin" class="w-full h-full" style="transform: rotate(${this.wheelRotation}deg);">
+                            ${this.renderWheelSvg()}
+                        </div>
+                        <!-- 中心抽奖按钮 -->
+                        <button onclick="View.startSpin()"
+                                class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 w-[68px] h-[68px] rounded-full border-4 border-white flex flex-col items-center justify-center active:scale-90 transition-transform"
+                                style="background: linear-gradient(135deg, #7c4dff, #ff4d88); box-shadow: 0 4px 14px rgba(124,77,255,0.5);">
+                            <span class="text-white font-black text-sm leading-none">抽好运</span>
+                            <span class="text-white/80 text-[8px] mt-0.5 tracking-widest">GO!</span>
+                        </button>
+                    </div>
+                    <div class="text-[10px] mt-2" style="color:#5f3dc4;">点击中间按钮开始抽奖</div>
+                    <div class="text-[10px] mt-1" style="color: rgba(95,61,196,0.5);">每人仅有一次抽奖机会，抽中哪种好运就解锁对应好礼</div>
+                </div>
+                `;
+            },
+
+            // 抽中结果视图（弹窗内展示：不出奖品，只提示运气与解锁状态，关闭后券区出该运气的券组）
+            wheelResultView() {
+                const f = this.spinLuck ? this.fortuneById(this.spinLuck) : null;
+                if (!f) return '';
+                return `
+                <div class="relative flex flex-col items-center text-center py-2">
+                    <div class="text-4xl mb-2">🎉</div>
+                    <div class="font-black text-lg text-gray-900">
+                        恭喜抽中 <span style="color:${f.color};">「${f.name}」</span>
+                    </div>
+                    <p class="mt-2 text-sm font-bold text-gray-600">优惠券已解锁，请选择领取</p>
+                    <button onclick="View.closeWheel()"
+                            class="mt-5 w-full py-3 rounded-xl text-sm font-black active:scale-95 transition-transform qy-grad">
+                        去选券
+                    </button>
+                </div>
+                `;
+            },
+
+            // 开始旋转：先定运气（加权随机），转盘停到对应好运
+            startSpin() {
+                if (this.spinning) return;
+                if (!this.testDone) {
+                    if (window.Common) window.Common.showToast('请先完成人格测试');
+                    this.closeWheel();
+                    return;
+                }
+                if (this.spinUsed) {
+                    if (window.Common) window.Common.showToast('每人仅有一次抽奖机会');
+                    return;
+                }
+
+                // 加权随机选中一种好运
+                const r = Math.random();
+                let acc = 0;
+                let picked = this.fortunes[0];
+                for (let i = 0; i < this.fortunes.length; i++) {
+                    acc += this.fortunes[i].weight;
+                    if (r <= acc) { picked = this.fortunes[i]; break; }
+                }
+
+                // 立即保存结果（弹窗中途关闭也能保证状态一致）
+                sessionStorage.setItem('qiyu_spin_used', '1');
+                sessionStorage.setItem('qiyu_spin_luck', picked.id);
+
+                const el = document.getElementById('wheelSpin');
+                if (!el || el === document) {
+                    // 沙箱/无真实 DOM：直接落定结果
+                    this.finalizeSpin(picked);
+                    return;
+                }
+
+                this.spinning = true;
+
+                // 目标：让 picked 段的中心（i*60-60）转到顶部指针（-90°）
+                const idx = this.fortunes.indexOf(picked);
+                let targetAngle = (-30 - idx * 60) % 360;
+                if (targetAngle < 0) targetAngle += 360;
+                let from = this.wheelRotation % 360;
+                if (from < 0) from += 360;
+                let delta = (targetAngle - from + 360) % 360;
+                if (delta === 0) delta = 360;
+                const target = this.wheelRotation + 5 * 360 + delta;
+
+                el.style.transition = 'none';
+                el.style.transform = 'rotate(' + this.wheelRotation + 'deg)';
+                el.offsetWidth; // 强制回流，让起始位置先生效
+                // 内联 transition 会覆盖 class 声明，直接写内联过渡
+                el.style.transition = 'transform 4.2s cubic-bezier(0.12, 0.8, 0.16, 1)';
+                el.style.transform = 'rotate(' + target + 'deg)';
+
+                const view = this;
+                const finalize = function () {
+                    if (!view.spinning) return;
+                    view.spinning = false;
+                    clearTimeout(view.spinSafetyTimer);
+                    view.wheelRotation = target;
+                    view.finalizeSpin(picked);
+                };
+                el.addEventListener('transitionend', finalize, { once: true });
+                // 兜底：transitionend 丢失时也保证揭晓
+                this.spinSafetyTimer = setTimeout(finalize, 4600);
+            },
+
+            finalizeSpin(picked) {
+                this.spinLuck = picked.id;
+                this.render();
+                this.spawnConfetti();
+            },
+
+            // 中奖彩带
+            spawnConfetti() {
+                if (typeof document.createElement !== 'function') return;
+                const card = document.getElementById('wheel-modal-card');
+                if (!card || card === document) return;
+                const emojis = ['🎉', '✨', '🎡', '🎁', '💫', '🎊'];
+                for (let i = 0; i < 14; i++) {
+                    const span = document.createElement('span');
+                    span.className = 'confetti';
+                    span.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+                    span.style.left = (Math.random() * 100) + '%';
+                    span.style.animationDelay = (Math.random() * 0.8) + 's';
+                    card.appendChild(span);
+                }
+            },
+
+            wheelModal() {
+                if (!this.showWheel) return '';
+                return `
+                <div class="fixed inset-0 z-[200] flex items-center justify-center p-6 fade-in" style="background: rgba(24, 16, 60, 0.78);" onclick="View.closeWheel()">
+                    <div id="wheel-modal-card" class="relative bg-white w-full max-w-sm rounded-2xl p-5" onclick="event.stopPropagation()">
+                        <div class="flex items-center justify-between mb-1">
+                            <h3 class="font-black text-gray-900">🎡 奇遇大转盘</h3>
+                            <button onclick="View.closeWheel()" class="p-1 rounded-full hover:bg-gray-100"><i data-lucide="x" class="w-4 h-4 text-gray-400"></i></button>
+                        </div>
+                        ${this.spinLuck ? this.wheelResultView() : this.wheelSpinView()}
+                    </div>
+                </div>
+                `;
+            },
+
+            openUsage(id) {
+                this.usageCouponId = id;
+                this.render();
+            },
+
+            closeUsage() {
+                this.usageCouponId = null;
+                this.render();
+            },
+
+            usageModal() {
+                const coupon = this.coupons.find(c => c.id === this.usageCouponId);
+                if (!coupon) return '';
+                const isCode = coupon.mode === 'code';
+                const brand = coupon.shop;
+                const contentHtml = isCode
+                    ? `
+                    <p class="text-[11px] text-gray-400 mb-2.5">请复制券码后前往${brand}小程序下单时使用</p>
+                    <div class="bg-gray-50 rounded-xl p-4 text-center">
+                        <p class="font-mono text-xl font-black tracking-widest text-gray-900">${coupon.code}</p>
+                    </div>
+                    <button onclick="View.copyCode('${coupon.id}')" class="mt-3 w-full py-2.5 qy-grad rounded-xl font-bold text-sm shadow-lg shadow-purple-500/20 active:scale-95 transition-transform flex items-center justify-center gap-1.5">
+                        <i data-lucide="copy" class="w-4 h-4"></i><span>一键复制</span>
+                    </button>
+                    `
+                    : `
+                    <p class="text-[11px] text-gray-400 mb-2.5">请在点单时将核销二维码出示给店员核销使用</p>
+                    <div class="flex justify-center">
+                        <canvas id="qr-canvas" data-code="${coupon.code}" width="180" height="180"></canvas>
+                    </div>
+                    `;
+                return `
+                <div class="fixed inset-0 bg-black/40 z-[200] flex items-center justify-center px-6" onclick="View.closeUsage()">
+                    <div class="bg-white rounded-2xl p-5 w-80" onclick="event.stopPropagation()">
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="font-bold text-gray-900">${brand} · ${coupon.title}</h3>
+                            <button onclick="View.closeUsage()" class="p-1 rounded-full hover:bg-gray-100"><i data-lucide="x" class="w-4 h-4 text-gray-400"></i></button>
+                        </div>
+                        <div class="mb-3 flex items-center justify-center gap-2">
+                            <span class="px-2.5 py-1 qy-grad-soft text-xs font-bold rounded-md">${coupon.value}</span>
+                            <span class="text-[10px] text-gray-400">${coupon.deadline}</span>
+                        </div>
+                        ${contentHtml}
+                    </div>
+                </div>
+                `;
+            },
+
+            copyCode(id) {
+                const coupon = this.coupons.find(c => c.id === id);
+                if (!coupon) return;
+                const done = () => { if (window.Common) window.Common.showToast('券码已复制，快去使用吧'); };
+                const fallback = () => {
+                    const ta = document.createElement('textarea');
+                    ta.value = coupon.code;
+                    document.body.appendChild(ta);
+                    ta.select();
+                    try { document.execCommand('copy'); done(); } catch (e) { done(); }
+                    document.body.removeChild(ta);
+                };
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(coupon.code).then(done).catch(fallback);
+                } else {
+                    fallback();
+                }
+            },
+
+            // ============ 内容 TAB：精选活动 / 有奖分享 ============
+            tabsSection() {
+                const tabs = [
+                    { id: 'activities', label: '精选活动', icon: 'sparkles' },
+                    { id: 'share', label: '有奖分享', icon: 'gift' }
+                ];
+                const barHtml = tabs.map(t => {
+                    const active = this.activeTab === t.id;
+                    return `<button onclick="View.switchTab('${t.id}')" class="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-black transition active:scale-[0.98] ${active ? 'qy-tab text-white' : 'qy-tab-off active:bg-white/60'}">
+                        <i data-lucide="${t.icon}" class="w-4 h-4"></i><span>${t.label}</span>
+                    </button>`;
+                }).join('');
+                const content = this.activeTab === 'share' ? this.momentsSection() : this.activitiesTabContent();
+                return `
+                <div class="px-4 pt-3">
+                    <div class="qy-tabbar rounded-2xl p-1.5 flex gap-1.5 shadow-sm">${barHtml}</div>
+                </div>
+                ${content}
+                `;
+            },
+
+            switchTab(id) {
+                this.activeTab = id;
+                this.render();
+            },
+
+            // 精选活动列表：与首页共享 GlobalData.activities 数据，精选若干场
+            activitiesTabContent() {
+                const FEATURED_IDS = ['a26', 'a25', 'a23', 'a21', 'a15', 'a12'];
+                const activities = (window.GlobalData && window.GlobalData.activities) || [];
+                const featured = FEATURED_IDS.map(id => activities.find(a => a.id === id)).filter(Boolean);
+                const cardsHtml = featured.map(a => this.renderActivityCard(a)).join('');
+                return `
+                <div class="px-4 pt-3 pb-10">
+                    ${cardsHtml}
+                    <div class="text-center text-gray-400 text-xs pt-2">—— 更多活动去首页逛逛 🎡 ——</div>
+                </div>
+                `;
+            },
+
+            // 活动卡片：仅保留详情按钮（右下角），整卡可点进详情页
+            renderActivityCard(activity) {
+                return `
+                <div onclick="window.location.href='detail.html?id=${activity.id}'" class="mb-3 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden cursor-pointer active:scale-[0.99] transition-transform">
+                    <div class="relative">
+                        <img src="${activity.imageUrl}" class="w-full h-32 object-cover" />
+                        <span class="absolute top-2 right-2 bg-black/50 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">${activity.currentParticipants}/${activity.maxParticipants}人</span>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="text-sm font-black text-gray-900 line-clamp-1">${activity.title}</h3>
+                        <div class="mt-1.5 flex items-center gap-1 text-[11px] text-gray-500">
+                            <i data-lucide="calendar" class="w-3 h-3"></i><span>${activity.date}</span>
+                        </div>
+                        <div class="mt-0.5 flex items-center gap-1 text-[11px] text-gray-500">
+                            <i data-lucide="map-pin" class="w-3 h-3"></i><span>${activity.district} · ${activity.location}</span>
+                        </div>
+                        <div class="mt-3 flex items-center justify-between gap-2">
+                            <div onclick="event.stopPropagation(); window.location.href='profile.html?id=${activity.organizer.id}'" class="flex items-center gap-2 min-w-0 cursor-pointer active:opacity-70">
+                                <img src="${activity.organizer.avatarUrl}" class="w-6 h-6 rounded-full border border-gray-200 object-cover flex-shrink-0" />
+                                <span class="text-xs text-gray-500 truncate">${activity.organizer.name}</span>
+                            </div>
+                            <button onclick="event.stopPropagation(); window.location.href='detail.html?id=${activity.id}'" class="flex-shrink-0 px-4 py-2 qy-grad-soft rounded-lg text-xs font-bold active:scale-95 transition-transform">查看详情</button>
+                        </div>
+                    </div>
+                </div>
+                `;
+            },
+
+            // ============ 有奖分享卡片 + 活动规则弹窗 ============
+            shareCard() {
+                const rules = this.qiyu.shareRules || {};
+                return `
+                <div class="rounded-xl overflow-hidden relative qy-share">
+                    <div class="absolute -right-4 -top-6 text-6xl opacity-20">🎁</div>
+                    <div class="p-4 relative">
+                        <div class="flex items-center justify-between gap-2">
+                            <div class="text-white font-black text-base">${rules.title || '人格测试有奖分享'}</div>
+                            <button onclick="View.openRules()" class="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-bold bg-white/25 text-white border border-white/50 active:scale-95 transition-transform">
+                                活动规则
+                            </button>
+                        </div>
+                        <div class="text-white/85 text-xs mt-1 leading-relaxed">带 ${TOPIC} 发布动态，互动值最高者赢奇遇华熙好礼 🎁</div>
+                    </div>
+                </div>
+                `;
+            },
+
+            openRules() {
+                this.showRules = true;
+                this.render();
+            },
+
+            closeRules() {
+                this.showRules = false;
+                this.render();
+            },
+
+            rulesModal() {
+                if (!this.showRules) return '';
+                const rules = this.qiyu.shareRules || {};
+                const awardsHtml = (rules.awards || []).map(a => `
+                    <div class="bg-gray-50 rounded-xl p-3">
+                        <p class="text-xs font-black text-gray-900">${a.name} <span class="text-[10px] text-gray-400 font-normal ml-1">${a.desc}</span></p>
+                        <p class="mt-1 text-xs text-gray-600 leading-relaxed">${a.gift}</p>
+                    </div>
+                `).join('');
+                const notesHtml = (rules.notes || []).map(n => `
+                    <p class="flex items-start gap-1.5 text-[11px] text-gray-500 leading-relaxed">
+                        <span class="text-gray-300 flex-shrink-0 mt-0.5">·</span><span>${n}</span>
+                    </p>
+                `).join('');
+                return `
+                <div class="fixed inset-0 bg-black/40 z-[200] flex items-end justify-center" onclick="View.closeRules()">
+                    <div class="bg-white rounded-t-2xl w-full max-w-md px-5 pt-5 pb-8 fade-in max-h-[80vh] overflow-y-auto" onclick="event.stopPropagation()">
+                        <div class="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-4"></div>
+                        <h3 class="text-lg font-black text-gray-900">${rules.title || '人格测试有奖分享'} · 活动规则</h3>
+                        <div class="mt-3 space-y-2 text-xs text-gray-600 leading-relaxed">
+                            <p>${rules.period}</p>
+                            <p>${rules.howTo}</p>
+                            <p>${rules.scoring}</p>
+                        </div>
+                        <p class="mt-4 text-xs font-black text-gray-900">🎁 奖项设置</p>
+                        <div class="mt-2 space-y-2">${awardsHtml}</div>
+                        <p class="mt-4 text-xs text-gray-600 leading-relaxed">${rules.announce}</p>
+                        <p class="mt-3 text-xs font-black text-gray-900">注意事项</p>
+                        <div class="mt-1.5 space-y-1">${notesHtml}</div>
+                        <button onclick="View.closeRules()" class="mt-5 w-full py-3 qy-grad rounded-xl font-bold text-sm active:scale-95 transition-transform">我知道了</button>
+                    </div>
+                </div>
+                `;
+            },
+
+            // ============ 有奖分享 TAB：分享卡片 + #奇遇华熙# 动态瀑布流（我的动态在前） ============
+            momentsSection() {
+                const preset = this.qiyu.moments || [];
+                const moments = [...this.myMoments, ...preset];
+                if (moments.length === 0) return '';
+                const cardsHtml = moments.map(m => this.renderMomentCard(m));
+                const leftColumn = [];
+                const rightColumn = [];
+                cardsHtml.forEach((html, i) => {
+                    (i % 2 === 0 ? leftColumn : rightColumn).push(html);
+                });
+                return `
+                <div class="px-4 pt-3 pb-28">
+                    ${this.shareCard()}
+                    <div class="flex gap-3 items-start mt-3">
+                        <div class="flex-1 min-w-0">${leftColumn.join('')}</div>
+                        <div class="flex-1 min-w-0">${rightColumn.join('')}</div>
+                    </div>
+                    <div class="text-center text-gray-400 text-xs pt-3">—— 奇遇华熙，好运常伴 🎡 ——</div>
+                </div>
+                `;
+            },
+
+            // 单条动态瀑布流卡片（同音乐节专题页样式）
+            renderMomentCard(m) {
+                const liked = !!this.liked[m.id];
+                const likeCount = m.likes + (liked ? 1 : 0);
+                return `
+                <div class="mb-3 bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
+                    <div class="relative cursor-pointer active:opacity-80" onclick="window.location.href='moment.html?id=mo1'">
+                        <img src="${escapeHtml(m.image)}" class="w-full h-auto object-cover"
+                             onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"/>
+                        <div class="hidden flex-col items-center justify-center w-full" style="aspect-ratio: 4/3; background: linear-gradient(135deg, #7c4dff, #ff4d88);">
+                            <span class="text-2xl mb-1">🎡</span>
+                            <span class="text-white text-xs font-bold">奇遇华熙</span>
+                        </div>
+                        ${m.isMine ? '<span class="absolute top-2 left-2 text-[9px] font-bold px-1.5 py-0.5 rounded-full text-white bg-black/40">我的动态</span>' : ''}
+                    </div>
+                    <div class="p-2.5">
+                        <p class="text-[13px] text-gray-800 leading-snug mb-2 cursor-pointer active:opacity-80" onclick="window.location.href='moment.html?id=mo1'">${escapeHtml(m.text)} <span class="qy-text font-medium">${TOPIC}</span></p>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-1.5 overflow-hidden">
+                                <img src="${escapeHtml(m.avatar)}" class="w-5 h-5 rounded-full border border-gray-100 flex-shrink-0 object-cover"
+                                     onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"/>
+                                <div class="w-5 h-5 rounded-full border border-gray-100 flex-shrink-0 hidden items-center justify-center text-[10px] font-black text-white"
+                                     style="background: linear-gradient(135deg, #7c4dff, #ff4d88);">${escapeHtml(m.name.charAt(0))}</div>
+                                <span class="text-[10px] text-gray-500 truncate">${escapeHtml(m.name)}</span>
+                                <span class="text-[10px] text-gray-300 flex-shrink-0">· ${escapeHtml(m.time)}</span>
+                            </div>
+                            <div class="flex items-center gap-2.5 text-gray-400 shrink-0">
+                                <button data-id="${escapeHtml(m.id)}" onclick="View.toggleLike(this.dataset.id)" class="flex items-center gap-0.5 active:scale-90 transition-transform ${liked ? 'text-red-500' : ''}">
+                                    <i data-lucide="heart" class="w-3 h-3 ${liked ? 'fill-red-500' : ''}"></i>
+                                    <span class="text-[10px]">${likeCount}</span>
+                                </button>
+                                <span class="flex items-center gap-0.5">
+                                    <i data-lucide="message-circle" class="w-3 h-3"></i>
+                                    <span class="text-[10px]">${m.comments}</span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                `;
+            },
+
+            toggleLike(id) {
+                this.liked = Object.assign({}, this.liked, { [id]: !this.liked[id] });
+                this.render();
+            },
+
+            // ============ 有奖发布：悬浮按钮 + 发布弹窗（参考华熙"打个卡"） ============
+            fab() {
+                return `
+                <button onclick="View.openPublish()"
+                        class="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 px-6 py-3 rounded-full text-white font-black text-sm flex items-center gap-1.5 active:scale-95 transition-transform whitespace-nowrap border-2 border-white qy-fab">
+                    <i data-lucide="plus" class="w-4 h-4"></i>
+                    有奖发布
+                </button>
+                `;
+            },
+
+            openPublish() {
+                if (!this.testDone) {
+                    if (window.Common) window.Common.showToast('请先完成人格测试再参与有奖分享');
+                    return;
+                }
+                if (!this.publishDraft) this.publishDraft = { image: '', text: '' };
+                this.showPublish = true;
+                this.render();
+            },
+
+            closePublish() {
+                this.showPublish = false;
+                this.render();
+            },
+
+            publishModal() {
+                if (!this.showPublish) return '';
+                const d = this.publishDraft || { image: '', text: '' };
+                const preview = d.image
+                    ? `<img src="${d.image}" class="w-full h-28 object-cover rounded-xl border border-gray-100 cursor-pointer" onclick="document.getElementById('publishFileInput').click()"/>`
+                    : `<div class="w-full h-28 rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 flex flex-col items-center justify-center text-gray-300 cursor-pointer active:bg-gray-100 transition" onclick="document.getElementById('publishFileInput').click()"><i data-lucide="image" class="w-6 h-6 mb-1"></i><span class="text-[10px]">选择一张图片</span></div>`;
+                return `
+                <div class="fixed inset-0 bg-black/45 z-[90] flex items-end justify-center fade-in" onclick="View.closePublish()">
+                    <div class="bg-white w-full max-w-md rounded-t-3xl p-5 pb-8 fade-in max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-black text-gray-900 whitespace-nowrap">有奖发布</h3>
+                            <button onclick="View.closePublish()" class="p-1 rounded-full active:bg-gray-100 shrink-0">
+                                <i data-lucide="x" class="w-5 h-5 text-gray-400"></i>
+                            </button>
+                        </div>
+
+                        <!-- 图片：点击直接执行上传 -->
+                        <div class="mb-4">
+                            <label class="text-xs font-bold text-gray-500 mb-2 block">图片</label>
+                            ${preview}
+                            <input type="file" id="publishFileInput" accept="image/*" class="hidden" onchange="View.pickFeedImage(this)"/>
+                        </div>
+
+                        <!-- 内容 -->
+                        <div class="mb-4">
+                            <label class="text-xs font-bold text-gray-500 mb-2 block">我的奇遇现场</label>
+                            <textarea id="publishText" maxlength="100" rows="3"
+                                      class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-purple-400 resize-none"
+                                      placeholder="说说你的华熙奇遇现场…">${escapeHtml(d.text || '')}</textarea>
+                            <div class="text-right text-[10px] text-gray-400 mt-1"><span id="publishTextCount">0</span>/100</div>
+                        </div>
+
+                        <p class="text-center text-[10px] text-gray-400 mb-3">发布后自动带上 ${TOPIC} 话题，参与有奖分享评选</p>
+
+                        <button onclick="View.publishMoment()"
+                                class="w-full py-3.5 rounded-xl text-white font-black text-sm active:scale-95 transition-transform qy-fab">
+                            发布
+                        </button>
+                    </div>
+                </div>
+                `;
+            },
+
+            // 发布后同步草稿与字数（重渲染后恢复输入状态）
+            syncPublishInput() {
+                const textarea = document.getElementById('publishText');
+                const counter = document.getElementById('publishTextCount');
+                if (!textarea) return;
+                const update = () => {
+                    counter.textContent = textarea.value.length;
+                    this.publishDraft.text = textarea.value;
+                };
+                update();
+                textarea.addEventListener('input', update);
+            },
+
+            // 图片压缩：等比缩放并转 JPEG，控制存储体积（同华熙）
+            compressImage(file, maxWidth, callback) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const img = new Image();
+                    img.onload = function () {
+                        const scale = Math.min(1, maxWidth / img.width);
+                        const canvas = document.createElement('canvas');
+                        canvas.width = Math.max(1, Math.round(img.width * scale));
+                        canvas.height = Math.max(1, Math.round(img.height * scale));
+                        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+                        callback(canvas.toDataURL('image/jpeg', 0.85));
+                    };
+                    img.onerror = function () { window.Common.showToast('图片读取失败，请换一张试试'); };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            },
+
+            pickFeedImage(input) {
+                const file = input.files && input.files[0];
+                input.value = ''; // 先清空，拒绝后再次选择同一文件也能触发 change
+                if (!file) return;
+                if (file.size > 8 * 1024 * 1024) { window.Common.showToast('图片太大啦，请选择 8MB 以内的图片'); return; }
+                const view = this;
+                this.compressImage(file, 1080, function (dataUrl) {
+                    view.publishDraft.image = dataUrl;
+                    view.render();
+                    view.syncPublishInput();
+                    window.Common.showToast('图片已选择');
+                });
+            },
+
+            publishMoment() {
+                const d = this.publishDraft || { image: '', text: '' };
+                const text = (d.text || '').trim();
+                if (!text) {
+                    if (window.Common) window.Common.showToast('写点什么再发布吧');
+                    return;
+                }
+                const user = (window.GlobalData && window.GlobalData.user) || { name: '我', avatarUrl: 'images/avatar-1.png' };
+                const withTopic = text.includes(TOPIC) ? text : text + ' ' + TOPIC;
+                const post = {
+                    id: 'qh-mine-' + Date.now(),
+                    name: user.name,
+                    avatar: user.avatarUrl,
+                    text: withTopic,
+                    image: d.image || 'images/cover-11.png',
+                    likes: 0,
+                    comments: 0,
+                    time: '刚刚',
+                    isMine: true
+                };
+                const next = [post, ...this.myMoments];
+                sessionStorage.setItem('qiyu_my_moments', JSON.stringify(next));
+                this.publishDraft = { image: '', text: '' };
+                this.showPublish = false;
+                if (window.Common) window.Common.showToast('发布成功，已参与有奖分享');
+                this.render();
+            },
+
+            render() {
+                // 答题中：完整独立界面，不渲染优惠券/活动/动态等区块
+                const isQuiz = this.stage === 'quiz';
+                const main = isQuiz
+                    ? this.quizView()
+                    : `${this.testSection()}${this.couponsSection()}${this.tabsSection()}`;
+                document.getElementById('app').innerHTML = `
+                    ${this.header()}
+                    <div class="pt-[50px]">
+                        ${main}
+                    </div>
+                    ${isQuiz ? '' : (this.activeTab === 'share' ? this.fab() : '')}
+                    ${this.wheelModal()}
+                    ${this.confirmModal()}
+                    ${this.usageModal()}
+                    ${this.rulesModal()}
+                    ${this.publishModal()}
+                `;
+                // 发布弹窗输入同步（textarea 字数 + 草稿）
+                if (this.showPublish) this.syncPublishInput();
+                if (window.Common) window.Common.initIcons();
+                // 使用面板二维码绘制（qr 模式）
+                if (this.usageCouponId) {
+                    const canvas = document.getElementById('qr-canvas');
+                    if (canvas && typeof canvas.getContext === 'function' && window.Common && window.Common.drawQr) {
+                        window.Common.drawQr(canvas, canvas.getAttribute('data-code') || '');
+                    }
+                }
+            }
+        };
+
+        window.View = View;
+        document.addEventListener('DOMContentLoaded', () => { View.restoreTestState(); View.restoreSpinState(); View.render(); });
+    </script>
+</body>
+</html>

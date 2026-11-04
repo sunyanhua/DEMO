@@ -13,7 +13,9 @@
     <div id="app"></div>
 
     <script src="data.js?v=2"></script>
-    <script src="dumpling-quiz-data.js?v=2"></script>
+    <!-- 题库兜底：qiyu-huaxi-data.js 内嵌题库并在 dumplingQuiz/dumpling 缺失时补全，
+         部署漏传 dumpling-data.js / dumpling-quiz-data.js 时详情页仍可用 -->
+    <script src="qiyu-huaxi-data.js?v=2"></script>
     <script src="dumpling-data.js?v=2"></script>
     <script src="common.js?v=2"></script>
     <script src="dumpling-test.js?v=2"></script>
@@ -37,10 +39,17 @@
                 return d.personalities || [];
             },
 
+            // 返回目标：从奇遇华熙进入时回奇遇华熙专题，否则回饺子专题
+            backHref() {
+                try {
+                    return new URLSearchParams(window.location.search).get('from') === 'qiyu' ? 'qiyu-huaxi.html' : 'dumpling.html';
+                } catch (e) { return 'dumpling.html'; }
+            },
+
             header() {
                 return `
                 <div class="fixed top-0 left-0 right-0 h-[50px] bg-white z-50 flex items-center px-4 shadow-sm border-b border-gray-100">
-                    <button onclick="window.location.href='dumpling.html'" class="p-1.5 rounded-full hover:bg-gray-100 transition">
+                    <button onclick="window.location.href='${this.backHref()}'" class="p-1.5 rounded-full hover:bg-gray-100 transition">
                         <i data-lucide="chevron-left" class="w-6 h-6 text-gray-800"></i>
                     </button>
                     <div class="flex-1 text-center font-bold text-gray-900">饺子人格测试</div>
@@ -176,8 +185,8 @@
                     </div>
                     ${this.routeDetailSection(route)}
                     <div class="px-4">
-                        <button onclick="window.location.href='dumpling.html'" class="mt-5 w-full py-3 bg-white border border-brand-orange text-brand-orange rounded-xl font-bold active:scale-95 transition-transform">
-                            回活动页领优惠券
+                        <button onclick="window.location.href='${this.backHref()}'" class="mt-5 w-full py-3 bg-white border border-brand-orange text-brand-orange rounded-xl font-bold active:scale-95 transition-transform">
+                            回活动页${this.backHref() === 'qiyu-huaxi.html' ? '抽好运领券' : '领优惠券'}
                         </button>
                     </div>
                 </div>
