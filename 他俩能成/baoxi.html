@@ -109,7 +109,7 @@ function railHtml(){
         '</div>'+
         '<div class="p-2">'+
           '<div class="text-xs font-bold text-gray-800 truncate">'+u.name+'</div>'+
-          '<div class="text-[9px] text-gray-400 mt-0.5">ID:'+esc(u.id||'')+'</div>'+
+          (u.id?'<div class="text-[9px] text-gray-400 mt-0.5">ID:'+esc(u.id)+'</div>':'')+
         '</div>'+
       '</div>'+
     '</div>';
@@ -158,6 +158,10 @@ function clearSearch(){
 }
 
 function refreshPick(){
+  // 已选TA被搜索条件过滤掉时清除选中，避免提交时用了页面上看不到的人
+  if(selUser&&!visibleUsers().some(function(u){return u.name===selUser.name;})){
+    selUser=null;
+  }
   var box=document.getElementById('pick-section');
   if(box&&box!==document){box.innerHTML=pickSectionHtml();}
   else{renderForm();}

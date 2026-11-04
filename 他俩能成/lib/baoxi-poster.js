@@ -240,17 +240,21 @@ function snapshotPoster(){
   var animateEls=[poster].concat(Array.prototype.slice.call(poster.querySelectorAll('*')));
   animateEls.forEach(function(el){el.style.setProperty('animation','none','important');});
   var clone=poster.cloneNode(true);
-  // 图片替换为内嵌 data URL，保证快照自包含、canvas 不被污染；
-  // 用户上传的大体积 dataURL 先压缩为小尺寸 JPEG，避免 SVG 图片内渲染失败导致空白
+  // 图片替换为内嵌 data URL，保证快照自包含、canvas 不被污染：
+  // 相对路径图片在 SVG(data: URL) 中无法加载；用户上传的大体积 dataURL 压缩为小尺寸 JPEG，
+  // 避免 SVG 图片内渲染失败导致头像/照片空白
   var liveImgs=poster.querySelectorAll('img');
   Array.prototype.forEach.call(clone.querySelectorAll('img'),function(img,i){
     var src=img.getAttribute('src');
     if(window.IMG_DATA&&window.IMG_DATA[src]){img.setAttribute('src',window.IMG_DATA[src]);return;}
-    if(src&&src.indexOf('data:image/')===0&&src.length>150000){
+    if(!src)return;
+    var isData=src.indexOf('data:image/')===0;
+    if(!isData||src.length>150000){
       try{
         var li=liveImgs[i];
         if(li&&li.naturalWidth){
-          var maxW=700,s=Math.min(1,maxW/li.naturalWidth);
+          var maxW=isData?700:li.naturalWidth;
+          var s=Math.min(1,maxW/li.naturalWidth);
           var c=document.createElement('canvas');
           c.width=Math.round(li.naturalWidth*s);c.height=Math.round(li.naturalHeight*s);
           c.getContext('2d').drawImage(li,0,0,c.width,c.height);
@@ -332,6 +336,9 @@ function downloadPoster(drawData){
               }
             }
             if(!photoOk){fallbackPoster(drawData);return;}
+          }else{
+            // 测不到照片区域（节点缺失或区域塌缩）说明照片未能渲染，同样转手绘兜底
+            fallbackPoster(drawData);return;
           }
           saveCanvas(canvas);
         }catch(e){

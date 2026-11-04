@@ -206,7 +206,10 @@ test('报喜引导入口：首页已成卡 + 我的1314引导卡 + 资料页缘�
     assert.ok(!card.includes('报喜'), '未成卡不应带报喜按钮');
     store['baoxi_submitted'] = '1';
     card = vm.runInContext("View.smallCard({name:'测试',age:25,gender:'female',constellation:'天秤座',photo:'p.jpg',verified:false,capsule:'你和TA已成'})", idxEnv.sandbox);
-    assert.ok(!card.includes('报喜'), '已报喜用户不应再显示报喜按钮');
+    assert.ok(card.includes('报喜'), '仅标记无记录（残态）应继续显示报喜按钮');
+    store['baoxi_my_report'] = JSON.stringify({ id: 'mine', names: ['甜心小鹿', '陈屿'], avatars: ['a.jpg', 'b.jpg'], events: [{ time: '', html: 'x' }] });
+    card = vm.runInContext("View.smallCard({name:'测试',age:25,gender:'female',constellation:'天秤座',photo:'p.jpg',verified:false,capsule:'你和TA已成'})", idxEnv.sandbox);
+    assert.ok(!card.includes('报喜'), '已报喜且记录完好不应再显示报喜按钮');
     clearStore();
 
     // 报喜页：入口带入的TA自动补入候选并预选；名称清洗防注入；同名人忽略；已有候选用带入照片
@@ -231,7 +234,10 @@ test('报喜引导入口：首页已成卡 + 我的1314引导卡 + 资料页缘�
     assert.ok(env1314.document._html.includes('goBaoxi') && env1314.document._html.includes('520元官方红包'), '引导卡应可点击去报喜并提示官方红包');
     store['baoxi_submitted'] = '1';
     vm.runInContext('render()', env1314.sandbox);
-    assert.ok(!env1314.document._html.includes('已经成了？快来报喜'), '已报喜不应再显示报喜引导卡');
+    assert.ok(env1314.document._html.includes('已经成了？快来报喜'), '仅标记无记录（残态）应继续显示报喜引导卡');
+    store['baoxi_my_report'] = JSON.stringify({ id: 'mine', names: ['甜心小鹿', '陈屿'], avatars: ['a.jpg', 'b.jpg'], events: [{ time: '', html: 'x' }] });
+    vm.runInContext('render()', env1314.sandbox);
+    assert.ok(!env1314.document._html.includes('已经成了？快来报喜'), '已报喜且记录完好不应再显示报喜引导卡');
     clearStore();
 
     // 资料页缘分记录：匹配度达1314有报喜引导；未达1314保持原"就差最后一步"分支
@@ -240,6 +246,7 @@ test('报喜引导入口：首页已成卡 + 我的1314引导卡 + 资料页缘�
     assert.ok(envProfile.document._html.includes('匹配度已达1314') && envProfile.document._html.includes('去报喜'), '缘分记录达1314应有报喜引导');
     assert.ok(envProfile.document._html.includes('goBaoxi'), '引导按钮应可点击去报喜');
     assert.ok(envProfile.document._html.includes("goBaoxi('追风少年'"), '去报喜应带入缘分对象而非当前用户本人');
+    assert.ok(envProfile.document._html.includes('chat.html?name=' + encodeURIComponent('追风少年')), '联系TA与去报喜应指向同一缘分对象');
     vm.runInContext("profile.matchScore=100;profile.fateCard='pending';render()", envProfile.sandbox);
     assert.ok(envProfile.document._html.includes('就差最后一步') && !envProfile.document._html.includes('去报喜'), '未达1314不应显示报喜引导');
     // 初始状态：固定随机数下匹配度<1314，不应随机出"你们成了"（与1314规则一致）
@@ -427,8 +434,9 @@ test('海报下载：上传大图压缩入快照 + 幸福时刻区域纯白检�
     clearStore();
     // 快照路径依赖真实浏览器渲染（vm 沙箱无 canvas/DOM 布局），以源码断言防回归
     const src = fs.readFileSync(path.join(dir, 'lib/baoxi-poster.js'), 'utf8');
-    assert.ok(src.includes("src.indexOf('data:image/')===0") && src.includes('src.length>150000'), '快照应压缩大体积上传图');
-    assert.ok(src.includes("toDataURL('image/jpeg'"), '压缩应输出 JPEG dataURL');
+    assert.ok(src.includes("src.indexOf('data:image/')===0") && src.includes('!isData||src.length>150000'), '快照应将相对路径图片与大体积上传图内嵌为 dataURL');
+    assert.ok(src.includes("toDataURL('image/jpeg'"), '内嵌应输出 JPEG dataURL');
+    assert.ok(src.includes('测不到照片区域'), '测不到照片区域时应转手绘兜底');
     assert.ok(src.includes('photoOk') && src.includes('fallbackPoster(drawData)'), '幸福时刻区域纯白应转手绘兜底');
     // 空白检测应按快照中照片的真实位置采样（photoRect），而非固定比例猜测的采样带
     assert.ok(src.includes('photoRect') && src.includes("querySelector('[data-happy-photo]')"), '空白检测应按照片真实位置采样');
@@ -701,6 +709,11 @@ test('报喜页：第一步选择TA支持按能成ID或昵称搜索并可清空'
     vm.runInContext("searchKw='不存在'; clearSearch()", sandbox);
     assert.strictEqual(vm.runInContext('searchKw', sandbox), '', '清空后搜索词应为空');
     assert.strictEqual(vm.runInContext('visibleUsers().length', sandbox), vm.runInContext('MATCHED.length', sandbox), '清空后应显示全部候选');
+    // 已选TA被搜索过滤掉时清除选中，避免提交时用了页面上看不到的人
+    vm.runInContext("selUser=MATCHED[0]; searchKw='海'; refreshPick()", sandbox);
+    assert.strictEqual(vm.runInContext('selUser', sandbox), null, '已选TA被搜索过滤后应清除选中');
+    vm.runInContext("selUser=MATCHED[0]; searchKw=''; refreshPick()", sandbox);
+    assert.ok(vm.runInContext('selUser && selUser.name', sandbox) === '阳光骑士', '未过滤时应保留选中');
     // 搜索词转义防注入
     const escHtml = vm.runInContext("(function(){searchKw='<b>';return pickSectionHtml();})()", sandbox);
     assert.ok(escHtml.includes('value="&lt;b&gt;"'), '搜索词应转义防注入');
@@ -723,6 +736,11 @@ test('v参数透传：入口带v后持久化，站内跳转自动附加', () => 
     assert.strictEqual(env.sandbox.window.location.href, '#top', '锚点不应附加v参数');
     env.sandbox.window.Common.href = 'baoxi.html?v=999';
     assert.strictEqual(env.sandbox.window.location.href, 'baoxi.html?v=999', '已带v参数的地址不重复附加');
+    // 锚点：v 拼在 fragment 之前；含 v= 子串的其他参数不误判
+    env.sandbox.window.Common.href = 'profile.html#about';
+    assert.strictEqual(env.sandbox.window.location.href, 'profile.html?v=20261104#about', '带锚点的地址v应拼在fragment之前');
+    env.sandbox.window.Common.href = 'ranking.html?rev=2';
+    assert.strictEqual(env.sandbox.window.location.href, 'ranking.html?rev=2&v=20261104', '含v=子串的其他参数不应阻止追加v');
     // goBaoxi 跳转同样带 v
     env.sandbox.window.Common.goBaoxi();
     assert.strictEqual(env.sandbox.window.location.href, 'baoxi.html?v=20261104', 'goBaoxi跳转应附加v参数');

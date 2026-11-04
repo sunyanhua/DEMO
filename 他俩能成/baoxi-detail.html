@@ -29,8 +29,8 @@ var pair = window.BaoxiData.getPair(rawId);
 // 我的报喜：读取自己完成报喜后保存的记录（每次渲染重新读取，补传结婚证等更新即时生效）
 function loadMine() {
     try { pair = JSON.parse(localStorage.getItem('baoxi_my_report') || 'null'); } catch (e) { pair = null; }
-    // 记录结构不完整（缺头像/历程）按未报喜处理，避免渲染时报错白屏
-    if (pair && (!Array.isArray(pair.avatars) || pair.avatars.length !== 2 || !Array.isArray(pair.events))) pair = null;
+    // 记录结构不完整（缺姓名/头像/历程）按未报喜处理，避免渲染时报错白屏
+    if (pair && (!Array.isArray(pair.names) || pair.names.length !== 2 || !Array.isArray(pair.avatars) || pair.avatars.length !== 2 || !Array.isArray(pair.events))) pair = null;
     if (pair && !pair.couplePhoto) pair.couplePhoto = 'images/logo_center.png';
 }
 if (!pair && rawId === 'mine') loadMine();

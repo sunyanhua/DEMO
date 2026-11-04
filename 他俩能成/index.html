@@ -239,7 +239,7 @@
                 const genderBadge = u.gender === 'male'
                     ? '<span class="text-[9px] px-1 py-0.5 rounded-full bg-blue-50 text-blue-500 font-medium inline-flex items-center"><i data-lucide="mars" class="w-2.5 h-2.5"></i></span>'
                     : '<span class="text-[9px] px-1 py-0.5 rounded-full bg-pink-50 text-brand-pink font-medium inline-flex items-center"><i data-lucide="venus" class="w-2.5 h-2.5"></i></span>';
-                var showBaoxi = u.capsule === MATCH_DONE_CAPSULE && !window.Common.isBaoxiSubmitted();
+                var showBaoxi = u.capsule === MATCH_DONE_CAPSULE && !(window.Common.isBaoxiSubmitted() && window.Common.hasBaoxiReport());
                 return `
                 <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 card-hover flex flex-col flex-shrink-0 cursor-pointer" style="width:148px;" onclick="window.Common.href='profile.html'">
                     <div class="relative w-full overflow-hidden bg-gray-100 flex-shrink-0" style="height:185px;">

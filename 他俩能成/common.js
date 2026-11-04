@@ -168,8 +168,16 @@ window.Common = {
         url = url == null ? '' : String(url);
         var v = this.getVParam();
         if (!v || !url) return url;
-        if (/^(https?:|javascript:|tel:|mailto:|#)/i.test(url) || url.indexOf('v=') > -1) return url;
-        return url + (url.indexOf('?') < 0 ? '?' : '&') + 'v=' + encodeURIComponent(v);
+        if (/^(https?:|javascript:|tel:|mailto:|#)/i.test(url)) return url;
+        // 只按真实查询参数判定：v 拼在 fragment 之前，且不因 ?rev=2 等含"v="子串的参数误判
+        var hashIdx = url.indexOf('#');
+        var hash = hashIdx < 0 ? '' : url.slice(hashIdx);
+        var base = hashIdx < 0 ? url : url.slice(0, hashIdx);
+        var qIdx = base.indexOf('?');
+        var query = qIdx < 0 ? '' : base.slice(qIdx + 1);
+        if (/(^|&)v=/.test(query)) return url;
+        base = base + (qIdx < 0 ? '?' : '&') + 'v=' + encodeURIComponent(v);
+        return base + hash;
     }
 
 };
