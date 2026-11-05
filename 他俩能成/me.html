@@ -49,6 +49,11 @@
     <label class="text-xs font-medium text-gray-500">举报内容</label>
     <textarea id="report-content" rows="4" placeholder="请描述骚扰、虚假信息等情况" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:border-brand-pink resize-none"></textarea>
   </div>
+  <div class="space-y-1.5">
+    <label class="text-xs font-medium text-gray-500">附件 <span class="text-gray-300">（非必填，最多9张）</span></label>
+    <div id="report-attach" class="grid grid-cols-3 gap-2"></div>
+    <input type="file" id="report-attach-input" accept="image/*" multiple class="hidden" onchange="onReportAttach(this)"/>
+  </div>
 </div>
 <div class="mt-4 space-y-2">
   <span onclick="submitReport()" class="block w-full py-2.5 rounded-xl bg-gradient-to-tr from-brand-pink to-brand-orange text-white font-bold text-sm card-hover text-center cursor-pointer">提交举报</span>
@@ -198,9 +203,60 @@ function showConfirm(msg,cb){
   window.Common.showPopup('confirm-overlay');
 }
 function showPhoneAuth(){window.Common.showPopup('phone-auth-overlay')}
+// 举报附件（多图，非必填，最多 9 张，仅演示不落盘）
+var reportImages=[];
+function renderReportAttach(){
+  var box=document.getElementById('report-attach');
+  if(!box)return;
+  var cells=reportImages.map(function(src,i){
+    return '<div class="relative">'+
+      '<img src="'+src+'" class="w-full h-20 object-cover rounded-xl border border-gray-200"/>'+
+      '<span onclick="removeReportImage('+i+')" class="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-gray-800 text-white text-[10px] flex items-center justify-center cursor-pointer">✕</span>'+
+    '</div>';
+  }).join('');
+  if(reportImages.length<9){
+    cells+='<label for="report-attach-input" class="w-full h-20 rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 flex flex-col items-center justify-center text-gray-300 cursor-pointer card-hover">'+
+      '<i data-lucide="image-plus" class="w-5 h-5 mb-0.5"></i><span class="text-[10px]">添加图片</span></label>';
+  }
+  box.innerHTML=cells;
+  window.Common.initIcons();
+}
+function onReportAttach(input){
+  var files=input.files?Array.prototype.slice.call(input.files):[];
+  input.value=''; // 先清空，重复选择同一文件也能触发 change
+  if(!files.length)return;
+  var remain=9-reportImages.length;
+  if(files.length>remain){
+    window.Common.showToast('最多上传 9 张图片');
+    files=files.slice(0,remain);
+  }
+  var pending=files.length;
+  if(pending===0)return;
+  files.forEach(function(f){
+    if(f.size>8*1024*1024){
+      window.Common.showToast('图片太大，请选择 8MB 以内的图片');
+      pending--;
+      if(pending===0)renderReportAttach();
+      return;
+    }
+    var r=new FileReader();
+    r.onload=function(){
+      reportImages.push(r.result);
+      pending--;
+      if(pending===0)renderReportAttach();
+    };
+    r.readAsDataURL(f);
+  });
+}
+function removeReportImage(i){
+  reportImages.splice(i,1);
+  renderReportAttach();
+}
 function showReport(){
   document.getElementById('report-id').value='';
   document.getElementById('report-content').value='';
+  reportImages=[];
+  renderReportAttach();
   window.Common.showPopup('report-overlay');
 }
 function submitReport(){
@@ -209,6 +265,7 @@ function submitReport(){
   if(!id){window.Common.showToast('请填写对方能成号');return}
   if(!content){window.Common.showToast('请填写举报内容');return}
   window.Common.hidePopup('report-overlay');
+  reportImages=[];
   window.Common.showToast('您的举报内容已经提交，我们将与您联系核实情况。');
 }
 function doPhoneAuth(){

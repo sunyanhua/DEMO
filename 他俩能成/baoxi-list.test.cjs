@@ -457,9 +457,13 @@ test('个人中心：我的认证下方有我要举报入口，弹窗提交举�
     const reportIdx = html.indexOf('我要举报');
     assert.ok(certIdx !== -1 && reportIdx !== -1 && reportIdx > certIdx, '我要举报应在我的认证下方');
     assert.ok(html.includes('showReport()'), '点击应打开举报弹窗');
-    // 弹窗（静态 HTML）：能成号 + 举报内容 + 提交按钮
+    // 弹窗（静态 HTML）：能成号 + 举报内容 + 附件（多图非必填）+ 提交按钮
     const src = fs.readFileSync(path.join(dir, 'me.html'), 'utf8');
     assert.ok(src.includes('report-overlay') && src.includes('对方能成号') && src.includes('举报内容'), '举报弹窗应含能成号与举报内容字段');
+    assert.ok(src.includes('附件') && src.includes('非必填') && src.includes('report-attach'), '举报内容后应有附件区块（非必填）');
+    assert.ok(src.includes('multiple') && src.includes('accept="image/*"'), '附件应为多图上传');
+    assert.ok(src.includes('onReportAttach(this)') && src.includes('removeReportImage') && src.includes('reportImages'), '附件应有选择/删除逻辑');
+    assert.ok(src.includes('最多上传 9 张图片'), '附件应有张数上限提示');
     assert.ok(src.includes('submitReport()'), '弹窗应有提交按钮');
     // 提交校验：缺少字段提示；完整提交提示已提交
     vm.runInContext("document.getElementById=function(id){return {value:'',classList:{add:function(){},remove:function(){}}};}", sandbox);
