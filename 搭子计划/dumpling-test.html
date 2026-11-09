@@ -23,13 +23,6 @@
     <script>
         const OPTION_KEYS = ['A', 'B', 'C', 'D'];
 
-        // 奇遇华熙入口保持其霓虹风格，不启用本专题平面主题
-        try {
-            if (document.body && new URLSearchParams(window.location.search).get('from') === 'qiyu') {
-                document.body.classList.remove('dp-theme');
-            }
-        } catch (e) { /* 测试沙箱无 URLSearchParams/document.body，忽略 */ }
-
         const Test = {
             answers: [],
             currentIndex: 0,

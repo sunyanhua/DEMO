@@ -77,7 +77,7 @@
             // ============ 顶部全屏头图：左半开始测试/查看结果，右半前往 game.html ============
             headImage() {
                 const tested = this.stage === 'summary' && this.resultPersonality;
-                const src = tested ? 'images/dumpling-head1.png' : 'images/dumpling-head.png';
+                const src = tested ? 'images/dumpling-head1.png' : 'images/dumpling-head-new.png';
                 const leftAction = tested
                     ? "window.location.href='dumpling-test.html'"
                     : 'View.startQuiz()';
@@ -226,13 +226,13 @@
                 const cardsHtml = coupons.map(c => {
                     const claimed = this.claimed.has(c.id);
                     const btnHtml = claimed
-                        ? `<button onclick="View.openUsage('${c.id}')" class="mt-2.5 w-full py-1.5 rounded-full text-[11px] font-bold bg-brand-orange/10 text-brand-orange border border-brand-orange/30">已领取，去使用</button>`
-                        : `<button onclick="View.claimCoupon('${c.id}')" class="mt-2.5 w-full py-1.5 rounded-full text-[11px] font-bold bg-brand-orange text-white active:scale-95 transition-transform">领取</button>`;
+                        ? `<button onclick="View.openUsage('${c.id}')" class="mt-2.5 w-full py-1.5 rounded-full text-[11px] font-bold" style="background-color: rgba(16, 76, 45, 0.1); color: #104C2D; border: 1px solid rgba(16, 76, 45, 0.35);">已领取，去使用</button>`
+                        : `<button onclick="View.claimCoupon('${c.id}')" class="mt-2.5 w-full py-1.5 rounded-full text-[11px] font-bold text-white active:scale-95 transition-transform" style="background-color: #104C2D;">领取</button>`;
                     return `
-                    <div class="flex-shrink-0 bg-white rounded-xl relative" style="width: 65%; max-width: 280px;">
+                    <div class="flex-shrink-0 bg-white rounded-xl relative" style="width: 65%; max-width: 280px; border: 1px solid #C09A2A;">
                         <div class="flex items-stretch rounded-xl overflow-hidden">
                             <!-- 左侧竖向"优惠券" -->
-                            <div class="flex-shrink-0 w-8 bg-brand-orange flex items-center justify-center">
+                            <div class="flex-shrink-0 w-8 flex items-center justify-center" style="background-color: #104C2D;">
                                 <span class="text-white text-[10px] font-black tracking-widest py-2" style="writing-mode: vertical-rl; letter-spacing: 2px;">优惠券</span>
                             </div>
                             <!-- 撕票虚线 + 圆洞（圆洞相对虚线定位，位于卡片内部上下） -->
@@ -243,7 +243,7 @@
                             </div>
                             <!-- 右侧主区：店名标题在卡片区内 -->
                             <div class="flex-1 p-2.5">
-                                <h3 class="text-xs font-black text-gray-900">${c.shop}</h3>
+                                <h3 class="text-xs font-black" style="color: #104C2D;">${c.shop}</h3>
                                 <p class="mt-0.5 text-sm font-black text-brand-orange whitespace-nowrap">${c.value}</p>
                                 ${btnHtml}
                             </div>
@@ -405,7 +405,7 @@
                                 <img src="${activity.organizer.avatarUrl}" class="w-6 h-6 rounded-full border border-gray-200 object-cover flex-shrink-0" />
                                 <span class="text-xs text-gray-500 truncate">${activity.organizer.name}</span>
                             </div>
-                            <button onclick="event.stopPropagation(); window.location.href='detail.html?id=${activity.id}'" class="flex-shrink-0 px-4 py-2 bg-brand-orange/10 text-brand-orange rounded-full text-xs font-bold active:scale-95 transition-transform">查看详情</button>
+                            <button onclick="event.stopPropagation(); window.location.href='detail.html?id=${activity.id}'" class="flex-shrink-0 px-4 py-2 rounded-full text-xs font-bold active:scale-95 transition-transform" style="background-color: rgba(16, 76, 45, 0.1); color: #104C2D; border: 1px solid rgba(16, 76, 45, 0.35);">查看详情</button>
                         </div>
                     </div>
                 </div>

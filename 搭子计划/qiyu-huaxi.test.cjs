@@ -113,9 +113,10 @@ test('数据：题库与饺子完全一致，六种好运各对应一组华熙�
 test('默认渲染：奇遇华熙头部 + 转盘入口，未抽奖不出优惠券', () => {
     const s = makeViewSandbox();
     const html = renderView(s);
-    assert.ok(html.includes('奇遇华熙'), '头部应有奇遇华熙标题');
+    assert.ok(html.includes('images/dumpling-head-new.png'), '未测试应展示顶部引导头图');
+    assert.ok(html.includes('奇遇华熙'), '头图应有奇遇华熙标识');
+    assert.ok(html.includes('game.html'), '头图右半应可前往 game.html');
     assert.ok(!html.includes('天之"饺"子') && !html.includes('立冬偷吃饺子小赛'), '不应出现饺子专题标题');
-    assert.ok(html.includes('马上开始测试'), '未测试应展示引导卡');
     assert.ok(html.includes('奇遇大转盘') && html.includes('转盘抽好运'), '应有转盘抽好运入口');
     assert.ok(html.includes('完成人格测试后可参与转盘抽好运领券'), '未测试应提示先完成测试');
     assert.ok(!html.includes('华熙国际影城') && !html.includes('专属好礼'), '未抽奖不应展示优惠券');
@@ -313,7 +314,7 @@ test('部署兜底：dumpling-quiz-data.js / dumpling-data.js 漏传（404）时
     sandbox.window.View.restoreTestState();
     sandbox.window.View.restoreSpinState();
     sandbox.window.View.render();
-    assert.ok(sandbox.document._html.includes('马上开始测试'), '漏传文件时页面仍可渲染');
+    assert.ok(sandbox.document._html.includes('images/dumpling-head-new.png'), '漏传文件时页面仍可渲染');
     sandbox.window.View.startQuiz();
     assert.ok(sandbox.document._html.includes('第 1/8 题'), '漏传文件时仍可答题');
     sandbox.window.View.quiz.answers = [0, 1, 2, 3, 0, 1, 2, 3];
@@ -339,6 +340,6 @@ test('清空（仅演示）：测试/抽奖/领券状态全量重置', () => {
     assert.strictEqual(s.sessionStorage.getItem('qiyu_coupon_claimed'), null, '应清除领取记录');
     assert.strictEqual(s.View.spinLuck, null, '内存中运气应重置');
     const html = s.document._html;
-    assert.ok(html.includes('马上开始测试'), '清空后应回到引导态');
+    assert.ok(html.includes('images/dumpling-head-new.png'), '清空后应回到未测试引导头图');
     assert.ok(html.includes('转盘抽好运'), '清空后转盘入口应恢复');
 });

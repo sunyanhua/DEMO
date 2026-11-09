@@ -83,7 +83,7 @@ function renderView(s) {
 test('默认渲染精选活动 TAB：活动与首页共享数据，卡片仅详情按钮', () => {
     const s = makeViewSandbox();
     const html = renderView(s);
-    assert.ok(html.includes('images/dumpling-head.png'), '未测试应展示顶部引导头图');
+    assert.ok(html.includes('images/dumpling-head-new.png'), '未测试应展示顶部引导头图');
     assert.ok(html.includes('game.html'), '头图右半应可前往 game.html');
     assert.ok(html.includes('width: 50%'), '头图左右半区点击层应覆盖各 50% 宽度');
     assert.ok(html.includes('精选活动'), '应有精选活动 TAB');
@@ -190,7 +190,7 @@ test('清空（仅演示）：回到引导态并清除完成标记', () => {
     s.View.quiz.currentIndex = 7;
     s.View.nextQuestion();
     s.View.clearTest();
-    assert.ok(s.document._html.includes('images/dumpling-head.png'), '清空后应回到未测试引导头图');
+    assert.ok(s.document._html.includes('images/dumpling-head-new.png'), '清空后应回到未测试引导头图');
     assert.strictEqual(s.sessionStorage.getItem('dumpling_test_done'), null, '清空应移除完成标记');
 });
 
@@ -265,26 +265,6 @@ test('详情页：已测试重进直接展示结果，不再出现介绍页', ()
     assert.ok(s2.document._html.includes('你的饺子人格'), '已测试重进应直接展示结果');
     assert.ok(!s2.document._html.includes('开始测试'), '已测试不应再出现介绍页开始按钮');
     assert.ok(!s2.document._html.includes('重新测试'), '已测试不应有重新测试按钮');
-});
-
-test('详情页：?from=qiyu 时移除 dp-theme 平面主题，保持奇遇华熙风格', () => {
-    const storage = makeStorage();
-    const document = makeDocument();
-    const removed = [];
-    document.body = { classList: { remove: (c) => removed.push(c) } };
-    const sandbox = {
-        window: { location: { href: '', search: '?from=qiyu' } },
-        document,
-        sessionStorage: storage,
-        navigator: {},
-        URLSearchParams
-    };
-    sandbox.window.sessionStorage = storage;
-    sandbox.window.document = document;
-    sandbox.window.Common = { initIcons() {}, showToast() {}, drawQr() {} };
-    runBase(sandbox);
-    vm.runInContext(inlineScriptOf('dumpling-test.html'), sandbox);
-    assert.ok(removed.includes('dp-theme'), 'qiyu 入口应移除 dp-theme 保持霓虹风格');
 });
 
 test('专题页：?tab=share 重进直接切到有奖分享 TAB', () => {

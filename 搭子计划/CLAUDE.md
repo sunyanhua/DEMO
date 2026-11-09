@@ -161,13 +161,13 @@
 | `dumpling-quiz-sync.cjs` | 测验数据同步脚本（JSON → dumpling-quiz-data.js + dumpling-data.js 内嵌题库，`npm run quiz:sync`） | 资源 |
 | `dumpling-test.test.cjs` | 饺子人格测试引擎测试（`npm test` 运行） | 资源 |
 | `dumpling-page.test.cjs` | 饺子专题页+测试详情页流程测试：上/下一题跳转、完成拦截、禁止重测（演示清空）、活动卡片、双TAB（`npm test` 运行） | 资源 |
-| `qiyu-huaxi.html` | 🎡 奇遇华熙（华熙LIVE）专题页（与天之饺子结构一致、题库完全相同：内嵌饺子人格测试，完成测试后跳详情页带 `?from=qiyu`，详情页返回回本专题 / 优惠券不走直接领取——先经奇遇大转盘抽"运气"（参考 huaxi.html 转盘：SVG 6 段好运+指针+彩带，每人一次），抽中后仅展示该运气的券组（每组多张、仅可领取一张，领取带二次确认+同组已领明显提示），中奖结果只提示运气解锁不出奖品 / 精选活动+有奖分享双TAB（#奇遇华熙#）/ 紫色→粉色霓虹配色区别于饺子橙） | 专题页 |
+| `qiyu-huaxi.html` | 🎡 奇遇华熙（华熙LIVE）专题页（UI 与天之饺子完全一致：金黄顶区/白底下半区/边界TAB/深绿券系，加载 dumpling-theme.css；题库与饺子完全相同：内嵌饺子人格测试，完成测试后跳详情页带 `?from=qiyu`，详情页返回回本专题 / 优惠券不走直接领取——先经奇遇大转盘抽"运气"（SVG 6 段好运+指针+彩带，每人一次），抽中后仅展示该运气的券组（每组多张、仅可领取一张，领取带二次确认+同组已领明显提示），中奖结果只提示运气解锁不出奖品 / 精选活动+有奖分享双TAB（#奇遇华熙#）） | 专题页 |
 | `qiyu-huaxi-data.js` | 奇遇华熙专题数据（六种好运→华熙商户券组映射、分享规则/动态）+ **题库内嵌兜底**（顶部，由 `npm run quiz:sync` 同步；dumplingQuiz/dumpling 缺失时自动补全，页面不依赖 dumpling-quiz-data.js / dumpling-data.js，部署漏传不挂） | 资源 |
 | `qiyu-huaxi.test.cjs` | 奇遇华熙专题页流程测试：题库一致性、转盘门槛/仅一次/持久化、运气解锁领券、重进恢复、分享主体、清空重置（`npm test` 运行） | 资源 |
-| `dumpling-theme.css` | 🥟 天之"饺"子平面清淡主题（顶部区域金黄底 #FFC600/暖灰文字/无渐变无阴影/上下半区+TAB分界描边，`body.dp-theme` 作用域；仅 dumpling.html + dumpling-test.html 加载，`?from=qiyu` 进入测试页时自动停用） | 资源 |
+| `dumpling-theme.css` | 🥟 天之"饺"子/奇遇华熙共用平面主题（顶部区域金黄底 #FFC600/暖灰文字/无渐变无阴影/上下半区+TAB分界描边，`body.dp-theme` 作用域；dumpling.html + dumpling-test.html + qiyu-huaxi.html 加载） | 资源 |
 | `images/dumpling-banner.png` | 首页 banner 第一张（饺子专题入口图，点击跳 dumpling.html） | 资源 |
 | `images/act-*.jpg` `images/moment-*.jpg` | 饺子专题实景图（活动卡 6 张 act-a12/a15/a21/a23/a25/a26 + 动态 8 张 moment-1~8，免版权图库下载本地化；活动实景图经 dumpling-data.js 的 `dumpling.activityImages` 映射，仅专题页生效） | 资源 |
-| `images/dumpling-head.png` `images/dumpling-head1.png` | 饺子专题顶部全屏头图（未测试/已测试两态，左半测试/右半游戏，4000×3000） | 资源 |
+| `images/dumpling-head-new.png` `images/dumpling-head1.png` | 天之饺子 + 奇遇华熙共用顶部全屏头图（未测试/已测试两态，左半测试/右半游戏，4000×3000；未测试用 head-new，head.png 已弃用） | 资源 |
 | `style.css` | 全局自定义样式（品牌色变量、动画、浮动装饰等） | 资源 |
 | `tailwind.css` | Tailwind 静态构建产物（本地，`npm run tw` 重建） | 资源 |
 | `tailwind.config.cjs` | 静态构建配置（品牌色/vibrant/字体/safe padding + 动态类 safelist） | 资源 |

@@ -374,6 +374,16 @@ window.GlobalData.qiyuHuaxi = {
     personalities: QIYU_QUIZ.personalities,
     questions: QIYU_QUIZ.questions,
 
+    // 专题页精选活动实景图（与饺子专题共用，覆盖首页共享 GlobalData.activities 的插画封面）
+    activityImages: {
+        a26: 'images/act-a26-dumpling.jpg',   // 立冬饺子偷吃小赛
+        a25: 'images/act-a25-escape.jpg',     // 密室逃脱挑战
+        a23: 'images/act-a23-hotpot.jpg',     // 火锅聚餐局
+        a21: 'images/act-a21-badminton.jpg',  // 羽毛球双打局
+        a15: 'images/act-a15-cinema.jpg',     // IMAX影院《流浪地球3》观影
+        a12: 'images/act-a12-boardgame.jpg'   // 桌游之夜：狼人杀局
+    },
+
     // 六种好运（转盘顺序）→ 各自对应一组华熙商户优惠券（同一运气多张，仅可领取一张）
     fortunes: [
         { id: 'love',   name: '桃花运', color: '#ff4d88', weight: 0.17 },
