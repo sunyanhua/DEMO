@@ -74,31 +74,19 @@
                 `;
             },
 
-            // ============ 测试区：引导卡片/答题/结果摘要 ============
-            testSection() {
-                if (this.stage === 'quiz') return this.quizView();
-                if (this.stage === 'summary' && this.resultPersonality) return this.summaryView();
-                const emojiRow = this.personalities.map(p => `
-                    <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-base">${p.emoji}</div>
-                `).join('');
+            // ============ 顶部全屏头图：左半开始测试/查看结果，右半前往 game.html ============
+            headImage() {
+                const tested = this.stage === 'summary' && this.resultPersonality;
+                const src = tested ? 'images/dumpling-head1.png' : 'images/dumpling-head.png';
+                const leftAction = tested
+                    ? "window.location.href='dumpling-test.html'"
+                    : 'View.startQuiz()';
                 return `
-                <div class="px-3 pt-3">
-                    <div class="dp-quiz-block rounded-2xl p-5">
-                        <div class="flex items-center gap-3">
-                            <div class="w-12 h-12 rounded-2xl bg-brand-orange flex items-center justify-center text-2xl flex-shrink-0 rotate-3">🥟</div>
-                            <div class="min-w-0">
-                                <h3 class="text-base font-black text-gray-900">测测你是哪种饺子人格？</h3>
-                                <p class="text-xs text-gray-500 mt-0.5">8道题，看看你偷吃饺子时是什么馅</p>
-                            </div>
-                        </div>
-                        <div class="mt-4 flex items-center justify-between">
-                            <div class="flex -space-x-2">${emojiRow}</div>
-                            <span class="text-[10px] text-gray-400 flex-shrink-0">约1分钟 · 测完领券</span>
-                        </div>
-                        <button onclick="View.startQuiz()" class="mt-4 w-full py-3 bg-white text-brand-orange rounded-full font-bold text-sm active:scale-95 transition-transform">
-                            马上开始测试
-                        </button>
-                    </div>
+                <div class="relative w-full">
+                    <img src="${src}" class="w-full h-auto block" alt="天之饺子·立冬偷吃饺子小赛" />
+                    <button onclick="${leftAction}" class="absolute left-0 cursor-pointer" style="top: 0; bottom: 0; width: 50%;" aria-label="${tested ? '查看测试结果' : '开始人格测试'}"></button>
+                    <button onclick="window.location.href='game.html'" class="absolute right-0 cursor-pointer" style="top: 0; bottom: 0; width: 50%;" aria-label="前往上课偷吃饺子小游戏"></button>
+                    ${tested ? '<button onclick="View.clearTest()" class="absolute top-2 right-2 text-[10px] text-gray-400 bg-white rounded-full px-2 py-0.5 active:scale-95 transition-transform">清空（仅演示）</button>' : ''}
                 </div>
                 `;
             },
@@ -123,8 +111,8 @@
                 return `
                 <div class="px-3 pt-4 min-h-screen fade-in">
                     <div class="flex items-center justify-between mb-2">
-                        <span id="quiz-counter" class="text-xs text-gray-400 font-medium">第 ${this.quiz.currentIndex + 1}/${total} 题 · 已答 ${answeredCount}/${total}</span>
-                        <span class="text-xs text-gray-400">${progress}%</span>
+                        <span id="quiz-counter" class="text-xs text-gray-700 font-medium">第 ${this.quiz.currentIndex + 1}/${total} 题 · 已答 ${answeredCount}/${total}</span>
+                        <span class="text-xs text-gray-700">${progress}%</span>
                     </div>
                     <div class="h-1.5 bg-gray-100 rounded-full overflow-hidden">
                         <div class="h-full bg-brand-orange rounded-full transition-all duration-500" style="width: ${progress}%"></div>
@@ -132,39 +120,13 @@
                     <h2 class="mt-5 text-xl font-black text-gray-900 leading-snug">${q.text}</h2>
                     <div id="quiz-options" class="mt-6 space-y-3">${optionsHtml}</div>
                     <div class="mt-6 flex items-center justify-between">
-                        ${isFirst ? '<span></span>' : `<button onclick="View.prevQuestion()" class="flex items-center gap-1 text-sm text-gray-500 font-medium active:opacity-70 transition"><i data-lucide="chevron-left" class="w-4 h-4"></i><span>上一题</span></button>`}
+                        ${isFirst ? '<span></span>' : `<button onclick="View.prevQuestion()" class="flex items-center gap-1 text-sm text-gray-700 font-medium active:opacity-70 transition"><i data-lucide="chevron-left" class="w-4 h-4"></i><span>上一题</span></button>`}
                         ${isLast ? `<button onclick="View.nextQuestion()" class="px-5 py-2.5 bg-brand-orange text-white rounded-full text-sm font-bold active:scale-95 transition-transform">完成测试</button>` : `<button onclick="View.nextQuestion()" class="flex items-center gap-1 text-sm text-brand-orange font-bold active:opacity-70 transition"><span>下一题</span><i data-lucide="chevron-right" class="w-4 h-4"></i></button>`}
                     </div>
                 </div>
                 `;
             },
 
-            summaryView() {
-                const p = this.resultPersonality;
-                return `
-                <div class="px-3 pt-3 fade-in">
-                    <div class="dp-quiz-block rounded-2xl p-5 relative">
-                        <button onclick="View.clearTest()" class="absolute top-2.5 right-3 text-[10px] text-gray-500 rounded-full px-2 py-0.5 bg-white active:scale-95 transition-transform">清空（仅演示）</button>
-                        <div class="flex items-center gap-4">
-                            <div class="w-16 h-16 rounded-2xl bg-gradient-to-br ${p.color} flex items-center justify-center text-3xl flex-shrink-0">${p.emoji}</div>
-                            <div class="min-w-0">
-                                <p class="text-[11px] text-gray-400 font-semibold tracking-widest">你的饺子人格</p>
-                                <h3 class="mt-0.5 text-lg font-black text-gray-900">${p.title}</h3>
-                                <p class="mt-0.5 text-xs text-gray-500 line-clamp-1">"${p.quote}"</p>
-                            </div>
-                        </div>
-                        <div class="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 bg-white text-brand-orange rounded-full text-xs font-bold">
-                            <i data-lucide="utensils" class="w-3.5 h-3.5"></i><span>偷吃作案方式：${p.method}</span>
-                        </div>
-                        <div class="mt-4">
-                            <button onclick="window.location.href='dumpling-test.html'" class="w-full py-3 bg-white text-brand-orange rounded-full font-bold text-sm active:scale-95 transition-transform">
-                                查看详情
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                `;
-            },
 
             startQuiz() {
                 this.quiz = { answers: [], currentIndex: 0 };
@@ -231,6 +193,13 @@
                 window.location.href = 'dumpling-test.html';
             },
 
+            // URL ?tab=share：从测试详情页海报"有奖分享"进入时直接切到有奖分享 TAB
+            restoreTabFromUrl() {
+                try {
+                    if (new URLSearchParams(window.location.search).get('tab') === 'share') this.activeTab = 'share';
+                } catch (e) { /* 测试沙箱无 URLSearchParams，忽略 */ }
+            },
+
             // 页面重进（刷新/返回）时恢复测试完成状态
             restoreTestState() {
                 if (sessionStorage.getItem('dumpling_test_done') === '1') {
@@ -257,25 +226,25 @@
                 const cardsHtml = coupons.map(c => {
                     const claimed = this.claimed.has(c.id);
                     const btnHtml = claimed
-                        ? `<button onclick="View.openUsage('${c.id}')" class="mt-3 w-full py-2 rounded-full text-xs font-bold bg-brand-orange/10 text-brand-orange border border-brand-orange/30">已领取，去使用</button>`
-                        : `<button onclick="View.claimCoupon('${c.id}')" class="mt-3 w-full py-2 rounded-full text-xs font-bold bg-brand-orange text-white active:scale-95 transition-transform">领取</button>`;
+                        ? `<button onclick="View.openUsage('${c.id}')" class="mt-2.5 w-full py-1.5 rounded-full text-[11px] font-bold bg-brand-orange/10 text-brand-orange border border-brand-orange/30">已领取，去使用</button>`
+                        : `<button onclick="View.claimCoupon('${c.id}')" class="mt-2.5 w-full py-1.5 rounded-full text-[11px] font-bold bg-brand-orange text-white active:scale-95 transition-transform">领取</button>`;
                     return `
-                    <div class="w-64 flex-shrink-0 bg-white rounded-xl relative">
+                    <div class="flex-shrink-0 bg-white rounded-xl relative" style="width: 65%; max-width: 280px;">
                         <div class="flex items-stretch rounded-xl overflow-hidden">
                             <!-- 左侧竖向"优惠券" -->
-                            <div class="flex-shrink-0 w-10 bg-brand-orange flex items-center justify-center">
-                                <span class="text-white text-xs font-black tracking-widest py-3" style="writing-mode: vertical-rl; letter-spacing: 3px;">优惠券</span>
+                            <div class="flex-shrink-0 w-8 bg-brand-orange flex items-center justify-center">
+                                <span class="text-white text-[10px] font-black tracking-widest py-2" style="writing-mode: vertical-rl; letter-spacing: 2px;">优惠券</span>
                             </div>
                             <!-- 撕票虚线 + 圆洞（圆洞相对虚线定位，位于卡片内部上下） -->
                             <div class="relative self-stretch">
                                 <div class="border-l-2 border-dashed border-gray-200 h-full"></div>
-                                <div class="absolute -left-[5px] top-3 w-3 h-3 rounded-full bg-gray-50"></div>
-                                <div class="absolute -left-[5px] bottom-3 w-3 h-3 rounded-full bg-gray-50"></div>
+                                <div class="absolute -left-[5px] top-2.5 w-2.5 h-2.5 rounded-full bg-gray-50"></div>
+                                <div class="absolute -left-[5px] bottom-2.5 w-2.5 h-2.5 rounded-full bg-gray-50"></div>
                             </div>
                             <!-- 右侧主区：店名标题在卡片区内 -->
-                            <div class="flex-1 p-3.5">
-                                <h3 class="text-sm font-black text-gray-900">${c.shop}</h3>
-                                <p class="mt-1 text-lg font-black text-brand-orange whitespace-nowrap">${c.value}</p>
+                            <div class="flex-1 p-2.5">
+                                <h3 class="text-xs font-black text-gray-900">${c.shop}</h3>
+                                <p class="mt-0.5 text-sm font-black text-brand-orange whitespace-nowrap">${c.value}</p>
                                 ${btnHtml}
                             </div>
                         </div>
@@ -284,8 +253,8 @@
                 }).join('');
                 return `
                 <div class="pt-3">
-                    ${this.testDone ? '' : '<div class="px-3 mb-1.5"><span class="text-[10px] text-gray-400">完成人格测试后可领取</span></div>'}
-                    <div class="flex overflow-x-auto gap-3 no-scrollbar px-3 pb-1" style="scrollbar-width: none; -ms-overflow-style: none;">${cardsHtml}</div>
+                    ${this.testDone ? '' : '<div class="px-3 mb-1.5"><span class="text-[10px] text-gray-800">完成人格测试后可领取</span></div>'}
+                    <div class="flex overflow-x-auto gap-2 no-scrollbar px-3 pb-1" style="scrollbar-width: none; -ms-overflow-style: none;">${cardsHtml}</div>
                 </div>
                 `;
             },
@@ -379,13 +348,13 @@
                 ];
                 const barHtml = tabs.map(t => {
                     const active = this.activeTab === t.id;
-                    return `<button onclick="View.switchTab('${t.id}')" class="flex-1 flex items-center justify-center gap-1.5 py-3.5 rounded-t-xl text-sm font-black transition active:scale-[0.98] ${active ? 'dp-tab-active' : 'dp-tab-inactive'}">
-                        <i data-lucide="${t.icon}" class="w-4 h-4"></i><span>${t.label}</span>
+                    return `<button onclick="View.switchTab('${t.id}')" class="flex-1 flex items-center justify-center gap-1.5 py-3.5 rounded-t-xl text-base font-black transition active:scale-[0.98] ${active ? 'dp-tab-active' : 'dp-tab-inactive'}">
+                        <i data-lucide="${t.icon}" class="w-5 h-5"></i><span>${t.label}</span>
                     </button>`;
                 }).join('');
                 const content = this.activeTab === 'share' ? this.momentsSection() : this.activitiesTabContent();
                 return `
-                <div class="flex gap-1 pt-4">${barHtml}</div>
+                <div class="dp-tab-bar flex px-3 pt-4">${barHtml}</div>
                 <div class="dp-bottom-zone">
                     ${content}
                 </div>
@@ -414,10 +383,12 @@
             // 活动卡片：仅保留详情按钮（右下角），整卡可点进详情页
             renderActivityCard(activity) {
                 const isDumpling = activity.id === ACTIVITY_ID;
+                // 专题专属实景图优先（activityImages），缺失时回退首页共享封面
+                const imageUrl = (this.dumpling.activityImages || {})[activity.id] || activity.imageUrl;
                 return `
                 <div onclick="window.location.href='detail.html?id=${activity.id}'" class="mb-3 dp-card rounded-2xl overflow-hidden cursor-pointer active:scale-[0.99] transition-transform">
                     <div class="relative">
-                        <img src="${activity.imageUrl}" class="w-full h-32 object-cover" />
+                        <img src="${imageUrl}" class="w-full h-32 object-cover" />
                         ${isDumpling ? '<span class="absolute top-2 left-2 bg-brand-orange text-white text-[10px] font-bold px-2 py-0.5 rounded-full">立冬限定</span>' : ''}
                         <span class="absolute top-2 right-2 bg-black/50 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">${activity.currentParticipants}/${activity.maxParticipants}人</span>
                     </div>
@@ -718,14 +689,14 @@
             },
 
             render() {
-                // 答题中：完整独立界面，不渲染优惠券/活动/动态等区块
+                // 答题中：完整独立界面（带头部）；其余状态：全屏头图顶到页面四边，不渲染头部
                 const isQuiz = this.stage === 'quiz';
                 const main = isQuiz
                     ? this.quizView()
-                    : `${this.testSection()}${this.couponsSection()}${this.tabsSection()}`;
+                    : `${this.headImage()}${this.couponsSection()}${this.tabsSection()}`;
                 document.getElementById('app').innerHTML = `
-                    ${this.header()}
-                    <div class="pt-[50px]">
+                    ${isQuiz ? this.header() : ''}
+                    <div class="${isQuiz ? 'pt-[50px]' : ''}">
                         ${main}
                     </div>
                     ${isQuiz ? '' : (this.activeTab === 'share' ? this.fab() : '')}
@@ -747,7 +718,7 @@
         };
 
         window.View = View;
-        document.addEventListener('DOMContentLoaded', () => { View.restoreTestState(); View.render(); });
+        document.addEventListener('DOMContentLoaded', () => { View.restoreTabFromUrl(); View.restoreTestState(); View.render(); });
     </script>
 </body>
 </html>

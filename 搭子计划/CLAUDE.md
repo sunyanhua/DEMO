@@ -151,7 +151,8 @@
 | `ground-promo.html` | 🎁 地推活动专题（好运双响炮：注册+订阅，核销领奖） | 专题页 |
 | `music-festival.html` | 🎵 大运河音乐节专题（上大屏 / 我的AI合照 / 找搭子） | 专题页 |
 | `huaxi.html` | 🎡 华熙"搭子就位·奇遇华熙"专题（打个卡 / 找搭子 / 大转盘抽奖 / 奖品核销） | 专题页 |
-| `dumpling.html` | 🥟 天之"饺"子·立冬偷吃饺子小赛专题（内嵌测试：上一题/下一题手动跳转、完成后禁止重测（仅演示可清空）→结果摘要 / 横排优惠券（未测试拦截领取，code+qr 使用面板）/ 精选活动+有奖分享双TAB（上下半区边界色块TAB：激活白连下半区/未激活透明融上半区；活动与首页共享 GlobalData.activities，卡片底部左发起人头像昵称+右查看详情按钮）/ 有奖分享规则弹窗 / #我的饺子人格# 动态瀑布流） | 专题页 |
+| `dumpling.html` | 🥟 天之"饺"子·立冬偷吃饺子小赛专题（顶部全屏头图 dumpling-head.png：左半开始内嵌测试/右半进 game.html，测试后换 dumpling-head1.png：左半查看结果详情；内嵌测试：上一题/下一题手动跳转、完成后禁止重测（仅演示可清空）/ 横排优惠券（65% 屏宽、未测试拦截领取，code+qr 使用面板）/ 精选活动+有奖分享双TAB（上下半区边界色块TAB：激活白连下半区/未激活透明融上半区；活动与首页共享 GlobalData.activities，专题实景图经 dumpling.activityImages 覆盖）/ 有奖分享规则弹窗 / #我的饺子人格# 动态瀑布流） | 专题页 |
+| `game.html` | 🎮 上课偷吃饺子小游戏（canvas 深色全屏，由饺子专题头图右半进入） | 专题页 |
 | `dumpling-test.html` | 🥟 饺子人格测试（8 种饺子人格、8 题计分制、同分随机；上一题/下一题手动跳转、完成后禁止重测；结果页含详细路线：类型/行程/沿途/准备/预算/理由/攻略 + 分享海报） | 专题页 |
 | `dumpling-test.js` | 饺子人格测试计分引擎（纯逻辑，可独立测试） | 资源 |
 | `dumpling-data.js` | 饺子专题数据（路线/优惠券/分享规则/动态，只被饺子页面加载；人格与题目引用 dumplingQuiz）+ **题库内嵌兜底**（文件顶部，由 `npm run quiz:sync` 从 JSON 同步——页面不再引用 dumpling-quiz-data.js，避免部署漏传 404） | 资源 |
@@ -163,8 +164,10 @@
 | `qiyu-huaxi.html` | 🎡 奇遇华熙（华熙LIVE）专题页（与天之饺子结构一致、题库完全相同：内嵌饺子人格测试，完成测试后跳详情页带 `?from=qiyu`，详情页返回回本专题 / 优惠券不走直接领取——先经奇遇大转盘抽"运气"（参考 huaxi.html 转盘：SVG 6 段好运+指针+彩带，每人一次），抽中后仅展示该运气的券组（每组多张、仅可领取一张，领取带二次确认+同组已领明显提示），中奖结果只提示运气解锁不出奖品 / 精选活动+有奖分享双TAB（#奇遇华熙#）/ 紫色→粉色霓虹配色区别于饺子橙） | 专题页 |
 | `qiyu-huaxi-data.js` | 奇遇华熙专题数据（六种好运→华熙商户券组映射、分享规则/动态）+ **题库内嵌兜底**（顶部，由 `npm run quiz:sync` 同步；dumplingQuiz/dumpling 缺失时自动补全，页面不依赖 dumpling-quiz-data.js / dumpling-data.js，部署漏传不挂） | 资源 |
 | `qiyu-huaxi.test.cjs` | 奇遇华熙专题页流程测试：题库一致性、转盘门槛/仅一次/持久化、运气解锁领券、重进恢复、分享主体、清空重置（`npm test` 运行） | 资源 |
-| `dumpling-theme.css` | 🥟 天之"饺"子平面清淡主题（奶油底/金黄主色/暖灰文字/无渐变无阴影/上下半区+TAB分界，`body.dp-theme` 作用域；仅 dumpling.html + dumpling-test.html 加载，`?from=qiyu` 进入测试页时自动停用） | 资源 |
+| `dumpling-theme.css` | 🥟 天之"饺"子平面清淡主题（顶部区域金黄底 #FFC600/暖灰文字/无渐变无阴影/上下半区+TAB分界描边，`body.dp-theme` 作用域；仅 dumpling.html + dumpling-test.html 加载，`?from=qiyu` 进入测试页时自动停用） | 资源 |
 | `images/dumpling-banner.png` | 首页 banner 第一张（饺子专题入口图，点击跳 dumpling.html） | 资源 |
+| `images/act-*.jpg` `images/moment-*.jpg` | 饺子专题实景图（活动卡 6 张 act-a12/a15/a21/a23/a25/a26 + 动态 8 张 moment-1~8，免版权图库下载本地化；活动实景图经 dumpling-data.js 的 `dumpling.activityImages` 映射，仅专题页生效） | 资源 |
+| `images/dumpling-head.png` `images/dumpling-head1.png` | 饺子专题顶部全屏头图（未测试/已测试两态，左半测试/右半游戏，4000×3000） | 资源 |
 | `style.css` | 全局自定义样式（品牌色变量、动画、浮动装饰等） | 资源 |
 | `tailwind.css` | Tailwind 静态构建产物（本地，`npm run tw` 重建） | 资源 |
 | `tailwind.config.cjs` | 静态构建配置（品牌色/vibrant/字体/safe padding + 动态类 safelist） | 资源 |

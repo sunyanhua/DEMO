@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="format-detection" content="telephone=no">
+<title>上课偷吃饺子</title>
+<style>
+  html,body{
+    margin:0;padding:0;height:100%;width:100%;
+    background:#1a1c23;
+    display:flex;align-items:center;justify-content:center;
+    overflow:hidden;position:fixed;top:0;left:0;right:0;bottom:0;
+    -webkit-user-select:none;user-select:none;
+    -webkit-tap-highlight-color:transparent;
+    touch-action:none;overscroll-behavior:none;
+    font-family:-apple-system,"PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+  }
+  canvas{
+    display:block;touch-action:none;border-radius:12px;
+    box-shadow:0 20px 60px rgba(0,0,0,.85);
+    background:#7EC0EE;
+  }
+  #loading{
+    position:fixed;top:0;left:0;right:0;bottom:0;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    color:#fff;text-align:center;padding:0 30px;
+    background:#1a1c23;font-size:16px;line-height:1.8;z-index:50;
+  }
+  #err{
+    display:none;position:fixed;left:12px;right:12px;top:12px;
+    background:rgba(200,40,40,.94);color:#fff;font-size:13px;
+    padding:12px 14px;border-radius:10px;z-index:99;line-height:1.6;
+    word-break:break-all;
+  }
+</style>
+</head>
+<body>
+<canvas id="c" width="480" height="800"></canvas>
+<div id="loading">正在准备课堂…</div>
+<div id="err"></div>
+<script>
+(function(){
+'use strict';
+
+var errBox = null;
+function showErr(msg){
+  try{
+    if(!errBox) errBox = document.getElementById('err');
+    if(errBox){ errBox.style.display = 'block'; errBox.innerHTML = '游戏出错：' + msg; }
+    var ld = document.getElementById('loading');
+    if(ld) ld.style.display = 'none';
+  }catch(e){}
+}
+window.onerror = function(msg, url, line){ showErr(msg + '（第 ' + line + ' 行）'); return false; };
+
+var cv  = document.getElementById('c');
+var ctx = cv.getContext('2d');
+var W = 480, H = 800;
+var renderScale = 1;
+
+// 兼容低版本浏览器 roundRect
+if (window.CanvasRenderingContext2D && !CanvasRenderingContext2D.prototype.roundRect) {
+  CanvasRenderingContext2D.prototype.roundRect = function(x,y,w,h,r){
+    r = Math.min(r, w/2, h/2);
+    this.beginPath(); this.moveTo(x+r,y);
+    this.arcTo(x+w,y,x+w,y+h,r); this.arcTo(x+w,y+h,x,y+h,r);
+    this.arcTo(x,y+h,x,y,r);     this.arcTo(x,y,x+w,y,r);
+    this.closePath(); return this;
+  };
+}
+
+var nowMs = (window.performance && performance.now) ? function(){ return performance.now(); } : function(){ return Date.now(); };
+var raf = window.requestAnimationFrame ? function(cb){ return window.requestAnimationFrame(cb); } : function(cb){ return setTimeout(function(){ cb(nowMs()); }, 16); };
+
+// 画布自适应（适配手机尺寸、DPR高清）
+function fitCanvas(){
+  var vw = window.innerWidth  || document.documentElement.clientWidth  || 360;
+  var vh = window.innerHeight || document.documentElement.clientHeight || 640;
+  var scale = Math.min(vw / W, vh / H);
+  if(!(scale > 0) || !isFinite(scale)) scale = 1;
+  var dpr = Math.min(window.devicePixelRatio || 1, 2);
+  cv.style.width  = Math.round(W * scale) + 'px';
+  cv.style.height = Math.round(H * scale) + 'px';
+  cv.width  = Math.max(1, Math.round(W * scale * dpr));
+  cv.height = Math.max(1, Math.round(H * scale * dpr));
+  renderScale = scale * dpr;
+}
+fitCanvas();
+window.addEventListener('resize', fitCanvas);
+window.addEventListener('orientationchange', function(){ setTimeout(fitCanvas, 260); });
+
+// ========== 游戏配置参数（在这里改难度！） ==========
+var TURN_DUR   = 0.50;   // 老师转身耗时
+var EAT_RATE   = 26;     // 偷吃速度，越大越快
+var MAX_CAUGHT = 3;      // 最多被抓到几次失败
+var PENALTY    = 12;     // 被抓到扣多少进度
+
+var rnd  = function(a,b){ return a + Math.random()*(b-a); };
+var FONT = '-apple-system,"PingFang SC","Microsoft YaHei",system-ui,sans-serif';
+
+// 游戏状态
+// writing: 老师背对写字 | turning: 转身过程 | watching: 盯着你
+var state, phaseTimer, turnProgress;
+var progress, caught, eating, keyDown;
+var gameOver, win, started, flash, chewT, invuln, angerT, lastT;
+var particles = [];
+
+function init(){
+  state = 'writing';
+  phaseTimer = rnd(1.8, 3.5);
+  turnProgress = 0;
+  progress = 0; caught = 0; eating = false; keyDown = false;
+  gameOver = false; win = false; started = false;
+  flash = 0; chewT = 0; invuln = 0; angerT = 0;
+  particles = [];
+  lastT = nowMs();
+}
+init();
+
+// 音频蜂鸣音效（Web Audio）
+var actx = null;
+function beep(freq, dur, type, vol){
+  try{
+    var AC = window.AudioContext || window.webkitAudioContext;
+    if(!AC) return;
+    if(!actx) actx = new AC();
+    if(actx.state === 'suspended') actx.resume();
+    var t = actx.currentTime;
+    var o = actx.createOscillator(), g = actx.createGain();
+    o.type = type || 'sine';
+    o.frequency.setValueAtTime(freq, t);
+    o.connect(g); g.connect(actx.destination);
+    g.gain.setValueAtTime(vol || 0.07, t);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.start(t); o.stop(t + dur);
+  }catch(e){}
+}
+
+// 尝试全屏
+function tryFullscreen(){
+  try{
+    var el = document.documentElement;
+    if(el.requestFullscreen) el.requestFullscreen().catch(function(){});
+    else if(el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+  }catch(e){}
+}
+
+// 饺子碎屑粒子生成
+function spawnParticles(x, y, count) {
+  for (var i = 0; i < count; i++) {
+    particles.push({
+      x: x + rnd(-15, 15),
+      y: y + rnd(-15, 15),
+      vx: rnd(-80, 80),
+      vy: rnd(-120, -30),
+      life: 1,
+      color: Math.random() > 0.5 ? '#fffdf6' : '#d4b58e',
+      size: rnd(2, 5)
+    });
+  }
+}
+
+// 更新粒子（重力+衰减）
+function updateParticles(dt) {
+  for (var i = particles.length - 1; i >= 0; i--) {
+    var p = particles[i];
+    p.x += p.vx * dt;
+    p.y += p.vy * dt;
+    p.vy += 250 * dt; // 重力
+    p.life -= dt * 1.5;
+    if (p.life <= 0) particles.splice(i, 1);
+  }
+}
+
+// 绘制粒子
+function drawParticles() {
+  for (var i = 0; i < particles.length; i++) {
+    var p = particles[i];
+    ctx.fillStyle = p.color;
+    ctx.globalAlpha = Math.max(0, p.life);
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.size, 0, Math.PI*2);
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+}
+
+// 触摸/鼠标按下
+function handlePointerDown(e) {
+  var rect = cv.getBoundingClientRect();
+  var clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  var clientY = e.touches ? e.touches[0].clientY : e.clientY;
+  var clickX = (clientX - rect.left) / rect.width * W;
+  var clickY = (clientY - rect.top) / rect.height * H;
+
+  if(!started) {
+    init(); started = true; tryFullscreen(); return;
+  }
+
+  if(gameOver) {
+    // 再玩一次按钮判定
+    if (clickX > 150 && clickX < 330 && clickY > 510 && clickY < 570) {
+      init(); started = true; return;
+    }
+    return;
+  }
+
+  keyDown = true;
+}
+
+// 松开
+function release(){ keyDown = false; }
+
+cv.addEventListener('mousedown', function(e){ e.preventDefault(); handlePointerDown(e); });
+window.addEventListener('mouseup', release);
+cv.addEventListener('touchstart',  function(e){ e.preventDefault(); handlePointerDown(e); }, {passive:false});
+cv.addEventListener('touchend',    function(e){ e.preventDefault(); release();  }, {passive:false});
+cv.addEventListener('touchcancel', function(e){ e.preventDefault(); release();  }, {passive:false});
+
+// 被老师抓到
+function caughtNow(){
+  caught++;
+  flash = 0.5;
+  angerT = 2.0;
+  progress = Math.max(0, progress - PENALTY);
+  keyDown = false; eating = false;
+  beep(100, 0.4, 'sawtooth', 0.15);
+  if(caught >= MAX_CAUGHT){ gameOver = true; win = false; return; }
+  state = 'watching'; turnProgress = 1;
+  phaseTimer = rnd(1.0, 1.5);
+  invuln = phaseTimer;
+}
+
+// 主逻辑更新
+function update(dt){
+  updateParticles(dt);
+
+  if(!started || gameOver) return;
+  
+  chewT += dt;
+  if(flash  > 0) flash  -= dt;
+  if(invuln > 0) invuln -= dt;
+  if(angerT > 0) angerT -= dt;
+
+  eating = keyDown;
+
+  if(state === 'writing'){
+    turnProgress = 0;
+    if(eating) {
+      progress = Math.min(100, progress + EAT_RATE*dt);
+      if (Math.random() < 0.6) spawnParticles(240, H - 40, 1);
+    }
+    phaseTimer -= dt;
+    if(phaseTimer <= 0){ state = 'turning'; phaseTimer = TURN_DUR; beep(880, 0.08, 'square', 0.05); }
+  }
+  else if(state === 'turning'){
+    var t = Math.min(1, Math.max(0, 1 - phaseTimer/TURN_DUR));
+    turnProgress = t < 0.5 ? 2*t*t : 1 - Math.pow(-2*t+2,2)/2;
+    if(eating) {
+      progress = Math.min(100, progress + EAT_RATE*0.8*dt);
+      if (Math.random() < 0.4) spawnParticles(240, H - 40, 1);
+    }
+    phaseTimer -= dt;
+    if(phaseTimer <= 0){
+      turnProgress = 1;
+      if(eating) caughtNow();
+      else { state = 'watching'; phaseTimer = rnd(1.2, 2.2); }
+    }
+  }
+  else if(state === 'watching'){
+    turnProgress = 1;
+    if(eating && invuln <= 0){ caughtNow(); }
+    else {
+      phaseTimer -= dt;
+      if(phaseTimer <= 0){ state = 'writing'; phaseTimer = rnd(1.8, 3.5); }
+    }
+  }
+
+  // 吃完饺子通关
+  if(progress >= 100 && !gameOver){
+    gameOver = true; win = true;
+    spawnParticles(240, H - 40, 30);
+    beep(660, 0.15, 'sine', 0.1);
+    setTimeout(function(){ beep(990, 0.25, 'sine', 0.1); }, 150);
+  }
+}
+
+/* ================= 绘制渲染 ================= */
+function drawBackground(){
+  ctx.fillStyle = '#7EC0EE';
+  ctx.fillRect(0, 0, W, H);
+
+  // 黑板
+  ctx.fillStyle = '#8B5A2B';
+  ctx.beginPath(); ctx.roundRect(20, 80, 440, 220, 8); ctx.fill();
+  ctx.fillStyle = '#2E8B57';
+  ctx.beginPath(); ctx.roundRect(30, 90, 420, 200, 4); ctx.fill();
+
+  // 黑板粉笔字迹
+  ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  for(let i=0; i<4; i++){
+    let y = 130 + i*32;
+    ctx.beginPath();
+    ctx.moveTo(60, y); ctx.lineTo(100, y);
+    ctx.moveTo(120, y); ctx.lineTo(130, y-10);
+    ctx.moveTo(140, y-10); ctx.lineTo(150, y);
+    ctx.moveTo(170, y); ctx.lineTo(200, y-5);
+    ctx.stroke();
+  }
+  // 板擦
+  ctx.fillStyle = '#ecf0f1';
+  ctx.beginPath(); ctx.roundRect(280, 250, 40, 15, 3); ctx.fill();
+  ctx.fillStyle = '#34495e';
+  ctx.beginPath(); ctx.roundRect(285, 255, 30, 5, 1); ctx.fill();
+
+  // 时钟
+  ctx.fillStyle = '#17becf';
+  ctx.beginPath(); ctx.arc(380, 220, 35, 0, Math.PI*2); ctx.fill();
+  ctx.strokeStyle = '#333'; ctx.lineWidth = 4; ctx.stroke();
+  ctx.fillStyle = '#fff';
+  ctx.beginPath(); ctx.arc(380, 220, 28, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#f1c40f';
+  ctx.beginPath(); ctx.arc(380, 180, 8, 0, Math.PI*2); ctx.fill();
+  ctx.strokeStyle = '#d35400'; ctx.lineWidth = 2; ctx.stroke();
+  ctx.strokeStyle = '#e67e22'; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(380, 220); ctx.lineTo(380, 198); ctx.stroke();
+  ctx.strokeStyle = '#2c3e50'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(380, 220); ctx.lineTo(395, 220); ctx.stroke();
+
+  // 讲台前沿
+  ctx.fillStyle = '#6b4423';
+  ctx.fillRect(20, 290, 440, 12);
+}
+
+// 老师绘制（转身动画、生气表情）
+function drawTeacher(){
+  var sx = Math.cos(turnProgress * Math.PI); 
+  var k  = Math.max(0.05, Math.abs(sx));
+  var front = sx < 0;
+  var angry = angerT > 0;
+
+  ctx.save();
+  ctx.translate(240, 0);
+  ctx.scale(k, 1);
+  ctx.translate(-240, 0);
+
+  // 上衣
+  ctx.fillStyle = '#1a1a1a';
+  ctx.beginPath(); ctx.roundRect(180, 320, 120, 220, 20); ctx.fill();
+  if(front) {
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.moveTo(240, 320); ctx.lineTo(225, 380); ctx.lineTo(255, 380); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#1f3a93';
+    ctx.beginPath(); ctx.moveTo(240, 340); ctx.lineTo(235, 380); ctx.lineTo(245, 380); ctx.closePath(); ctx.fill();
+  }
+
+  if(front){
+    var faceColor = angry ? '#f5b492' : '#fcd7b6';
+    ctx.fillStyle = faceColor;
+    ctx.beginPath(); ctx.ellipse(240, 270, 42, 48, 0, 0, Math.PI*2); ctx.fill();
+    ctx.strokeStyle = '#d4a373'; ctx.lineWidth = 2; ctx.stroke();
+
+    // 头发
+    ctx.fillStyle = '#333';
+    ctx.beginPath(); ctx.moveTo(198, 270); ctx.quadraticCurveTo(190, 230, 220, 222); ctx.quadraticCurveTo(210, 250, 205, 280); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(282, 270); ctx.quadraticCurveTo(290, 230, 260, 222); ctx.quadraticCurveTo(270, 250, 275, 280); ctx.fill();
+    ctx.strokeStyle = '#333'; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.moveTo(220, 222); ctx.lineTo(230, 210); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(240, 222); ctx.lineTo(245, 205); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(260, 222); ctx.lineTo(250, 212); ctx.stroke();
+
+    if(angry){
+      // 生气脸
+      ctx.strokeStyle = '#111'; ctx.lineWidth = 5; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(205, 240); ctx.lineTo(230, 255); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(275, 240); ctx.lineTo(250, 255); ctx.stroke();
+      
+      ctx.strokeStyle = '#2c3e50'; ctx.lineWidth = 3;
+      ctx.strokeRect(215, 265, 20, 15);
+      ctx.strokeRect(245, 265, 20, 15);
+      ctx.beginPath(); ctx.moveTo(235, 272); ctx.lineTo(245, 272); ctx.stroke();
+      
+      ctx.fillStyle = '#e74c3c';
+      ctx.beginPath(); ctx.arc(225, 272, 4, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(255, 272, 4, 0, Math.PI*2); ctx.fill();
+
+      ctx.fillStyle = '#721c24';
+      ctx.beginPath(); ctx.ellipse(240, 305, 15, 18, 0, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#fff';
+      ctx.beginPath(); ctx.roundRect(230, 295, 20, 6, 2); ctx.fill();
+      ctx.fillStyle = '#e74c3c';
+      ctx.beginPath(); ctx.ellipse(240, 313, 8, 6, 0, 0, Math.PI*2); ctx.fill();
+
+      ctx.fillStyle = '#e63946';
+      ctx.font = 'bold 36px ' + FONT;
+      ctx.fillText('💢', 285, 235);
+    } else {
+      // 正常脸
+      ctx.strokeStyle = '#111'; ctx.lineWidth = 4; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(210, 252); ctx.lineTo(230, 248); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(270, 252); ctx.lineTo(250, 248); ctx.stroke();
+
+      ctx.strokeStyle = '#111'; ctx.lineWidth = 4;
+      ctx.strokeRect(210, 255, 22, 16);
+      ctx.strokeRect(248, 255, 22, 16);
+      ctx.beginPath(); ctx.moveTo(232, 263); ctx.lineTo(248, 263); ctx.stroke();
+      
+      ctx.fillStyle = 'rgba(255,255,255,0.4)';
+      ctx.beginPath(); ctx.moveTo(210,255); ctx.lineTo(225,255); ctx.lineTo(210,265); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(248,255); ctx.lineTo(263,255); ctx.lineTo(248,265); ctx.fill();
+
+      ctx.fillStyle = '#111';
+      ctx.beginPath(); ctx.arc(221, 263, 3, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(259, 263, 3, 0, Math.PI*2); ctx.fill();
+
+      ctx.fillStyle = '#333';
+      ctx.beginPath();
+      ctx.moveTo(240, 285);
+      ctx.quadraticCurveTo(225, 285, 220, 295);
+      ctx.quadraticCurveTo(230, 292, 240, 290);
+      ctx.quadraticCurveTo(250, 292, 260, 295);
+      ctx.quadraticCurveTo(255, 285, 240, 285);
+      ctx.fill();
+      ctx.strokeStyle = '#111'; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(230, 298); ctx.quadraticCurveTo(240, 295, 250, 298); ctx.stroke();
+    }
+  } else {
+    // 背影
+    ctx.fillStyle = '#333';
+    ctx.beginPath(); ctx.ellipse(240, 270, 42, 48, 0, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#fcd7b6';
+    ctx.beginPath(); ctx.ellipse(240, 280, 25, 25, 0, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(196, 270, 8, 12, 0, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(284, 270, 8, 12, 0, 0, Math.PI*2); ctx.fill();
+  }
+  ctx.restore();
+}
+
+// 讲台
+function drawPodium(){
+  ctx.fillStyle = '#8B5A2B';
+  ctx.beginPath(); ctx.roundRect(140, 480, 200, 80, 8); ctx.fill();
+  ctx.fillStyle = '#A0522D';
+  ctx.beginPath(); ctx.roundRect(130, 470, 220, 15, 4); ctx.fill();
+  
+  ctx.fillStyle = '#c0392b';
+  ctx.beginPath(); ctx.roundRect(250, 445, 60, 25, 3); ctx.fill();
+  ctx.fillStyle = '#ecf0f1';
+  ctx.beginPath(); ctx.roundRect(255, 450, 50, 15, 1); ctx.fill();
+  ctx.fillStyle = '#27ae60';
+  ctx.beginPath(); ctx.roundRect(240, 455, 70, 15, 3); ctx.fill();
+
+  ctx.fillStyle = '#fff'; ctx.fillRect(100, 292, 15, 6); ctx.fillRect(130, 292, 12, 6);
+  ctx.fillStyle = '#f1c40f'; ctx.fillRect(380, 292, 18, 6);
+}
+
+// 学生群像
+function drawStudents(){
+  ctx.fillStyle = '#2c3e50';
+  for(let i=0; i<6; i++){
+    let x = i * 90 - 10;
+    let y = H - 300;
+    ctx.beginPath(); ctx.arc(x, y, 32, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(x, y + 75, 45, 35, 0, Math.PI, Math.PI*2); ctx.fill();
+  }
+
+  ctx.fillStyle = '#46668a';
+  for(let i=0; i<4; i++){
+    let x = i * 130 + 65;
+    let y = H - 200;
+    ctx.beginPath(); ctx.arc(x, y, 40, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(x, y + 85, 60, 45, 0, Math.PI, Math.PI*2); ctx.fill();
+  }
+  
+  ctx.fillStyle = '#1a2530';
+  for(let i=0; i<4; i++){
+    let x = i * 130 + 65;
+    let y = H - 200;
+    ctx.beginPath(); ctx.arc(x, y, 40, Math.PI*1.15, Math.PI*1.85); ctx.fill();
+  }
+
+  // 课桌底边
+  ctx.fillStyle = '#8B5A2B';
+  ctx.fillRect(0, H - 80, W, 80);
+  ctx.fillStyle = '#A0522D';
+  ctx.fillRect(0, H - 80, W, 10);
+}
+
+// 饺子 + 被咬掉的缺口
+function drawDumpling(){
+  if(gameOver && win) return;
+
+  var s   = 1 - (progress/100)*0.45;
+  var wob = eating ? Math.sin(chewT*26)*0.08 : 0;
+
+  ctx.save();
+  ctx.translate(240, H - 40);
+  ctx.scale(s + wob, s + wob);
+  ctx.rotate(-0.06);
+
+  // 阴影
+  ctx.fillStyle = 'rgba(0,0,0,0.4)';
+  ctx.beginPath(); ctx.ellipse(0, 22, 30, 7, 0, 0, Math.PI*2); ctx.fill();
+
+  // 饺子主体渐变
+  var g = ctx.createLinearGradient(0, -24, 0, 22);
+  g.addColorStop(0, '#fffdf6'); g.addColorStop(1, '#e3cda9');
+  ctx.beginPath();
+  ctx.moveTo(-34, 2);
+  ctx.bezierCurveTo(-34, -14, -17, -23, 0, -23);
+  ctx.bezierCurveTo(17, -23, 34, -14, 34, 2);
+  ctx.bezierCurveTo(22, 21, -22, 21, -34, 2);
+  ctx.closePath();
+  ctx.fillStyle = g; ctx.fill();
+  ctx.lineWidth = 2.2; ctx.strokeStyle = '#c9ac83'; ctx.stroke();
+
+  // 饺子褶皱
+  ctx.strokeStyle = 'rgba(178,146,104,0.85)';
+  ctx.lineWidth = 2.2; ctx.lineCap = 'round';
+  for(var i = -2; i <= 2; i++){
+    var x = i * 11;
+    var lift = Math.abs(i) * 2.2;
+    ctx.beginPath();
+    ctx.moveTo(x - 6.5, -10 + lift);
+    ctx.quadraticCurveTo(x, -23 + lift*1.8, x + 6.5, -10 + lift);
+    ctx.stroke();
+  }
+
+  // 分阶段被咬掉的缺口
+  ctx.fillStyle = '#8B5A2B';
+  var bite1 = Math.max(0, (progress - 20) / 80) * 28;
+  if (bite1 > 0) { ctx.beginPath(); ctx.arc(25, -10, bite1, 0, Math.PI*2); ctx.fill(); }
+  var bite2 = Math.max(0, (progress - 40) / 60) * 26;
+  if (bite2 > 0) { ctx.beginPath(); ctx.arc(-26, -12, bite2, 0, Math.PI*2); ctx.fill(); }
+  var bite3 = Math.max(0, (progress - 60) / 40) * 25;
+  if (bite3 > 0) { ctx.beginPath(); ctx.arc(0, 18, bite3, 0, Math.PI*2); ctx.fill(); }
+  var bite4 = Math.max(0, (progress - 80) / 20) * 30;
+  if (bite4 > 0) { ctx.beginPath(); ctx.arc(0, 0, bite4, 0, Math.PI*2); ctx.fill(); }
+
+  // 高光
+  if (progress < 40) {
+    ctx.fillStyle = 'rgba(255,255,255,0.75)';
+    ctx.beginPath(); ctx.ellipse(-10, 6, 10, 4.5, -0.35, 0, Math.PI*2); ctx.fill();
+  }
+  ctx.restore();
+}
+
+// HUD：进度条、被抓到次数
+function drawHUD(){
+  if(!started) return;
+
+  var bw = 432, bh = 18;
+  var bx = 24, by = 24;
+
+  ctx.fillStyle = 'rgba(0,0,0,0.4)';
+  ctx.beginPath(); ctx.roundRect(bx-3, by-3, bw+6, bh+6, 12); ctx.fill();
+  ctx.fillStyle = 'rgba(255,255,255,0.3)';
+  ctx.beginPath(); ctx.roundRect(bx, by, bw, bh, 9); ctx.fill();
+
+  var pw = bw*progress/100;
+  if(pw > 0){
+    var g = ctx.createLinearGradient(bx, 0, bx+bw, 0);
+    g.addColorStop(0, '#f1c40f'); g.addColorStop(1, '#e67e22');
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.roundRect(bx, by, Math.max(pw, 18), bh, 9); ctx.fill();
+  }
+
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 13px ' + FONT;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('干饭进度 ' + Math.floor(progress) + '%', W/2, by + bh/2 + 1);
+
+  ctx.textAlign = 'right';
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 14px ' + FONT;
+  ctx.fillText('被发现', W - 98, 60);
+  for(var i = 0; i < MAX_CAUGHT; i++){
+    ctx.beginPath();
+    ctx.arc(W - 70 + i*20, 55, 6, 0, Math.PI*2);
+    ctx.fillStyle = i < caught ? '#e74c3c' : 'rgba(255,255,255,0.3)';
+    ctx.fill();
+  }
+  ctx.textBaseline = 'alphabetic';
+}
+
+// 开始/结束遮罩弹窗
+function drawOverlay(){
+  if(started && !gameOver) return;
+
+  ctx.fillStyle = 'rgba(10,12,18,0.85)';
+  ctx.fillRect(0, 0, W, H);
+  ctx.textAlign = 'center';
+
+  if(!started){
+    ctx.fillStyle = '#f1c40f';
+    ctx.font = 'bold 52px ' + FONT;
+    ctx.fillText('上课偷吃', W/2, 260);
+
+    ctx.fillStyle = '#fff';
+    ctx.font = '18px ' + FONT;
+    ctx.fillText('老师转身写字时', W/2, 350);
+    ctx.fillText('按住屏幕偷吃饺子', W/2, 380);
+
+    ctx.fillStyle = '#ff9f9f';
+    ctx.fillText('老师一转身，立刻松手！', W/2, 430);
+
+    ctx.fillStyle = 'rgba(255,255,255,0.6)';
+    ctx.font = '15px ' + FONT;
+    ctx.fillText('干饭 100% 获胜 · 被发现 3 次失败', W/2, 490);
+
+    // 开始按钮
+    ctx.fillStyle = '#2980b9';
+    ctx.beginPath(); ctx.roundRect(150, 530, 180, 50, 25); ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 20px ' + FONT;
+    ctx.fillText('开始游戏', W/2, 562);
+  } else {
+    ctx.fillStyle = win ? '#7ee081' : '#ff6b6b';
+    ctx.font = 'bold 48px ' + FONT;
+    ctx.fillText(win ? '吃完了！' : '被发现了！', W/2, 300);
+
+    ctx.fillStyle = 'rgba(255,255,255,0.9)';
+    ctx.font = '18px ' + FONT;
+    ctx.fillText(win ? '下课铃响前吃完了整盘饺子' : '老师的眼神已经锁定你了……', W/2, 360);
+
+    ctx.fillStyle = 'rgba(255,255,255,0.6)';
+    ctx.font = '15px ' + FONT;
+    ctx.fillText('干饭进度 ' + Math.floor(progress) + '%  ·  被发现 ' + caught + ' 次', W/2, 410);
+
+    // 再玩一次按钮
+    ctx.fillStyle = '#2980b9';
+    ctx.beginPath(); ctx.roundRect(150, 510, 180, 60, 30); ctx.fill();
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+    
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 22px ' + FONT;
+    ctx.textBaseline = 'middle';
+    ctx.fillText('再玩一次', W/2, 541);
+    ctx.textBaseline = 'alphabetic';
+  }
+}
+
+// 渲染主循环
+function frame(now){
+  var dt = Math.min(0.05, (now - lastT)/1000);
+  lastT = now;
+
+  update(dt);
+
+  ctx.setTransform(renderScale, 0, 0, renderScale, 0, 0);
+  ctx.clearRect(0, 0, W, H);
+
+  drawBackground();
+
+  // 老师盯着你的红色预警光晕
+  if(started && !gameOver && state === 'watching'){
+    var pulse = 0.2 + Math.sin(now/140)*0.1;
+    ctx.save();
+    ctx.globalAlpha = pulse;
+    var rg = ctx.createRadialGradient(240, 270, 20, 240, 270, 160);
+    rg.addColorStop(0, 'rgba(255,50,50,0.95)');
+    rg.addColorStop(1, 'rgba(255,50,50,0)');
+    ctx.fillStyle = rg;
+    ctx.fillRect(80, 100, 320, 340);
+    ctx.restore();
+  }
+
+  drawTeacher();
+  drawPodium();
+  drawStudents();
+  if(started) drawDumpling();
+  
+  drawParticles();
+  drawHUD();
+
+  // 被抓到红色闪屏
+  if(flash > 0){
+    ctx.fillStyle = 'rgba(255,40,40,' + (Math.max(0,flash)*0.5) + ')';
+    ctx.fillRect(0, 0, W, H);
+  }
+
+  drawOverlay();
+
+  raf(frame);
+}
+
+var loadingEl = document.getElementById('loading');
+if(loadingEl) loadingEl.style.display = 'none';
+lastT = nowMs();
+raf(frame);
+
+})();
+</script>
+</body>
+</html>

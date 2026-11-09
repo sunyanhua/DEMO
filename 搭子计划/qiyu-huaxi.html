@@ -280,6 +280,13 @@
                 window.location.href = 'dumpling-test.html?from=qiyu';
             },
 
+            // URL ?tab=share：从测试详情页海报"有奖分享"进入时直接切到有奖分享 TAB
+            restoreTabFromUrl() {
+                try {
+                    if (new URLSearchParams(window.location.search).get('tab') === 'share') this.activeTab = 'share';
+                } catch (e) { /* 测试沙箱无 URLSearchParams，忽略 */ }
+            },
+
             // 页面重进（刷新/返回）时恢复测试完成状态
             restoreTestState() {
                 if (sessionStorage.getItem('dumpling_test_done') === '1') {
@@ -1115,7 +1122,7 @@
         };
 
         window.View = View;
-        document.addEventListener('DOMContentLoaded', () => { View.restoreTestState(); View.restoreSpinState(); View.render(); });
+        document.addEventListener('DOMContentLoaded', () => { View.restoreTabFromUrl(); View.restoreTestState(); View.restoreSpinState(); View.render(); });
     </script>
 </body>
 </html>

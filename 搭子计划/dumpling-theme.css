@@ -7,9 +7,9 @@
    qiyu-huaxi.html 从 ?from=qiyu 进入测试页时由页面脚本移除 dp-theme。
    ========================================================= */
 
-/* ---------- 页面底色与暖灰文字体系 ---------- */
+/* ---------- 页面底色（顶部区域）：金黄 ---------- */
 body.dp-theme {
-    background-color: #F6EBD8;
+    background-color: #FFC600;
 }
 
 body.dp-theme .text-gray-900 { color: #4B3B2E; }
@@ -117,14 +117,22 @@ body.dp-theme .dp-bottom-zone {
     min-height: 55vh;
 }
 
-/* 边界 TAB：激活 = 纯白，与下半区一体；未激活 = 透明，露出上半区底色 */
+/* 边界 TAB：TAB 行自带贯穿整行的底部线条（延伸到页面边缘）；
+   激活 = 纯白 + 上左右描边，下探 1px 覆盖行底线，与下半区一体；
+   未激活 = 透明文字，行底线从其下方穿过 */
+body.dp-theme .dp-tab-bar {
+    border-bottom: 1px solid #C09A2A;
+}
 body.dp-theme .dp-tab-active {
     background-color: #FFFFFF;
     color: #A87D1F;
+    border: 1px solid #C09A2A;
+    border-bottom: none;
+    margin-bottom: -1px;
 }
 body.dp-theme .dp-tab-inactive {
     background-color: transparent;
-    color: #8F7A63;
+    color: #6E5A3E;
 }
 
 /* 下半区卡片：奶白色块在纯白底上区分，无边框 */

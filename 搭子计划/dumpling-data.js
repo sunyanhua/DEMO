@@ -621,15 +621,25 @@ window.GlobalData.dumpling = {
         notes: ['动态内容需原创，且与饺子/立冬话题相关', '禁止刷量（机器点赞、恶意刷评论等），一经发现取消获奖资格', '礼品以实物为准，最终解释权归搭子计划所有']
     },
 
-    // #我的饺子人格# 动态
+    // 专题页精选活动实景图（覆盖首页共享 GlobalData.activities 的插画封面，仅本专题生效）
+    activityImages: {
+        a26: 'images/act-a26-dumpling.jpg',   // 立冬饺子偷吃小赛
+        a25: 'images/act-a25-escape.jpg',     // 密室逃脱挑战
+        a23: 'images/act-a23-hotpot.jpg',     // 火锅聚餐局
+        a21: 'images/act-a21-badminton.jpg',  // 羽毛球双打局
+        a15: 'images/act-a15-cinema.jpg',     // IMAX影院《流浪地球3》观影
+        a12: 'images/act-a12-boardgame.jpg'   // 桌游之夜：狼人杀局
+    },
+
+    // #我的饺子人格# 动态（实景图）
     moments: [
-        { id: 'dm1', name: '立冬预备选手', avatar: 'images/avatar-3.png', text: '测出来了！我是鱿鱼馅海王饺，声东击西偷吃法在线招募搭子 #我的饺子人格#', image: 'images/cover-6.png', likes: 128, comments: 23, time: '10分钟前' },
-        { id: 'dm2', name: '甜丧少女', avatar: 'images/avatar-7.png', text: '装乖后突然下手，说的就是我本人了 #我的饺子人格#', image: 'images/cover-11.png', likes: 96, comments: 15, time: '25分钟前' },
-        { id: 'dm3', name: '脆皮选手阿青', avatar: 'images/avatar-2.png', text: '离谱工具作战成功，汤勺捞饺第一人 #我的饺子人格#', image: 'images/cover-8.png', likes: 74, comments: 9, time: '50分钟前' },
-        { id: 'dm4', name: '暴躁老哥', avatar: 'images/avatar-5.png', text: '正面硬偷，不玩虚的。香辣牛肉就是我的命 #我的饺子人格#', image: 'images/cover-20.png', likes: 156, comments: 31, time: '1小时前' },
-        { id: 'dm5', name: '老实人小北', avatar: 'images/avatar-9.png', text: '低调连续作案中，第三盘了，还没人发现 #我的饺子人格#', image: 'images/cover-2.png', likes: 88, comments: 12, time: '1小时前' },
-        { id: 'dm6', name: '局王阿韭', avatar: 'images/avatar-4.png', text: '同伙掩护式偷吃大成功，兄弟们给力 #我的饺子人格#', image: 'images/cover-15.png', likes: 203, comments: 44, time: '2小时前' },
-        { id: 'dm7', name: '东北在逃大花', avatar: 'images/avatar-11.png', text: '边唠边吃，饺子就着段子，香迷糊了 #我的饺子人格#', image: 'images/cover-1.png', likes: 167, comments: 38, time: '2小时前' },
-        { id: 'dm8', name: '选择困难症晚期', avatar: 'images/avatar-8.png', text: '三鲜人格实锤，这顿每样都沾了一点 #我的饺子人格#', image: 'images/cover-10.png', likes: 112, comments: 19, time: '3小时前' }
+        { id: 'dm1', name: '立冬预备选手', avatar: 'images/avatar-3.png', text: '测出来了！我是鱿鱼馅海王饺，声东击西偷吃法在线招募搭子 #我的饺子人格#', image: 'images/moment-1.jpg', likes: 128, comments: 23, time: '10分钟前' },
+        { id: 'dm2', name: '甜丧少女', avatar: 'images/avatar-7.png', text: '装乖后突然下手，说的就是我本人了 #我的饺子人格#', image: 'images/moment-2.jpg', likes: 96, comments: 15, time: '25分钟前' },
+        { id: 'dm3', name: '脆皮选手阿青', avatar: 'images/avatar-2.png', text: '离谱工具作战成功，汤勺捞饺第一人 #我的饺子人格#', image: 'images/moment-3.jpg', likes: 74, comments: 9, time: '50分钟前' },
+        { id: 'dm4', name: '暴躁老哥', avatar: 'images/avatar-5.png', text: '正面硬偷，不玩虚的。香辣牛肉就是我的命 #我的饺子人格#', image: 'images/moment-4.jpg', likes: 156, comments: 31, time: '1小时前' },
+        { id: 'dm5', name: '老实人小北', avatar: 'images/avatar-9.png', text: '低调连续作案中，第三盘了，还没人发现 #我的饺子人格#', image: 'images/moment-5.jpg', likes: 88, comments: 12, time: '1小时前' },
+        { id: 'dm6', name: '局王阿韭', avatar: 'images/avatar-4.png', text: '同伙掩护式偷吃大成功，兄弟们给力 #我的饺子人格#', image: 'images/moment-6.jpg', likes: 203, comments: 44, time: '2小时前' },
+        { id: 'dm7', name: '东北在逃大花', avatar: 'images/avatar-11.png', text: '边唠边吃，饺子就着段子，香迷糊了 #我的饺子人格#', image: 'images/moment-7.jpg', likes: 167, comments: 38, time: '2小时前' },
+        { id: 'dm8', name: '选择困难症晚期', avatar: 'images/avatar-8.png', text: '三鲜人格实锤，这顿每样都沾了一点 #我的饺子人格#', image: 'images/moment-8.jpg', likes: 112, comments: 19, time: '3小时前' }
     ]
 };

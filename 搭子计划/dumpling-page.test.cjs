@@ -61,7 +61,8 @@ function makeViewSandbox(storage) {
         window: { location: { href: '' } },
         document,
         sessionStorage,
-        navigator: {}
+        navigator: {},
+        URLSearchParams
     };
     sandbox.window.sessionStorage = sessionStorage;
     sandbox.window.document = document;
@@ -71,8 +72,9 @@ function makeViewSandbox(storage) {
     return { View: sandbox.window.View, document, sessionStorage, toasts, window: sandbox.window };
 }
 
-// 模拟页面加载：恢复状态 + 渲染
+// 模拟页面加载：恢复 TAB/测试状态 + 渲染
 function renderView(s) {
+    s.View.restoreTabFromUrl();
     s.View.restoreTestState();
     s.View.render();
     return s.document._html;
@@ -81,7 +83,9 @@ function renderView(s) {
 test('默认渲染精选活动 TAB：活动与首页共享数据，卡片仅详情按钮', () => {
     const s = makeViewSandbox();
     const html = renderView(s);
-    assert.ok(html.includes('马上开始测试'), '未测试应展示引导卡');
+    assert.ok(html.includes('images/dumpling-head.png'), '未测试应展示顶部引导头图');
+    assert.ok(html.includes('game.html'), '头图右半应可前往 game.html');
+    assert.ok(html.includes('width: 50%'), '头图左右半区点击层应覆盖各 50% 宽度');
     assert.ok(html.includes('精选活动'), '应有精选活动 TAB');
     assert.ok(html.includes('有奖分享'), '应有有奖分享 TAB');
     assert.ok(html.includes('data-lucide="sparkles"'), '精选活动 TAB 应有图标');
@@ -171,9 +175,9 @@ test('答完提交：保存完成状态并跳转详情页；重进显示结果�
     // 重进页面：恢复结果摘要
     const s2 = makeViewSandbox(s.sessionStorage);
     const html2 = renderView(s2);
-    assert.ok(html2.includes('你的饺子人格'), '重进应恢复结果摘要');
+    assert.ok(html2.includes('images/dumpling-head1.png'), '重进应展示已测试版头图');
     assert.ok(html2.includes('清空（仅演示）'), '应保留演示清空入口');
-    assert.ok(html2.includes('查看详情'), '摘要应有查看详情按钮');
+    assert.ok(html2.includes('dumpling-test.html'), '头图左半应可查看测试结果');
     assert.ok(!html2.includes('重新测试'), '不应有重新测试按钮');
     assert.ok(!html2.includes('马上开始测试'), '已测试不应再显示开始测试');
 });
@@ -186,7 +190,7 @@ test('清空（仅演示）：回到引导态并清除完成标记', () => {
     s.View.quiz.currentIndex = 7;
     s.View.nextQuestion();
     s.View.clearTest();
-    assert.ok(s.document._html.includes('马上开始测试'), '清空后应回到引导态');
+    assert.ok(s.document._html.includes('images/dumpling-head.png'), '清空后应回到未测试引导头图');
     assert.strictEqual(s.sessionStorage.getItem('dumpling_test_done'), null, '清空应移除完成标记');
 });
 
@@ -281,4 +285,25 @@ test('详情页：?from=qiyu 时移除 dp-theme 平面主题，保持奇遇华�
     runBase(sandbox);
     vm.runInContext(inlineScriptOf('dumpling-test.html'), sandbox);
     assert.ok(removed.includes('dp-theme'), 'qiyu 入口应移除 dp-theme 保持霓虹风格');
+});
+
+test('专题页：?tab=share 重进直接切到有奖分享 TAB', () => {
+    const s = makeViewSandbox();
+    s.window.location.search = '?tab=share';
+    const html = renderView(s);
+    assert.strictEqual(s.View.activeTab, 'share', '应从 URL 恢复有奖分享 TAB');
+    assert.ok(html.includes('有奖发布'), '有奖分享 TAB 应显示悬浮发布按钮');
+});
+
+test('详情页海报弹窗：有奖分享按钮跳专题分享TAB，关闭按钮保留', () => {
+    const s = makeTestSandbox();
+    s.Test.render();
+    s.Test.answers = [0, 1, 2, 3, 0, 1, 2, 3];
+    s.Test.currentIndex = 7;
+    s.Test.complete();
+    s.Test.openPoster();
+    const html = s.document._html;
+    assert.ok(html.includes('有奖分享'), '海报下应有有奖分享按钮');
+    assert.ok(html.includes('dumpling.html?tab=share'), '有奖分享应跳到专题分享TAB');
+    assert.ok(html.includes('关闭'), '应有关闭按钮');
 });
