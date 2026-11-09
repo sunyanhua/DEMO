@@ -1,0 +1,131 @@
+/* =========================================================
+   dumpling-theme.css — 天之"饺"子专题 · 平面清淡主题（黄色系）
+   ---------------------------------------------------------
+   与整站活力橙风格解耦：奶油底色、金黄主色、暖灰文字、无渐变无阴影。
+   作用域：body.dp-theme（dumpling.html / dumpling-test.html）。
+   加载顺序：tailwind.css → style.css → 本文件。
+   qiyu-huaxi.html 从 ?from=qiyu 进入测试页时由页面脚本移除 dp-theme。
+   ========================================================= */
+
+/* ---------- 页面底色与暖灰文字体系 ---------- */
+body.dp-theme {
+    background-color: #F6EBD8;
+}
+
+body.dp-theme .text-gray-900 { color: #4B3B2E; }
+body.dp-theme .text-gray-800 { color: #5D4B3C; }
+body.dp-theme .text-gray-700 { color: #6F5B49; }
+body.dp-theme .text-gray-600 { color: #84705C; }
+body.dp-theme .text-gray-500 { color: #9A8670; }
+body.dp-theme .text-gray-400 { color: #B3A08A; }
+body.dp-theme .text-gray-300 { color: #CFBEAA; }
+
+/* ---------- 卡片与底色：暖白 + 柔和边线 ---------- */
+body.dp-theme .bg-white    { background-color: #FFFDF8; }
+body.dp-theme .bg-gray-50  { background-color: #F7EEE0; }
+body.dp-theme .bg-gray-100 { background-color: #F0E5D3; }
+body.dp-theme .bg-gray-200 { background-color: #E4D5BE; }
+body.dp-theme .border-gray-100 { border-color: #F2E7D8; }
+body.dp-theme .border-gray-200 { border-color: #EADCC9; }
+
+/* ---------- 去阴影（平面化核心） ----------
+   注意：Tailwind 的 ring-* 也基于 box-shadow，带 ring-1 的元素（答题选中态等）除外，
+   否则选中高亮环会被一并抹掉 */
+body.dp-theme .shadow,
+body.dp-theme .shadow-sm:not(.ring-1),
+body.dp-theme .shadow-md:not(.ring-1),
+body.dp-theme .shadow-lg:not(.ring-1) { box-shadow: none; }
+
+/* ---------- 主色：活力橙 → 金黄 ---------- */
+body.dp-theme .bg-brand-orange    { background-color: #F3C153; }
+body.dp-theme .text-brand-orange  { color: #A87D1F; }
+body.dp-theme .border-brand-orange { border-color: #F3C153; }
+body.dp-theme .ring-brand-orange  { --tw-ring-color: #F3C153; }
+body.dp-theme .bg-brand-orange\/5  { background-color: rgba(243, 193, 83, 0.05); }
+body.dp-theme .bg-brand-orange\/10 { background-color: rgba(243, 193, 83, 0.12); }
+body.dp-theme .text-brand-orange\/80 { color: rgba(168, 125, 31, 0.8); }
+body.dp-theme .border-brand-orange\/25 { border-color: rgba(243, 193, 83, 0.3); }
+body.dp-theme .border-brand-orange\/30 { border-color: rgba(243, 193, 83, 0.45); }
+body.dp-theme .ring-brand-orange\/15 { --tw-ring-color: rgba(243, 193, 83, 0.2); }
+body.dp-theme .ring-brand-orange\/30 { --tw-ring-color: rgba(243, 193, 83, 0.4); }
+body.dp-theme .hover\:border-brand-orange\/40:hover { border-color: rgba(168, 125, 31, 0.45); }
+body.dp-theme .focus\:border-brand-orange:focus { border-color: #A87D1F; }
+/* 上传占位区按压反馈（主题的 bg-gray-50 覆盖了 Tailwind 的 active:bg-gray-100） */
+body.dp-theme .active\:bg-gray-100:active { background-color: #F0E5D3; }
+
+/* ---------- 辅助色柔化 ---------- */
+body.dp-theme .bg-brand-yellow\/15 { background-color: rgba(243, 193, 83, 0.25); }
+body.dp-theme .border-brand-yellow\/40 { border-color: rgba(233, 177, 61, 0.5); }
+body.dp-theme .text-brand-green { color: #79A97C; }
+body.dp-theme .text-red-500 { color: #E0787C; }
+body.dp-theme .fill-red-500 { fill: #E0787C; }
+body.dp-theme .text-amber-600 { color: #C98A2D; }
+body.dp-theme .bg-amber-50 { background-color: #FAF0DA; }
+
+/* ---------- 渐变工具类统一抹平为纯色 ---------- */
+body.dp-theme .bg-gradient-to-br,
+body.dp-theme .bg-gradient-to-b,
+body.dp-theme .bg-gradient-to-r { background-image: none; }
+
+/* 各人格渐变对 → 平面中间调（白字可读、低饱和；橙/黄系归入黄色系） */
+body.dp-theme .from-brand-orange.to-brand-yellow { background-color: #F0BE4B; }
+body.dp-theme .from-brand-pink.to-brand-red     { background-color: #EE8FA8; }
+body.dp-theme .from-brand-teal.to-brand-green   { background-color: #62AFA3; }
+body.dp-theme .from-brand-red.to-brand-orange   { background-color: #E8836B; }
+body.dp-theme .from-brand-blue.to-brand-teal    { background-color: #6FA9DC; }
+body.dp-theme .from-brand-green.to-brand-yellow { background-color: #85B878; }
+body.dp-theme .from-brand-yellow.to-brand-orange { background-color: #E9B13D; }
+body.dp-theme .from-brand-purple.to-brand-pink  { background-color: #9C77B8; }
+
+/* ---------- 遮罩改暖棕、隐藏装饰性光斑 ---------- */
+body.dp-theme .bg-black\/40 { background-color: rgba(75, 59, 46, 0.4); }
+body.dp-theme .bg-black\/45 { background-color: rgba(75, 59, 46, 0.45); }
+body.dp-theme .bg-black\/50 { background-color: rgba(75, 59, 46, 0.55); }
+body.dp-theme .bg-black\/60 { background-color: rgba(75, 59, 46, 0.6); }
+body.dp-theme .blur-2xl { display: none; }
+
+/* ---------- 圆角整体更软 ---------- */
+body.dp-theme .rounded-xl   { border-radius: 0.875rem; }
+body.dp-theme .rounded-2xl  { border-radius: 1.25rem; }
+body.dp-theme .rounded-3xl  { border-radius: 1.5rem; }
+body.dp-theme .rounded-t-2xl { border-radius: 1.25rem 1.25rem 0 0; }
+body.dp-theme .rounded-t-3xl { border-radius: 1.5rem 1.5rem 0 0; }
+
+/* ---------- 专题自定义组件 ---------- */
+/* 有奖分享卡片：奶油黄平面卡 */
+body.dp-theme .dp-share-card { background-color: #F5DFA2; }
+body.dp-theme .dp-share-title { color: #7A5C10; }
+body.dp-theme .dp-share-sub { color: #948033; }
+body.dp-theme .dp-share-rule-btn {
+    background-color: #FFFDF8;
+    color: #8A6D1A;
+    border: 1px solid #E9D88E;
+}
+
+/* 动态图兜底背景 + 头像首字兜底 */
+body.dp-theme .dp-moment-fallback { background-color: #F3DA93; }
+body.dp-theme .dp-moment-fallback .text-white { color: #8A6D1A; }
+body.dp-theme .dp-initial-chip { background-color: #F3C153; }
+
+/* ---------- 上下半区分区布局 ---------- */
+/* 上半区功能色块（人格测试/结果摘要）：奶油黄加深一档，与页面底色拉开区分 */
+body.dp-theme .dp-quiz-block { background-color: #F5DFA2; }
+
+/* 下半区：纯白底，紧贴 TAB 行下方，无圆角无间距（TAB 即分区边界） */
+body.dp-theme .dp-bottom-zone {
+    background-color: #FFFFFF;
+    min-height: 55vh;
+}
+
+/* 边界 TAB：激活 = 纯白，与下半区一体；未激活 = 透明，露出上半区底色 */
+body.dp-theme .dp-tab-active {
+    background-color: #FFFFFF;
+    color: #A87D1F;
+}
+body.dp-theme .dp-tab-inactive {
+    background-color: transparent;
+    color: #8F7A63;
+}
+
+/* 下半区卡片：奶白色块在纯白底上区分，无边框 */
+body.dp-theme .dp-card { background-color: #F6EDDC; }

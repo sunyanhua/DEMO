@@ -262,3 +262,23 @@ test('详情页：已测试重进直接展示结果，不再出现介绍页', ()
     assert.ok(!s2.document._html.includes('开始测试'), '已测试不应再出现介绍页开始按钮');
     assert.ok(!s2.document._html.includes('重新测试'), '已测试不应有重新测试按钮');
 });
+
+test('详情页：?from=qiyu 时移除 dp-theme 平面主题，保持奇遇华熙风格', () => {
+    const storage = makeStorage();
+    const document = makeDocument();
+    const removed = [];
+    document.body = { classList: { remove: (c) => removed.push(c) } };
+    const sandbox = {
+        window: { location: { href: '', search: '?from=qiyu' } },
+        document,
+        sessionStorage: storage,
+        navigator: {},
+        URLSearchParams
+    };
+    sandbox.window.sessionStorage = storage;
+    sandbox.window.document = document;
+    sandbox.window.Common = { initIcons() {}, showToast() {}, drawQr() {} };
+    runBase(sandbox);
+    vm.runInContext(inlineScriptOf('dumpling-test.html'), sandbox);
+    assert.ok(removed.includes('dp-theme'), 'qiyu 入口应移除 dp-theme 保持霓虹风格');
+});
