@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>常聚 · 聚会记录</title>
+    <link rel="stylesheet" href="tailwind.css">
+    <link rel="stylesheet" href="theme.css">
+</head>
+<body class="cj-theme">
+<div id="app" class="cj-page"></div>
+<script src="vendor/lucide.min.js"></script>
+<script src="data.js"></script>
+<script src="rotation.js"></script>
+<script src="common.js"></script>
+<script>
+window.RecordView = (function () {
+    const BUYMODE_BADGE = {
+        aa: 'AA 制',
+        random: '随机买单',
+        host: '有人请客'
+    };
+
+    function memberName(circle, id) {
+        const m = (circle.members || []).find(x => x.id === id);
+        return m ? m.name : '圈友';
+    }
+
+    function buyModeBadge(g, circle) {
+        const label = BUYMODE_BADGE[g.buyMode] || g.buyMode;
+        if (g.buyMode === 'random' && g.payerId) return '<span class="cj-chip-warm">' + label + ' · 本局由 ' + memberName(circle, g.payerId) + ' 买单</span>';
+        if (g.buyMode === 'host' && g.payerId) return '<span class="cj-chip-warm">' + memberName(circle, g.payerId) + ' 请客</span>';
+        return '<span class="cj-chip">' + label + '</span>';
+    }
+
+    function render(gatheringId) {
+        const G = window.GlobalData;
+        const g = G.gatherings.find(x => x.id === gatheringId);
+        if (!g) return window.Common.renderShell('聚会记录') + '<div class="cj-empty">记录不存在</div>';
+        const circle = G.circles.find(c => c.id === g.circleId);
+        const venue = G.venues.find(v => v.id === g.venueId);
+        const project = G.projects.find(p => p.id === g.projectId);
+        const photos = (g.photos || []).map(p =>
+            '<img src="' + p + '" style="width:100%;border-radius:10px;object-fit:cover;margin-bottom:6px" alt="合影">').join('') ||
+            '<div class="cj-sub" style="text-align:center;padding:12px 0">还没有合影</div>';
+        const attendees = (g.attendees || []).map(id => {
+            const m = (circle.members || []).find(x => x.id === id);
+            return m ? '<div style="text-align:center;width:52px"><img src="' + m.avatarUrl + '" style="width:36px;height:36px;border-radius:50%" alt="' + m.name + '"><div class="cj-sub" style="font-size:10px">' + m.name + '</div></div>' : '';
+        }).join('');
+        const comments = [
+            { name: '老王', text: '下次还来，手气不散！' },
+            { name: '小李', text: '已把照片存进相册，一年后回来看' }
+        ];
+        return window.Common.renderShell('聚会记录') +
+            '<div class="cj-px" style="padding-top:12px">' +
+                '<div class="cj-card">' +
+                    '<div class="cj-title" style="font-size:18px;margin-bottom:4px">' + g.title + '</div>' +
+                    '<div class="cj-row" style="gap:8px;margin-top:6px">' + buyModeBadge(g, circle) +
+                        '<span class="cj-chip">' + (project ? project.name : '') + '</span></div>' +
+                    '<div class="cj-sub" style="margin-top:8px">' + g.time + ' · ' + (venue ? venue.name + ' · ' + venue.district + venue.businessArea : '') + '</div>' +
+                    (g.summary ? '<div class="cj-sub" style="margin-top:6px;color:var(--cj-ink)">' + g.summary + '</div>' : '') +
+                    '<div class="cj-row" style="margin-top:12px;gap:4px;flex-wrap:wrap">' + attendees + '</div>' +
+                '</div>' +
+                '<div class="cj-card">' +
+                    '<div class="cj-title" style="font-size:14px;margin-bottom:10px">合影</div>' + photos +
+                    '<div class="cj-sub" style="cursor:pointer;text-decoration:underline;text-align:center" onclick="window.RecordView.addPhoto()">＋ 补传一张</div>' +
+                '</div>' +
+                '<div class="cj-card" id="commentCard">' +
+                    '<div class="cj-title" style="font-size:14px;margin-bottom:10px">留言</div>' +
+                    comments.map(c => '<div class="cj-sub" style="margin-bottom:6px"><b>' + c.name + '</b>：' + c.text + '</div>').join('') +
+                    '<div class="cj-row" style="gap:8px;margin-top:8px">' +
+                        '<input id="commentInput" style="flex:1;padding:8px;border:1px solid var(--cj-line);border-radius:10px;font-size:13px" placeholder="说点什么…">' +
+                        '<button class="cj-btn" style="padding:8px 14px" onclick="window.RecordView.comment()">留言</button>' +
+                    '</div>' +
+                '</div>' +
+                '<a class="cj-btn cj-btn-block" style="justify-content:center;text-decoration:none" href="ledger.html?gathering=' + g.id + '">去 AA 账本</a>' +
+                '<a class="cj-sub" style="display:block;text-align:center;margin-top:12px" href="circle.html?id=' + circle.id + '">回圈子 →</a>' +
+            '</div>' + window.Common.renderTabbar('circles');
+    }
+
+    function addPhoto() {
+        const g = window.GlobalData.gatherings.find(x => x.id === window.RecordView._gid);
+        if (!g) return;
+        g.photos = g.photos || [];
+        const next = 'images/moment-' + ((g.photos.length % 8) + 1) + '.jpg';
+        if (!g.photos.includes(next)) g.photos.push(next);
+        window.Common.save();
+        refresh();
+    }
+
+    function comment(text) {
+        const g = window.GlobalData.gatherings.find(x => x.id === window.RecordView._gid);
+        if (!g) return;
+        const input = document.getElementById('commentInput');
+        const t = text || (input && input.value) || '';
+        if (!t.trim()) { window.Common.showToast('写点什么吧'); return; }
+        g.comments = g.comments || [];
+        g.comments.push({ name: window.GlobalData.user.name, text: t.trim() });
+        window.Common.save();
+        window.Common.showToast('留言已记下');
+        refresh();
+    }
+
+    function refresh() {
+        document.getElementById('app').innerHTML = render(window.RecordView._gid);
+        if (window.lucide) window.lucide.createIcons();
+    }
+
+    return { render, addPhoto, comment };
+})();
+(function () {
+    const params = new URLSearchParams(window.location.search);
+    window.RecordView._gid = params.get('id') || 'g1';
+    document.getElementById('app').innerHTML = window.RecordView.render(window.RecordView._gid);
+})();
+window.Common.initIcons();
+window.Demo.mountFab();
+</script>
+</body>
+</html>

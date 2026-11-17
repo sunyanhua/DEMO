@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>常聚 · 散场仪式</title>
+    <link rel="stylesheet" href="tailwind.css">
+    <link rel="stylesheet" href="theme.css">
+</head>
+<body class="cj-theme">
+<div id="app" class="cj-page"></div>
+<script src="vendor/lucide.min.js"></script>
+<script src="data.js"></script>
+<script src="rotation.js"></script>
+<script src="common.js"></script>
+<script>
+window.EndView = (function () {
+    const PHOTO_POOL = [1, 2, 3, 4, 5, 6, 7, 8].map(i => 'images/moment-' + i + '.jpg');
+    let selected = [];
+
+    function gatheringOf(id) {
+        return window.GlobalData.gatherings.find(g => g.id === id);
+    }
+
+    function render(gatheringId) {
+        const g = gatheringOf(gatheringId);
+        if (!g) return window.Common.renderShell('散场') + '<div class="cj-empty">聚会不存在</div>';
+        const circle = window.GlobalData.circles.find(c => c.id === g.circleId);
+        return window.Common.renderShell('散场 · 三步仪式') +
+            '<div class="cj-px" style="padding-top:12px">' +
+                '<div class="cj-card">' +
+                    '<div class="cj-title" style="font-size:14px;margin-bottom:8px">① 上传合影</div>' +
+                    '<div style="display:flex;flex-wrap:wrap;gap:8px" id="photoPool">' +
+                        PHOTO_POOL.map(p =>
+                            '<img src="' + p + '" data-photo="' + p + '" style="width:64px;height:64px;border-radius:8px;object-fit:cover;cursor:pointer;border:2px solid var(--cj-line)" onclick="window.EndView.pickPhoto(\'' + p + '\')" alt="照片">').join('') +
+                    '</div>' +
+                    '<div class="cj-sub" style="margin-top:6px">点选 1-3 张今晚的合影</div>' +
+                '</div>' +
+                '<div class="cj-card" id="drawCard">' +
+                    '<div class="cj-title" style="font-size:14px;margin-bottom:8px">② 抽下一位张罗</div>' +
+                    '<div class="cj-sub">谁抽中，谁来张罗下一场</div>' +
+                    '<div style="text-align:center;margin-top:12px">' +
+                        '<button class="cj-btn" onclick="window.EndView.draw()">开始抽签</button>' +
+                    '</div>' +
+                    '<div id="drawResult"></div>' +
+                '</div>' +
+                '<div class="cj-card">' +
+                    '<div class="cj-title" style="font-size:14px;margin-bottom:8px">③ 给这次聚会留一句话</div>' +
+                    '<input id="titleInput" style="width:100%;padding:10px;border:1px solid var(--cj-line);border-radius:10px;font-size:14px" value="' + g.title + '">' +
+                    '<input id="summaryInput" style="width:100%;padding:10px;border:1px solid var(--cj-line);border-radius:10px;font-size:13px;margin-top:8px" placeholder="写点什么（可选）">' +
+                    '<div style="text-align:center;margin-top:12px">' +
+                        '<button class="cj-btn" style="width:100%;justify-content:center" onclick="window.EndView.finish()">完成 · 生成记录卡</button>' +
+                    '</div>' +
+                '</div>' +
+            '</div>' + window.Common.renderTabbar('circles');
+    }
+
+    function pickPhoto(p) {
+        const idx = selected.indexOf(p);
+        if (idx >= 0) { selected.splice(idx, 1); }
+        else if (selected.length < 3) { selected.push(p); }
+        else { window.Common.showToast('最多选 3 张'); return; }
+        const imgs = document.querySelectorAll('#photoPool img');
+        // 沙箱环境下无 DOM，静默跳过高亮
+        if (imgs && imgs.forEach) {
+            imgs.forEach(img => {
+                const on = selected.includes(img.getAttribute('data-photo'));
+                img.style.border = on ? '2px solid var(--cj-warm)' : '2px solid var(--cj-line)';
+            });
+        }
+    }
+
+    // 抽签交接：范围=全体圈友；rng 可注入（测试用）
+    function draw(gatheringId, rng) {
+        const g = gatheringOf(gatheringId || window.EndView._gid);
+        if (!g) return;
+        const circle = window.GlobalData.circles.find(c => c.id === g.circleId);
+        const newHost = window.Rotation.drawNextHost({
+            memberIds: circle.members.map(m => m.id),
+            rng: rng || Math.random
+        });
+        circle.hostId = newHost;
+        window.Common.save();
+        const host = circle.members.find(m => m.id === newHost);
+        const el = document.getElementById('drawResult');
+        if (el && el.innerHTML !== undefined) {
+            el.innerHTML = '<div class="cj-card" style="background:var(--cj-warm-soft);border-color:var(--cj-warm);margin-top:10px;text-align:center">' +
+                '<img src="' + host.avatarUrl + '" style="width:48px;height:48px;border-radius:50%;border:2px solid var(--cj-warm)" alt="下一任">' +
+                '<div class="cj-title" style="font-size:15px;margin-top:6px">下一任张罗：' + host.name + '</div>' +
+                '<div class="cj-sub">下一场就交给 TA 啦</div>' +
+            '</div>';
+        }
+        return newHost;
+    }
+
+    // 完成仪式：落库合影/标题/总结，更新圈子记录
+    function finish(gatheringId, opts) {
+        const id = gatheringId || window.EndView._gid;
+        const g = gatheringOf(id);
+        if (!g) return;
+        const o = opts || {};
+        const titleEl = document.getElementById('titleInput');
+        const sumEl = document.getElementById('summaryInput');
+        g.photos = o.photos || selected;
+        g.title = o.title || (titleEl && titleEl.value) || g.title;
+        g.summary = o.summary || (sumEl && sumEl.value) || '';
+        const circle = window.GlobalData.circles.find(c => c.id === g.circleId);
+        circle.lastGatheringId = g.id;
+        window.Common.save();
+        window.Common.showToast('这次聚会已记入时间轴');
+        window.location.href = 'record.html?id=' + g.id;
+        return g;
+    }
+
+    return { render, pickPhoto, draw, finish };
+})();
+(function () {
+    const params = new URLSearchParams(window.location.search);
+    window.EndView._gid = params.get('id') || 'g1';
+    document.getElementById('app').innerHTML = window.EndView.render(window.EndView._gid);
+})();
+window.Common.initIcons();
+window.Demo.mountFab();
+</script>
+</body>
+</html>
