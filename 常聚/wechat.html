@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>微信（模拟）</title>
+    <link rel="stylesheet" href="theme.css">
+    <style>
+        body.wx { background: #EDEDED; }
+        .wx-page { max-width: 480px; margin: 0 auto; min-height: 100vh; background: #EDEDED; display: flex; flex-direction: column; }
+        .wx-header { background: #222; color: #fff; text-align: center; padding: 14px 0 10px; font-size: 16px; font-weight: 600; }
+        .wx-list { background: #fff; padding: 8px 12px; display: flex; align-items: center; gap: 10px; }
+        .wx-list-avatar { width: 44px; height: 44px; border-radius: 6px; object-fit: cover; }
+        .wx-list-badge { background: #FA5151; color: #fff; border-radius: 10px; font-size: 11px; padding: 1px 6px; }
+        .wx-chat { flex: 1; padding: 16px 12px; display: flex; flex-direction: column; gap: 12px; }
+        .wx-msg { max-width: 76%; background: #fff; border-radius: 8px; padding: 8px 12px; font-size: 14px; }
+        .wx-msg-me { align-self: flex-end; background: #95EC69; }
+        .wx-msg-meta { font-size: 11px; color: #999; margin-bottom: 2px; }
+        .wx-card {
+            max-width: 76%; background: #FBF7F0; border: 1px solid #EDE4D6; border-radius: 12px;
+            padding: 12px; display: flex; gap: 10px; align-items: center; cursor: pointer;
+        }
+        .wx-card-logo {
+            width: 42px; height: 42px; border-radius: 10px; background: #E8965A; color: #fff;
+            display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; flex-shrink: 0;
+        }
+        .wx-card-name { font-size: 14px; font-weight: 700; color: #3D3229; }
+        .wx-card-desc { font-size: 11px; color: #8A7D6F; margin-top: 2px; }
+        .wx-card-mini { font-size: 10px; color: #8A7D6F; border-left: 2px solid #EDE4D6; padding-left: 6px; margin-top: 6px; }
+        .wx-footer { background: #EDEDED; text-align: center; font-size: 11px; color: #8A7D6F; padding: 10px 0 16px; }
+    </style>
+</head>
+<body class="cj-theme wx">
+<div id="app" class="wx-page"></div>
+<script src="data.js"></script>
+<script src="common.js"></script>
+<script>
+window.WechatView = (function () {
+    function memberCount() {
+        const G = window.GlobalData;
+        const c1 = (G.circles || []).find(c => c.id === 'c1');
+        return c1 ? c1.members.length : 0;
+    }
+
+    function enter() {
+        window.location.href = 'index.html';
+    }
+
+    function render() {
+        return '<div class="wx-header">微信（模拟）</div>' +
+            '<div class="wx-list">' +
+                '<img class="wx-list-avatar" src="images/avatar-2.png" alt="群头像">' +
+                '<div style="flex:1">' +
+                    '<div style="font-size:15px;font-weight:600">周五麻将局</div>' +
+                    '<div style="font-size:12px;color:#999">阿Sun：[小程序] 常聚</div>' +
+                '</div>' +
+                '<span class="wx-list-badge">1</span>' +
+            '</div>' +
+            '<div class="wx-chat">' +
+                '<div class="wx-msg"><div class="wx-msg-meta">老王</div>上周末那局没过瘾，这周继续？</div>' +
+                '<div class="wx-msg"><div class="wx-msg-meta">小李</div>行啊，老地方走起</div>' +
+                '<div class="wx-msg wx-msg-me"><div class="wx-msg-meta">阿Sun</div>别在群里接龙了，我把局放到常聚上，大家点卡片进</div>' +
+                '<div class="wx-card" onclick="window.WechatView.enter()">' +
+                    '<div class="wx-card-logo">聚</div>' +
+                    '<div>' +
+                        '<div class="wx-card-name">常聚</div>' +
+                        '<div class="wx-card-desc">常聚常伴，圈子不散</div>' +
+                        '<div class="wx-card-mini">小程序 · 群友 ' + memberCount() + ' 人已加入</div>' +
+                    '</div>' +
+                '</div>' +
+            '</div>' +
+            '<div class="wx-footer">模拟微信外壳 · 演示入口</div>';
+    }
+
+    return { render, enter };
+})();
+document.getElementById('app').innerHTML = window.WechatView.render();
+</script>
+</body>
+</html>
