@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>常聚 · 我的</title>
+    <link rel="stylesheet" href="tailwind.css">
+    <link rel="stylesheet" href="theme.css">
+</head>
+<body class="cj-theme">
+<div id="app" class="cj-page"></div>
+<script src="vendor/lucide.min.js"></script>
+<script src="data.js"></script>
+<script src="rotation.js"></script>
+<script src="common.js"></script>
+<script>
+window.MeView = (function () {
+    const RHYTHM_OPTIONS = [
+        { label: '无', value: null },
+        { label: '每周', value: { unit: 'week', n: 1 } },
+        { label: '每两周', value: { unit: 'week', n: 2 } },
+        { label: '每月', value: { unit: 'month', n: 1 } }
+    ];
+
+    function rhythmLabel(r) {
+        if (!r) return '无';
+        if (r.unit === 'week') return r.n === 1 ? '每周' : '每两周';
+        if (r.unit === 'month') return '每月';
+        return '自定义';
+    }
+
+    function circleBlock(c) {
+        const host = (c.members || []).find(m => m.id === c.hostId);
+        return '<div class="cj-card">' +
+            '<div class="cj-between">' +
+                '<a class="cj-title" style="font-size:15px;text-decoration:none" href="circle.html?id=' + c.id + '">' + c.name + '</a>' +
+                '<span class="cj-sub">当值：' + (host ? host.name : '—') + '</span>' +
+            '</div>' +
+            '<div class="cj-row" style="gap:8px;margin-top:10px;flex-wrap:wrap">' +
+                '<span class="cj-sub">聚会节律：</span>' +
+                RHYTHM_OPTIONS.map(o =>
+                    '<span class="' + (JSON.stringify(c.rhythm) === JSON.stringify(o.value) ? 'cj-chip-warm' : 'cj-chip') + '" style="cursor:pointer" onclick="window.MeView.setRhythm(\'' + c.id + '\',' + JSON.stringify(o.value) + ')">' + o.label + '</span>').join('') +
+            '</div>' +
+            '<div class="cj-row" style="gap:8px;margin-top:10px">' +
+                '<span class="cj-sub">' + (host ? host.name : '') + ' 没空张罗？</span>' +
+                '<span class="cj-chip-warm" style="cursor:pointer" onclick="window.MeView.passHost(\'' + c.id + '\')">顺延给下一位</span>' +
+            '</div>' +
+        '</div>';
+    }
+
+    function render() {
+        const G = window.GlobalData;
+        const me = G.user;
+        return window.Common.renderShell('我的') +
+            '<div class="cj-px" style="padding-top:16px">' +
+                '<div class="cj-card" style="text-align:center">' +
+                    '<img src="' + me.avatarUrl + '" style="width:64px;height:64px;border-radius:50%;border:2px solid var(--cj-warm)" alt="我">' +
+                    '<div class="cj-title" style="margin-top:8px">' + me.name + '</div>' +
+                    '<div class="cj-slogan" style="margin-top:4px">常聚常伴，圈子不散</div>' +
+                '</div>' +
+                '<div class="cj-title" style="font-size:13px;margin:16px 0 8px">我的圈子</div>' +
+                (G.circles || []).map(circleBlock).join('') +
+                '<div class="cj-card">' +
+                    '<div class="cj-between">' +
+                        '<span class="cj-title" style="font-size:15px">演示控制</span>' +
+                        '<span class="cj-chip-warm" style="cursor:pointer" onclick="window.Demo.toggle()">打开面板</span>' +
+                    '</div>' +
+                    '<div class="cj-sub" style="margin-top:8px">模拟圈友表态 / 推进时间 24h / 重置演示数据</div>' +
+                '</div>' +
+                '<div class="cj-sub" style="text-align:center;padding:16px 0">常聚 · Gatherly v0.1 demo<br>让圈子不散：组织不靠一个人，聚会是共同记忆</div>' +
+            '</div>' + window.Common.renderTabbar('me');
+    }
+
+    function setRhythm(circleId, rhythm) {
+        const c = window.GlobalData.circles.find(x => x.id === circleId);
+        if (!c) return;
+        c.rhythm = rhythm ? { ...rhythm } : null;
+        window.Common.save();
+        window.Common.showToast('节律已设为：' + rhythmLabel(c.rhythm));
+        refresh();
+    }
+
+    function passHost(circleId) {
+        const c = window.GlobalData.circles.find(x => x.id === circleId);
+        if (!c) return;
+        c.hostId = window.Rotation.passHost({ members: c.members, currentHostId: c.hostId });
+        window.Common.save();
+        const host = c.members.find(m => m.id === c.hostId);
+        window.Common.showToast('已顺延给 ' + (host ? host.name : '下一位'));
+        refresh();
+    }
+
+    function refresh() {
+        document.getElementById('app').innerHTML = render();
+        if (window.lucide) window.lucide.createIcons();
+    }
+
+    return { render, setRhythm, passHost };
+})();
+(function () {
+    document.getElementById('app').innerHTML = window.MeView.render();
+})();
+window.Common.initIcons();
+window.Demo.mountFab();
+</script>
+</body>
+</html>
