@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>常聚 · 商户详情</title>
+    <link rel="stylesheet" href="tailwind.css">
+    <link rel="stylesheet" href="theme.css">
+</head>
+<body class="cj-theme">
+<div id="app" class="cj-page"></div>
+<script src="vendor/lucide.min.js"></script>
+<script src="data.js"></script>
+<script src="rotation.js"></script>
+<script src="common.js"></script>
+<script>
+window.MerchantView = (function () {
+    const TIER_LABEL = { economy: '经济实惠', mid: '中等档', premium: '中高端' };
+    const CATEGORY_LABEL = { mahjong: '麻将馆', dinner: '餐厅', ball: '球馆', outdoor: '户外场地', exhibit: '展馆', ktv: 'KTV' };
+    let claimed = false;
+
+    function render(venueId) {
+        const v = window.GlobalData.venues.find(x => x.id === venueId);
+        if (!v) return window.Common.renderShell('商户详情') + '<div class="cj-empty">商户不存在</div>';
+        return window.Common.renderShell('商户详情') +
+            '<div class="cj-px" style="padding-top:12px">' +
+                '<div class="cj-card" style="padding:0;overflow:hidden">' +
+                    '<img src="' + v.cover + '" style="width:100%;height:160px;object-fit:cover" alt="封面">' +
+                    '<div style="padding:16px">' +
+                        '<div class="cj-row" style="gap:8px">' +
+                            '<span class="cj-title" style="font-size:18px">' + v.name + '</span>' +
+                            '<span class="cj-chip">' + (CATEGORY_LABEL[v.category] || v.category) + '</span>' +
+                            (v.isPartner ? '<span class="cj-chip-warm">合作商户</span>' : '') +
+                        '</div>' +
+                        '<div class="cj-row" style="gap:12px;margin-top:8px">' +
+                            '<span class="cj-sub">⭐ ' + v.rating + '</span>' +
+                            '<span class="cj-sub">人均档位：' + (TIER_LABEL[v.spendTier] || v.spendTier) + '</span>' +
+                        '</div>' +
+                        '<div class="cj-sub" style="margin-top:6px">📍 ' + v.city + v.district + ' · ' + v.businessArea + '</div>' +
+                        '<div class="cj-row" style="gap:6px;margin-top:10px;flex-wrap:wrap">' +
+                            (v.tags || []).map(t => '<span class="cj-chip">' + t + '</span>').join('') +
+                        '</div>' +
+                    '</div>' +
+                '</div>' +
+                (v.isPartner && v.coupon
+                    ? '<div class="cj-card" style="background:var(--cj-warm-soft);border-color:var(--cj-warm)">' +
+                        '<div class="cj-title" style="font-size:14px">🎁 常聚订座权益</div>' +
+                        '<div class="cj-sub" style="margin-top:6px">' + v.coupon.title + '</div>' +
+                        '<div style="margin-top:10px">' +
+                            (claimed
+                                ? '<span class="cj-chip">已领取 ✓ 到店出示常聚即可</span>'
+                                : '<button class="cj-btn" style="padding:8px 16px" onclick="window.MerchantView.claim()">领取权益</button>') +
+                        '</div>' +
+                      '</div>'
+                    : '<div class="cj-card"><div class="cj-sub">该商户暂未加入合作计划</div></div>') +
+                '<a class="cj-sub" style="display:block;text-align:center;margin-top:12px" href="javascript:history.back()">返回 →</a>' +
+            '</div>' + window.Common.renderTabbar('circles');
+    }
+
+    function claim() {
+        claimed = true;
+        window.Common.showToast('权益已领取，到店出示常聚');
+        refresh();
+    }
+
+    function refresh() {
+        document.getElementById('app').innerHTML = render(window.MerchantView._vid);
+        if (window.lucide) window.lucide.createIcons();
+    }
+
+    return { render, claim };
+})();
+(function () {
+    const params = new URLSearchParams(window.location.search);
+    window.MerchantView._vid = params.get('id') || 'v1';
+    document.getElementById('app').innerHTML = window.MerchantView.render(window.MerchantView._vid);
+})();
+window.Common.initIcons();
+window.Demo.mountFab();
+</script>
+</body>
+</html>
