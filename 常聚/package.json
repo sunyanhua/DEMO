@@ -4,6 +4,6 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "test": "node data.test.cjs && node recommend.test.cjs && node rotation.test.cjs"
+    "test": "node data.test.cjs && node recommend.test.cjs && node rotation.test.cjs&& node rotation.test.cjs node rotation.test.cjs && node rotation.test.cjs&& node rotation.test.cjs node settle.test.cjs"
   }
 }
