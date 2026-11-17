@@ -8,7 +8,11 @@ window.GlobalData = {
     user: {
         id: 'u1',
         name: '阿Sun',
-        avatarUrl: 'images/avatar-1.png'
+        avatarUrl: 'images/avatar-1.png',
+        tags: ['麻将', '羽毛球', '探店'],
+        position: { district: '朝阳' },
+        work: { type: '白班', district: '国贸' },
+        spendTier: 'mid'
     },
 
     circles: [
