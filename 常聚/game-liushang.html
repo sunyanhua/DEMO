@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>常聚 · 曲水流觞</title>
+    <link rel="stylesheet" href="theme.css">
+    <style>
+        body.ls { background: #E9E4D8; }
+        .ls-page { max-width: 480px; margin: 0 auto; min-height: 100vh; position: relative; overflow: hidden; background: linear-gradient(#EDE9DD 0%, #E3DCC9 40%, #D8E0DC 100%); display: flex; flex-direction: column; }
+        .ls-mountain { position: absolute; bottom: 30%; left: 0; right: 0; height: 45%; opacity: 0.5; }
+        .ls-mountain .m1 { position: absolute; left: -10%; bottom: 0; width: 60%; height: 100%; background: #A8B3A4; clip-path: polygon(0 100%, 30% 30%, 45% 55%, 60% 20%, 100% 100%); }
+        .ls-mountain .m2 { position: absolute; right: -15%; bottom: 0; width: 70%; height: 90%; background: #93A096; clip-path: polygon(0 100%, 25% 40%, 55% 25%, 75% 50%, 100% 100%); }
+        .ls-water { position: absolute; bottom: 0; left: 0; right: 0; height: 26%; background: linear-gradient(#A9C4BD, #7FA8A0); animation: ls-flow 3s linear infinite; }
+        .ls-water::before { content: ''; position: absolute; top: -6px; left: 0; right: 0; height: 12px; background: radial-gradient(circle at 20% 50%, rgba(255,255,255,0.5) 0 6px, transparent 7px) repeat-x; background-size: 60px 12px; animation: ls-ripple 1.6s linear infinite; }
+        @keyframes ls-flow { 0% { background-position: 0 0; } 100% { background-position: 60px 0; } }
+        @keyframes ls-ripple { 0% { background-position: 0 0; } 100% { background-position: 60px 0; } }
+        .ls-cup { position: absolute; bottom: 22%; left: 50%; width: 46px; height: 26px; transform: translateX(-50%); transition: none; }
+        .ls-cup-drift { animation: ls-cup 8s linear infinite; }
+        @keyframes ls-cup { 0% { transform: translateX(-160px) rotate(-6deg); } 25% { transform: translateX(-80px) rotate(4deg); } 50% { transform: translateX(0) rotate(-4deg); } 75% { transform: translateX(80px) rotate(5deg); } 100% { transform: translateX(160px) rotate(-5deg); } }
+        .ls-title { text-align: center; padding: 28px 0 8px; font-size: 22px; font-weight: 700; color: #3D3229; letter-spacing: 6px; }
+        .ls-subtitle { text-align: center; font-size: 12px; color: #8A7D6F; letter-spacing: 2px; }
+        .ls-card-wrap { position: absolute; top: 30%; left: 0; right: 0; display: flex; justify-content: center; z-index: 10; }
+        .ls-card { background: #FBF7F0; border: 1px solid #D8CDB8; border-radius: 16px; padding: 20px 24px; width: 78%; text-align: center; animation: ls-flip 0.5s ease; }
+        @keyframes ls-flip { from { transform: rotateY(90deg); opacity: 0; } to { transform: rotateY(0); opacity: 1; } }
+        .ls-footer { position: absolute; bottom: 8%; left: 0; right: 0; text-align: center; font-size: 13px; color: #5F6E63; z-index: 20; }
+    </style>
+</head>
+<body class="cj-theme ls">
+<div id="app" class="ls-page"></div>
+<script src="data.js"></script>
+<script src="liushang.js"></script>
+<script src="common.js"></script>
+<script>
+window.LiushangView = (function () {
+    const TYPE_LABEL = { truth: '真心话', dare: '大冒险', act: '表演', poem: '吟诗' };
+    let card = null;
+    let drifting = false;
+
+    function cardHTML() {
+        if (!card) return '';
+        return '<div class="ls-card-wrap"><div class="ls-card">' +
+            '<div style="font-size:11px;color:#E8965A;font-weight:700;letter-spacing:2px">觞令卡 · ' + TYPE_LABEL[card.type] + '</div>' +
+            '<div style="font-size:17px;font-weight:700;color:#3D3229;margin:10px 0">' + card.text + '</div>' +
+            '<div style="display:flex;gap:8px;justify-content:center">' +
+                '<button class="cj-btn" style="padding:8px 14px" onclick="window.LiushangView.driftStart()">完成，再漂一轮</button>' +
+            '</div>' +
+        '</div></div>';
+    }
+
+    function render() {
+        return '<div class="ls-title">曲水流觞</div>' +
+            '<div class="ls-subtitle">常聚 · 聚会现场小游戏</div>' +
+            '<div class="ls-mountain"><div class="m1"></div><div class="m2"></div></div>' +
+            '<div class="ls-water"></div>' +
+            '<div class="ls-cup' + (drifting ? ' ls-cup-drift' : '') + '">🍶</div>' +
+            cardHTML() +
+            '<div class="ls-footer">' + (drifting ? '酒杯漂流中…传给我右边的人' : '<button class="cj-btn" onclick="window.LiushangView.driftStart()">开始漂流</button>') + '</div>';
+    }
+
+    // 开始漂流（时长随机）；停杯在 stop() 触发
+    function driftStart(rng) {
+        card = null;
+        drifting = true;
+        document.getElementById('app').innerHTML = render();
+        const duration = window.Liushang.driftDuration({ rng: rng || Math.random });
+        setTimeout(() => window.LiushangView.stop(rng), Math.min(duration, 1500));
+    }
+
+    // 停杯：随机停一位 + 抽觞令卡
+    function stop(rng) {
+        const R = rng || Math.random;
+        const G = window.GlobalData;
+        const c1 = (G.circles || []).find(c => c.id === 'c1');
+        const count = c1 ? c1.members.length : 4;
+        const idx = window.Liushang.stopIndex({ memberCount: count, rng: R });
+        card = window.Liushang.drawCard({ rng: R });
+        drifting = false;
+        const target = c1 && c1.members[idx];
+        window.LiushangView._stoppedAt = target ? target.name : ('第' + (idx + 1) + '位');
+        document.getElementById('app').innerHTML = render();
+        window.Common.showToast('杯停 ' + window.LiushangView._stoppedAt + ' 面前！');
+    }
+
+    return { render, driftStart, stop, get _card() { return card; } };
+})();
+(function () {
+    document.getElementById('app').innerHTML = window.LiushangView.render();
+})();
+</script>
+</body>
+</html>
