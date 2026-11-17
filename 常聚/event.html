@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>常聚 · 局详情</title>
+    <link rel="stylesheet" href="tailwind.css">
+    <link rel="stylesheet" href="theme.css">
+</head>
+<body class="cj-theme">
+<div id="app" class="cj-page"></div>
+<script src="vendor/lucide.min.js"></script>
+<script src="data.js"></script>
+<script src="rotation.js"></script>
+<script src="recommend.js"></script>
+<script src="common.js"></script>
+<script src="zuju.js"></script>
+<script>
+window.EventView = (function () {
+    function render(proposalId) {
+        const G = window.GlobalData;
+        let p = G.proposals.find(x => x.id === proposalId);
+        if (!p) return window.Common.renderShell('局详情') + '<div class="cj-empty">提案不存在</div>';
+        // 截止自动定案
+        window.Zuju.tryDecide(p.id, window.Common.fmtDate(window.Demo.getNow()));
+        const circle = G.circles.find(c => c.id === p.circleId);
+        const gathering = G.gatherings.find(g => g.proposalId === p.id);
+        const sum = window.Zuju.voteSummary(p.id);
+        const timeText = gathering ? gathering.time : (sum.bestTime.winnerIndex !== null ? p.timeCandidates[sum.bestTime.winnerIndex] : '待定');
+        const venue = G.venues.find(v => v.id === (gathering ? gathering.venueId : p.venueIds[0]));
+        const project = G.projects.find(x => x.id === (gathering ? gathering.projectId : p.projectId));
+        const nonVoters = (circle.members || []).filter(m => !p.votes.time[m.id]);
+        const attendeeIds = gathering ? gathering.attendees : Object.keys(p.votes.time);
+        const attendeeHTML = attendeeIds.map(id => {
+            const m = (circle.members || []).find(x => x.id === id);
+            return m ? '<img src="' + m.avatarUrl + '" style="width:32px;height:32px;border-radius:50%;border:2px solid var(--cj-card)" alt="' + m.name + '">' : '';
+        }).join('');
+        return window.Common.renderShell('局详情') +
+            '<div class="cj-px" style="padding-top:12px">' +
+                '<div class="cj-card" style="text-align:center">' +
+                    '<span class="cj-chip-warm">' + (p.status === 'decided' ? '已定案' : '表态中') + '</span>' +
+                    '<div class="cj-title" style="font-size:20px;margin:10px 0 4px">' + (project ? project.name : '聚会') + '</div>' +
+                    '<div class="cj-sub">' + timeText + '</div>' +
+                    '<div class="cj-sub" style="margin-top:4px">📍 ' + (venue ? venue.name + ' · ' + venue.district + venue.businessArea : '待定') + '</div>' +
+                    '<div class="cj-row cj-avatars" style="justify-content:center;margin-top:12px">' + attendeeHTML + '</div>' +
+                    '<div class="cj-sub" style="margin-top:6px">出席 ' + attendeeIds.length + ' 人</div>' +
+                '</div>' +
+                (nonVoters.length
+                    ? '<div class="cj-card"><div class="cj-between">' +
+                        '<span class="cj-sub">' + nonVoters.map(m => m.name).join('、') + ' 还没表态</span>' +
+                        '<span class="cj-chip-warm" style="cursor:pointer" onclick="window.EventView.remind()">提醒一下</span>' +
+                      '</div></div>'
+                    : '') +
+                '<div style="display:flex;gap:10px;margin-top:12px">' +
+                    '<button class="cj-btn-outline" style="flex:1;justify-content:center" onclick="window.Common.showToast(\'模拟导航：已打开地图\')">导航</button>' +
+                    '<a class="cj-btn" style="flex:1;justify-content:center;text-decoration:none" href="game-liushang.html">聚会中 · 玩一局</a>' +
+                '</div>' +
+                '<div style="text-align:center;margin-top:16px">' +
+                    (gathering
+                        ? '<a class="cj-btn" style="width:100%;justify-content:center;text-decoration:none" href="end-event.html?id=' + gathering.id + '">散场 · 记录这次聚会</a>'
+                        : '<span class="cj-sub">定案后可散场记录</span>') +
+                '</div>' +
+                '<a class="cj-sub" style="display:block;text-align:center;margin-top:12px" href="vote.html?proposal=' + p.id + '">回表态页 →</a>' +
+            '</div>' + window.Common.renderTabbar('circles');
+    }
+
+    function remind() {
+        window.Zuju.remindNonVoters(window.EventView._pid);
+    }
+
+    return { render, remind };
+})();
+(function () {
+    const params = new URLSearchParams(window.location.search);
+    window.EventView._pid = params.get('proposal') || 'p1';
+    document.getElementById('app').innerHTML = window.EventView.render(window.EventView._pid);
+})();
+window.Common.initIcons();
+window.Demo.mountFab();
+</script>
+</body>
+</html>

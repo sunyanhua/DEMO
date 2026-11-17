@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>常聚 · 张罗个局</title>
+    <link rel="stylesheet" href="tailwind.css">
+    <link rel="stylesheet" href="theme.css">
+</head>
+<body class="cj-theme">
+<div id="app" class="cj-page"></div>
+<script src="vendor/lucide.min.js"></script>
+<script src="data.js"></script>
+<script src="rotation.js"></script>
+<script src="recommend.js"></script>
+<script src="common.js"></script>
+<script src="zuju.js"></script>
+<script>
+window.ProposeView = (function () {
+    let circleId = null;
+
+    function build(circleIdArg) {
+        return window.Zuju.buildProposal(circleIdArg);
+    }
+
+    function previewHTML(p) {
+        const G = window.GlobalData;
+        const project = G.projects.find(x => x.id === p.projectId);
+        const venues = p.venueIds.map(id => G.venues.find(v => v.id === id)).filter(Boolean);
+        return '<div class="cj-card">' +
+            '<div class="cj-title" style="font-size:14px;margin-bottom:10px">智能提案已生成</div>' +
+            '<div class="cj-row" style="gap:8px;margin-bottom:8px">' +
+                '<span class="cj-sub" style="width:56px">项目</span>' +
+                (p.projectId === 'pending'
+                    ? '<span class="cj-chip-warm">待定（圈友投票）</span>'
+                    : '<span class="cj-chip">' + (project ? project.name : p.projectId) + '</span>') +
+                '<span class="cj-sub" style="cursor:pointer;text-decoration:underline" onclick="window.ProposeView.togglePending()">改为待定</span>' +
+            '</div>' +
+            '<div class="cj-row" style="gap:8px;margin-bottom:8px">' +
+                '<span class="cj-sub" style="width:56px">地点</span>' +
+                venues.map(v => '<span class="cj-chip">' + v.name + ' · ' + v.businessArea + '</span>').join('') +
+            '</div>' +
+            '<div class="cj-row" style="gap:8px;align-items:flex-start">' +
+                '<span class="cj-sub" style="width:56px;padding-top:4px">时间</span>' +
+                '<div style="flex:1;display:flex;flex-wrap:wrap;gap:6px">' +
+                    p.timeCandidates.map((t, i) =>
+                        '<span class="cj-chip">' + t +
+                        '<span style="cursor:pointer" onclick="window.ProposeView.removeTime(' + i + ')">×</span></span>').join('') +
+                    '<span class="cj-chip-warm" style="cursor:pointer" onclick="window.ProposeView.addTime()">＋ 加时间</span>' +
+                '</div>' +
+            '</div>' +
+            '<div class="cj-sub" style="margin-top:10px">截止：' + p.deadline + ' · 圈友表态后自动定案</div>' +
+        '</div>';
+    }
+
+    function render(circleIdArg) {
+        circleId = circleIdArg || 'c1';
+        const circle = window.GlobalData.circles.find(c => c.id === circleId);
+        if (!circle) return window.Common.renderShell('张罗个局') + '<div class="cj-empty">圈子不存在</div>';
+        return window.Common.renderShell('张罗个局') +
+            '<div class="cj-px" style="padding-top:12px">' +
+                '<div class="cj-sub" style="margin-bottom:12px">在「' + circle.name + '」组一局，智能提案帮你定项目、地点、时间</div>' +
+                '<div id="proposeBody">' +
+                    '<div style="text-align:center;padding:24px 0">' +
+                        '<button class="cj-btn" style="width:100%;justify-content:center" onclick="window.ProposeView.generate()">一键生成智能提案</button>' +
+                    '</div>' +
+                '</div>' +
+            '</div>' + window.Common.renderTabbar('circles');
+    }
+
+    function generate() {
+        const p = window.Zuju.buildProposal(circleId);
+        if (!p) return;
+        document.getElementById('proposeBody').innerHTML =
+            previewHTML(p) +
+            '<div style="text-align:center;margin-top:12px">' +
+                '<button class="cj-btn" style="width:100%;justify-content:center" onclick="window.ProposeView.send()">发出提案，请圈友表态</button>' +
+            '</div>';
+    }
+
+    function send() {
+        window.Common.showToast('提案已发出，等圈友表态');
+        window.location.href = 'vote.html?proposal=' + (window.GlobalData.circles.find(c => c.id === circleId) || {}).proposalId;
+    }
+
+    function togglePending() {
+        const c = window.GlobalData.circles.find(x => x.id === circleId);
+        if (!c || !c.proposalId) return;
+        const p = window.GlobalData.proposals.find(x => x.id === c.proposalId);
+        window.Zuju.markProjectPending(p.id);
+        document.getElementById('proposeBody').innerHTML = previewHTML(p) +
+            '<div style="text-align:center;margin-top:12px">' +
+                '<button class="cj-btn" style="width:100%;justify-content:center" onclick="window.ProposeView.send()">发出提案，请圈友表态</button>' +
+            '</div>';
+    }
+
+    function addTime() {
+        const c = window.GlobalData.circles.find(x => x.id === circleId);
+        if (!c || !c.proposalId) return;
+        const p = window.GlobalData.proposals.find(x => x.id === c.proposalId);
+        const d = window.Demo.getNow();
+        const nd = new Date(d.getTime() + (p.timeCandidates.length + 3) * 24 * 3600 * 1000);
+        p.timeCandidates.push(window.Common.fmtDate(nd).slice(0, 10) + ' 14:00');
+        window.Common.save();
+        document.getElementById('proposeBody').innerHTML = previewHTML(p) +
+            '<div style="text-align:center;margin-top:12px">' +
+                '<button class="cj-btn" style="width:100%;justify-content:center" onclick="window.ProposeView.send()">发出提案，请圈友表态</button>' +
+            '</div>';
+    }
+
+    function removeTime(i) {
+        const c = window.GlobalData.circles.find(x => x.id === circleId);
+        if (!c || !c.proposalId) return;
+        const p = window.GlobalData.proposals.find(x => x.id === c.proposalId);
+        if (p.timeCandidates.length <= 1) { window.Common.showToast('至少保留一个时间候选'); return; }
+        p.timeCandidates.splice(i, 1);
+        window.Common.save();
+        document.getElementById('proposeBody').innerHTML = previewHTML(p) +
+            '<div style="text-align:center;margin-top:12px">' +
+                '<button class="cj-btn" style="width:100%;justify-content:center" onclick="window.ProposeView.send()">发出提案，请圈友表态</button>' +
+            '</div>';
+    }
+
+    return { render, build, generate, send, togglePending, addTime, removeTime };
+})();
+(function () {
+    const params = new URLSearchParams(window.location.search);
+    document.getElementById('app').innerHTML = window.ProposeView.render(params.get('circle'));
+})();
+window.Common.initIcons();
+window.Demo.mountFab();
+</script>
+</body>
+</html>
