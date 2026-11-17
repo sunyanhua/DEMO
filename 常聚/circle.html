@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>常聚 · 圈子</title>
+    <link rel="stylesheet" href="tailwind.css">
+    <link rel="stylesheet" href="theme.css">
+</head>
+<body class="cj-theme">
+<div id="app" class="cj-page"></div>
+<script src="vendor/lucide.min.js"></script>
+<script src="data.js"></script>
+<script src="rotation.js"></script>
+<script src="common.js"></script>
+<script>
+window.CircleView = (function () {
+    const TYPE_LABEL = { mahjong: '麻将', dinner: '饭局', ball: '球局', outdoor: '户外', exhibit: '看展', ktv: 'K歌' };
+
+    function circleOf(id) {
+        return window.GlobalData.circles.find(c => c.id === id);
+    }
+
+    function lastGatheringOf(circle) {
+        return window.GlobalData.gatherings.find(g => g.id === circle.lastGatheringId);
+    }
+
+    function nowStr() {
+        return window.Common.fmtDate(window.Demo.getNow());
+    }
+
+    function hostCard(circle) {
+        const host = (circle.members || []).find(m => m.id === circle.hostId);
+        const g = lastGatheringOf(circle);
+        const r = window.Rotation.checkRhythm({ circle, lastGatheringTime: g ? g.time : null, now: nowStr() });
+        let status;
+        if (r.due) {
+            status = '<div class="cj-card" style="background:var(--cj-warm-soft);border-color:var(--cj-warm)">' +
+                '<div class="cj-sub" style="color:var(--cj-warm);font-weight:700">' + window.Rotation.buildReminderText({ circle, gathering: g, now: nowStr() }) + '</div>' +
+                '</div>';
+        } else if (circle.rhythm && g && r.daysSince !== null) {
+            const days = circle.rhythm.unit === 'week' ? circle.rhythm.n * 7 : circle.rhythm.n * 30;
+            status = '<span class="cj-chip">距下次相聚还有 ' + (days - r.daysSince) + ' 天</span>';
+        } else {
+            status = '<span class="cj-chip">随心而聚</span>';
+        }
+        return '<div class="cj-card">' +
+            '<div class="cj-between">' +
+                '<div class="cj-row" style="gap:10px">' +
+                    (host ? '<img src="' + host.avatarUrl + '" style="width:44px;height:44px;border-radius:50%;border:2px solid var(--cj-warm)" alt="当值">' : '') +
+                    '<div>' +
+                        '<div class="cj-title" style="font-size:15px">' + (host ? host.name : '') + ' · 当值张罗</div>' +
+                        '<div class="cj-sub" style="margin-top:2px">下一次张罗交给 TA</div>' +
+                    '</div>' +
+                '</div>' +
+                status +
+            '</div>' +
+        '</div>';
+    }
+
+    function timeline(circle) {
+        const items = window.GlobalData.gatherings
+            .filter(g => g.circleId === circle.id)
+            .sort((a, b) => (a.time < b.time ? 1 : -1));
+        if (items.length === 0) {
+            return '<div class="cj-empty">还没有聚会记录<br>组一局吧，第一张合影从今天开始</div>';
+        }
+        return items.map(g => {
+            const photo = g.photos && g.photos[0];
+            const avatars = g.attendees.map(id => {
+                const m = (circle.members || []).find(x => x.id === id);
+                return m ? '<img src="' + m.avatarUrl + '" alt="' + m.name + '">' : '';
+            }).join('');
+            return '<a class="cj-card" style="display:block;text-decoration:none;color:inherit" href="record.html?id=' + g.id + '">' +
+                '<div class="cj-row" style="gap:12px">' +
+                    (photo ? '<img src="' + photo + '" style="width:64px;height:64px;border-radius:10px;object-fit:cover" alt="合影">' : '') +
+                    '<div style="flex:1">' +
+                        '<div class="cj-title" style="font-size:14px">' + g.title + '</div>' +
+                        '<div class="cj-sub" style="margin-top:4px">' + g.time + '</div>' +
+                        '<div class="cj-row cj-avatars" style="margin-top:6px">' + avatars + '</div>' +
+                    '</div>' +
+                '</div>' +
+            '</a>';
+        }).join('');
+    }
+
+    function memberList(circle) {
+        return '<div class="cj-card">' +
+            '<div class="cj-title" style="font-size:14px;margin-bottom:10px">圈友（' + circle.members.length + '）</div>' +
+            '<div class="cj-row" style="flex-wrap:wrap;gap:10px">' +
+                circle.members.map(m =>
+                    '<div style="text-align:center;width:52px">' +
+                        '<img src="' + m.avatarUrl + '" style="width:40px;height:40px;border-radius:50%" alt="' + m.name + '">' +
+                        '<div class="cj-sub" style="font-size:10px">' + m.name + '</div>' +
+                    '</div>').join('') +
+            '</div>' +
+        '</div>';
+    }
+
+    function render(circleId) {
+        const circle = circleOf(circleId);
+        if (!circle) return window.Common.renderShell('圈子') + '<div class="cj-empty">圈子不存在</div>';
+        return window.Common.renderShell(circle.name) +
+            '<div class="cj-px" style="padding-top:12px">' +
+                '<div class="cj-between" style="margin-bottom:12px">' +
+                    '<div class="cj-row" style="gap:8px">' +
+                        '<span class="cj-chip">' + (TYPE_LABEL[circle.type] || circle.type) + '</span>' +
+                        '<div class="cj-avatars">' + circle.members.slice(0, 6).map(m => '<img src="' + m.avatarUrl + '" alt="' + m.name + '">').join('') + '</div>' +
+                    '</div>' +
+                    '<span class="cj-chip-warm" style="cursor:pointer" onclick="window.CircleView.invite()">群卡片邀请</span>' +
+                '</div>' +
+                hostCard(circle) +
+                '<div class="cj-between" style="margin:14px 0 10px">' +
+                    '<span class="cj-title">记忆时间轴</span>' +
+                    '<span class="cj-sub" style="cursor:pointer" onclick="window.CircleView.miss(\'' + circle.id + '\')">想念大家了 💭</span>' +
+                '</div>' +
+                timeline(circle) +
+                memberList(circle) +
+                '<a class="cj-btn cj-fab" href="propose.html?circle=' + circle.id + '" style="text-decoration:none">张罗个局</a>' +
+            '</div>' + window.Common.renderTabbar('circles');
+    }
+
+    // "想念大家了"：全体圈友收到模拟服务通知 + 落库
+    function miss(circleId) {
+        const circle = circleOf(circleId);
+        if (!circle) return;
+        const G = window.GlobalData;
+        const me = G.user;
+        G.notifications.push({
+            id: 'n-' + Date.now().toString(36),
+            circleId,
+            type: 'miss',
+            text: me.name + '想大家了：好久没聚，抽空见一面吧',
+            read: false
+        });
+        window.Common.save();
+        window.Common.showWechatNotice({ title: '常聚 · 服务通知', body: me.name + ' 在「' + circle.name + '」说：想大家了 💭' });
+        window.Common.showToast('想念已送达每一位圈友');
+    }
+
+    function invite() {
+        window.Common.showToast('邀请卡片已复制，去微信群粘贴吧');
+    }
+
+    return { render, miss, invite };
+})();
+(function () {
+    const params = new URLSearchParams(window.location.search);
+    document.getElementById('app').innerHTML = window.CircleView.render(params.get('id') || 'c1');
+})();
+window.Common.initIcons();
+window.Demo.mountFab();
+</script>
+</body>
+</html>
