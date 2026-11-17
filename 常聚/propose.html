@@ -17,10 +17,12 @@
 <script src="zuju.js"></script>
 <script>
 window.ProposeView = (function () {
+    const CATEGORY_LABELS = { mahjong: '麻将', dinner: '饭局', ball: '球局', outdoor: '户外', exhibit: '看展', ktv: 'K歌' };
+    const CATEGORY_BY_TYPE = { mahjong: 'mahjong', dinner: 'dinner', ball: 'ball', outdoor: 'outdoor', exhibit: 'exhibit', ktv: 'ktv', classmate: 'dinner', colleague: 'dinner' };
     let circleId = null;
 
-    function build(circleIdArg) {
-        return window.Zuju.buildProposal(circleIdArg);
+    function build(circleIdArg, opts) {
+        return window.Zuju.buildProposal(circleIdArg, opts);
     }
 
     function previewHTML(p) {
@@ -57,9 +59,16 @@ window.ProposeView = (function () {
         circleId = circleIdArg || 'c1';
         const circle = window.GlobalData.circles.find(c => c.id === circleId);
         if (!circle) return window.Common.renderShell('张罗个局') + '<div class="cj-empty">圈子不存在</div>';
+        window.ProposeView._category = CATEGORY_BY_TYPE[circle.type] || null;
         return window.Common.renderShell('张罗个局') +
             '<div class="cj-px" style="padding-top:12px">' +
-                '<div class="cj-sub" style="margin-bottom:12px">在「' + circle.name + '」组一局，智能提案帮你定项目、地点、时间</div>' +
+                '<div class="cj-sub" style="margin-bottom:12px">在「' + circle.name + '」组一局，先选方向，智能提案帮你定项目、地点、时间</div>' +
+                '<div class="cj-title" style="font-size:13px;margin-bottom:8px">组局方向</div>' +
+                '<div id="catRow" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px">' +
+                    Object.keys(CATEGORY_LABELS).map(k =>
+                        '<span id="cat-' + k + '" class="' + (window.ProposeView._category === k ? 'cj-chip-warm' : 'cj-chip') + '" style="cursor:pointer;padding:8px 14px;font-size:13px" onclick="window.ProposeView.pickCategory(\'' + k + '\')">' + CATEGORY_LABELS[k] + '</span>').join('') +
+                    '<span id="cat-auto" class="cj-chip" style="cursor:pointer;padding:8px 14px;font-size:13px" onclick="window.ProposeView.pickCategory(null)">让系统推荐</span>' +
+                '</div>' +
                 '<div id="proposeBody">' +
                     '<div style="text-align:center;padding:24px 0">' +
                         '<button class="cj-btn" style="width:100%;justify-content:center" onclick="window.ProposeView.generate()">一键生成智能提案</button>' +
@@ -68,8 +77,20 @@ window.ProposeView = (function () {
             '</div>' + window.Common.renderTabbar('circles');
     }
 
+    function pickCategory(cat) {
+        window.ProposeView._category = cat;
+        const cats = document.querySelectorAll('#catRow span');
+        if (cats && cats.forEach) {
+            cats.forEach(el => {
+                const key = el.getAttribute('id');
+                const mine = cat === null ? key === 'cat-auto' : key === 'cat-' + cat;
+                el.className = mine ? 'cj-chip-warm' : 'cj-chip';
+            });
+        }
+    }
+
     function generate() {
-        const p = window.Zuju.buildProposal(circleId);
+        const p = window.Zuju.buildProposal(circleId, { category: window.ProposeView._category || null });
         if (!p) return;
         document.getElementById('proposeBody').innerHTML =
             previewHTML(p) +
@@ -121,7 +142,7 @@ window.ProposeView = (function () {
             '</div>';
     }
 
-    return { render, build, generate, send, togglePending, addTime, removeTime };
+    return { render, build, generate, send, togglePending, addTime, removeTime, pickCategory };
 })();
 (function () {
     const params = new URLSearchParams(window.location.search);

@@ -97,6 +97,16 @@ test('pass_host_button', () => {
     assert.ok(c2.members.some(m => m.id === c2.hostId), '新当值属于圈友');
 });
 
+test('me_onclick_attributes_compile', () => {
+    const s = makeSandbox();
+    const html = s.window.MeView.render();
+    const attrs = [...html.matchAll(/onclick="([^"]+)"/g)].map(m => m[1]);
+    assert.ok(attrs.length >= 5, '存在足够的交互按钮');
+    attrs.forEach(code => {
+        assert.doesNotThrow(() => new Function('window', code), 'onclick 可编译：' + code.slice(0, 60));
+    });
+});
+
 test('demo_panel_actions', () => {
     const s = makeSandbox();
     s.window.Demo.advanceTime(24);

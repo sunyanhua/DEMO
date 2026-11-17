@@ -51,6 +51,20 @@ test('projects_avoid_last_and_match_tags', () => {
     assert.ok(result.includes('p5'), '不足时按顺序补足');
 });
 
+test('projects_filter_by_category', () => {
+    const result = R.recommendProjects({
+        projects: sampleProjects,
+        memberTags: ['火锅', '麻将'],
+        lastProjectIds: [],
+        category: 'mahjong'
+    });
+    assert.ok(result.length >= 1, '类别内有结果');
+    result.forEach(id => {
+        const p = sampleProjects.find(x => x.id === id);
+        assert.equal(p.category, 'mahjong', '只推荐指定类别');
+    });
+});
+
 test('venues_midpoint_tier_and_avoid_last', () => {
     const project = { id: 'p1', category: 'dinner' };
     const r = R.recommendVenues({ venues: sampleVenues, members: sampleMembers, project, lastVenueId: 'v1' });

@@ -16,10 +16,10 @@ window.Recommend = (function () {
         return d;
     }
 
-    // 推荐 3 个具体项目：命中成员共同 tag 多者优先；排除上次；同分取输入序
-    function recommendProjects({ projects, memberTags, lastProjectIds }) {
+    // 推荐 3 个具体项目：命中成员共同 tag 多者优先；排除上次；同分取输入序；category 可选过滤
+    function recommendProjects({ projects, memberTags, lastProjectIds, category }) {
         const excluded = new Set(lastProjectIds || []);
-        const pool = projects.filter(p => !excluded.has(p.id));
+        const pool = projects.filter(p => !excluded.has(p.id) && (!category || p.category === category));
         const tags = new Set(memberTags || []);
         const ranked = pool.map(p => ({ p, score: p.tags.filter(t => tags.has(t)).length }));
         ranked.sort((a, b) => b.score - a.score || projects.indexOf(a.p) - projects.indexOf(b.p));
@@ -27,7 +27,9 @@ window.Recommend = (function () {
     }
 
     // 推荐 3 个地点：同区成员数（中间地带）> 消费档位众数一致 > 评分；排除上次
-    function recommendVenues({ venues, members, project, lastVenueId }) {
+    // category 可选（覆盖 project.category；两者皆缺则不过滤类别）
+    function recommendVenues({ venues, members, project, lastVenueId, category }) {
+        const cat = category || (project && project.category) || null;
         const tierCount = {};
         (members || []).forEach(m => { tierCount[m.spendTier] = (tierCount[m.spendTier] || 0) + 1; });
         let modeTier = null, best = -1;
@@ -37,7 +39,7 @@ window.Recommend = (function () {
             const d = m.position && m.position.district;
             if (d) distCount[d] = (distCount[d] || 0) + 1;
         });
-        const pool = (venues || []).filter(v => v.category === (project && project.category) && v.id !== lastVenueId);
+        const pool = (venues || []).filter(v => (!cat || v.category === cat) && v.id !== lastVenueId);
         const ranked = pool.map(v => ({
             v,
             cover: distCount[v.district] || 0,

@@ -54,20 +54,15 @@ window.Common = (function () {
         setTimeout(() => { try { el.remove(); } catch (e) { /* noop */ } }, 3000);
     }
 
-    // 运行时可变状态 ↔ localStorage（仅可变字段，非全量）
+    // 运行时可变状态 ↔ localStorage（proposals/gatherings/bills/notifications + 圈子全量）
     const PERSIST_KEYS = ['proposals', 'gatherings', 'bills', 'notifications'];
-    const CIRCLE_KEYS = ['hostId', 'lastGatheringId', 'proposalId', 'rhythm'];
 
     function save() {
         if (!win.GlobalData) return;
         try {
             const snapshot = {};
             PERSIST_KEYS.forEach(k => { snapshot[k] = win.GlobalData[k]; });
-            snapshot.circles = (win.GlobalData.circles || []).map(c => {
-                const o = { id: c.id };
-                CIRCLE_KEYS.forEach(k => { o[k] = c[k]; });
-                return o;
-            });
+            snapshot.circles = win.GlobalData.circles || [];
             win.localStorage.setItem(LS_KEY, JSON.stringify(snapshot));
         } catch (e) { /* localStorage 不可用时静默 */ }
     }
@@ -79,10 +74,10 @@ window.Common = (function () {
             if (!raw) return;
             const snap = JSON.parse(raw);
             PERSIST_KEYS.forEach(k => { if (snap[k]) win.GlobalData[k] = snap[k]; });
-            (win.GlobalData.circles || []).forEach(c => {
-                const s = (snap.circles || []).find(x => x.id === c.id);
-                if (!s) return;
-                CIRCLE_KEYS.forEach(k => { if (s[k] !== undefined) c[k] = s[k]; });
+            (snap.circles || []).forEach(sc => {
+                const c = (win.GlobalData.circles || []).find(x => x.id === sc.id);
+                if (c) Object.assign(c, sc);
+                else win.GlobalData.circles.push(sc);
             });
         } catch (e) { /* 损坏数据静默跳过 */ }
     }
@@ -98,6 +93,8 @@ window.Common = (function () {
 
     return { renderShell, renderTabbar, showToast, showWechatNotice, save, load, initIcons, fmtDate, esc };
 })();
+// 每个页面加载时自动恢复运行时状态（页面均先加载 data.js 再加载本文件）
+window.Common.load();
 
 /**
  * 演示控制：虚拟时钟 / 模拟圈友表态 / 重置

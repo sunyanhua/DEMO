@@ -78,6 +78,16 @@ test('build_proposal_defaults', () => {
     assert.equal(c3.proposalId, p.id, '圈子记录进行中提案');
 });
 
+test('build_proposal_respects_circle_category', () => {
+    const s = makeSandbox();
+    const p1 = s.window.Zuju.buildProposal('c1');
+    const proj1 = s.window.GlobalData.projects.find(x => x.id === p1.projectId);
+    assert.equal(proj1.category, 'mahjong', '麻将圈默认推荐麻将类项目');
+    const p3 = s.window.Zuju.buildProposal('c3', { category: 'ball' });
+    const proj3 = s.window.GlobalData.projects.find(x => x.id === p3.projectId);
+    assert.equal(proj3.category, 'ball', '显式指定方向生效');
+});
+
 test('vote_matrix_and_best_time', () => {
     const s = makeSandbox();
     const p = s.window.Zuju.buildProposal('c3');
@@ -110,6 +120,16 @@ test('deadline_auto_decide', () => {
     assert.ok(!g.attendees.includes('m2'), '未选最佳时间的成员不在名单');
     const c3 = s.window.GlobalData.circles.find(c => c.id === 'c3');
     assert.equal(c3.proposalId, null, '圈子清空进行中提案');
+});
+
+test('deadline_all_abstain_stays_open', () => {
+    const s = makeSandbox();
+    const p = s.window.Zuju.buildProposal('c3');
+    s.window.Demo.advanceTime(48);
+    const now = s.window.Common.fmtDate(s.window.Demo.getNow());
+    s.window.Zuju.tryDecide(p.id, now);
+    assert.equal(p.status, 'open', '全部未表态不自动定案');
+    assert.equal(s.window.GlobalData.gatherings.some(g => g.proposalId === p.id), false, '不生成空聚会');
 });
 
 test('remind_non_voters', () => {

@@ -7,8 +7,11 @@ window.Zuju = (function () {
     function proposalOf(id) { return G().proposals.find(p => p.id === id); }
     function nowStr() { return window.Common.fmtDate(window.Demo.getNow()); }
 
-    // 一键生成智能提案并发出（status open；写 circle.proposalId）
-    function buildProposal(circleId) {
+    // 圈子类型 → 项目类别（默认推荐方向）
+    const CATEGORY_BY_TYPE = { mahjong: 'mahjong', dinner: 'dinner', ball: 'ball', outdoor: 'outdoor', exhibit: 'exhibit', ktv: 'ktv', classmate: 'dinner', colleague: 'dinner' };
+
+    // 一键生成智能提案并发出（status open；写 circle.proposalId）；opts.category 显式指定方向
+    function buildProposal(circleId, opts) {
         const circle = circleOf(circleId);
         if (!circle) return null;
         const members = circle.members || [];
@@ -16,13 +19,24 @@ window.Zuju = (function () {
         const circleGatherings = G().gatherings.filter(g => g.circleId === circleId);
         const lastProjectIds = circleGatherings.map(g => g.projectId);
         const lastVenueId = circleGatherings.length ? circleGatherings[circleGatherings.length - 1].venueId : null;
-        const projectId = window.Recommend.recommendProjects({
-            projects: G().projects, memberTags, lastProjectIds, season: 'autumn'
-        })[0];
-        const project = G().projects.find(p => p.id === projectId);
-        const venueIds = window.Recommend.recommendVenues({
-            venues: G().venues, members, project, lastVenueId
+        const category = (opts && opts.category) || CATEGORY_BY_TYPE[circle.type] || null;
+        let ids = window.Recommend.recommendProjects({
+            projects: G().projects, memberTags, lastProjectIds, season: 'autumn', category
         });
+        if (!ids.length) {
+            ids = window.Recommend.recommendProjects({ projects: G().projects, memberTags, lastProjectIds, season: 'autumn' });
+        }
+        const projectId = ids[0];
+        const project = G().projects.find(p => p.id === projectId);
+        let venueIds = window.Recommend.recommendVenues({
+            venues: G().venues, members, project, lastVenueId, category
+        });
+        // 类别内商户不足：放宽到全类别兜底（保持 3 候选承诺）
+        if (!venueIds.length) {
+            venueIds = window.Recommend.recommendVenues({
+                venues: G().venues, members, project: null, lastVenueId
+            });
+        }
         const times = window.Recommend.suggestTimes({ members, count: 3, now: nowStr() });
         const proposal = window.Recommend.buildProposal({
             circle, projectId, venues: venueIds, times, proposerId: G().user.id
@@ -75,10 +89,12 @@ window.Zuju = (function () {
         const nowTime = new Date(now.replace(' ', 'T'));
         const deadline = new Date(p.deadline.replace(' ', 'T'));
         if (nowTime < deadline) return p;
+        const sum = voteSummary(proposalId);
+        // 全部未表态：保持待定，不生成空聚会
+        if (sum.bestTime.winnerIndex === null) return p;
         p.status = 'decided';
         const circle = circleOf(p.circleId);
-        const sum = voteSummary(proposalId);
-        const timeIdx = sum.bestTime.winnerIndex !== null ? sum.bestTime.winnerIndex : 0;
+        const timeIdx = sum.bestTime.winnerIndex;
         const venuePick = Object.entries(sum.venueTally).sort((a, b) => b[1] - a[1])[0];
         const venueId = venuePick ? venuePick[0] : p.venueIds[0];
         let projectId = p.projectId;

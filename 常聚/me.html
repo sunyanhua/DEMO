@@ -38,8 +38,10 @@ window.MeView = (function () {
             '</div>' +
             '<div class="cj-row" style="gap:8px;margin-top:10px;flex-wrap:wrap">' +
                 '<span class="cj-sub">聚会节律：</span>' +
-                RHYTHM_OPTIONS.map(o =>
-                    '<span class="' + (JSON.stringify(c.rhythm) === JSON.stringify(o.value) ? 'cj-chip-warm' : 'cj-chip') + '" style="cursor:pointer" onclick="window.MeView.setRhythm(\'' + c.id + '\',' + JSON.stringify(o.value) + ')">' + o.label + '</span>').join('') +
+                RHYTHM_OPTIONS.map(o => {
+                    const arg = JSON.stringify(o.value).replace(/"/g, "'");
+                    return '<span class="' + (JSON.stringify(c.rhythm) === JSON.stringify(o.value) ? 'cj-chip-warm' : 'cj-chip') + '" style="cursor:pointer" onclick="window.MeView.setRhythm(\'' + c.id + '\',' + arg + ')">' + o.label + '</span>';
+                }).join('') +
             '</div>' +
             '<div class="cj-row" style="gap:8px;margin-top:10px">' +
                 '<span class="cj-sub">' + (host ? host.name : '') + ' 没空张罗？</span>' +
