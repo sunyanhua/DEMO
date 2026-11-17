@@ -1,0 +1,144 @@
+/**
+ * 常聚 · Gatherly 温情平面主题（body.cj-theme 作用域）
+ * 奶油底 / 暖橙主色 / 无渐变无阴影 / 描边暖灰
+ */
+body.cj-theme {
+    --cj-cream: #FBF7F0;
+    --cj-warm: #E8965A;
+    --cj-warm-soft: #F6E3D3;
+    --cj-ink: #3D3229;
+    --cj-ink-soft: #8A7D6F;
+    --cj-moss: #7A8B6F;
+    --cj-moss-soft: #E4E9DD;
+    --cj-card: #FFFFFF;
+    --cj-line: #EDE4D6;
+    --cj-red: #C96A4B;
+
+    background: #EDE7DC;
+    color: var(--cj-ink);
+    font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+}
+
+/* 页面容器：移动端视口 + 桌面居中 */
+body.cj-theme .cj-page {
+    max-width: 480px;
+    margin: 0 auto;
+    min-height: 100vh;
+    background: var(--cj-cream);
+    position: relative;
+    padding-bottom: 72px;
+}
+
+/* 小程序外壳 */
+body.cj-theme .cj-shell { position: sticky; top: 0; z-index: 90; background: var(--cj-cream); }
+body.cj-theme .cj-statusbar { height: 28px; display: flex; align-items: center; padding: 0 16px; font-size: 12px; font-weight: 600; }
+body.cj-theme .cj-navbar { height: 44px; display: flex; align-items: center; justify-content: center; position: relative; border-bottom: 1px solid var(--cj-line); }
+body.cj-theme .cj-navbar-title { font-size: 16px; font-weight: 700; }
+body.cj-theme .cj-capsule {
+    position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+    display: flex; align-items: center; gap: 6px;
+    border: 1px solid var(--cj-line); border-radius: 16px;
+    padding: 4px 8px; background: var(--cj-card); font-size: 14px; color: var(--cj-ink-soft);
+}
+body.cj-theme .cj-capsule-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--cj-ink-soft); display: inline-block; }
+
+/* 底部 tabbar */
+body.cj-theme .cj-tabbar {
+    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 100%; max-width: 480px;
+    display: flex; background: var(--cj-card); border-top: 1px solid var(--cj-line);
+    padding-bottom: env(safe-area-inset-bottom); z-index: 90;
+}
+body.cj-theme .cj-tab {
+    flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px;
+    padding: 8px 0 6px; text-decoration: none; color: var(--cj-ink-soft); font-size: 10px;
+}
+body.cj-theme .cj-tab i { width: 22px; height: 22px; }
+body.cj-theme .cj-tab-active { color: var(--cj-warm); font-weight: 700; }
+
+/* 卡片：无阴影、描边暖灰 */
+body.cj-theme .cj-card {
+    background: var(--cj-card); border: 1px solid var(--cj-line); border-radius: 16px;
+    padding: 16px; margin-bottom: 12px;
+}
+
+/* 按钮 */
+body.cj-theme .cj-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    background: var(--cj-warm); color: #fff; border: none; border-radius: 12px;
+    padding: 10px 18px; font-size: 14px; font-weight: 700; cursor: pointer; text-decoration: none;
+}
+body.cj-theme .cj-btn-outline {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    background: var(--cj-card); color: var(--cj-warm); border: 1px solid var(--cj-warm);
+    border-radius: 12px; padding: 10px 18px; font-size: 14px; font-weight: 700; cursor: pointer; text-decoration: none;
+}
+body.cj-theme .cj-btn-block { display: flex; width: 100%; }
+body.cj-theme .cj-btn:disabled, body.cj-theme .cj-btn-outline:disabled { opacity: 0.5; }
+
+/* 标签 */
+body.cj-theme .cj-chip {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: var(--cj-moss-soft); color: var(--cj-moss);
+    border-radius: 8px; padding: 2px 8px; font-size: 11px; font-weight: 600;
+}
+body.cj-theme .cj-chip-warm { background: var(--cj-warm-soft); color: var(--cj-warm); }
+
+/* 文本层级 */
+body.cj-theme .cj-title { font-size: 17px; font-weight: 700; color: var(--cj-ink); }
+body.cj-theme .cj-sub { font-size: 12px; color: var(--cj-ink-soft); }
+body.cj-theme .cj-slogan { font-size: 12px; color: var(--cj-warm); font-weight: 600; letter-spacing: 1px; }
+
+/* 头像堆叠 */
+body.cj-theme .cj-avatars { display: flex; }
+body.cj-theme .cj-avatars img {
+    width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--cj-card);
+    margin-left: -8px; object-fit: cover;
+}
+body.cj-theme .cj-avatars img:first-child { margin-left: 0; }
+
+/* Toast */
+body.cj-theme .cj-toast {
+    position: fixed; left: 50%; bottom: 120px; transform: translateX(-50%);
+    background: rgba(61, 50, 41, 0.92); color: #fff; border-radius: 10px;
+    padding: 10px 18px; font-size: 13px; z-index: 200; max-width: 80%;
+}
+
+/* 模拟微信服务通知浮层 */
+body.cj-theme .cj-wxnotice {
+    position: fixed; top: 36px; right: 12px; z-index: 300;
+    background: rgba(255, 255, 255, 0.97); border: 1px solid var(--cj-line); border-radius: 14px;
+    padding: 12px 14px; width: 260px;
+    box-shadow: 0 4px 16px rgba(61, 50, 41, 0.12);
+    animation: cj-slide-in 0.3s ease;
+}
+body.cj-theme .cj-wxnotice-title { font-size: 13px; font-weight: 700; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+body.cj-theme .cj-wxnotice-body { font-size: 12px; color: var(--cj-ink-soft); }
+@keyframes cj-slide-in { from { transform: translateX(20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+/* 演示控制 */
+body.cj-theme .cj-demo-fab {
+    position: fixed; right: 12px; bottom: 140px; z-index: 150;
+    width: 40px; height: 40px; border-radius: 50%;
+    background: var(--cj-ink); color: #fff; border: none; font-size: 11px; cursor: pointer;
+}
+body.cj-theme .cj-demo-panel {
+    position: fixed; right: 12px; bottom: 188px; z-index: 160;
+    background: var(--cj-card); border: 1px solid var(--cj-line); border-radius: 14px;
+    padding: 12px; width: 220px; display: flex; flex-direction: column; gap: 8px;
+}
+body.cj-theme .cj-demo-panel button {
+    background: var(--cj-warm-soft); color: var(--cj-ink); border: none; border-radius: 10px;
+    padding: 8px 10px; font-size: 12px; font-weight: 600; cursor: pointer; text-align: left;
+}
+
+/* 通用布局 */
+body.cj-theme .cj-px { padding-left: 16px; padding-right: 16px; }
+body.cj-theme .cj-row { display: flex; align-items: center; }
+body.cj-theme .cj-between { display: flex; align-items: center; justify-content: space-between; }
+body.cj-theme .cj-fab {
+    position: fixed; left: 50%; transform: translateX(-50%); bottom: 96px; z-index: 80;
+    width: 132px; border-radius: 22px; padding: 12px 0; font-size: 15px;
+    box-shadow: 0 4px 12px rgba(232, 150, 90, 0.35);
+}
+body.cj-theme .cj-empty { text-align: center; padding: 48px 16px; color: var(--cj-ink-soft); font-size: 13px; }

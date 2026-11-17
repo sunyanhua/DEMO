@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>常聚 · 圈子</title>
+    <link rel="stylesheet" href="tailwind.css">
+    <link rel="stylesheet" href="theme.css">
+</head>
+<body class="cj-theme">
+<div id="app" class="cj-page"></div>
+<script src="vendor/lucide.min.js"></script>
+<script src="data.js"></script>
+<script src="rotation.js"></script>
+<script src="common.js"></script>
+<script>
+window.IndexView = (function () {
+    const TYPE_LABEL = { mahjong: '麻将', dinner: '饭局', ball: '球局', outdoor: '户外', exhibit: '看展', ktv: 'K歌' };
+
+    function statusLine(circle) {
+        const G = window.GlobalData;
+        if (circle.proposalId) {
+            const p = (G.proposals || []).find(x => x.id === circle.proposalId);
+            if (p && p.status === 'open') return '<span class="cj-chip-warm">提案进行中</span>';
+        }
+        const g = (G.gatherings || []).find(x => x.id === circle.lastGatheringId);
+        const now = window.Common.fmtDate(window.Demo.getNow());
+        const r = window.Rotation.checkRhythm({ circle, lastGatheringTime: g ? g.time : null, now });
+        if (r.due) return '<span class="cj-chip-warm">已 ' + r.daysSince + ' 天没聚，该张罗啦</span>';
+        if (circle.rhythm && g && r.daysSince !== null) {
+            const days = circle.rhythm.unit === 'week' ? circle.rhythm.n * 7 : circle.rhythm.n * 30;
+            return '<span class="cj-chip">距下次相聚还有 ' + (days - r.daysSince) + ' 天</span>';
+        }
+        return '<span class="cj-chip">随心而聚</span>';
+    }
+
+    function circleCard(c) {
+        const members = c.members || [];
+        const host = members.find(m => m.id === c.hostId);
+        const typeLabel = TYPE_LABEL[c.type] || c.type;
+        const avatars = members.slice(0, 5).map(m => '<img src="' + m.avatarUrl + '" alt="' + m.name + '">').join('');
+        return '<a class="cj-card" style="display:block;text-decoration:none;color:inherit" href="circle.html?id=' + c.id + '">' +
+            '<div class="cj-between">' +
+                '<div>' +
+                    '<div class="cj-title">' + c.name + '</div>' +
+                    '<div class="cj-row" style="gap:6px;margin-top:6px">' +
+                        '<span class="cj-chip">' + typeLabel + '</span>' +
+                        '<span class="cj-sub">' + members.length + ' 位圈友</span>' +
+                    '</div>' +
+                '</div>' +
+                (host ? '<div class="cj-row" style="gap:6px"><img src="' + host.avatarUrl + '" style="width:36px;height:36px;border-radius:50%;border:2px solid var(--cj-warm)" alt="当值"><span class="cj-sub">当值<br>张罗</span></div>' : '') +
+            '</div>' +
+            '<div class="cj-between" style="margin-top:10px">' +
+                '<div class="cj-avatars">' + avatars + '</div>' + statusLine(c) +
+            '</div>' +
+        '</a>';
+    }
+
+    function render() {
+        const G = window.GlobalData;
+        const circles = G.circles || [];
+        const list = circles.map(circleCard).join('');
+        const empty = circles.length ? '' : '<div class="cj-empty">还没有圈子，建一个吧<br>常聚常伴，圈子不散</div>';
+        return window.Common.renderShell('圈子') +
+            '<div class="cj-px" style="padding-top:12px">' +
+                '<div class="cj-between" style="margin-bottom:12px">' +
+                    '<div class="cj-row" style="gap:4px;cursor:pointer" onclick="window.Common.showToast(\'多城市能力预留\')"><i data-lucide="map-pin" style="width:14px;height:14px"></i><span class="cj-sub">北京</span></div>' +
+                    '<a class="cj-chip-warm" style="text-decoration:none;padding:4px 10px" href="create.html">＋ 建圈子</a>' +
+                '</div>' +
+                list + empty +
+                '<div class="cj-slogan" style="text-align:center;padding:16px 0">常聚常伴，圈子不散</div>' +
+            '</div>' + window.Common.renderTabbar('circles');
+    }
+
+    return { render };
+})();
+document.getElementById('app').innerHTML = window.IndexView.render();
+window.Common.initIcons();
+window.Demo.mountFab();
+</script>
+</body>
+</html>
