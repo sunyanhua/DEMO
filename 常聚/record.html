@@ -76,7 +76,9 @@ window.RecordView = (function () {
                         '<button class="cj-btn" style="padding:10px 16px" onclick="window.RecordView.comment()">留言</button>' +
                     '</div>' +
                 '</div>' +
-                '<a class="cj-btn-outline cj-btn-block" style="justify-content:center;text-decoration:none" href="ledger.html?gathering=' + g.id + '">去 AA 账本</a>' +
+                '<div style="text-align:center">' +
+                    '<a class="cj-btn-outline" style="padding:12px 28px;text-decoration:none" href="ledger.html?gathering=' + g.id + '">去 AA 账本</a>' +
+                '</div>' +
                 '<a class="cj-sub" style="display:block;text-align:center;margin-top:14px" href="circle.html?id=' + circle.id + '">回圈子 →</a>' +
             '</div>' + window.Common.renderTabbar('circles');
     }

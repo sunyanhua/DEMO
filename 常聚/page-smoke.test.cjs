@@ -71,6 +71,14 @@ test('theme_defines_warm_tokens', () => {
     assert.ok(!css.includes('cj-statusbar') && !css.includes('cj-capsule'), '无小程序外壳残留');
 });
 
+test('outline_buttons_not_full_width', () => {
+    for (const f of htmlFiles) {
+        const text = fs.readFileSync(path.join(dir, f), 'utf8');
+        assert.ok(!text.includes('cj-btn-outline cj-btn-block'), `${f} 描边按钮不得使用通栏块级类`);
+        assert.ok(!/cj-btn-outline"\s+style="width:100%/.test(text), `${f} 描边按钮不得通栏宽度`);
+    }
+});
+
 test('shell_has_no_miniprogram_chrome', () => {
     const sandbox = {
         window: {},
