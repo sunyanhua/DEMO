@@ -29,18 +29,10 @@ body.cj-theme .cj-page {
     padding-bottom: 72px;
 }
 
-/* 小程序外壳 */
+/* 页面外壳：正常 H5 顶部标题栏 */
 body.cj-theme .cj-shell { position: sticky; top: 0; z-index: 90; background: var(--cj-cream); }
-body.cj-theme .cj-statusbar { height: 28px; display: flex; align-items: center; padding: 0 16px; font-size: 12px; font-weight: 600; }
-body.cj-theme .cj-navbar { height: 44px; display: flex; align-items: center; justify-content: center; position: relative; border-bottom: 1px solid var(--cj-line); }
+body.cj-theme .cj-navbar { height: 44px; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid var(--cj-line); }
 body.cj-theme .cj-navbar-title { font-size: 16px; font-weight: 700; }
-body.cj-theme .cj-capsule {
-    position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
-    display: flex; align-items: center; gap: 6px;
-    border: 1px solid var(--cj-line); border-radius: 16px;
-    padding: 4px 8px; background: var(--cj-card); font-size: 14px; color: var(--cj-ink-soft);
-}
-body.cj-theme .cj-capsule-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--cj-ink-soft); display: inline-block; }
 
 /* 底部 tabbar */
 body.cj-theme .cj-tabbar {

@@ -12,12 +12,11 @@ window.Common = (function () {
         })[c]);
     }
 
+    // 正常 H5 顶部标题栏（不伪造小程序状态栏/胶囊）
     function renderShell(title) {
         return `<div class="cj-shell">
-            <div class="cj-statusbar">9:41</div>
             <div class="cj-navbar">
                 <span class="cj-navbar-title">${esc(title)}</span>
-                <span class="cj-capsule"><i data-lucide="more-horizontal" style="width:14px;height:14px"></i><span class="cj-capsule-dot"></span></span>
             </div>
         </div>`;
     }

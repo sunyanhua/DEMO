@@ -57,3 +57,26 @@ test('shell_functions_render', () => {
         assert.equal(typeof D[fn], 'function', `Demo.${fn} 应为函数`);
     }
 });
+
+test('shell_has_no_miniprogram_chrome', () => {
+    const sandbox = {
+        window: {},
+        document: {
+            body: { innerHTML: '', appendChild() {} },
+            getElementById() { return null; },
+            createElement() { return { appendChild() {}, remove() {}, style: {}, classList: { add() {} } }; },
+            addEventListener() {}
+        },
+        localStorage: { getItem: () => null, setItem() {}, removeItem() {} },
+        setTimeout, clearTimeout
+    };
+    sandbox.window.document = sandbox.document;
+    sandbox.window.localStorage = sandbox.localStorage;
+    vm.createContext(sandbox);
+    vm.runInContext(fs.readFileSync(path.join(dir, 'common.js'), 'utf8'), sandbox);
+    const html = sandbox.window.Common.renderShell('圈子');
+    assert.ok(!html.includes('cj-statusbar'), '外壳不得含模拟状态栏');
+    assert.ok(!html.includes('cj-capsule'), '外壳不得含胶囊按钮');
+    assert.ok(!html.includes('9:41'), '外壳不得含模拟时间');
+    assert.ok(html.includes('圈子'), '标题保留');
+});
