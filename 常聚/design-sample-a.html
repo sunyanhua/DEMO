@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>常聚 · 方案A样张（影集·时光感）</title>
+<style>
+/* ============ 方案 A · 影集时光感 — 设计令牌 ============ */
+:root {
+    --paper: #FAF7F1;      /* 暖纸白 */
+    --ink: #2B241D;       /* 墨褐（标题） */
+    --body: #5D544A;      /* 正文 */
+    --caption: #A09280;   /* 题注/小字 */
+    --line: #E9E2D5;      /* 细线 */
+    --accent: #C4502A;    /* 朱砂（克制使用） */
+    --accent-soft: #F6E9E0;
+    --serif: 'Songti SC', 'STSong', 'Noto Serif CJK SC', 'SimSun', serif;
+    --sans: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    background: #E9E4DA;
+    font-family: var(--sans);
+    color: var(--body);
+    padding: 32px 0 64px;
+}
+/* 样张说明 */
+.sheet-label {
+    text-align: center; font-size: 13px; color: #7A7163;
+    letter-spacing: 4px; margin: 44px 0 14px; font-family: var(--sans);
+}
+.sheet-label:first-of-type { margin-top: 0; }
+/* 手机屏列 */
+.screen {
+    width: 375px; margin: 0 auto; background: var(--paper);
+    border: 1px solid var(--line); border-radius: 20px;
+    overflow: hidden; box-shadow: 0 24px 48px -24px rgba(43,36,29,0.25);
+}
+.pad { padding: 0 24px; }
+
+/* 顶栏 */
+.topbar { display: flex; align-items: baseline; justify-content: space-between; padding: 22px 24px 14px; }
+.wordmark { font-family: var(--serif); font-size: 24px; font-weight: 700; color: var(--ink); letter-spacing: 6px; }
+.wordmark-note { font-size: 11px; color: var(--caption); letter-spacing: 2px; }
+.hairline { border: none; border-top: 1px solid var(--line); }
+/* 题注风格 */
+.caption { font-size: 11px; color: var(--caption); letter-spacing: 1px; }
+.section-label { font-size: 11px; color: var(--caption); letter-spacing: 4px; margin: 28px 24px 12px; }
+.section-label::after { content: ''; display: block; width: 28px; height: 2px; background: var(--accent); margin-top: 8px; }
+
+/* 圈子列表行（编辑式列表） */
+.circle-row { display: flex; gap: 14px; padding: 18px 24px; align-items: center; border-bottom: 1px solid var(--line); }
+.circle-row:last-child { border-bottom: none; }
+.circle-row .thumb { width: 58px; height: 58px; border-radius: 8px; object-fit: cover; flex-shrink: 0; }
+.circle-name { font-family: var(--serif); font-size: 17px; font-weight: 700; color: var(--ink); margin-bottom: 4px; }
+.circle-meta { font-size: 11px; color: var(--caption); letter-spacing: 0.5px; }
+.due-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); margin-right: 5px; vertical-align: 1px; }
+.due-text { color: var(--accent); font-weight: 600; }
+
+/* 当值张罗条 */
+.host-strip { display: flex; align-items: center; gap: 12px; padding: 14px 24px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: #FFFDF8; }
+.host-strip img { width: 38px; height: 38px; border-radius: 50%; }
+.host-title { font-size: 11px; color: var(--caption); letter-spacing: 2px; }
+.host-name { font-family: var(--serif); font-size: 15px; font-weight: 700; color: var(--ink); margin-top: 2px; }
+.host-right { margin-left: auto; text-align: right; }
+.host-right .days { font-size: 14px; font-weight: 700; color: var(--ink); }
+
+/* 大图 + 图注（杂志式） */
+.photo { width: 100%; display: block; }
+.photo-hero { aspect-ratio: 4 / 3; object-fit: cover; }
+.photo-caption { padding: 10px 24px 0; }
+.photo-caption .date { font-size: 11px; color: var(--caption); letter-spacing: 1px; }
+.photo-caption .ptitle { font-family: var(--serif); font-size: 17px; font-weight: 700; color: var(--ink); margin-top: 3px; }
+.photo-caption .psum { font-size: 12px; color: var(--body); margin-top: 3px; line-height: 1.6; }
+.photo-card { padding: 0 0 18px; }
+.photo-card .photo { border-radius: 10px; aspect-ratio: 4/3; object-fit: cover; }
+.photo-card .photo-caption { padding: 8px 0 0; }
+
+/* 圈友 */
+.folks { display: flex; gap: 18px; padding: 4px 24px 0; flex-wrap: wrap; }
+.folk { text-align: center; }
+.folk img { width: 44px; height: 44px; border-radius: 50%; }
+.folk .fname { font-size: 11px; color: var(--body); margin-top: 5px; }
+
+/* 按钮 */
+.btn { display: flex; align-items: center; justify-content: center; width: 100%;
+    background: var(--accent); color: #FFF8F2; border: none; border-radius: 10px;
+    font-size: 15px; font-weight: 700; letter-spacing: 3px; padding: 14px 0; cursor: pointer; }
+.btn-outline { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
+.cta-zone { padding: 22px 24px 26px; }
+
+/* tabbar */
+.tabbar { display: flex; border-top: 1px solid var(--line); background: #FFFDF8; }
+.tab { flex: 1; text-align: center; padding: 12px 0 14px; font-size: 11px; color: var(--caption); letter-spacing: 2px; }
+.tab.active { color: var(--accent); font-weight: 700; }
+.tab.active::before { content: ''; display: block; width: 16px; height: 2px; background: var(--accent); margin: 0 auto 5px; }
+
+/* 记录页 */
+.record-title { font-family: var(--serif); font-size: 24px; font-weight: 700; color: var(--ink); padding: 20px 24px 0; letter-spacing: 2px; }
+.record-meta { padding: 8px 24px 0; font-size: 12px; color: var(--caption); letter-spacing: 1px; }
+.record-badges { padding: 14px 24px 0; display: flex; gap: 8px; }
+.badge { font-size: 11px; letter-spacing: 1px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 4px; color: var(--body); }
+.badge.accent { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.record-sum { padding: 14px 24px 0; font-size: 14px; line-height: 1.9; color: var(--body); }
+/* 留言（杂志引用） */
+.quotes { padding: 6px 24px 0; }
+.quote { border-left: 2px solid var(--line); padding: 6px 0 6px 14px; margin-bottom: 14px; }
+.quote p { font-size: 13px; color: var(--body); line-height: 1.7; }
+.quote .qname { font-size: 11px; color: var(--caption); margin-top: 5px; letter-spacing: 1px; }
+</style>
+</head>
+<body>
+
+<div class="sheet-label">屏幕 1 · 圈子列表</div>
+<div class="screen">
+    <div class="topbar">
+        <span class="wordmark">常聚</span>
+        <span class="wordmark-note">常聚常伴，圈子不散</span>
+    </div>
+    <hr class="hairline">
+    <div class="caption" style="padding:12px 24px 2px">北京 · 3 个圈子</div>
+    <div class="circle-row">
+        <img class="thumb" src="images/moment-2.jpg" alt="">
+        <div style="flex:1">
+            <div class="circle-name">周五麻将局</div>
+            <div class="circle-meta">麻将 · 5 位圈友 · <span class="due-text">提案进行中</span></div>
+        </div>
+        <span class="caption">›</span>
+    </div>
+    <div class="circle-row">
+        <img class="thumb" src="images/moment-3.jpg" alt="">
+        <div style="flex:1">
+            <div class="circle-name">老同学</div>
+            <div class="circle-meta">饭局 · 4 位圈友 · 11月15日刚聚过</div>
+        </div>
+        <span class="caption">›</span>
+    </div>
+    <div class="circle-row">
+        <img class="thumb" src="images/moment-5.jpg" alt="">
+        <div style="flex:1">
+            <div class="circle-name">周末球局</div>
+            <div class="circle-meta">球局 · 5 位圈友 · <span class="due-dot"></span><span class="due-text">58 天没聚，该张罗啦</span></div>
+        </div>
+        <span class="caption">›</span>
+    </div>
+    <div class="tabbar">
+        <div class="tab active">圈子</div><div class="tab">消息</div><div class="tab">我的</div>
+    </div>
+</div>
+
+<div class="sheet-label">屏幕 2 · 圈子主页</div>
+<div class="screen">
+    <div class="topbar">
+        <span class="wordmark" style="font-size:19px;letter-spacing:3px">周五麻将局</span>
+        <span class="wordmark-note">5 位圈友</span>
+    </div>
+    <div class="host-strip">
+        <img src="images/avatar-2.png" alt="">
+        <div>
+            <div class="host-title">当值张罗</div>
+            <div class="host-name">老王</div>
+        </div>
+        <div class="host-right">
+            <div class="days">还有 5 天</div>
+            <div class="caption">下次相聚倒计时</div>
+        </div>
+    </div>
+    <div class="photo-caption">
+        <span class="date">11月8日 · 上一次聚会</span>
+        <div class="ptitle">老王手气爆棚之夜</div>
+        <div class="psum">老王连庄五把，这顿饭请得应该。</div>
+    </div>
+    <img class="photo photo-hero" src="images/moment-2.jpg" alt="">
+    <div class="section-label">记忆时间轴</div>
+    <div class="pad photo-card">
+        <img class="photo" src="images/moment-1.jpg" alt="">
+        <div class="photo-caption">
+            <span class="date">10月11日</span>
+            <div class="ptitle">第一次麻将局</div>
+            <div class="psum">三缺一开局，从此入坑。</div>
+        </div>
+    </div>
+    <div class="pad photo-card">
+        <img class="photo" src="images/moment-6.jpg" alt="">
+        <div class="photo-caption">
+            <span class="date">10月11日 · 散场</span>
+            <div class="ptitle">抽到了下一任张罗</div>
+        </div>
+    </div>
+    <div class="section-label">圈友</div>
+    <div class="folks">
+        <div class="folk"><img src="images/avatar-1.png" alt=""><div class="fname">阿Sun</div></div>
+        <div class="folk"><img src="images/avatar-2.png" alt=""><div class="fname">老王</div></div>
+        <div class="folk"><img src="images/avatar-3.png" alt=""><div class="fname">小李</div></div>
+        <div class="folk"><img src="images/avatar-4.png" alt=""><div class="fname">大周</div></div>
+        <div class="folk"><img src="images/avatar-5.png" alt=""><div class="fname">阿婷</div></div>
+    </div>
+    <div class="cta-zone"><button class="btn">张罗个局</button></div>
+    <div class="tabbar">
+        <div class="tab active">圈子</div><div class="tab">消息</div><div class="tab">我的</div>
+    </div>
+</div>
+
+<div class="sheet-label">屏幕 3 · 聚会记录</div>
+<div class="screen">
+    <div class="topbar">
+        <span class="wordmark" style="font-size:19px;letter-spacing:3px">聚会记录</span>
+        <span class="wordmark-note">老同学</span>
+    </div>
+    <img class="photo photo-hero" src="images/moment-3.jpg" alt="">
+    <div class="record-title">毕业十年，一个没少</div>
+    <div class="record-meta">2026年11月15日 · 西单烤鸭坊 · 西单</div>
+    <div class="record-badges">
+        <span class="badge accent">AA 制</span>
+        <span class="badge">烤鸭宴</span>
+        <span class="badge">出席 4 人</span>
+    </div>
+    <div class="record-sum">十年之约，下次还聚。散场时大家说好：下一场，一个都不能少。</div>
+    <div class="section-label">留言</div>
+    <div class="quotes">
+        <div class="quote">
+            <p>「下次还来，手气不散！」</p>
+            <div class="qname">老王 · 11月15日</div>
+        </div>
+        <div class="quote">
+            <p>「已把照片存进相册，一年后回来看。」</p>
+            <div class="qname">小李 · 11月15日</div>
+        </div>
+    </div>
+    <div class="cta-zone">
+        <button class="btn btn-outline">去 AA 账本</button>
+    </div>
+    <div class="tabbar">
+        <div class="tab active">圈子</div><div class="tab">消息</div><div class="tab">我的</div>
+    </div>
+</div>
+
+<div class="sheet-label">设计令牌 · DESIGN.md 草案（节选）</div>
+<div class="screen" style="padding:28px 24px;font-size:13px;line-height:2.1">
+    <b style="color:var(--ink)">色彩</b>：纸白 #FAF7F1 · 墨褐 #2B241D · 正文 #5D544A · 题注 #A09280 · 细线 #E9E2D5 · 朱砂 #C4502A（仅强调/按钮/激活态）<br>
+    <b style="color:var(--ink)">字体</b>：标题宋体（Songti SC/SimSun），正文苹方/微软雅黑，题注 11px 字距 1-4px<br>
+    <b style="color:var(--ink)">卡片语言</b>：全宽大图（4:3）+ 图注式标题；无阴影，细线分隔；一屏一主题<br>
+    <b style="color:var(--ink)">动画记忆点</b>：散场抽签胶片轮转 · 年度回顾翻相册 · 入圈头像依次点亮（克制的两处）
+</div>
+
+</body>
+</html>

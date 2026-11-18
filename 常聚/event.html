@@ -33,34 +33,34 @@ window.EventView = (function () {
         const attendeeIds = gathering ? gathering.attendees : Object.keys(p.votes.time);
         const attendeeHTML = attendeeIds.map(id => {
             const m = (circle.members || []).find(x => x.id === id);
-            return m ? '<img src="' + m.avatarUrl + '" style="width:32px;height:32px;border-radius:50%;border:2px solid var(--cj-card)" alt="' + m.name + '">' : '';
+            return m ? '<div class="cj-folk"><img src="' + m.avatarUrl + '" alt="' + m.name + '"><div class="cj-folk-name">' + m.name + '</div></div>' : '';
         }).join('');
         return window.Common.renderShell('局详情') +
-            '<div class="cj-px" style="padding-top:12px">' +
-                '<div class="cj-card" style="text-align:center">' +
-                    '<span class="cj-chip-warm">' + (p.status === 'decided' ? '已定案' : '表态中') + '</span>' +
-                    '<div class="cj-title" style="font-size:20px;margin:10px 0 4px">' + (project ? project.name : '聚会') + '</div>' +
+            '<div class="cj-px" style="padding-top:6px">' +
+                '<div class="cj-card" style="text-align:center;padding:20px">' +
+                    '<span class="cj-pill cj-pill-due">' + (p.status === 'decided' ? '已定案' : '表态中') + '</span>' +
+                    '<div class="cj-title" style="font-size:20px;margin:12px 0 6px">' + (project ? project.name : '聚会') + '</div>' +
                     '<div class="cj-sub">' + timeText + '</div>' +
                     '<div class="cj-sub" style="margin-top:4px">📍 ' + (venue ? venue.name + ' · ' + venue.district + venue.businessArea : '待定') + '</div>' +
-                    '<div class="cj-row cj-avatars" style="justify-content:center;margin-top:12px">' + attendeeHTML + '</div>' +
+                    '<div class="cj-folks" style="justify-content:center;padding:16px 0 0">' + attendeeHTML + '</div>' +
                     '<div class="cj-sub" style="margin-top:6px">出席 ' + attendeeIds.length + ' 人</div>' +
                 '</div>' +
                 (nonVoters.length
-                    ? '<div class="cj-card"><div class="cj-between">' +
+                    ? '<div class="cj-card"><div class="cj-row" style="justify-content:space-between">' +
                         '<span class="cj-sub">' + nonVoters.map(m => m.name).join('、') + ' 还没表态</span>' +
-                        '<span class="cj-chip-warm" style="cursor:pointer" onclick="window.EventView.remind()">提醒一下</span>' +
+                        '<span class="cj-pill cj-pill-due" style="cursor:pointer" onclick="window.EventView.remind()">提醒一下</span>' +
                       '</div></div>'
                     : '') +
-                '<div style="display:flex;gap:10px;margin-top:12px">' +
+                '<div style="display:flex;gap:10px">' +
                     '<button class="cj-btn-outline" style="flex:1;justify-content:center" onclick="window.Common.showToast(\'模拟导航：已打开地图\')">导航</button>' +
                     '<a class="cj-btn" style="flex:1;justify-content:center;text-decoration:none" href="game-liushang.html">聚会中 · 玩一局</a>' +
                 '</div>' +
-                '<div style="text-align:center;margin-top:16px">' +
+                '<div style="text-align:center;margin-top:14px">' +
                     (gathering
-                        ? '<a class="cj-btn" style="width:100%;justify-content:center;text-decoration:none" href="end-event.html?id=' + gathering.id + '">散场 · 记录这次聚会</a>'
+                        ? '<a class="cj-btn cj-btn-block" style="text-decoration:none" href="end-event.html?id=' + gathering.id + '">散场 · 记录这次聚会</a>'
                         : '<span class="cj-sub">定案后可散场记录</span>') +
                 '</div>' +
-                '<a class="cj-sub" style="display:block;text-align:center;margin-top:12px" href="vote.html?proposal=' + p.id + '">回表态页 →</a>' +
+                '<a class="cj-sub" style="display:block;text-align:center;margin-top:14px" href="vote.html?proposal=' + p.id + '">回表态页 →</a>' +
             '</div>' + window.Common.renderTabbar('circles');
     }
 

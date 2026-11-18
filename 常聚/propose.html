@@ -30,28 +30,32 @@ window.ProposeView = (function () {
         const project = G.projects.find(x => x.id === p.projectId);
         const venues = p.venueIds.map(id => G.venues.find(v => v.id === id)).filter(Boolean);
         return '<div class="cj-card">' +
-            '<div class="cj-title" style="font-size:14px;margin-bottom:10px">智能提案已生成</div>' +
-            '<div class="cj-row" style="gap:8px;margin-bottom:8px">' +
-                '<span class="cj-sub" style="width:56px">项目</span>' +
-                (p.projectId === 'pending'
-                    ? '<span class="cj-chip-warm">待定（圈友投票）</span>'
-                    : '<span class="cj-chip">' + (project ? project.name : p.projectId) + '</span>') +
-                '<span class="cj-sub" style="cursor:pointer;text-decoration:underline" onclick="window.ProposeView.togglePending()">改为待定</span>' +
+            '<div class="cj-title" style="font-size:15px;margin-bottom:12px">✨ 智能提案已生成</div>' +
+            '<div class="cj-row" style="gap:8px;margin-bottom:10px;align-items:flex-start">' +
+                '<span class="cj-sub" style="width:52px;padding-top:6px">项目</span>' +
+                '<span style="flex:1">' +
+                    (p.projectId === 'pending'
+                        ? '<span class="cj-pill cj-pill-due">待定（圈友投票）</span>'
+                        : '<span class="cj-pill cj-pill-due">' + (project ? project.name : p.projectId) + '</span>') +
+                    ' <span class="cj-sub" style="cursor:pointer;text-decoration:underline" onclick="window.ProposeView.togglePending()">改为待定</span>' +
+                '</span>' +
             '</div>' +
-            '<div class="cj-row" style="gap:8px;margin-bottom:8px">' +
-                '<span class="cj-sub" style="width:56px">地点</span>' +
-                venues.map(v => '<span class="cj-chip">' + v.name + ' · ' + v.businessArea + '</span>').join('') +
+            '<div class="cj-row" style="gap:8px;margin-bottom:10px;align-items:flex-start">' +
+                '<span class="cj-sub" style="width:52px;padding-top:6px">地点</span>' +
+                '<span style="flex:1;display:flex;flex-wrap:wrap;gap:6px">' +
+                    venues.map(v => '<span class="cj-pill cj-pill-plain">' + v.name + ' · ' + v.businessArea + '</span>').join('') +
+                '</span>' +
             '</div>' +
             '<div class="cj-row" style="gap:8px;align-items:flex-start">' +
-                '<span class="cj-sub" style="width:56px;padding-top:4px">时间</span>' +
-                '<div style="flex:1;display:flex;flex-wrap:wrap;gap:6px">' +
+                '<span class="cj-sub" style="width:52px;padding-top:6px">时间</span>' +
+                '<span style="flex:1;display:flex;flex-wrap:wrap;gap:6px">' +
                     p.timeCandidates.map((t, i) =>
-                        '<span class="cj-chip">' + t +
-                        '<span style="cursor:pointer" onclick="window.ProposeView.removeTime(' + i + ')">×</span></span>').join('') +
-                    '<span class="cj-chip-warm" style="cursor:pointer" onclick="window.ProposeView.addTime()">＋ 加时间</span>' +
-                '</div>' +
+                        '<span class="cj-pill cj-pill-plain">' + t +
+                        '<span style="cursor:pointer;font-weight:800" onclick="window.ProposeView.removeTime(' + i + ')"> ×</span></span>').join('') +
+                    '<span class="cj-pill cj-pill-due" style="cursor:pointer" onclick="window.ProposeView.addTime()">＋ 加时间</span>' +
+                '</span>' +
             '</div>' +
-            '<div class="cj-sub" style="margin-top:10px">截止：' + p.deadline + ' · 圈友表态后自动定案</div>' +
+            '<div class="cj-sub" style="margin-top:12px">截止：' + p.deadline + ' · 圈友表态后自动定案</div>' +
         '</div>';
     }
 
@@ -61,18 +65,16 @@ window.ProposeView = (function () {
         if (!circle) return window.Common.renderShell('张罗个局') + '<div class="cj-empty">圈子不存在</div>';
         window.ProposeView._category = CATEGORY_BY_TYPE[circle.type] || null;
         return window.Common.renderShell('张罗个局') +
-            '<div class="cj-px" style="padding-top:12px">' +
-                '<div class="cj-sub" style="margin-bottom:12px">在「' + circle.name + '」组一局，先选方向，智能提案帮你定项目、地点、时间</div>' +
-                '<div class="cj-title" style="font-size:13px;margin-bottom:8px">组局方向</div>' +
+            '<div class="cj-px" style="padding-top:6px">' +
+                '<div class="cj-sub" style="margin-bottom:12px">在「' + circle.name + '」组一局，智能提案帮你定项目、地点、时间</div>' +
+                '<div class="cj-title" style="font-size:14px;margin-bottom:10px">组局方向</div>' +
                 '<div id="catRow" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px">' +
                     Object.keys(CATEGORY_LABELS).map(k =>
                         '<span id="cat-' + k + '" class="' + (window.ProposeView._category === k ? 'cj-chip-warm' : 'cj-chip') + '" style="cursor:pointer;padding:8px 14px;font-size:13px" onclick="window.ProposeView.pickCategory(\'' + k + '\')">' + CATEGORY_LABELS[k] + '</span>').join('') +
                     '<span id="cat-auto" class="cj-chip" style="cursor:pointer;padding:8px 14px;font-size:13px" onclick="window.ProposeView.pickCategory(null)">让系统推荐</span>' +
                 '</div>' +
                 '<div id="proposeBody">' +
-                    '<div style="text-align:center;padding:24px 0">' +
-                        '<button class="cj-btn" style="width:100%;justify-content:center" onclick="window.ProposeView.generate()">一键生成智能提案</button>' +
-                    '</div>' +
+                    '<button class="cj-btn cj-btn-block" onclick="window.ProposeView.generate()">一键生成智能提案</button>' +
                 '</div>' +
             '</div>' + window.Common.renderTabbar('circles');
     }
@@ -94,9 +96,7 @@ window.ProposeView = (function () {
         if (!p) return;
         document.getElementById('proposeBody').innerHTML =
             previewHTML(p) +
-            '<div style="text-align:center;margin-top:12px">' +
-                '<button class="cj-btn" style="width:100%;justify-content:center" onclick="window.ProposeView.send()">发出提案，请圈友表态</button>' +
-            '</div>';
+            '<button class="cj-btn cj-btn-block" style="margin-top:4px" onclick="window.ProposeView.send()">发出提案，请圈友表态</button>';
     }
 
     function send() {
@@ -110,9 +110,7 @@ window.ProposeView = (function () {
         const p = window.GlobalData.proposals.find(x => x.id === c.proposalId);
         window.Zuju.markProjectPending(p.id);
         document.getElementById('proposeBody').innerHTML = previewHTML(p) +
-            '<div style="text-align:center;margin-top:12px">' +
-                '<button class="cj-btn" style="width:100%;justify-content:center" onclick="window.ProposeView.send()">发出提案，请圈友表态</button>' +
-            '</div>';
+            '<button class="cj-btn cj-btn-block" style="margin-top:4px" onclick="window.ProposeView.send()">发出提案，请圈友表态</button>';
     }
 
     function addTime() {
@@ -124,9 +122,7 @@ window.ProposeView = (function () {
         p.timeCandidates.push(window.Common.fmtDate(nd).slice(0, 10) + ' 14:00');
         window.Common.save();
         document.getElementById('proposeBody').innerHTML = previewHTML(p) +
-            '<div style="text-align:center;margin-top:12px">' +
-                '<button class="cj-btn" style="width:100%;justify-content:center" onclick="window.ProposeView.send()">发出提案，请圈友表态</button>' +
-            '</div>';
+            '<button class="cj-btn cj-btn-block" style="margin-top:4px" onclick="window.ProposeView.send()">发出提案，请圈友表态</button>';
     }
 
     function removeTime(i) {
@@ -137,9 +133,7 @@ window.ProposeView = (function () {
         p.timeCandidates.splice(i, 1);
         window.Common.save();
         document.getElementById('proposeBody').innerHTML = previewHTML(p) +
-            '<div style="text-align:center;margin-top:12px">' +
-                '<button class="cj-btn" style="width:100%;justify-content:center" onclick="window.ProposeView.send()">发出提案，请圈友表态</button>' +
-            '</div>';
+            '<button class="cj-btn cj-btn-block" style="margin-top:4px" onclick="window.ProposeView.send()">发出提案，请圈友表态</button>';
     }
 
     return { render, build, generate, send, togglePending, addTime, removeTime, pickCategory };

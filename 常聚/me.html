@@ -32,20 +32,20 @@ window.MeView = (function () {
     function circleBlock(c) {
         const host = (c.members || []).find(m => m.id === c.hostId);
         return '<div class="cj-card">' +
-            '<div class="cj-between">' +
+            '<div class="cj-row" style="justify-content:space-between">' +
                 '<a class="cj-title" style="font-size:15px;text-decoration:none" href="circle.html?id=' + c.id + '">' + c.name + '</a>' +
                 '<span class="cj-sub">当值：' + (host ? host.name : '—') + '</span>' +
             '</div>' +
-            '<div class="cj-row" style="gap:8px;margin-top:10px;flex-wrap:wrap">' +
+            '<div class="cj-row" style="gap:8px;margin-top:12px;flex-wrap:wrap">' +
                 '<span class="cj-sub">聚会节律：</span>' +
                 RHYTHM_OPTIONS.map(o => {
                     const arg = JSON.stringify(o.value).replace(/"/g, "'");
                     return '<span class="' + (JSON.stringify(c.rhythm) === JSON.stringify(o.value) ? 'cj-chip-warm' : 'cj-chip') + '" style="cursor:pointer" onclick="window.MeView.setRhythm(\'' + c.id + '\',' + arg + ')">' + o.label + '</span>';
                 }).join('') +
             '</div>' +
-            '<div class="cj-row" style="gap:8px;margin-top:10px">' +
+            '<div class="cj-row" style="gap:8px;margin-top:12px">' +
                 '<span class="cj-sub">' + (host ? host.name : '') + ' 没空张罗？</span>' +
-                '<span class="cj-chip-warm" style="cursor:pointer" onclick="window.MeView.passHost(\'' + c.id + '\')">顺延给下一位</span>' +
+                '<span class="cj-pill cj-pill-due" style="cursor:pointer" onclick="window.MeView.passHost(\'' + c.id + '\')">顺延给下一位</span>' +
             '</div>' +
         '</div>';
     }
@@ -54,20 +54,20 @@ window.MeView = (function () {
         const G = window.GlobalData;
         const me = G.user;
         return window.Common.renderShell('我的') +
-            '<div class="cj-px" style="padding-top:16px">' +
-                '<div class="cj-card" style="text-align:center">' +
-                    '<img src="' + me.avatarUrl + '" style="width:64px;height:64px;border-radius:50%;border:2px solid var(--cj-warm)" alt="我">' +
-                    '<div class="cj-title" style="margin-top:8px">' + me.name + '</div>' +
-                    '<div class="cj-slogan" style="margin-top:4px">常聚常伴，圈子不散</div>' +
+            '<div class="cj-px" style="padding-top:6px">' +
+                '<div class="cj-card" style="text-align:center;padding:20px">' +
+                    '<img src="' + me.avatarUrl + '" class="cj-avatar-ring" style="width:64px;height:64px" alt="我">' +
+                    '<div class="cj-title" style="font-size:17px;margin-top:10px">' + me.name + '</div>' +
+                    '<div class="cj-slogan" style="margin-top:6px">常聚常伴，圈子不散</div>' +
                 '</div>' +
-                '<div class="cj-title" style="font-size:13px;margin:16px 0 8px">我的圈子</div>' +
+                '<div class="cj-section-head"><b>我的圈子</b></div>' +
                 (G.circles || []).map(circleBlock).join('') +
                 '<div class="cj-card">' +
-                    '<div class="cj-between">' +
+                    '<div class="cj-row" style="justify-content:space-between">' +
                         '<span class="cj-title" style="font-size:15px">演示控制</span>' +
-                        '<span class="cj-chip-warm" style="cursor:pointer" onclick="window.Demo.toggle()">打开面板</span>' +
+                        '<span class="cj-pill cj-pill-due" style="cursor:pointer" onclick="window.Demo.toggle()">打开面板</span>' +
                     '</div>' +
-                    '<div class="cj-sub" style="margin-top:8px">模拟圈友表态 / 推进时间 24h / 重置演示数据</div>' +
+                    '<div class="cj-sub" style="margin-top:10px">模拟圈友表态 / 推进时间 24h / 重置演示数据</div>' +
                 '</div>' +
                 '<div class="cj-sub" style="text-align:center;padding:16px 0">常聚 · Gatherly v0.1 demo<br>让圈子不散：组织不靠一个人，聚会是共同记忆</div>' +
             '</div>' + window.Common.renderTabbar('me');

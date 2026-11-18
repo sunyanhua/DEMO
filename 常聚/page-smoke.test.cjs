@@ -15,7 +15,9 @@ test('no_external_links', () => {
     assert.ok(htmlFiles.length >= 1, '至少存在一个 html 页面');
     for (const f of htmlFiles) {
         const text = fs.readFileSync(path.join(dir, f), 'utf8');
-        assert.ok(!/https?:\/\//.test(text), `${f} 不得引用外链（零网络依赖）`);
+        // data URI 是本地内嵌资源（如 SVG 噪点的 xmlns 声明），先剥离再查外链
+        const withoutDataUris = text.replace(/url\(["']?data:[^)]*\)/gi, '').replace(/data:[a-z-]+\/[a-z0-9.+-]+[^"'\s)]*/gi, '');
+        assert.ok(!/https?:\/\//.test(withoutDataUris), `${f} 不得引用外链（零网络依赖）`);
     }
 });
 
@@ -56,6 +58,17 @@ test('shell_functions_render', () => {
     for (const fn of ['toggle', 'advanceTime', 'simulateVotes', 'reset', 'getNow']) {
         assert.equal(typeof D[fn], 'function', `Demo.${fn} 应为函数`);
     }
+});
+
+test('theme_defines_warm_tokens', () => {
+    const css = fs.readFileSync(path.join(dir, 'theme.css'), 'utf8');
+    for (const token of ['--cream', '--cream-deep', '--warm', '--warm-deep', '--warm-soft', '--seal', '--line', '--ink', '--caption']) {
+        assert.ok(css.includes(token + ':'), `theme.css 定义 ${token}`);
+    }
+    for (const cls of ['.cj-pola', '.cj-ticket', '.cj-note', '.cj-host-card', '.cj-pill', '.cj-seal', '.cj-topbar']) {
+        assert.ok(css.includes(cls), `theme.css 定义 ${cls}`);
+    }
+    assert.ok(!css.includes('cj-statusbar') && !css.includes('cj-capsule'), '无小程序外壳残留');
 });
 
 test('shell_has_no_miniprogram_chrome', () => {

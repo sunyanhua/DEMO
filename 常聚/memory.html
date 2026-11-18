@@ -6,12 +6,6 @@
     <title>常聚 · 年度回顾</title>
     <link rel="stylesheet" href="tailwind.css">
     <link rel="stylesheet" href="theme.css">
-    <style>
-        .mm-cover { text-align: center; padding: 48px 16px 32px; }
-        .mm-year { font-size: 13px; color: #8A7D6F; letter-spacing: 4px; }
-        .mm-card { background: #FFFFFF; border: 1px solid #EDE4D6; border-radius: 16px; padding: 20px; margin-bottom: 12px; transform: rotate(0deg); }
-        .mm-big { font-size: 34px; font-weight: 700; color: #E8965A; }
-    </style>
 </head>
 <body class="cj-theme">
 <div id="app" class="cj-page"></div>
@@ -59,13 +53,20 @@ window.MemoryView = (function () {
         };
     }
 
+    function statCard(label, big, sub) {
+        return '<div class="cj-card" style="text-align:center;padding:20px">' +
+            '<div class="cj-sub">' + label + '</div>' +
+            '<div style="font-size:34px;font-weight:800;color:var(--warm-deep);margin:8px 0 4px">' + big + '</div>' +
+            '<div class="cj-sub">' + sub + '</div></div>';
+    }
+
     function render(circleId) {
         const st = stats(circleId);
         if (!st || !st.circle) return window.Common.renderShell('年度回顾') + '<div class="cj-empty">圈子不存在</div>';
         const c = st.circle;
-        const cover = '<div class="mm-cover">' +
-            '<div class="mm-year">常聚 · 年度回顾</div>' +
-            '<div class="cj-title" style="font-size:24px;margin:12px 0 6px">「' + c.name + '」</div>' +
+        const cover = '<div style="text-align:center;padding:32px 16px 20px">' +
+            '<div class="cj-sub" style="letter-spacing:4px">常聚 · 年度回顾</div>' +
+            '<div class="cj-title" style="font-size:24px;margin:12px 0 8px">「' + c.name + '」</div>' +
             '<div class="cj-slogan">常聚常伴，圈子不散</div>' +
         '</div>';
         if (st.count === 0) {
@@ -74,21 +75,21 @@ window.MemoryView = (function () {
                 '<div class="cj-px" style="text-align:center"><a class="cj-btn" style="text-decoration:none" href="circle.html?id=' + c.id + '">去组一局</a></div>' +
                 window.Common.renderTabbar('circles');
         }
-        const wall = st.photos.map(p =>
-            '<img src="' + p + '" style="width:31%;border-radius:8px;object-fit:cover" alt="合影">').join('');
+        const wall = st.photos.map((p, i) =>
+            '<div class="cj-pola ' + (i % 2 === 0 ? 'cj-pola-r1' : 'cj-pola-r2') + '" style="margin:0 4px 14px;width:46%">' +
+                '<img src="' + p + '" alt="合影"><div class="cj-tape"></div>' +
+            '</div>').join('');
         const cards =
-            '<div class="cj-px" style="padding-top:12px">' +
-                '<div class="mm-card"><div class="cj-sub">这一年</div><div class="mm-big">' + st.count + '</div><div class="cj-sub">我们聚了 ' + st.count + ' 次</div></div>' +
-                '<div class="mm-card"><div class="cj-sub">一起走过</div><div class="mm-big">' + st.venueCount + '</div><div class="cj-sub">个老地方</div></div>' +
-                '<div class="mm-card"><div class="cj-sub">第一场</div><div class="cj-title" style="margin-top:4px">' + st.first.title + '</div><div class="cj-sub" style="margin-top:4px">' + st.first.time + '</div></div>' +
-                '<div class="mm-card"><div class="cj-sub">最后一场</div><div class="cj-title" style="margin-top:4px">' + st.last.title + '</div><div class="cj-sub" style="margin-top:4px">' + st.last.time + '</div></div>' +
-                (st.payKing ? '<div class="mm-card"><div class="cj-sub">垫付之王</div><div class="cj-title" style="margin-top:4px">' + st.payKing.name + '</div><div class="cj-sub" style="margin-top:4px">垫付 ' + st.payKing.count + ' 次，都是爱</div></div>' : '') +
-                (st.lucky ? '<div class="mm-card"><div class="cj-sub">随机买单幸运儿</div><div class="cj-title" style="margin-top:4px">' + st.lucky + '</div><div class="cj-sub" style="margin-top:4px">转盘选中，缘分买单</div></div>' : '') +
-                '<div class="mm-card">' +
-                    '<div class="cj-sub" style="margin-bottom:8px">我们的合影</div>' +
-                    '<div style="display:flex;flex-wrap:wrap;gap:6px">' + wall + '</div>' +
-                '</div>' +
-                '<div style="text-align:center;padding-bottom:20px">' +
+            '<div class="cj-px" style="padding-top:6px">' +
+                statCard('这一年', st.count + ' 次', '我们聚了 ' + st.count + ' 次') +
+                statCard('一起走过', st.venueCount + ' 个', '老地方') +
+                '<div class="cj-card"><div class="cj-sub">第一场</div><div class="cj-title" style="margin-top:6px">' + st.first.title + '</div><div class="cj-sub" style="margin-top:6px">' + st.first.time + '</div></div>' +
+                '<div class="cj-card"><div class="cj-sub">最后一场</div><div class="cj-title" style="margin-top:6px">' + st.last.title + '</div><div class="cj-sub" style="margin-top:6px">' + st.last.time + '</div></div>' +
+                (st.payKing ? '<div class="cj-card"><div class="cj-sub">垫付之王</div><div class="cj-title" style="margin-top:6px">' + st.payKing.name + '</div><div class="cj-sub" style="margin-top:6px">垫付 ' + st.payKing.count + ' 次，都是爱</div></div>' : '') +
+                (st.lucky ? '<div class="cj-card"><div class="cj-sub">随机买单幸运儿</div><div class="cj-title" style="margin-top:6px">' + st.lucky + '</div><div class="cj-sub" style="margin-top:6px">转盘选中，缘分买单</div></div>' : '') +
+                '<div class="cj-section-head"><b>我们的合影</b></div>' +
+                '<div style="display:flex;flex-wrap:wrap;justify-content:space-between">' + wall + '</div>' +
+                '<div style="text-align:center;padding:6px 0 20px">' +
                     '<button class="cj-btn" onclick="window.Common.showToast(\'明年，常聚常伴\')">明年常聚</button>' +
                 '</div>' +
             '</div>';

@@ -12,15 +12,18 @@ window.Common = (function () {
         })[c]);
     }
 
-    // 正常 H5 顶部标题栏（不伪造小程序状态栏/胶囊）
+    // 顶栏：品牌词 + slogan 胶囊 + 页面标题（炉边温润质感，见 DESIGN.md）
     function renderShell(title) {
         return `<div class="cj-shell">
-            <div class="cj-navbar">
-                <span class="cj-navbar-title">${esc(title)}</span>
+            <div class="cj-topbar">
+                <span class="cj-wordmark">常聚</span>
+                <span class="cj-slogan-chip">常聚常伴，圈子不散</span>
             </div>
+            <div class="cj-navbar"><span class="cj-navbar-title">${esc(title)}</span></div>
         </div>`;
     }
 
+    // 悬浮药丸 tabbar
     function renderTabbar(active) {
         const tabs = [
             { id: 'circles', label: '圈子', icon: 'users', href: 'index.html' },

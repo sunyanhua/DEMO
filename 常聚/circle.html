@@ -33,28 +33,29 @@ window.CircleView = (function () {
         const host = (circle.members || []).find(m => m.id === circle.hostId);
         const g = lastGatheringOf(circle);
         const r = window.Rotation.checkRhythm({ circle, lastGatheringTime: g ? g.time : null, now: nowStr() });
-        let status;
+        let right, progress;
         if (r.due) {
-            status = '<div class="cj-card" style="background:var(--cj-warm-soft);border-color:var(--cj-warm)">' +
-                '<div class="cj-sub" style="color:var(--cj-warm);font-weight:700">' + window.Rotation.buildReminderText({ circle, gathering: g, now: nowStr() }) + '</div>' +
-                '</div>';
+            right = '<div class="cj-host-days" style="margin-left:auto;text-align:right"><b>' + r.daysSince + ' 天</b><span class="cj-sub">没聚啦，该张罗啦</span></div>';
+            progress = '<div class="cj-progress"><i style="width:100%"></i></div>';
         } else if (circle.rhythm && g && r.daysSince !== null) {
             const days = circle.rhythm.unit === 'week' ? circle.rhythm.n * 7 : circle.rhythm.n * 30;
-            status = '<span class="cj-chip">距下次相聚还有 ' + (days - r.daysSince) + ' 天</span>';
+            const left = days - r.daysSince;
+            const pct = Math.min(100, Math.round(r.daysSince / days * 100));
+            right = '<div class="cj-host-days" style="margin-left:auto;text-align:right"><b>' + left + ' 天</b><span class="cj-sub">距下次相聚</span></div>';
+            progress = '<div class="cj-progress"><i style="width:' + pct + '%"></i></div>';
         } else {
-            status = '<span class="cj-chip">随心而聚</span>';
+            right = '<div class="cj-host-days" style="margin-left:auto;text-align:right"><b>随缘</b><span class="cj-sub">想聚就聚</span></div>';
+            progress = '';
         }
-        return '<div class="cj-card">' +
-            '<div class="cj-between">' +
-                '<div class="cj-row" style="gap:10px">' +
-                    (host ? '<img src="' + host.avatarUrl + '" style="width:44px;height:44px;border-radius:50%;border:2px solid var(--cj-warm)" alt="当值">' : '') +
-                    '<div>' +
-                        '<div class="cj-title" style="font-size:15px">' + (host ? host.name : '') + ' · 当值张罗</div>' +
-                        '<div class="cj-sub" style="margin-top:2px">下一次张罗交给 TA</div>' +
-                    '</div>' +
+        return '<div class="cj-host-card">' +
+            '<div class="cj-row" style="gap:12px">' +
+                (host ? '<img src="' + host.avatarUrl + '" style="width:46px;height:46px;border-radius:50%;border:3px solid #fff;box-shadow:0 4px 10px -4px rgba(107,76,41,0.4)" alt="当值">' : '') +
+                '<div>' +
+                    '<div class="cj-host-label">当值张罗</div>' +
+                    '<div class="cj-title" style="font-size:16px;margin-top:2px">' + (host ? host.name : '待定') + '</div>' +
                 '</div>' +
-                status +
-            '</div>' +
+                right +
+            '</div>' + progress +
         '</div>';
     }
 
@@ -65,59 +66,35 @@ window.CircleView = (function () {
         if (items.length === 0) {
             return '<div class="cj-empty">还没有聚会记录<br>组一局吧，第一张合影从今天开始</div>';
         }
-        return items.map(g => {
+        return items.map((g, i) => {
             const photo = g.photos && g.photos[0];
-            const avatars = g.attendees.map(id => {
-                const m = (circle.members || []).find(x => x.id === id);
-                return m ? '<img src="' + m.avatarUrl + '" alt="' + m.name + '">' : '';
-            }).join('');
-            return '<a class="cj-card" style="display:block;text-decoration:none;color:inherit" href="record.html?id=' + g.id + '">' +
-                '<div class="cj-row" style="gap:12px">' +
-                    (photo ? '<img src="' + photo + '" style="width:64px;height:64px;border-radius:10px;object-fit:cover" alt="合影">' : '') +
-                    '<div style="flex:1">' +
-                        '<div class="cj-title" style="font-size:14px">' + g.title + '</div>' +
-                        '<div class="cj-sub" style="margin-top:4px">' + g.time + '</div>' +
-                        '<div class="cj-row cj-avatars" style="margin-top:6px">' + avatars + '</div>' +
-                    '</div>' +
+            return '<a class="cj-pola ' + (i % 2 === 0 ? 'cj-pola-r1' : 'cj-pola-r2') + '" style="display:block;text-decoration:none" href="record.html?id=' + g.id + '">' +
+                (photo ? '<img src="' + photo + '" alt="合影"><div class="cj-tape"></div>' : '<img src="images/cover-1.png" alt="合影"><div class="cj-tape"></div>') +
+                '<div class="cj-pola-cap">' +
+                    '<div class="cj-pola-date">' + g.time + '</div>' +
+                    '<div class="cj-pola-title">' + g.title + '</div>' +
                 '</div>' +
             '</a>';
         }).join('');
     }
 
-    function memberList(circle) {
-        return '<div class="cj-card">' +
-            '<div class="cj-title" style="font-size:14px;margin-bottom:10px">圈友（' + circle.members.length + '）</div>' +
-            '<div class="cj-row" style="flex-wrap:wrap;gap:10px">' +
-                circle.members.map(m =>
-                    '<div style="text-align:center;width:52px">' +
-                        '<img src="' + m.avatarUrl + '" style="width:40px;height:40px;border-radius:50%" alt="' + m.name + '">' +
-                        '<div class="cj-sub" style="font-size:10px">' + m.name + '</div>' +
-                    '</div>').join('') +
-            '</div>' +
-        '</div>';
+    function folks(circle) {
+        return '<div class="cj-folks">' + (circle.members || []).map(m =>
+            '<div class="cj-folk"><img src="' + m.avatarUrl + '" alt="' + m.name + '"><div class="cj-folk-name">' + m.name + '</div></div>').join('') + '</div>';
     }
 
     function render(circleId) {
         const circle = circleOf(circleId);
         if (!circle) return window.Common.renderShell('圈子') + '<div class="cj-empty">圈子不存在</div>';
         return window.Common.renderShell(circle.name) +
-            '<div class="cj-px" style="padding-top:12px">' +
-                '<div class="cj-between" style="margin-bottom:12px">' +
-                    '<div class="cj-row" style="gap:8px">' +
-                        '<span class="cj-chip">' + (TYPE_LABEL[circle.type] || circle.type) + '</span>' +
-                        '<div class="cj-avatars">' + circle.members.slice(0, 6).map(m => '<img src="' + m.avatarUrl + '" alt="' + m.name + '">').join('') + '</div>' +
-                    '</div>' +
-                    '<span class="cj-chip-warm" style="cursor:pointer" onclick="window.CircleView.invite()">群卡片邀请</span>' +
-                '</div>' +
-                hostCard(circle) +
-                '<div class="cj-between" style="margin:14px 0 10px">' +
-                    '<span class="cj-title">记忆时间轴</span>' +
-                    '<span class="cj-sub" style="cursor:pointer" onclick="window.CircleView.miss(\'' + circle.id + '\')">想念大家了 💭</span>' +
-                '</div>' +
-                timeline(circle) +
-                memberList(circle) +
-                '<a class="cj-btn cj-fab" href="propose.html?circle=' + circle.id + '" style="text-decoration:none">张罗个局</a>' +
-            '</div>' + window.Common.renderTabbar('circles');
+            '<div class="cj-cityline"><span class="cj-pill cj-pill-plain">' + (TYPE_LABEL[circle.type] || circle.type) + '</span> <span class="cj-pill cj-pill-plain">' + circle.members.length + ' 位圈友</span> <span class="cj-pill cj-pill-due" style="cursor:pointer" onclick="window.CircleView.invite()">群卡片邀请</span></div>' +
+            hostCard(circle) +
+            '<div class="cj-section-head"><b>记忆时间轴</b><span class="cj-sub" style="margin-left:auto;cursor:pointer" onclick="window.CircleView.miss(\'' + circle.id + '\')">想念大家了 💭</span></div>' +
+            timeline(circle) +
+            '<div class="cj-section-head"><b>圈友</b></div>' +
+            folks(circle) +
+            '<a class="cj-btn cj-fab" style="text-decoration:none" href="propose.html?circle=' + circle.id + '">张罗个局</a>' +
+            window.Common.renderTabbar('circles');
     }
 
     // "想念大家了"：全体圈友收到模拟服务通知 + 落库

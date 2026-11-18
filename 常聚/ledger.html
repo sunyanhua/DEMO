@@ -76,7 +76,7 @@ window.LedgerView = (function () {
     function wheelSVG(circle) {
         const names = (circle.members || []).map(m => m.name);
         const n = names.length;
-        const colors = ['#E8965A', '#F6E3D3', '#E8965A', '#F6E3D3', '#E8965A', '#F6E3D3'];
+        const colors = ['#E08A3C', '#F9EBD8', '#E08A3C', '#F9EBD8', '#E08A3C', '#F9EBD8'];
         let segs = '';
         for (let i = 0; i < n; i++) {
             const a0 = (i / n) * 2 * Math.PI - Math.PI / 2;
@@ -87,19 +87,19 @@ window.LedgerView = (function () {
         }
         return '<svg viewBox="0 0 120 120" style="width:120px;height:120px" id="wheelSvg">' +
             segs +
-            '<circle cx="60" cy="60" r="8" fill="#3D3229"></circle>' +
-            '<path d="M60 2 L64 14 L56 14 Z" fill="#3D3229"></path>' +
+            '<circle cx="60" cy="60" r="8" fill="#3B2E22"></circle>' +
+            '<path d="M60 2 L64 14 L56 14 Z" fill="#3B2E22"></path>' +
         '</svg>';
     }
 
     function stateBadge(bill) {
         const state = window.Settle.billState({ bill, settled: bill.settled });
         const total = Object.keys(bill.settled || {}).length;
-        if (state === 'settled') return '<span class="cj-chip">已结清 ✓</span>';
+        if (state === 'settled') return '<span class="cj-pill cj-pill-plain">已结清 ✓</span>';
         const members = new Set();
         (bill.entries || []).forEach(e => (e.participants || []).forEach(p => members.add(p)));
         const left = Math.max(0, members.size - total);
-        return '<span class="cj-chip-warm">还有 ' + left + ' 笔没结清，不着急，记得就行</span>';
+        return '<span class="cj-pill cj-pill-due">还有 ' + left + ' 笔没结清，不着急，记得就行</span>';
     }
 
     function render(gatheringId) {
@@ -112,25 +112,32 @@ window.LedgerView = (function () {
         const shares = window.Settle.computeShares({ entries: bill.entries, memberIds });
         const transfers = window.Settle.consolidate(shares);
         const entriesHTML = (bill.entries || []).map(e =>
-            '<div class="cj-row" style="justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--cj-line)">' +
-                '<div><div style="font-size:14px;font-weight:600">' + e.title + '</div>' +
-                '<div class="cj-sub">' + memberName(circle, e.payerId) + ' 垫付 · ' + (e.participants || []).length + ' 人摊</div></div>' +
-                '<div style="font-size:15px;font-weight:700">¥' + e.amount + '</div>' +
+            '<div class="cj-ticket">' +
+                '<div class="cj-row" style="justify-content:space-between">' +
+                    '<div><div class="cj-title" style="font-size:13px">' + e.title + '</div>' +
+                    '<div class="cj-sub" style="margin-top:3px">' + memberName(circle, e.payerId) + ' 垫付 · ' + (e.participants || []).length + ' 人摊</div></div>' +
+                    '<div style="font-size:18px;font-weight:800;color:var(--warm-deep)">¥' + e.amount + '</div>' +
+                '</div>' +
+                '<div class="cj-tear"></div>' +
+                '<div class="cj-row" style="justify-content:space-between">' +
+                    '<span class="cj-sub">人均</span>' +
+                    '<span style="font-weight:800;color:var(--warm-deep)">¥' + Math.round(e.amount / (e.participants || []).length * 100) / 100 + '</span>' +
+                '</div>' +
             '</div>').join('') || '<div class="cj-sub" style="padding:8px 0">还没有账单，记下第一笔吧</div>';
         const transferHTML = transfers.map(t =>
             '<div class="cj-row cj-transfer" style="justify-content:space-between;padding:6px 0">' +
                 '<span class="cj-sub">' + memberName(circle, t.from) + ' → ' + memberName(circle, t.to) + '</span>' +
-                '<span style="font-weight:700">¥' + t.amount + '</span></div>').join('');
+                '<span style="font-weight:800">¥' + t.amount + '</span></div>').join('');
         const host = (circle.members || []).find(m => m.id === g.payerId);
         const buyLabel = g.buyMode === 'random' ? '随机买单 · ' + (host ? host.name + ' 中奖' : '') :
             g.buyMode === 'host' ? (host ? host.name + ' 请客' : '指定买单') : 'AA 均摊';
         return window.Common.renderShell('AA 账本') +
-            '<div class="cj-px" style="padding-top:12px">' +
+            '<div class="cj-px" style="padding-top:6px">' +
                 '<div class="cj-card">' +
-                    '<div class="cj-between">' +
-                        '<div class="cj-title" style="font-size:15px">' + g.title + '</div>' + stateBadge(bill) +
+                    '<div class="cj-row" style="justify-content:space-between">' +
+                        '<div class="cj-title" style="font-size:16px">' + g.title + '</div>' + stateBadge(bill) +
                     '</div>' +
-                    '<div class="cj-sub" style="margin-top:6px">买单方式：' + buyLabel + '</div>' +
+                    '<div class="cj-sub" style="margin-top:8px">买单方式：' + buyLabel + '</div>' +
                     '<div class="cj-row" style="gap:8px;margin-top:10px;flex-wrap:wrap">' +
                         '<span class="' + (g.buyMode === 'aa' ? 'cj-chip-warm' : 'cj-chip') + '" style="cursor:pointer" onclick="window.LedgerView.setBuyMode(\'' + g.id + '\',\'aa\')">均摊 AA</span>' +
                         '<span class="' + (g.buyMode === 'random' ? 'cj-chip-warm' : 'cj-chip') + '" style="cursor:pointer" onclick="window.LedgerView.spinWheel()">🎡 随机买单</span>' +
@@ -138,12 +145,13 @@ window.LedgerView = (function () {
                     '</div>' +
                     '<div id="wheelArea" style="text-align:center;margin-top:10px">' + (g.buyMode === 'random' ? wheelSVG(circle) : '') + '</div>' +
                 '</div>' +
-                '<div class="cj-card">' +
-                    '<div class="cj-title" style="font-size:14px;margin-bottom:8px">账单</div>' + entriesHTML +
-                    '<div class="cj-row" style="gap:8px;margin-top:10px">' +
-                        '<input id="entryTitle" style="flex:1;padding:8px;border:1px solid var(--cj-line);border-radius:10px;font-size:13px" placeholder="记一笔（如：酒水）">' +
-                        '<input id="entryAmount" style="width:72px;padding:8px;border:1px solid var(--cj-line);border-radius:10px;font-size:13px" placeholder="金额">' +
-                        '<button class="cj-btn" style="padding:8px 12px" onclick="window.LedgerView.submitEntry()">记一笔</button>' +
+                '<div class="cj-section-head"><b>账单</b></div>' +
+                entriesHTML +
+                '<div class="cj-card" style="margin-top:4px">' +
+                    '<div class="cj-row" style="gap:8px">' +
+                        '<input id="entryTitle" style="flex:1;padding:10px;border:1px solid var(--line);border-radius:999px;font-size:13px;background:var(--cream)" placeholder="记一笔（如：酒水）">' +
+                        '<input id="entryAmount" style="width:76px;padding:10px;border:1px solid var(--line);border-radius:999px;font-size:13px;background:var(--cream)" placeholder="金额">' +
+                        '<button class="cj-btn" style="padding:10px 14px" onclick="window.LedgerView.submitEntry()">记一笔</button>' +
                     '</div>' +
                 '</div>' +
                 '<div class="cj-card">' +
@@ -156,7 +164,7 @@ window.LedgerView = (function () {
                             memberName(circle, id) + (bill.settled[id] ? ' 已转账 ✓' : ' 点我=已转账') + '</span>').join('') +
                     '</div>' +
                 '</div>' +
-                '<a class="cj-sub" style="display:block;text-align:center;margin-top:12px" href="record.html?id=' + g.id + '">回聚会记录 →</a>' +
+                '<a class="cj-sub" style="display:block;text-align:center;margin-top:14px" href="record.html?id=' + g.id + '">回聚会记录 →</a>' +
             '</div>' + window.Common.renderTabbar('circles');
     }
 

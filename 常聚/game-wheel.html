@@ -13,7 +13,7 @@
 <script>
 window.WheelView = (function () {
     const SEGMENTS = ['谁点菜', '谁讲一个秘密', '真心话', '喝一杯', '全场干杯', '免死金牌'];
-    const COLORS = ['#E8965A', '#F6E3D3', '#E8965A', '#F6E3D3', '#E8965A', '#F6E3D3'];
+    const COLORS = ['#E08A3C', '#F9EBD8', '#E08A3C', '#F9EBD8', '#E08A3C', '#F9EBD8'];
 
     function wheelSVG() {
         const n = SEGMENTS.length;
@@ -26,23 +26,21 @@ window.WheelView = (function () {
             segs += '<path d="M100 100 L' + x0 + ' ' + y0 + ' A92 92 0 0 1 ' + x1 + ' ' + y1 + ' Z" fill="' + COLORS[i] + '"></path>';
         }
         return '<svg viewBox="0 0 200 200" style="width:200px;height:200px" id="wheelSvg">' + segs +
-            '<circle cx="100" cy="100" r="10" fill="#3D3229"></circle>' +
-            '<path d="M100 4 L106 20 L94 20 Z" fill="#3D3229"></path>' +
+            '<circle cx="100" cy="100" r="10" fill="#3B2E22"></circle>' +
+            '<path d="M100 4 L106 20 L94 20 Z" fill="#3B2E22"></path>' +
         '</svg>';
     }
 
     function render() {
         return window.Common.renderShell('聚会大转盘') +
-            '<div class="cj-px" style="padding-top:16px;text-align:center">' +
-                '<div class="cj-sub" style="margin-bottom:12px">今晚的彩头，转出来才算数</div>' +
-                '<div style="display:inline-block">' + wheelSVG() + '</div>' +
+            '<div class="cj-px" style="padding-top:6px;text-align:center">' +
+                '<div class="cj-sub" style="margin-bottom:14px">今晚的彩头，转出来才算数</div>' +
+                '<div class="cj-card" style="display:inline-block;padding:16px;margin-bottom:0">' + wheelSVG() + '</div>' +
                 '<div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:16px">' +
-                    SEGMENTS.map(s => '<span class="cj-chip">' + s + '</span>').join('') +
+                    SEGMENTS.map(s => '<span class="cj-pill cj-pill-plain">' + s + '</span>').join('') +
                 '</div>' +
-                '<div style="margin-top:20px">' +
-                    '<button class="cj-btn" style="width:100%;justify-content:center" onclick="window.WheelView.spin()">转一下</button>' +
-                '</div>' +
-                '<div id="wheelResult" style="margin-top:16px"></div>' +
+                '<button class="cj-btn cj-btn-block" style="margin-top:16px" onclick="window.WheelView.spin()">转一下</button>' +
+                '<div id="wheelResult" style="margin-top:14px"></div>' +
                 '<a class="cj-sub" style="display:block;margin-top:16px" href="game-liushang.html">换个玩法：曲水流觞 →</a>' +
             '</div>' + window.Common.renderTabbar('circles');
     }
@@ -54,8 +52,8 @@ window.WheelView = (function () {
         window.WheelView._result = SEGMENTS[idx];
         const el = document.getElementById('wheelResult');
         if (el && el.innerHTML !== undefined) {
-            el.innerHTML = '<div class="cj-card" style="background:var(--cj-warm-soft);border-color:var(--cj-warm)">' +
-                '<span class="cj-chip-warm">转到了</span> <b>' + window.WheelView._result + '</b></div>';
+            el.innerHTML = '<div class="cj-host-card" style="margin:0">' +
+                '<span class="cj-pill cj-pill-due">转到了</span> <b>' + window.WheelView._result + '</b></div>';
         }
         window.Common.showToast('转到了：' + window.WheelView._result);
         return window.WheelView._result;

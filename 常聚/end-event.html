@@ -27,30 +27,28 @@ window.EndView = (function () {
         if (!g) return window.Common.renderShell('散场') + '<div class="cj-empty">聚会不存在</div>';
         const circle = window.GlobalData.circles.find(c => c.id === g.circleId);
         return window.Common.renderShell('散场 · 三步仪式') +
-            '<div class="cj-px" style="padding-top:12px">' +
+            '<div class="cj-px" style="padding-top:6px">' +
                 '<div class="cj-card">' +
-                    '<div class="cj-title" style="font-size:14px;margin-bottom:8px">① 上传合影</div>' +
+                    '<div class="cj-title" style="font-size:14px;margin-bottom:10px">① 上传合影</div>' +
                     '<div style="display:flex;flex-wrap:wrap;gap:8px" id="photoPool">' +
                         PHOTO_POOL.map(p =>
-                            '<img src="' + p + '" data-photo="' + p + '" style="width:64px;height:64px;border-radius:8px;object-fit:cover;cursor:pointer;border:2px solid var(--cj-line)" onclick="window.EndView.pickPhoto(\'' + p + '\')" alt="照片">').join('') +
+                            '<img src="' + p + '" data-photo="' + p + '" style="width:64px;height:64px;border-radius:12px;object-fit:cover;cursor:pointer;border:2px solid var(--line)" onclick="window.EndView.pickPhoto(\'' + p + '\')" alt="照片">').join('') +
                     '</div>' +
-                    '<div class="cj-sub" style="margin-top:6px">点选 1-3 张今晚的合影</div>' +
+                    '<div class="cj-sub" style="margin-top:8px">点选 1-3 张今晚的合影</div>' +
                 '</div>' +
                 '<div class="cj-card" id="drawCard">' +
-                    '<div class="cj-title" style="font-size:14px;margin-bottom:8px">② 抽下一位张罗</div>' +
+                    '<div class="cj-title" style="font-size:14px;margin-bottom:6px">② 抽下一位张罗</div>' +
                     '<div class="cj-sub">谁抽中，谁来张罗下一场</div>' +
-                    '<div style="text-align:center;margin-top:12px">' +
-                        '<button class="cj-btn" onclick="window.EndView.draw()">开始抽签</button>' +
+                    '<div style="text-align:center;margin-top:14px">' +
+                        '<button class="cj-btn" style="width:100%;justify-content:center" onclick="window.EndView.draw()">开始抽签</button>' +
                     '</div>' +
                     '<div id="drawResult"></div>' +
                 '</div>' +
                 '<div class="cj-card">' +
-                    '<div class="cj-title" style="font-size:14px;margin-bottom:8px">③ 给这次聚会留一句话</div>' +
-                    '<input id="titleInput" style="width:100%;padding:10px;border:1px solid var(--cj-line);border-radius:10px;font-size:14px" value="' + g.title + '">' +
-                    '<input id="summaryInput" style="width:100%;padding:10px;border:1px solid var(--cj-line);border-radius:10px;font-size:13px;margin-top:8px" placeholder="写点什么（可选）">' +
-                    '<div style="text-align:center;margin-top:12px">' +
-                        '<button class="cj-btn" style="width:100%;justify-content:center" onclick="window.EndView.finish()">完成 · 生成记录卡</button>' +
-                    '</div>' +
+                    '<div class="cj-title" style="font-size:14px;margin-bottom:10px">③ 给这次聚会留一句话</div>' +
+                    '<input id="titleInput" style="width:100%;padding:10px;border:1px solid var(--line);border-radius:12px;font-size:14px;background:var(--cream)" value="' + g.title + '">' +
+                    '<input id="summaryInput" style="width:100%;padding:10px;border:1px solid var(--line);border-radius:12px;font-size:13px;margin-top:8px;background:var(--cream)" placeholder="写点什么（可选）">' +
+                    '<button class="cj-btn cj-btn-block" style="margin-top:14px" onclick="window.EndView.finish()">完成 · 生成记录卡</button>' +
                 '</div>' +
             '</div>' + window.Common.renderTabbar('circles');
     }
@@ -65,7 +63,7 @@ window.EndView = (function () {
         if (imgs && imgs.forEach) {
             imgs.forEach(img => {
                 const on = selected.includes(img.getAttribute('data-photo'));
-                img.style.border = on ? '2px solid var(--cj-warm)' : '2px solid var(--cj-line)';
+                img.style.border = on ? '2px solid var(--warm)' : '2px solid var(--line)';
             });
         }
     }
@@ -84,9 +82,9 @@ window.EndView = (function () {
         const host = circle.members.find(m => m.id === newHost);
         const el = document.getElementById('drawResult');
         if (el && el.innerHTML !== undefined) {
-            el.innerHTML = '<div class="cj-card" style="background:var(--cj-warm-soft);border-color:var(--cj-warm);margin-top:10px;text-align:center">' +
-                '<img src="' + host.avatarUrl + '" style="width:48px;height:48px;border-radius:50%;border:2px solid var(--cj-warm)" alt="下一任">' +
-                '<div class="cj-title" style="font-size:15px;margin-top:6px">下一任张罗：' + host.name + '</div>' +
+            el.innerHTML = '<div class="cj-host-card" style="margin:14px 0 0;text-align:center">' +
+                '<img src="' + host.avatarUrl + '" style="width:48px;height:48px;border-radius:50%;border:3px solid #fff" alt="下一任">' +
+                '<div class="cj-title" style="font-size:15px;margin-top:8px">下一任张罗：' + host.name + '</div>' +
                 '<div class="cj-sub">下一场就交给 TA 啦</div>' +
             '</div>';
         }

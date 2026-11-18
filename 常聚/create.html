@@ -74,21 +74,19 @@ window.CreateCircle = (function () {
     return { submit, simulateJoin, TYPE_LIST };
 })();
 document.getElementById('app').innerHTML = window.Common.renderShell('建圈子') +
-    '<div class="cj-px" style="padding-top:16px">' +
-        '<div class="cj-title" style="margin-bottom:4px">圈子的类型</div>' +
+    '<div class="cj-px" style="padding-top:6px">' +
+        '<div class="cj-title" style="font-size:14px;margin-bottom:6px">圈子的类型</div>' +
         '<div class="cj-sub" style="margin-bottom:12px">选类型会自动预填一个名字，可修改</div>' +
         '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px" id="typeRow">' +
             window.CreateCircle.TYPE_LIST.map(t =>
                 '<span class="cj-chip" data-key="' + t.key + '" style="padding:8px 14px;font-size:13px;cursor:pointer" onclick="window.CreateCircle.pickType(\'' + t.key + '\')">' + t.label + '</span>').join('') +
         '</div>' +
-        '<div class="cj-title" style="margin-bottom:8px">圈子叫什么</div>' +
-        '<input id="circleName" class="cj-card" style="width:100%;font-size:15px;padding:12px;border-radius:12px;border:1px solid var(--cj-line)" placeholder="给圈子起个名字吧">' +
-        '<div style="margin-top:16px;text-align:center">' +
-            '<button class="cj-btn cj-btn-block" style="justify-content:center" onclick="window.CreateCircle.go()">生成邀请卡片</button>' +
-        '</div>' +
-        '<div id="cardArea" style="margin-top:20px"></div>' +
+        '<div class="cj-title" style="font-size:14px;margin-bottom:10px">圈子叫什么</div>' +
+        '<input id="circleName" style="width:100%;padding:12px;border:1px solid var(--line);border-radius:14px;font-size:15px;background:var(--cream)" placeholder="给圈子起个名字吧">' +
+        '<button class="cj-btn cj-btn-block" style="margin-top:16px" onclick="window.CreateCircle.go()">生成邀请卡片</button>' +
+        '<div id="cardArea" style="margin-top:16px"></div>' +
         '<div id="shareArea"></div>' +
-    '</div>';
+    '</div>' + window.Common.renderTabbar('circles');
 window.CreateCircle.pickType = function (key) {
     const t = window.CreateCircle.TYPE_LIST.find(x => x.key === key);
     if (!t) return;
@@ -104,28 +102,27 @@ window.CreateCircle.go = function () {
     window.CreateCircle._circle = c;
     const host = c.members.find(m => m.id === c.hostId);
     document.getElementById('cardArea').innerHTML =
-        '<div class="cj-card" style="text-align:center;background:var(--cj-cream)">' +
-            '<div style="font-size:11px;color:var(--cj-ink-soft)">常聚 · 圈子邀请卡片</div>' +
-            '<div class="cj-title" style="font-size:20px;margin:8px 0">' + c.name + '</div>' +
+        '<div class="cj-card" style="text-align:center;padding:24px 16px">' +
+            '<div class="cj-sub" style="letter-spacing:2px">常聚 · 圈子邀请卡片</div>' +
+            '<div class="cj-title" style="font-size:22px;margin:10px 0 8px">' + c.name + '</div>' +
             '<div class="cj-slogan">常聚常伴，圈子不散</div>' +
-            '<div class="cj-row" style="justify-content:center;gap:6px;margin-top:10px">' +
-                '<img src="' + host.avatarUrl + '" style="width:28px;height:28px;border-radius:50%">' +
+            '<div class="cj-row" style="justify-content:center;gap:8px;margin-top:14px">' +
+                '<img src="' + host.avatarUrl + '" class="cj-avatar-ring" style="width:30px;height:30px" alt="发起人">' +
                 '<span class="cj-sub">' + host.name + ' 发起 · 首任张罗</span>' +
             '</div>' +
+            '<div class="cj-tear" style="border-top:1.5px dashed #E5D5B8;margin:16px -16px 0"></div>' +
         '</div>' +
-        '<div style="text-align:center;margin-top:12px">' +
-            '<button class="cj-btn" onclick="window.CreateCircle.share()">分享到微信群</button>' +
-        '</div>';
+        '<button class="cj-btn cj-btn-block" style="margin-top:4px" onclick="window.CreateCircle.share()">分享到微信群</button>';
 };
 window.CreateCircle.share = function () {
     document.getElementById('shareArea').innerHTML =
         '<div style="position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;display:flex;align-items:flex-end">' +
-            '<div class="cj-card" style="width:100%;border-radius:16px 16px 0 0;margin:0">' +
-                '<div class="cj-title" style="margin-bottom:12px">选择微信群</div>' +
-                '<div style="display:flex;flex-direction:column;gap:10px">' +
-                    '<div class="cj-between" style="cursor:pointer" onclick="window.CreateCircle.pickGroup(\'周五麻将局群\')"><span>周五麻将局群</span><span class="cj-sub">6 人</span></div>' +
-                    '<div class="cj-between" style="cursor:pointer" onclick="window.CreateCircle.pickGroup(\'老同学群\')"><span>老同学群</span><span class="cj-sub">8 人</span></div>' +
-                    '<div class="cj-between" style="cursor:pointer" onclick="window.CreateCircle.pickGroup(\'新建的群\')"><span>新建的群</span><span class="cj-sub">3 人</span></div>' +
+            '<div style="background:var(--cream);width:100%;border-radius:24px 24px 0 0;padding:20px;box-shadow:0 -8px 32px rgba(59,46,34,0.2)">' +
+                '<div class="cj-title" style="font-size:16px;margin-bottom:14px">选择微信群</div>' +
+                '<div style="display:flex;flex-direction:column;gap:12px">' +
+                    '<div class="cj-card" style="margin:0;cursor:pointer" onclick="window.CreateCircle.pickGroup(\'周五麻将局群\')"><div class="cj-row" style="justify-content:space-between"><span class="cj-title" style="font-size:14px">周五麻将局群</span><span class="cj-sub">6 人</span></div></div>' +
+                    '<div class="cj-card" style="margin:0;cursor:pointer" onclick="window.CreateCircle.pickGroup(\'老同学群\')"><div class="cj-row" style="justify-content:space-between"><span class="cj-title" style="font-size:14px">老同学群</span><span class="cj-sub">8 人</span></div></div>' +
+                    '<div class="cj-card" style="margin:0;cursor:pointer" onclick="window.CreateCircle.pickGroup(\'新建的群\')"><div class="cj-row" style="justify-content:space-between"><span class="cj-title" style="font-size:14px">新建的群</span><span class="cj-sub">3 人</span></div></div>' +
                 '</div>' +
             '</div>' +
         '</div>';
@@ -137,10 +134,8 @@ window.CreateCircle.pickGroup = function (groupName) {
     document.getElementById('shareArea').innerHTML = '';
     window.Common.showToast('卡片已发到「' + groupName + '」，3 位群友点了进来');
     document.getElementById('cardArea').innerHTML +=
-        '<div class="cj-sub" style="text-align:center;margin-top:10px">已加入 ' + c.members.length + ' 人 · 群友点卡片即可入圈</div>' +
-        '<div style="text-align:center;margin-top:12px">' +
-            '<a class="cj-btn" href="circle.html?id=' + c.id + '">进入圈子</a>' +
-        '</div>';
+        '<div class="cj-sub" style="text-align:center;margin-top:12px">已加入 ' + c.members.length + ' 人 · 群友点卡片即可入圈</div>' +
+        '<a class="cj-btn cj-btn-block" style="margin-top:12px;text-decoration:none" href="circle.html?id=' + c.id + '">进入圈子</a>';
 };
 window.Common.initIcons();
 </script>
