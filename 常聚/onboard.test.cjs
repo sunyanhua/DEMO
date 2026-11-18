@@ -116,6 +116,7 @@ test('profile_renders_sections', () => {
     assert.ok(s.document._html.includes('定位'), '地点为定位式选择');
     assert.ok(s.document._html.includes('商圈'), '地点为商圈级，不需要具体地址');
     assert.ok(s.document._html.includes('跳过'), '可跳过以后完善');
+    assert.equal((s.document._html.match(/cj-wiz-card/g) || []).length, 1, '资料页单卡多字段布局');
 });
 
 test('profile_submit_persists_and_redirects', () => {
@@ -149,12 +150,26 @@ test('profile_skip_goes_next', () => {
 test('register_renders_avatar_pool_and_phone', () => {
     const s = makeSandbox('register.html');
     assert.ok(s.document._html.includes('注册常聚'), '注册页标题');
-    assert.ok((s.document._html.match(/avatar-\d+\.png/g) || []).length >= 12, '头像池至少 12 个');
+    assert.ok(s.document._html.includes('头像'), '头像字段');
+    assert.ok(s.document._html.includes('点击更换头像'), '头像=单头像+更换入口（他俩能成同款）');
+    assert.equal((s.document._html.match(/avatar-\d+\.png/g) || []).length, 1, '主表单只显示当前头像一个');
     assert.ok(s.document._html.includes('138 **** 8000'), '手机号回显');
     assert.ok(s.document._html.includes('手机号'), '手机号字段');
     assert.ok(s.document._html.includes('男') && s.document._html.includes('女'), '性别单选存在');
     assert.ok(s.document._html.includes('disabled'), '手机号不可修改（与授权一致）');
     assert.ok(s.document._html.includes('不可修改'), 'amber 提示条');
     assert.ok(s.document._html.includes('cj-steps'), '步骤条（注册→资料完善）');
-    assert.ok(s.document._html.includes('cj-wiz-card'), '白卡表单样式（他俩能成同款）');
+    assert.ok(s.document._html.includes('基本资料'), '卡标题（他俩能成同款 h3）');
+    assert.equal((s.document._html.match(/cj-wiz-card/g) || []).length, 1, '单卡多字段布局（不拆多卡）');
+});
+
+test('register_avatar_picker_popup', () => {
+    const s = makeSandbox('register.html');
+    s.window.RegisterView.openAvatarPicker();
+    assert.ok(s.document._html.includes('选择头像'), '弹窗标题');
+    assert.ok((s.document._html.match(/avatar-\d+\.png/g) || []).length >= 12, '弹窗头像池至少 12 个');
+    s.window.RegisterView.pickAvatar('images/avatar-3.png');
+    assert.equal(s.window.RegisterView._avatar, 'images/avatar-3.png', '选择生效');
+    s.window.RegisterView.closeAvatarPicker();
+    assert.ok(!s.document._html.includes('选择头像'), '弹窗关闭');
 });

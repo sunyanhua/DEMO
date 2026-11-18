@@ -29,7 +29,17 @@ window.ProfileView = (function () {
         return '<div class="cj-steps">' +
             '<div class="cj-step done"><div class="cj-step-dot">✓</div><div class="cj-step-label">注册</div></div>' +
             '<div class="cj-step-line done"></div>' +
-            '<div class="cj-step active"><div class="cj-step-dot">2</div><div class="cj-step-label">资料完善</div></div>' +
+            '<div class="cj-step active"><div class="cj-step-dot">2</div><div class="cj-step-label">资料<br>完善</div></div>' +
+        '</div>';
+    }
+
+    function locField(icon, label, selectId, area) {
+        return '<div style="margin-bottom:16px">' +
+            '<label class="cj-field-label"><i data-lucide="' + icon + '" style="width:13px;height:13px;display:inline;vertical-align:-1px;color:#E08A3C"></i> ' + label + ' · 定位到商圈</label>' +
+            '<select id="' + selectId + '" class="cj-field-select">' +
+                AREAS.map(a => '<option value="' + a + '"' + (a === area ? ' selected' : '') + '>' + a + '（商圈）</option>').join('') +
+            '</select>' +
+            '<div style="display:flex;align-items:flex-start;gap:6px;margin-top:6px"><i data-lucide="eye-off" style="width:12px;height:12px;color:#9CA3AF;margin-top:1px;flex-shrink:0"></i><span style="font-size:11px;color:#9CA3AF">只用于组局推荐，不展示具体地址</span></div>' +
         '</div>';
     }
 
@@ -38,38 +48,29 @@ window.ProfileView = (function () {
         return '<div class="cj-wiz-head"><i data-lucide="file-text"></i><span class="cj-wiz-title">' + (s._edit ? '编辑资料' : '完善资料') + '</span></div>' +
             '<div style="padding:16px 16px 8px">' + stepsBar() +
             '<div class="cj-wiz-card">' +
-                '<label class="cj-field-label">出生日期</label>' +
-                '<input type="date" id="birthInput" value="' + s._birth + '" class="cj-field-input">' +
+                '<h3 class="cj-wiz-h3">' + (s._edit ? '我的资料' : '资料完善') + '</h3>' +
+                '<div style="margin-bottom:16px">' +
+                    '<label class="cj-field-label">出生日期</label>' +
+                    '<input type="date" id="birthInput" value="' + s._birth + '" class="cj-field-input">' +
+                '</div>' +
+                '<div style="margin-bottom:16px">' +
+                    '<label class="cj-field-label">个人爱好（可多选）</label>' +
+                    '<div style="height:8px"></div>' + chips(HOBBIES, s._hobbies, 'window.ProfileView.toggleHobby') +
+                '</div>' +
+                '<div style="margin-bottom:16px">' +
+                    '<label class="cj-field-label">MBTI</label>' +
+                    '<div style="height:8px"></div>' + chips(MBTI_LIST, [s._mbti], 'window.ProfileView.pickMbti') +
+                '</div>' +
+                '<div style="margin-bottom:16px">' +
+                    '<label class="cj-field-label">空闲时间（可多选）</label>' +
+                    '<div style="height:8px"></div>' + chips(FREE_TIME, s._freeTime, 'window.ProfileView.toggleFreeTime') +
+                '</div>' +
+                locField('map-pin', '工作地点', 'workSelect', s._workArea) +
+                locField('home', '住处', 'homeSelect', s._homeArea) +
+                '<div class="cj-notice"><i data-lucide="alert-triangle"></i><p>这些信息只用于智能组局推荐，不向圈友展示，可随时在个人中心修改</p></div>' +
+                '<button class="cj-btn-grad" style="margin-top:16px" onclick="window.ProfileView.submit()">完成</button>' +
+                '<button class="cj-btn-gray" style="margin-top:10px" onclick="window.ProfileView.skip()">先跳过，以后再完善</button>' +
             '</div>' +
-            '<div class="cj-wiz-card">' +
-                '<label class="cj-field-label">个人爱好（可多选）</label>' +
-                '<div style="height:8px"></div>' + chips(HOBBIES, s._hobbies, 'window.ProfileView.toggleHobby') +
-            '</div>' +
-            '<div class="cj-wiz-card">' +
-                '<label class="cj-field-label">MBTI</label>' +
-                '<div style="height:8px"></div>' + chips(MBTI_LIST, [s._mbti], 'window.ProfileView.pickMbti') +
-            '</div>' +
-            '<div class="cj-wiz-card">' +
-                '<label class="cj-field-label">空闲时间（可多选）</label>' +
-                '<div style="height:8px"></div>' + chips(FREE_TIME, s._freeTime, 'window.ProfileView.toggleFreeTime') +
-            '</div>' +
-            '<div class="cj-wiz-card">' +
-                '<label class="cj-field-label"><i data-lucide="map-pin" style="width:13px;height:13px;display:inline;vertical-align:-1px;color:#E08A3C"></i> 工作地点 · 定位到商圈</label>' +
-                '<select id="workSelect" class="cj-field-select" style="margin-bottom:8px">' +
-                    AREAS.map(a => '<option value="' + a + '"' + (a === s._workArea ? ' selected' : '') + '>' + a + '（商圈）</option>').join('') +
-                '</select>' +
-                '<div style="display:flex;align-items:flex-start;gap:6px"><i data-lucide="eye-off" style="width:12px;height:12px;color:#9CA3AF;margin-top:1px;flex-shrink:0"></i><span style="font-size:11px;color:#9CA3AF">只用于组局推荐，不展示具体地址</span></div>' +
-            '</div>' +
-            '<div class="cj-wiz-card">' +
-                '<label class="cj-field-label"><i data-lucide="home" style="width:13px;height:13px;display:inline;vertical-align:-1px;color:#E08A3C"></i> 住处 · 定位到商圈</label>' +
-                '<select id="homeSelect" class="cj-field-select" style="margin-bottom:8px">' +
-                    AREAS.map(a => '<option value="' + a + '"' + (a === s._homeArea ? ' selected' : '') + '>' + a + '（商圈）</option>').join('') +
-                '</select>' +
-                '<div style="display:flex;align-items:flex-start;gap:6px"><i data-lucide="eye-off" style="width:12px;height:12px;color:#9CA3AF;margin-top:1px;flex-shrink:0"></i><span style="font-size:11px;color:#9CA3AF">只用于组局推荐，不展示具体地址</span></div>' +
-            '</div>' +
-            '<div class="cj-notice" style="margin-bottom:12px"><i data-lucide="alert-triangle"></i><p>这些信息只用于智能组局推荐，不向圈友展示，可随时在个人中心修改</p></div>' +
-            '<button class="cj-btn-grad" onclick="window.ProfileView.submit()">完成</button>' +
-            '<button class="cj-btn-gray" style="margin-top:10px" onclick="window.ProfileView.skip()">先跳过，以后再完善</button>' +
         '</div>';
     }
 
