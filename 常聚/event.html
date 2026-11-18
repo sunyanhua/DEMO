@@ -28,8 +28,7 @@ window.EventView = (function () {
         const sum = window.Zuju.voteSummary(p.id);
         const timeText = gathering ? gathering.time : (sum.bestTime.winnerIndex !== null ? p.timeCandidates[sum.bestTime.winnerIndex] : '待定');
         const venue = G.venues.find(v => v.id === (gathering ? gathering.venueId : p.venueIds[0]));
-        const projectIds = (gathering && gathering.projectIds) ? gathering.projectIds : (p.projectIds || [p.projectId]);
-        const projects = projectIds.map(id => G.projects.find(x => x.id === id)).filter(Boolean);
+        const project = G.projects.find(x => x.id === (gathering ? gathering.projectId : p.projectId));
         const nonVoters = (circle.members || []).filter(m => !p.votes.time[m.id]);
         const attendeeIds = gathering ? gathering.attendees : Object.keys(p.votes.time);
         const attendeeHTML = attendeeIds.map(id => {
@@ -40,7 +39,8 @@ window.EventView = (function () {
             '<div class="cj-px" style="padding-top:6px">' +
                 '<div class="cj-card" style="text-align:center;padding:20px">' +
                     '<span class="cj-pill cj-pill-due">' + (p.status === 'decided' ? '已定案' : '表态中') + '</span>' +
-                    '<div class="cj-title" style="font-size:20px;margin:12px 0 6px">' + (projects.length ? projects.map(x => x.name).join(' + ') : '聚会') + '</div>' +
+                    '<div class="cj-title" style="font-size:20px;margin:12px 0 6px">' + (project ? project.name : '聚会') + '</div>' +
+                    ((gathering && gathering.note) ? '<div class="cj-sub" style="margin-top:4px">' + gathering.note + '</div>' : (p.note ? '<div class="cj-sub" style="margin-top:4px">' + p.note + '</div>' : '')) +
                     '<div class="cj-sub">' + timeText + '</div>' +
                     '<div class="cj-sub" style="margin-top:4px">📍 ' + (gathering && gathering.customVenue ? gathering.customVenue : (venue ? venue.name + ' · ' + venue.district + venue.businessArea : '待定')) + '</div>' +
                     '<div class="cj-folks" style="justify-content:center;padding:16px 0 0">' + attendeeHTML + '</div>' +

@@ -69,9 +69,10 @@ function makeSandbox() {
 function manualProposal(s, circleId) {
     return s.window.Zuju.buildProposalManual({
         circleId,
-        projectIds: ['p5', 'p8'],
+        projectId: 'p5',
         venueIds: ['v9', 'v10', 'v11'],
-        times: ['2026-11-21 14:00', '2026-11-22 14:00', '2026-11-22 19:00']
+        times: ['2026-11-21 14:00', '2026-11-22 14:00', '2026-11-22 19:00'],
+        note: '打完球附近一起吃个饭'
     });
 }
 
@@ -81,12 +82,12 @@ test('build_proposal_manual', () => {
     assert.ok(p, '生成提案');
     assert.equal(p.timeCandidates.length, 3, '时间候选来自发起人选择');
     assert.equal(p.venueIds.length, 3, '地点候选来自发起人选择');
-    assert.deepEqual(p.projectIds, ['p5', 'p8'], '多项目来自发起人选择');
-    assert.equal(p.projectId, 'p5', '主项目=第一个');
+    assert.equal(p.projectId, 'p5', '单项目来自发起人选择');
+    assert.equal(p.note, '打完球附近一起吃个饭', '备注写入提案');
     assert.equal(p.status, 'open');
     const c3 = s.window.GlobalData.circles.find(c => c.id === 'c3');
     assert.equal(c3.proposalId, p.id, '圈子记录进行中提案');
-    const bad = s.window.Zuju.buildProposalManual({ circleId: 'c3', projectIds: [], venueIds: ['v9'], times: ['2026-11-21 14:00'] });
+    const bad = s.window.Zuju.buildProposalManual({ circleId: 'c3', projectId: null, venueIds: ['v9'], times: ['2026-11-21 14:00'] });
     assert.equal(bad, null, '缺项目不生成');
 });
 
@@ -175,25 +176,18 @@ test('propose_five_step_flow', () => {
     const s = makeSandbox();
     s.window.ProposeView._newUser = true;
     s.window.ProposeView.createAndContinue({ name: '周末新局', type: 'mahjong' });
-    // 第 2 步：选活动项目（多选）
+    // 第 2 步：选活动项目（单选）+ 备注说明（非必填）
     let html = s.window.ProposeView.renderStep(2);
     assert.ok(html.includes('饭局') && html.includes('棋牌'), '项目类别齐全');
-    assert.ok(html.includes('可多选'), '项目支持多选');
+    assert.ok(!html.includes('可多选'), '回到单项目选择');
+    assert.ok(html.includes('备注') && html.includes('非必填'), '项目下方有备注说明');
     s.window.ProposeView.pickProjectCategory('mahjong');
-    s.window.ProposeView.toggleProject('p8');
+    s.window.ProposeView.pickProject('p8');
+    assert.equal(s.window.ProposeView._projectId, 'p8', '单选生效');
     s.window.ProposeView.pickProjectCategory('dinner');
-    // 切换类别后，已选胶囊仍然可见（跨类别）
-    html = s.window.ProposeView.renderStep(2);
-    assert.ok(html.includes('已选项目'), '已选项目胶囊区');
-    assert.ok(html.includes('血战到底麻将'), '别的类别下也能看到已选项目');
-    s.window.ProposeView.toggleProject('p1');
-    assert.deepEqual(s.window.ProposeView._projectIds, ['p8', 'p1'], '一次聚会多个项目');
-    html = s.window.ProposeView.renderStep(2);
-    assert.ok(html.includes('血战到底麻将') && html.includes('火锅局'), '胶囊区含全部已选');
-    s.window.ProposeView.toggleProject('p8');
-    assert.deepEqual(s.window.ProposeView._projectIds, ['p1'], '胶囊删除生效');
-    s.window.ProposeView.toggleProject('p8');
-    assert.deepEqual(s.window.ProposeView._projectIds, ['p1', 'p8'], '可重新加回');
+    s.window.ProposeView.pickProject('p1');
+    assert.equal(s.window.ProposeView._projectId, 'p1', '重选替换原项目');
+    s.window.ProposeView._note = '打完球附近一起吃个饭';
     s.window.ProposeView.gotoStep(3);
     // 第 3 步：时间+地点合并，上下两个明确区域
     html = s.window.ProposeView.renderStep(3);
@@ -202,7 +196,7 @@ test('propose_five_step_flow', () => {
     assert.ok(html.includes('指定时间') && html.includes('时间候选'), '时间两种模式提示');
     assert.ok(html.includes('指定地点') && html.includes('地点候选'), '地点两种模式提示');
     assert.equal((html.match(/data-time/g) || []).length, 3, '默认 3 个时间候选');
-    assert.ok(html.includes('望京小腰烧烤'), '地点候选按主项目类别过滤（火锅局→餐厅）');
+    assert.ok(html.includes('望京小腰烧烤'), '地点候选按项目类别过滤（火锅局→餐厅）');
     s.window.ProposeView.toggleVenue('v1');
     assert.ok(s.window.ProposeView._venueIds.includes('v1'), '候选地点已选');
     // 下区模式 1：指定地点——合作地点优先 + 可自己输入
@@ -222,7 +216,8 @@ test('propose_five_step_flow', () => {
     s.window.ProposeView.gotoStep(4);
     html = s.window.ProposeView.renderStep(4);
     assert.ok(html.includes('组局邀请卡片'), '邀请卡预览');
-    assert.ok(html.includes('血战到底麻将') && html.includes('火锅局'), '卡片含全部项目');
+    assert.ok(html.includes('火锅局'), '卡片含所选项目');
+    assert.ok(html.includes('打完球附近一起吃个饭'), '卡片含备注说明');
     assert.ok(html.includes('老王家常菜馆'), '卡片含自定义地点');
     // 发出提案
     s.window.ProposeView.send();
@@ -230,8 +225,8 @@ test('propose_five_step_flow', () => {
     assert.ok(c.proposalId, '提案已发出');
     const p = s.window.GlobalData.proposals.find(x => x.id === c.proposalId);
     assert.equal(p.status, 'open');
-    assert.deepEqual(p.projectIds, ['p1', 'p8']);
-    assert.equal(p.projectId, 'p1', '主项目=第一个');
+    assert.equal(p.projectId, 'p1', '单项目');
+    assert.equal(p.note, '打完球附近一起吃个饭', '备注写入提案');
     assert.equal(p.timeCandidates.length, 1, '指定时间=1 个候选');
     assert.equal(p.customVenue, '老王家常菜馆', '自定义地点写入提案');
 });

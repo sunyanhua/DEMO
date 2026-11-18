@@ -47,12 +47,12 @@ window.Zuju = (function () {
         return circle;
     }
 
-    // 手动四步组局：圈子/项目(多选)/时间+地点均由发起人逐项选定（不做智能推荐），
-    // 生成提案（status open；写 circle.proposalId；projectId=第一个，projectIds=全部）
-    function buildProposalManual({ circleId, projectIds, venueIds, times, customVenue }) {
+    // 手动四步组局：圈子/单项目(+备注)/时间+地点均由发起人逐项选定（不做智能推荐），
+    // 生成提案（status open；写 circle.proposalId）
+    function buildProposalManual({ circleId, projectId, venueIds, times, customVenue, note }) {
         const circle = circleOf(circleId);
         if (!circle) return null;
-        if (!projectIds || !projectIds.length || !times || !times.length) {
+        if (!projectId || !times || !times.length) {
             window.Common.showToast('请完成项目、时间的选择');
             return null;
         }
@@ -61,10 +61,10 @@ window.Zuju = (function () {
             return null;
         }
         const proposal = window.Recommend.buildProposal({
-            circle, projectId: projectIds[0], venues: venueIds || [], times, proposerId: G().user.id
+            circle, projectId, venues: venueIds || [], times, proposerId: G().user.id
         });
-        proposal.projectIds = projectIds.slice();
         proposal.customVenue = customVenue || null;
+        proposal.note = note || null;
         G().proposals.push(proposal);
         circle.proposalId = proposal.id;
         window.Common.save();
@@ -114,7 +114,6 @@ window.Zuju = (function () {
         const venuePick = Object.entries(sum.venueTally).sort((a, b) => b[1] - a[1])[0];
         const customVenue = p.customVenue || null;
         const venueId = customVenue ? null : (venuePick ? venuePick[0] : p.venueIds[0]);
-        const projectIds = p.projectIds && p.projectIds.length ? p.projectIds : [p.projectId];
         const attendees = (circle.members || [])
             .filter(m => p.votes.time[m.id] && p.votes.time[m.id][timeIdx])
             .map(m => m.id);
@@ -125,8 +124,8 @@ window.Zuju = (function () {
             circleId: p.circleId,
             title: '第 ' + count + ' 次聚会',
             summary: '',
-            projectId: projectIds[0],
-            projectIds,
+            projectId: p.projectId,
+            note: p.note || '',
             venueId,
             customVenue,
             time: p.timeCandidates[timeIdx],
