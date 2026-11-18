@@ -251,7 +251,7 @@ body.cj-theme .cj-step-dot { width: 24px; height: 24px; border-radius: 50%; disp
 body.cj-theme .cj-step.active .cj-step-dot { background: #E08A3C; color: #fff; }
 body.cj-theme .cj-step.done .cj-step-dot { background: #E08A3C; color: #fff; }
 body.cj-theme .cj-step.pending .cj-step-dot { background: #E5E5E5; color: #9CA3AF; }
-body.cj-theme .cj-step-label { font-size: 12px; line-height: 1.4; font-weight: 600; margin-top: 3px; }
+body.cj-theme .cj-step-label { font-size: 12px; line-height: 1.4; font-weight: 600; min-height: 24px; display: flex; align-items: center; }
 body.cj-theme .cj-step.active .cj-step-label { color: #E08A3C; font-weight: 700; }
 body.cj-theme .cj-step.done .cj-step-label, body.cj-theme .cj-step.pending .cj-step-label { color: #9CA3AF; }
 body.cj-theme .cj-step-line { width: 24px; height: 2px; margin-top: 11px; flex-shrink: 0; margin-left: 2px; margin-right: 2px; background: #E5E5E5; }
