@@ -102,6 +102,7 @@ window.EndView = (function () {
         g.photos = o.photos || selected;
         g.title = o.title || (titleEl && titleEl.value) || g.title;
         g.summary = o.summary || (sumEl && sumEl.value) || '';
+        g.done = true;
         const circle = window.GlobalData.circles.find(c => c.id === g.circleId);
         circle.lastGatheringId = g.id;
         window.Common.save();

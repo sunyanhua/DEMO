@@ -93,6 +93,7 @@ test('record_card_fields', () => {
     assert.equal(g2.title, '十年之约，下次还聚');
     assert.equal(g2.summary, '一个都没少');
     assert.equal(g2.photos.length, 2, '合影已落库');
+    assert.equal(g2.done, true, '散场完成标记（进入已完成列表）');
     const c2 = G.circles.find(c => c.id === 'c2');
     assert.equal(c2.lastGatheringId, 'g2', '圈子记录已更新');
 });

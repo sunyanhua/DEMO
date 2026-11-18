@@ -183,15 +183,32 @@ test('flow_new_user_zuju_guide_index', () => {
     assert.ok(guide.includes('cj-anim-drop'), '拍立得入场动效');
     assert.ok(guide.includes('cj-float'), '拍立得静置浮动');
     assert.ok((guide.match(/cj-anim-fadeup/g) || []).length >= 3, '标题/文案/按钮逐行浮现');
-    // 已注册用户：组局 tab 显示已有圈子可选
-    s.window.IndexView._registered = true;
-    const reg = s.window.IndexView.render();
-    assert.ok(reg.includes('周五麻将局'), '注册用户可选已有圈子组局');
     // 圈子 tab 仍是圈子列表
     s.window.IndexView._tab = 'circles';
     const normal = s.window.IndexView.render();
     assert.ok(normal.includes('周五麻将局'), '圈子 tab 显示圈子列表');
     assert.ok(!normal.includes('多久没聚'), '圈子 tab 不显示组局引导');
+});
+
+test('flow_zuju_list_index', () => {
+    const s = makeSandbox();
+    s.window.IndexView._tab = 'zuju';
+    s.window.IndexView._registered = true;
+    const html = s.window.IndexView.render();
+    // 有组局 → 显示列表而非引导
+    assert.ok(!html.includes('多久没聚'), '已有组局不显示引导');
+    assert.ok(html.includes('进行中') && html.includes('已完成'), '进行中/已完成分区');
+    assert.ok(html.indexOf('进行中') < html.indexOf('已完成'), '进行中在上、已完成在下');
+    // 进行中卡：p1 提案（组局内容/时间/圈友）
+    assert.ok(html.includes('血战到底麻将'), '进行中卡含组局内容');
+    assert.ok(html.includes('投票中'), '进行中卡含状态');
+    // 已完成卡：聚会记录
+    assert.ok(html.includes('老王手气爆棚之夜'), '已完成卡含聚会记录');
+    // 无组局时回到引导
+    s.window.GlobalData.proposals = [];
+    s.window.GlobalData.gatherings = [];
+    const empty = s.window.IndexView.render();
+    assert.ok(empty.includes('多久没聚'), '无组局时显示引导');
 });
 
 test('flow_no_privacy_leak', () => {
