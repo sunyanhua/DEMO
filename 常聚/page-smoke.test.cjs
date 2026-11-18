@@ -79,6 +79,16 @@ test('outline_buttons_span_content_width', () => {
     assert.ok(/cj-btn-outline"\s+style="width:100%/.test(record), 'record.html 去AA账本按钮与内容区同宽');
 });
 
+test('cjpx_containers_keep_horizontal_padding', () => {
+    // .cj-px 容器内联样式不得用 padding 简写（会把左右 20px 归零，导致按钮比卡片宽）
+    for (const f of htmlFiles) {
+        const text = fs.readFileSync(path.join(dir, f), 'utf8');
+        for (const m of text.matchAll(/cj-px"\s+style="([^"]*)"/g)) {
+            assert.ok(!/padding\s*:/.test(m[1]), `${f} cj-px 内联样式禁用 padding 简写：${m[1]}`);
+        }
+    }
+});
+
 test('shell_has_no_miniprogram_chrome', () => {
     const sandbox = {
         window: {},
