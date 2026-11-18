@@ -71,6 +71,10 @@ test('theme_defines_warm_tokens', () => {
     for (const kf of ['@keyframes cj-drop', '@keyframes cj-fadeup', '@keyframes cj-float']) {
         assert.ok(css.includes(kf), `theme.css 定义 ${kf}`);
     }
+    // 动效节奏（慢速温情）
+    assert.ok(css.includes('animation: cj-drop 1.1s'), '拍立得飘落 1.1s');
+    assert.ok(css.includes('animation: cj-fadeup 0.85s'), '逐行浮现 0.85s');
+    assert.ok(css.includes('animation: cj-float 6s'), '静置浮动 6s');
     assert.ok(!css.includes('cj-statusbar') && !css.includes('cj-capsule'), '无小程序外壳残留');
 });
 
