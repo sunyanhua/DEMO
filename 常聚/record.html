@@ -39,7 +39,8 @@ window.RecordView = (function () {
         if (!g) return window.Common.renderShell('聚会记录') + '<div class="cj-empty">记录不存在</div>';
         const circle = G.circles.find(c => c.id === g.circleId);
         const venue = G.venues.find(v => v.id === g.venueId);
-        const project = G.projects.find(p => p.id === g.projectId);
+        const projectIds = g.projectIds && g.projectIds.length ? g.projectIds : [g.projectId];
+        const projects = projectIds.map(id => G.projects.find(p => p.id === id)).filter(Boolean);
         const hero = g.photos && g.photos[0] ? g.photos[0] : 'images/cover-1.png';
         const photos = (g.photos || []).slice(1).map(p =>
             '<img src="' + p + '" style="width:31%;aspect-ratio:4/3;border-radius:10px;object-fit:cover" alt="合影">').join('');
@@ -62,7 +63,7 @@ window.RecordView = (function () {
                 '</div>' +
                 '<div class="cj-card">' +
                     '<div class="cj-sub" style="margin-bottom:6px">' + g.time + ' · ' + (venue ? venue.name + ' · ' + venue.district + venue.businessArea : '') + '</div>' +
-                    (project ? '<span class="cj-pill cj-pill-plain">' + project.name + '</span> ' : '') +
+                    (projects.length ? '<span class="cj-pill cj-pill-plain">' + projects.map(x => x.name).join(' + ') + '</span> ' : '') +
                     '<span class="cj-pill cj-pill-plain">出席 ' + (g.attendees || []).length + ' 人</span>' +
                     (g.summary ? '<div style="font-size:14px;line-height:1.9;color:var(--body);margin-top:12px">' + g.summary + '</div>' : '') +
                     '<div class="cj-folks" style="padding:14px 0 0">' + attendees + '</div>' +

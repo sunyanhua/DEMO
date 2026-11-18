@@ -81,7 +81,7 @@ test('flow_build_proposal', () => {
     const s = makeSandbox();
     const c = s.window.CreateCircle.submit({ name: '流程测试圈', type: 'dinner', mode: 'blank' });
     s.window.CreateCircle.simulateJoin(c.id);
-    const p = s.window.Zuju.buildProposalManual({ circleId: c.id, projectId: 'p3', venueIds: ['v6', 'v4', 'v7'], times: ['2026-11-21 14:00', '2026-11-22 14:00', '2026-11-22 19:00'] });
+    const p = s.window.Zuju.buildProposalManual({ circleId: c.id, projectIds: ['p3'], venueIds: ['v6', 'v4', 'v7'], times: ['2026-11-21 14:00', '2026-11-22 14:00', '2026-11-22 19:00'] });
     assert.equal(p.status, 'open');
     assert.equal(p.timeCandidates.length, 3);
     assert.equal(p.venueIds.length, 3);
@@ -91,7 +91,7 @@ test('flow_simulate_votes', () => {
     const s = makeSandbox();
     const c = s.window.CreateCircle.submit({ name: '流程测试圈', type: 'dinner', mode: 'blank' });
     s.window.CreateCircle.simulateJoin(c.id);
-    const p = s.window.Zuju.buildProposalManual({ circleId: c.id, projectId: 'p3', venueIds: ['v6', 'v4', 'v7'], times: ['2026-11-21 14:00', '2026-11-22 14:00', '2026-11-22 19:00'] });
+    const p = s.window.Zuju.buildProposalManual({ circleId: c.id, projectIds: ['p3'], venueIds: ['v6', 'v4', 'v7'], times: ['2026-11-21 14:00', '2026-11-22 14:00', '2026-11-22 19:00'] });
     s.window.Demo.simulateVotes(p.id);
     const mockIds = c.members.filter(m => m.id !== 'u1').map(m => m.id);
     mockIds.forEach(id => {
@@ -104,7 +104,7 @@ test('flow_decide_after_deadline', () => {
     const s = makeSandbox();
     const c = s.window.CreateCircle.submit({ name: '流程测试圈', type: 'dinner', mode: 'blank' });
     s.window.CreateCircle.simulateJoin(c.id);
-    const p = s.window.Zuju.buildProposalManual({ circleId: c.id, projectId: 'p3', venueIds: ['v6', 'v4', 'v7'], times: ['2026-11-21 14:00', '2026-11-22 14:00', '2026-11-22 19:00'] });
+    const p = s.window.Zuju.buildProposalManual({ circleId: c.id, projectIds: ['p3'], venueIds: ['v6', 'v4', 'v7'], times: ['2026-11-21 14:00', '2026-11-22 14:00', '2026-11-22 19:00'] });
     s.window.Demo.simulateVotes(p.id);
     s.window.Demo.advanceTime(48);
     s.window.Zuju.tryDecide(p.id, s.window.Common.fmtDate(s.window.Demo.getNow()));
@@ -118,7 +118,7 @@ test('flow_end_event_three_steps', () => {
     const s = makeSandbox();
     const c = s.window.CreateCircle.submit({ name: '流程测试圈', type: 'dinner', mode: 'blank' });
     s.window.CreateCircle.simulateJoin(c.id);
-    const p = s.window.Zuju.buildProposalManual({ circleId: c.id, projectId: 'p3', venueIds: ['v6', 'v4', 'v7'], times: ['2026-11-21 14:00', '2026-11-22 14:00', '2026-11-22 19:00'] });
+    const p = s.window.Zuju.buildProposalManual({ circleId: c.id, projectIds: ['p3'], venueIds: ['v6', 'v4', 'v7'], times: ['2026-11-21 14:00', '2026-11-22 14:00', '2026-11-22 19:00'] });
     s.window.Demo.simulateVotes(p.id);
     s.window.Demo.advanceTime(48);
     s.window.Zuju.tryDecide(p.id, s.window.Common.fmtDate(s.window.Demo.getNow()));
@@ -135,7 +135,7 @@ test('flow_ledger_settle', () => {
     const s = makeSandbox();
     const c = s.window.CreateCircle.submit({ name: '流程测试圈', type: 'dinner', mode: 'blank' });
     s.window.CreateCircle.simulateJoin(c.id);
-    const p = s.window.Zuju.buildProposalManual({ circleId: c.id, projectId: 'p3', venueIds: ['v6', 'v4', 'v7'], times: ['2026-11-21 14:00', '2026-11-22 14:00', '2026-11-22 19:00'] });
+    const p = s.window.Zuju.buildProposalManual({ circleId: c.id, projectIds: ['p3'], venueIds: ['v6', 'v4', 'v7'], times: ['2026-11-21 14:00', '2026-11-22 14:00', '2026-11-22 19:00'] });
     s.window.Demo.simulateVotes(p.id);
     s.window.Demo.advanceTime(48);
     s.window.Zuju.tryDecide(p.id, s.window.Common.fmtDate(s.window.Demo.getNow()));
@@ -153,7 +153,7 @@ test('flow_next_round_rhythm', () => {
     const s = makeSandbox();
     const c = s.window.CreateCircle.submit({ name: '流程测试圈', type: 'dinner', mode: 'blank' });
     s.window.CreateCircle.simulateJoin(c.id);
-    const p = s.window.Zuju.buildProposalManual({ circleId: c.id, projectId: 'p3', venueIds: ['v6', 'v4', 'v7'], times: ['2026-11-21 14:00', '2026-11-22 14:00', '2026-11-22 19:00'] });
+    const p = s.window.Zuju.buildProposalManual({ circleId: c.id, projectIds: ['p3'], venueIds: ['v6', 'v4', 'v7'], times: ['2026-11-21 14:00', '2026-11-22 14:00', '2026-11-22 19:00'] });
     s.window.Demo.simulateVotes(p.id);
     s.window.Demo.advanceTime(48);
     s.window.Zuju.tryDecide(p.id, s.window.Common.fmtDate(s.window.Demo.getNow()));
@@ -161,7 +161,7 @@ test('flow_next_round_rhythm', () => {
     s.window.EndView.finish(g.id, { title: '第一局', summary: '', photos: [] });
     const r = s.window.Rotation.checkRhythm({ circle: c, lastGatheringTime: g.time, now: g.time });
     assert.equal(r.due, false, '刚聚完不触发提醒');
-    const p2 = s.window.Zuju.buildProposalManual({ circleId: c.id, projectId: 'p3', venueIds: ['v6', 'v4', 'v7'], times: ['2026-11-21 14:00', '2026-11-22 14:00', '2026-11-22 19:00'] });
+    const p2 = s.window.Zuju.buildProposalManual({ circleId: c.id, projectIds: ['p3'], venueIds: ['v6', 'v4', 'v7'], times: ['2026-11-21 14:00', '2026-11-22 14:00', '2026-11-22 19:00'] });
     assert.equal(p2.status, 'open', '下一轮提案可发起');
 });
 
@@ -198,7 +198,7 @@ test('flow_no_privacy_leak', () => {
     const s = makeSandbox();
     const c = s.window.CreateCircle.submit({ name: '流程测试圈', type: 'dinner', mode: 'blank' });
     s.window.CreateCircle.simulateJoin(c.id);
-    const p = s.window.Zuju.buildProposalManual({ circleId: c.id, projectId: 'p3', venueIds: ['v6', 'v4', 'v7'], times: ['2026-11-21 14:00', '2026-11-22 14:00', '2026-11-22 19:00'] });
+    const p = s.window.Zuju.buildProposalManual({ circleId: c.id, projectIds: ['p3'], venueIds: ['v6', 'v4', 'v7'], times: ['2026-11-21 14:00', '2026-11-22 14:00', '2026-11-22 19:00'] });
     s.window.Demo.simulateVotes(p.id);
     s.window.Demo.advanceTime(48);
     s.window.Zuju.tryDecide(p.id, s.window.Common.fmtDate(s.window.Demo.getNow()));

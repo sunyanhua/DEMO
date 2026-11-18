@@ -20,15 +20,16 @@ window.ProposeView = (function () {
     const CATEGORY_LABELS = { dinner: '饭局', ball: '运动', mahjong: '棋牌', outdoor: '户外', exhibit: '看展', ktv: 'K歌' };
     const TIER_LABEL = { economy: '经济实惠', mid: '中等档', premium: '中高端' };
     const MAX_VENUES = 3;
+    const MAX_PROJECTS = 3;
 
     function stepsBar(step) {
-        const items = [['圈子', ''], ['活动', '项目'], ['时间', ''], ['地点', ''], ['邀请', '卡片']];
+        const items = [['圈子', ''], ['活动', '项目'], ['时间', '地点'], ['邀请', '卡片']];
         return '<div class="cj-steps">' + items.map((it, i) => {
             const n = i + 1;
             const cls = n < step ? 'done' : (n === step ? 'active' : 'pending');
             const label = it[1] ? it[0] + '<br>' + it[1] : it[0];
             return '<div class="cj-step ' + cls + '"><div class="cj-step-dot">' + (n < step ? '✓' : n) + '</div><div class="cj-step-label">' + label + '</div></div>' +
-                (i < 4 ? '<div class="cj-step-line' + (n < step ? ' done' : '') + '"></div>' : '');
+                (i < 3 ? '<div class="cj-step-line' + (n < step ? ' done' : '') + '"></div>' : '');
         }).join('') + '</div>';
     }
 
@@ -36,18 +37,19 @@ window.ProposeView = (function () {
         const G = window.GlobalData;
         const pool = (G.projects || []).filter(p => p.category === category);
         if (!pool.length) return '<div class="cj-sub">该类别暂无项目</div>';
-        return pool.map(p =>
-            '<div class="cj-wiz-card" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center;padding:12px 16px" onclick="window.ProposeView.pickProject(\'' + p.id + '\')">' +
-                '<div><div style="font-weight:700;color:#111827;font-size:14px">' + p.name + '</div>' +
+        return pool.map(p => {
+            const on = window.ProposeView._projectIds.includes(p.id);
+            return '<div class="cj-wiz-card" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border:1.5px solid ' + (on ? '#E08A3C' : '#E5E7EB') + '" onclick="window.ProposeView.toggleProject(\'' + p.id + '\')">' +
+                '<div><div style="font-weight:700;color:#111827;font-size:14px">' + p.name + (on ? ' ✓' : '') + '</div>' +
                 '<div style="font-size:12px;color:#9CA3AF;margin-top:4px">' + (p.tags || []).join(' · ') + '</div></div>' +
-                '<span style="color:#E08A3C">›</span>' +
-            '</div>').join('');
+            '</div>';
+        }).join('');
     }
 
-    function venueCards(projectId) {
+    function venueCards(projectIds) {
         const G = window.GlobalData;
-        const project = G.projects.find(p => p.id === projectId);
-        let pool = (G.venues || []).filter(v => v.category === project.category);
+        const primary = G.projects.find(p => p.id === (projectIds || [])[0]);
+        let pool = primary ? (G.venues || []).filter(v => v.category === primary.category) : (G.venues || []);
         const filtered = pool.length > 0;
         if (!pool.length) pool = G.venues || [];
         return (filtered ? '' : '<div class="cj-sub" style="margin-bottom:10px">该类别暂无专属商户，展示全部地点</div>') +
@@ -69,7 +71,7 @@ window.ProposeView = (function () {
         const circles = G.circles || [];
         const newUser = window.ProposeView._newUser;
         const typeChips = (window.Zuju.CIRCLE_TYPES || []).map(t =>
-            '<span id="ct-' + t.key + '" class="' + (window.ProposeView._circleType === t.key ? 'cj-chip-warm' : 'cj-chip') + '" style="cursor:pointer;padding:8px 14px;font-size:13px" onclick="window.ProposeView.pickCircleType(\'' + t.key + '\')">' + t.label + '</span>').join('');
+            '<span id="ct-' + t.key + '" class="cj-chip' + (window.ProposeView._circleType === t.key ? ' cj-chip-warm' : '') + '" style="cursor:pointer;padding:8px 14px;font-size:13px" onclick="window.ProposeView.pickCircleType(\'' + t.key + '\')">' + t.label + '</span>').join('');
         const existing = (!newUser && circles.length)
             ? '<div class="cj-section-head"><b>或选择已有圈子</b></div>' +
               circles.map(c =>
@@ -80,7 +82,7 @@ window.ProposeView = (function () {
                     '<span class="cj-pill cj-pill-due">去组局 ›</span>' +
                 '</a>').join('')
             : '';
-        return window.Common.renderShell('组局') +
+        return window.Common.renderShell('') +
             '<div class="cj-px" style="padding-top:12px">' + stepsBar(1) +
                 '<div class="cj-wiz-card">' +
                     '<h3 class="cj-wiz-h3">新建圈子</h3>' +
@@ -136,18 +138,20 @@ window.ProposeView = (function () {
         if (window.lucide) window.lucide.createIcons();
     }
 
-    // 第 2 步：选活动项目
+    // 第 2 步：选活动项目（多选，最多 3 个）
     function renderStep2() {
         const G = window.GlobalData;
         const circle = G.circles.find(c => c.id === window.ProposeView._circleId);
         const cat = window.ProposeView._projCategory || 'dinner';
         const catChips = Object.keys(CATEGORY_LABELS).map(k =>
-            '<span id="pc-' + k + '" class="' + (cat === k ? 'cj-chip-warm' : 'cj-chip') + '" style="cursor:pointer;padding:8px 14px;font-size:13px" onclick="window.ProposeView.pickProjectCategory(\'' + k + '\')">' + CATEGORY_LABELS[k] + '</span>').join('');
-        return window.Common.renderShell('组局') +
+            '<span id="pc-' + k + '" class="cj-chip' + (cat === k ? ' cj-chip-warm' : '') + '" style="cursor:pointer;padding:8px 14px;font-size:13px" onclick="window.ProposeView.pickProjectCategory(\'' + k + '\')">' + CATEGORY_LABELS[k] + '</span>').join('');
+        return window.Common.renderShell('') +
             '<div class="cj-px" style="padding-top:12px">' + stepsBar(2) +
                 '<div class="cj-sub" style="margin-bottom:10px">「' + circle.name + '」这一局，玩什么？</div>' +
                 '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px">' + catChips + '</div>' +
+                '<div class="cj-sub" style="margin-bottom:10px">可多选（最多 ' + MAX_PROJECTS + ' 个）· 已选 ' + window.ProposeView._projectIds.length + '/' + MAX_PROJECTS + '</div>' +
                 projectCards(cat) +
+                '<button class="cj-btn-grad" style="margin-top:4px" onclick="window.ProposeView.gotoStep(3)">下一步：选时间地点</button>' +
             '</div>' + window.Common.renderTabbar('zuju');
     }
 
@@ -156,12 +160,20 @@ window.ProposeView = (function () {
         gotoStep(2);
     }
 
-    function pickProject(id) {
-        window.ProposeView._projectId = id;
-        gotoStep(3);
+    function toggleProject(id) {
+        const i = window.ProposeView._projectIds.indexOf(id);
+        if (i >= 0) {
+            window.ProposeView._projectIds.splice(i, 1);
+        } else if (window.ProposeView._projectIds.length < MAX_PROJECTS) {
+            window.ProposeView._projectIds.push(id);
+        } else {
+            window.Common.showToast('最多选 ' + MAX_PROJECTS + ' 个项目');
+            return;
+        }
+        gotoStep(2);
     }
 
-    // 第 3 步：选时间（默认给 3 个候选可编辑/增删）
+    // 第 3 步：时间 + 地点（合并一步）
     function renderStep3() {
         const times = window.ProposeView._times;
         const rows = times.map((t, i) =>
@@ -169,15 +181,20 @@ window.ProposeView = (function () {
                 '<input data-time="' + i + '" class="cj-field-input" style="flex:1" value="' + t + '" placeholder="格式：2026-11-21 14:00">' +
                 (times.length > 1 ? '<span style="color:#9CA3AF;cursor:pointer" onclick="window.ProposeView.removeTime(' + i + ')">✕</span>' : '') +
             '</div>').join('');
-        return window.Common.renderShell('组局') +
+        const venueCount = window.ProposeView._venueIds.length;
+        return window.Common.renderShell('') +
             '<div class="cj-px" style="padding-top:12px">' + stepsBar(3) +
                 '<div class="cj-wiz-card">' +
                     '<h3 class="cj-wiz-h3">什么时候聚？</h3>' +
                     '<div class="cj-sub" style="margin-bottom:12px">给圈友几个时间候选，大家表态选最齐的</div>' +
                     rows +
                     '<span class="cj-pill cj-pill-due" style="cursor:pointer" onclick="window.ProposeView.addTime()">＋ 添加时间</span>' +
-                    '<button class="cj-btn-grad" style="margin-top:16px" onclick="window.ProposeView.gotoStep(4)">下一步：选地点</button>' +
                 '</div>' +
+                '<div class="cj-wiz-card" style="padding:12px">' +
+                    '<h3 class="cj-wiz-h3" style="padding:4px">去哪聚？（已选 ' + venueCount + '/' + MAX_VENUES + '）</h3>' +
+                '</div>' +
+                venueCards(window.ProposeView._projectIds) +
+                '<button class="cj-btn-grad" onclick="window.ProposeView.gotoStep(4)">下一步：生成邀请卡片</button>' +
             '</div>' + window.Common.renderTabbar('zuju');
     }
 
@@ -197,19 +214,6 @@ window.ProposeView = (function () {
         gotoStep(3);
     }
 
-    // 第 4 步：选地点（最多 3 个候选）
-    function renderStep4() {
-        const count = window.ProposeView._venueIds.length;
-        return window.Common.renderShell('组局') +
-            '<div class="cj-px" style="padding-top:12px">' + stepsBar(4) +
-                '<div class="cj-wiz-card" style="padding:12px">' +
-                    '<h3 class="cj-wiz-h3" style="padding:4px">去哪聚？（已选 ' + count + '/' + MAX_VENUES + '）</h3>' +
-                '</div>' +
-                venueCards(window.ProposeView._projectId) +
-                '<button class="cj-btn-grad" onclick="window.ProposeView.gotoStep(5)">下一步：生成邀请卡片</button>' +
-            '</div>' + window.Common.renderTabbar('zuju');
-    }
-
     function toggleVenue(id) {
         const i = window.ProposeView._venueIds.indexOf(id);
         if (i >= 0) {
@@ -220,21 +224,21 @@ window.ProposeView = (function () {
             window.Common.showToast('最多选 ' + MAX_VENUES + ' 个地点候选');
             return;
         }
-        gotoStep(4);
+        gotoStep(3);
     }
 
-    // 第 5 步：生成邀请卡片
-    function renderStep5() {
+    // 第 4 步：生成邀请卡片
+    function renderStep4() {
         const G = window.GlobalData;
         const circle = G.circles.find(c => c.id === window.ProposeView._circleId);
-        const project = G.projects.find(p => p.id === window.ProposeView._projectId);
+        const projects = window.ProposeView._projectIds.map(id => G.projects.find(p => p.id === id)).filter(Boolean);
         const venues = window.ProposeView._venueIds.map(id => G.venues.find(v => v.id === id)).filter(Boolean);
-        return window.Common.renderShell('组局') +
-            '<div class="cj-px" style="padding-top:12px">' + stepsBar(5) +
+        return window.Common.renderShell('') +
+            '<div class="cj-px" style="padding-top:12px">' + stepsBar(4) +
                 '<div class="cj-wiz-card" style="text-align:center;padding:24px 16px">' +
                     '<div style="font-size:11px;color:#9CA3AF;letter-spacing:2px">组局邀请卡片</div>' +
                     '<div style="font-size:20px;font-weight:800;color:#111827;margin:10px 0 6px">' + circle.name + '</div>' +
-                    '<div style="font-size:13px;color:#374151;font-weight:600">' + project.name + '</div>' +
+                    '<div style="font-size:13px;color:#374151;font-weight:600">' + projects.map(p => p.name).join(' + ') + '</div>' +
                     '<div style="font-size:12px;color:#9CA3AF;margin-top:10px">时间候选</div>' +
                     '<div style="margin-top:4px">' + window.ProposeView._times.map(t => '<span style="display:inline-block;margin:3px;padding:4px 10px;border-radius:999px;background:#F9FAFB;border:1px solid #E5E7EB;font-size:12px;color:#374151">' + t + '</span>').join('') + '</div>' +
                     '<div style="font-size:12px;color:#9CA3AF;margin-top:10px">地点候选</div>' +
@@ -254,16 +258,20 @@ window.ProposeView = (function () {
                 if (inp.value && inp.value.trim()) window.ProposeView._times[i] = inp.value.trim();
             });
         }
+        if (!window.ProposeView._projectIds.length) {
+            window.Common.showToast('请先选择活动项目');
+            return;
+        }
         const p = window.Zuju.buildProposalManual({
             circleId: window.ProposeView._circleId,
-            projectId: window.ProposeView._projectId,
+            projectIds: window.ProposeView._projectIds,
             times: window.ProposeView._times,
             venueIds: window.ProposeView._venueIds
         });
         if (!p) return;
         window.Common.showToast('提案已发出，等圈友表态');
         window.ProposeView.shareInvite();
-        document.getElementById('app').innerHTML = renderStep(5) +
+        document.getElementById('app').innerHTML = renderStep(4) +
             '<a class="cj-btn-outline" style="width:100%;margin-top:12px;justify-content:center;text-decoration:none" href="vote.html?proposal=' + p.id + '">去表态页</a>';
         if (window.lucide) window.lucide.createIcons();
     }
@@ -273,8 +281,7 @@ window.ProposeView = (function () {
         if (n === 1) return renderNew();
         if (n === 2) return renderStep2();
         if (n === 3) return renderStep3();
-        if (n === 4) return renderStep4();
-        return renderStep5();
+        return renderStep4();
     }
 
     function render(circleIdArg) {
@@ -295,7 +302,7 @@ window.ProposeView = (function () {
         window.Zuju.pickShareGroup(groupName, 'shareArea');
     }
 
-    return { render, renderNew, pickCircleType, createAndContinue, gotoStep, renderStep, pickProjectCategory, pickProject, addTime, removeTime, toggleVenue, send, shareInvite, pickShareGroup };
+    return { render, renderNew, pickCircleType, createAndContinue, gotoStep, renderStep, pickProjectCategory, toggleProject, addTime, removeTime, toggleVenue, send, shareInvite, pickShareGroup };
 })();
 (function () {
     const P = window.ProposeView;
@@ -303,7 +310,7 @@ window.ProposeView = (function () {
     P._circleType = null;
     P._circleId = null;
     P._projCategory = 'dinner';
-    P._projectId = null;
+    P._projectIds = [];
     P._venueIds = [];
     P._times = [];
     P._step = 1;

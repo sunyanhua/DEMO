@@ -126,7 +126,7 @@ window.GlobalData = {
             id: 'p1',
             circleId: 'c1',
             proposerId: 'u1',
-            projectId: 'p8',
+            projectId: 'p8', projectIds: ['p8'],
             venueIds: ['v1', 'v2', 'v3'],
             timeCandidates: ['2026-11-21 14:00', '2026-11-22 14:00', '2026-11-22 19:00'],
             votes: { time: {}, venue: {} },
@@ -138,28 +138,28 @@ window.GlobalData = {
     gatherings: [
         {
             id: 'g1', circleId: 'c1', title: '老王手气爆棚之夜', summary: '老王连庄五把，这顿饭请得应该',
-            projectId: 'p8', venueId: 'v1', time: '2026-11-08 19:00',
+            projectId: 'p8', projectIds: ['p8'], venueId: 'v1', time: '2026-11-08 19:00',
             attendees: ['u1', 'm1', 'm2', 'm3'],
             photos: ['images/moment-1.jpg', 'images/moment-2.jpg'],
             buyMode: 'host', payerId: 'm1', billId: 'b1'
         },
         {
             id: 'g2', circleId: 'c2', title: '毕业十年，一个没少', summary: '十年之约，下次还聚',
-            projectId: 'p3', venueId: 'v6', time: '2026-11-15 18:30',
+            projectId: 'p3', projectIds: ['p3'], venueId: 'v6', time: '2026-11-15 18:30',
             attendees: ['u1', 'm5', 'm6', 'm7'],
             photos: ['images/moment-3.jpg', 'images/moment-4.jpg'],
             buyMode: 'aa', payerId: null, billId: 'b2'
         },
         {
             id: 'g3', circleId: 'c3', title: '秋日羽毛球混双', summary: '',
-            projectId: 'p5', venueId: 'v9', time: '2026-09-20 10:00',
+            projectId: 'p5', projectIds: ['p5'], venueId: 'v9', time: '2026-09-20 10:00',
             attendees: ['u1', 'm1', 'm2', 'm8', 'm9'],
             photos: ['images/moment-5.jpg'],
             buyMode: 'aa', payerId: null, billId: null
         },
         {
             id: 'g4', circleId: 'c1', title: '第一次麻将局', summary: '三缺一开局，从此入坑',
-            projectId: 'p8', venueId: 'v2', time: '2026-10-11 19:00',
+            projectId: 'p8', projectIds: ['p8'], venueId: 'v2', time: '2026-10-11 19:00',
             attendees: ['u1', 'm1', 'm2', 'm3', 'm4'],
             photos: ['images/moment-6.jpg'],
             buyMode: 'random', payerId: 'm4', billId: null

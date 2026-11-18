@@ -47,18 +47,19 @@ window.Zuju = (function () {
         return circle;
     }
 
-    // 手动五步组局：圈子/项目/时间/地点均由发起人逐项选定（不做智能推荐），
-    // 生成提案（status open；写 circle.proposalId）
-    function buildProposalManual({ circleId, projectId, venueIds, times }) {
+    // 手动四步组局：圈子/项目(多选)/时间+地点均由发起人逐项选定（不做智能推荐），
+    // 生成提案（status open；写 circle.proposalId；projectId=第一个，projectIds=全部）
+    function buildProposalManual({ circleId, projectIds, venueIds, times }) {
         const circle = circleOf(circleId);
         if (!circle) return null;
-        if (!projectId || !times || !times.length || !venueIds || !venueIds.length) {
+        if (!projectIds || !projectIds.length || !times || !times.length || !venueIds || !venueIds.length) {
             window.Common.showToast('请完成项目、时间、地点的选择');
             return null;
         }
         const proposal = window.Recommend.buildProposal({
-            circle, projectId, venues: venueIds, times, proposerId: G().user.id
+            circle, projectId: projectIds[0], venues: venueIds, times, proposerId: G().user.id
         });
+        proposal.projectIds = projectIds.slice();
         G().proposals.push(proposal);
         circle.proposalId = proposal.id;
         window.Common.save();
@@ -66,14 +67,6 @@ window.Zuju = (function () {
     }
 
     // 项目设为"待定"（让圈友投票决定）
-    function markProjectPending(proposalId) {
-        const p = proposalOf(proposalId);
-        if (!p) return;
-        p.projectId = 'pending';
-        p.votes.project = p.votes.project || {};
-        window.Common.save();
-    }
-
     // 落票（合并进 proposal.votes）
     function submitVotes(proposalId, votes) {
         const p = proposalOf(proposalId);
@@ -115,11 +108,7 @@ window.Zuju = (function () {
         const timeIdx = sum.bestTime.winnerIndex;
         const venuePick = Object.entries(sum.venueTally).sort((a, b) => b[1] - a[1])[0];
         const venueId = venuePick ? venuePick[0] : p.venueIds[0];
-        let projectId = p.projectId;
-        if (projectId === 'pending') {
-            const pp = Object.entries(sum.projectTally).sort((a, b) => b[1] - a[1])[0];
-            if (pp) projectId = pp[0];
-        }
+        const projectIds = p.projectIds && p.projectIds.length ? p.projectIds : [p.projectId];
         const attendees = (circle.members || [])
             .filter(m => p.votes.time[m.id] && p.votes.time[m.id][timeIdx])
             .map(m => m.id);
@@ -130,7 +119,8 @@ window.Zuju = (function () {
             circleId: p.circleId,
             title: '第 ' + count + ' 次聚会',
             summary: '',
-            projectId: projectId,
+            projectId: projectIds[0],
+            projectIds,
             venueId,
             time: p.timeCandidates[timeIdx],
             attendees,
@@ -195,5 +185,5 @@ window.Zuju = (function () {
         window.Common.save();
     }
 
-    return { CIRCLE_TYPES, createCircle, buildProposalManual, markProjectPending, submitVotes, voteSummary, tryDecide, remindNonVoters, shareInvite, pickShareGroup };
+    return { CIRCLE_TYPES, createCircle, buildProposalManual, submitVotes, voteSummary, tryDecide, remindNonVoters, shareInvite, pickShareGroup };
 })();
