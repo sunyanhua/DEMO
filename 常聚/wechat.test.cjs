@@ -1,6 +1,6 @@
 /**
  * 常聚模拟微信外壳入口页测试（node wechat.test.cjs）
- * vm 沙箱加载 data.js + common.js + 页面内联脚本
+ * 两条演示路线：①全新用户点开小程序 ②群内组局邀请卡片
  */
 const { test } = require('node:test');
 const assert = require('node:assert');
@@ -46,11 +46,13 @@ function makeSandbox() {
         window: { location: { href: '' } },
         document,
         localStorage: makeStorage(),
+        sessionStorage: makeStorage(),
         navigator: {},
         setTimeout, clearTimeout
     };
     sandbox.window.document = document;
     sandbox.window.localStorage = sandbox.localStorage;
+    sandbox.window.sessionStorage = sandbox.sessionStorage;
     vm.createContext(sandbox);
     vm.runInContext(fs.readFileSync(path.join(dir, 'data.js'), 'utf8'), sandbox);
     vm.runInContext(fs.readFileSync(path.join(dir, 'common.js'), 'utf8'), sandbox);
@@ -58,21 +60,30 @@ function makeSandbox() {
     return sandbox;
 }
 
-test('card_renders_with_brand', () => {
+test('new_user_card_renders', () => {
     const s = makeSandbox();
+    assert.ok(s.document._html.includes('常聚'), '含小程序卡片');
     assert.ok(s.document._html.includes('常聚常伴，圈子不散'), '卡片含 SLOGAN');
-    assert.ok(s.document._html.includes('常聚'), '卡片含产品名');
+    assert.ok(s.document._html.includes('试试'), '新用户场景话术存在');
 });
 
-test('slogan_and_member_count', () => {
+test('invite_card_renders_with_proposal_info', () => {
     const s = makeSandbox();
-    const c1 = s.window.GlobalData.circles.find(c => c.id === 'c1');
-    assert.ok(s.document._html.includes('群友 ' + c1.members.length + ' 人已加入'), '卡片人数取自 c1 成员数');
+    const p = s.window.GlobalData.proposals.find(x => x.id === 'p1');
+    const circle = s.window.GlobalData.circles.find(c => c.id === p.circleId);
+    assert.ok(s.document._html.includes(circle.name), '组局邀请卡含圈名');
+    assert.ok(s.document._html.includes(p.timeCandidates[0].slice(5)), '邀请卡含局时间');
+    assert.ok(s.document._html.includes('组局邀请'), '邀请卡标识');
 });
 
-test('card_click_goes_circle', () => {
+test('enter_new_goes_auth_with_next', () => {
     const s = makeSandbox();
-    assert.equal(typeof s.window.WechatView.enter, 'function', '暴露 enter 跳转函数');
-    s.window.WechatView.enter();
-    assert.equal(s.window.location.href, 'index.html', '点卡片进入常聚圈子列表');
+    s.window.WechatView.enterNew();
+    assert.equal(s.window.location.href, 'auth.html?next=index.html%3Fnew%3D1', '新用户先授权再进新圈子列表');
+});
+
+test('enter_invite_goes_auth_with_next', () => {
+    const s = makeSandbox();
+    s.window.WechatView.enterInvite();
+    assert.equal(s.window.location.href, 'auth.html?next=vote.html%3Fproposal%3Dp1', '被邀请先授权再进表态页');
 });

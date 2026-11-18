@@ -127,6 +127,35 @@ window.Zuju = (function () {
         return p;
     }
 
+    // 分享组局邀请到微信群（模拟浮层，写入指定容器）
+    function shareInvite({ proposalId, circleId, containerId }) {
+        const p = proposalOf(proposalId);
+        const c = circleOf(circleId || (p && p.circleId));
+        const el = document.getElementById(containerId);
+        if (!el || el.innerHTML === undefined) return;
+        el.innerHTML =
+            '<div style="position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;display:flex;align-items:flex-end">' +
+                '<div style="background:var(--cream);width:100%;border-radius:24px 24px 0 0;padding:20px;box-shadow:0 -8px 32px rgba(59,46,34,0.2)">' +
+                    '<div class="cj-title" style="font-size:16px;margin-bottom:14px">把组局邀请分享到群</div>' +
+                    (p && c ? '<div class="cj-card" style="text-align:center">' +
+                        '<div class="cj-sub" style="letter-spacing:2px">组局邀请</div>' +
+                        '<div class="cj-title" style="font-size:18px;margin:8px 0 4px">' + c.name + '</div>' +
+                        '<div class="cj-sub">' + (p.timeCandidates[0] || '') + ' · 点击卡片参与表态</div>' +
+                    '</div>' : '') +
+                    '<div style="display:flex;flex-direction:column;gap:12px;margin-top:14px">' +
+                        '<div class="cj-card" style="margin:0;cursor:pointer" onclick="window.Zuju.pickShareGroup(\'周五麻将局群\',\'' + containerId + '\')"><div class="cj-row" style="justify-content:space-between"><span class="cj-title" style="font-size:14px">周五麻将局群</span><span class="cj-sub">6 人</span></div></div>' +
+                        '<div class="cj-card" style="margin:0;cursor:pointer" onclick="window.Zuju.pickShareGroup(\'老同学群\',\'' + containerId + '\')"><div class="cj-row" style="justify-content:space-between"><span class="cj-title" style="font-size:14px">老同学群</span><span class="cj-sub">8 人</span></div></div>' +
+                    '</div>' +
+                '</div>' +
+            '</div>';
+    }
+
+    function pickShareGroup(groupName, containerId) {
+        const el = document.getElementById(containerId);
+        if (el && el.innerHTML !== undefined) el.innerHTML = '';
+        window.Common.showToast('邀请已发到「' + groupName + '」，等大家点卡片进来');
+    }
+
     // 提醒未表态者（服务通知 + 落库）
     function remindNonVoters(proposalId) {
         const p = proposalOf(proposalId);
@@ -148,5 +177,5 @@ window.Zuju = (function () {
         window.Common.save();
     }
 
-    return { buildProposal, markProjectPending, submitVotes, voteSummary, tryDecide, remindNonVoters };
+    return { buildProposal, markProjectPending, submitVotes, voteSummary, tryDecide, remindNonVoters, shareInvite, pickShareGroup };
 })();

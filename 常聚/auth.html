@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>常聚 · 手机号授权</title>
+    <link rel="stylesheet" href="theme.css">
+    <style>
+        body.auth-page { background: rgba(0, 0, 0, 0.45); display: flex; align-items: flex-end; min-height: 100vh; margin: 0; }
+        .auth-page-wrap { max-width: 480px; margin: 0 auto; width: 100%; }
+        .auth-sheet {
+            background: var(--cream); border-radius: 24px 24px 0 0; padding: 28px 24px 32px;
+            text-align: center; box-shadow: 0 -8px 32px rgba(59, 46, 34, 0.2);
+        }
+        .auth-logo {
+            width: 52px; height: 52px; margin: 0 auto 14px; border-radius: 14px;
+            background: linear-gradient(135deg, #E08A3C, #C97226); color: #FFF9F0;
+            display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 800;
+        }
+        .auth-title { font-size: 18px; font-weight: 800; color: var(--ink); }
+        .auth-desc { font-size: 12px; color: var(--caption); line-height: 1.8; margin-top: 10px; }
+        .auth-phone {
+            margin: 18px auto 0; padding: 12px 20px; background: var(--card);
+            border: 1px solid var(--line); border-radius: 14px; display: inline-block;
+            font-size: 17px; font-weight: 800; color: var(--ink); letter-spacing: 1px;
+        }
+        .auth-btns { margin-top: 22px; }
+        .auth-deny { display: inline-block; margin-top: 14px; font-size: 13px; color: var(--caption); cursor: pointer; }
+    </style>
+</head>
+<body class="cj-theme auth-page">
+<div id="app" class="auth-page-wrap"></div>
+<script src="data.js"></script>
+<script src="common.js"></script>
+<script>
+window.AuthView = (function () {
+    function maskedPhone() {
+        const p = String(window.GlobalData.user.phone || '');
+        return p ? p.slice(0, 3) + ' **** ' + p.slice(-4) : '';
+    }
+
+    function render() {
+        return '<div class="auth-sheet">' +
+            '<div class="auth-logo">聚</div>' +
+            '<div class="auth-title">申请获取你的手机号</div>' +
+            '<div class="auth-desc">常聚需要获取你的手机号，用于注册账号和圈友身份识别。<br>手机号仅用于本平台登录，请放心授权。</div>' +
+            '<div class="auth-phone">' + maskedPhone() + '</div>' +
+            '<div class="auth-btns">' +
+                '<button class="cj-btn cj-btn-block" onclick="window.AuthView.allow()">允许</button>' +
+                '<span class="auth-deny" onclick="window.AuthView.deny()">不同意</span>' +
+            '</div>' +
+        '</div>';
+    }
+
+    // 已授权（同会话）直接跳目标页
+    function skipIfAuthed() {
+        try {
+            if (window.sessionStorage.getItem('cj_authed') === '1' && window.AuthView._next) {
+                window.location.href = window.AuthView._next;
+                return true;
+            }
+        } catch (e) { /* noop */ }
+        return false;
+    }
+
+    function allow() {
+        try { window.sessionStorage.setItem('cj_authed', '1'); } catch (e) { /* noop */ }
+        const next = window.AuthView._next || 'index.html';
+        window.location.href = 'register.html?next=' + encodeURIComponent(next);
+    }
+
+    function deny() {
+        window.Common.showToast('未授权手机号，无法继续使用常聚');
+    }
+
+    return { render, allow, deny, skipIfAuthed };
+})();
+(function () {
+    const params = new URLSearchParams(window.location.search);
+    window.AuthView._next = params.get('next') || 'index.html';
+    if (!window.AuthView.skipIfAuthed()) {
+        document.getElementById('app').innerHTML = window.AuthView.render();
+    }
+})();
+</script>
+</body>
+</html>

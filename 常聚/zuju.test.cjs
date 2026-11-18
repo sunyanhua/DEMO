@@ -122,6 +122,21 @@ test('deadline_auto_decide', () => {
     assert.equal(c3.proposalId, null, '圈子清空进行中提案');
 });
 
+test('propose_share_invite_overlay', () => {
+    const s = makeSandbox();
+    s.window.ProposeView.shareInvite();
+    assert.ok(s.document._html.includes('把组局邀请分享到群'), '分享浮层标题');
+    assert.ok(s.document._html.includes('周五麻将局群'), '含可分享的群');
+    s.window.ProposeView.pickShareGroup('周五麻将局群');
+    assert.ok(!s.document._html.includes('把组局邀请分享到群'), '选群后浮层关闭');
+});
+
+test('event_has_share_button', () => {
+    const s = makeSandbox();
+    const html = s.window.EventView.render('p1');
+    assert.ok(html.includes('分享邀请到群'), '局详情页有分享入口');
+});
+
 test('deadline_all_abstain_stays_open', () => {
     const s = makeSandbox();
     const p = s.window.Zuju.buildProposal('c3');

@@ -76,6 +76,7 @@ window.ProposeView = (function () {
                 '<div id="proposeBody">' +
                     '<button class="cj-btn cj-btn-block" onclick="window.ProposeView.generate()">一键生成智能提案</button>' +
                 '</div>' +
+                '<div id="shareArea"></div>' +
             '</div>' + window.Common.renderTabbar('circles');
     }
 
@@ -102,6 +103,16 @@ window.ProposeView = (function () {
     function send() {
         window.Common.showToast('提案已发出，等圈友表态');
         window.location.href = 'vote.html?proposal=' + (window.GlobalData.circles.find(c => c.id === circleId) || {}).proposalId;
+    }
+
+    // 分享组局邀请到微信群（模拟浮层，逻辑在 zuju.js 共享）
+    function shareInvite() {
+        const c = window.GlobalData.circles.find(x => x.id === circleId);
+        window.Zuju.shareInvite({ proposalId: c && c.proposalId, circleId, containerId: 'shareArea' });
+    }
+
+    function pickShareGroup(groupName) {
+        window.Zuju.pickShareGroup(groupName, 'shareArea');
     }
 
     function togglePending() {
@@ -136,7 +147,7 @@ window.ProposeView = (function () {
             '<button class="cj-btn cj-btn-block" style="margin-top:4px" onclick="window.ProposeView.send()">发出提案，请圈友表态</button>';
     }
 
-    return { render, build, generate, send, togglePending, addTime, removeTime, pickCategory };
+    return { render, build, generate, send, togglePending, addTime, removeTime, pickCategory, shareInvite, pickShareGroup };
 })();
 (function () {
     const params = new URLSearchParams(window.location.search);

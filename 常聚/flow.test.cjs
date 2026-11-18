@@ -42,7 +42,7 @@ function inlineScriptOf(file) {
         .join('\n');
 }
 
-const PAGES = ['create.html', 'circle.html', 'propose.html', 'vote.html', 'event.html',
+const PAGES = ['index.html', 'create.html', 'circle.html', 'propose.html', 'vote.html', 'event.html',
     'end-event.html', 'record.html', 'ledger.html', 'memory.html', 'message.html', 'me.html', 'merchant.html'];
 
 function makeSandbox() {
@@ -163,6 +163,18 @@ test('flow_next_round_rhythm', () => {
     assert.equal(r.due, false, '刚聚完不触发提醒');
     const p2 = s.window.Zuju.buildProposal(c.id);
     assert.equal(p2.status, 'open', '下一轮提案可发起');
+});
+
+test('flow_new_user_empty_index', () => {
+    const s = makeSandbox();
+    s.window.IndexView._newUser = true;
+    const html = s.window.IndexView.render();
+    assert.ok(html.includes('还没有圈子'), '新用户看到空态');
+    assert.ok(!html.includes('周五麻将局'), '空态不显示 mock 圈子');
+    assert.ok(html.includes('建圈子'), '空态保留建圈入口');
+    s.window.IndexView._newUser = false;
+    const normal = s.window.IndexView.render();
+    assert.ok(normal.includes('周五麻将局'), '普通用户看到圈子列表');
 });
 
 test('flow_no_privacy_leak', () => {

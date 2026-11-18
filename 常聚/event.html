@@ -55,12 +55,14 @@ window.EventView = (function () {
                     '<button class="cj-btn-outline" style="flex:1;justify-content:center" onclick="window.Common.showToast(\'模拟导航：已打开地图\')">导航</button>' +
                     '<a class="cj-btn" style="flex:1;justify-content:center;text-decoration:none" href="game-liushang.html">聚会中 · 玩一局</a>' +
                 '</div>' +
+                '<button class="cj-btn-outline" style="width:100%;margin-top:12px;justify-content:center" onclick="window.EventView.shareInvite()">分享邀请到群</button>' +
                 '<div style="text-align:center;margin-top:14px">' +
                     (gathering
                         ? '<a class="cj-btn cj-btn-block" style="text-decoration:none" href="end-event.html?id=' + gathering.id + '">散场 · 记录这次聚会</a>'
                         : '<span class="cj-sub">定案后可散场记录</span>') +
                 '</div>' +
                 '<a class="cj-sub" style="display:block;text-align:center;margin-top:14px" href="vote.html?proposal=' + p.id + '">回表态页 →</a>' +
+                '<div id="shareArea"></div>' +
             '</div>' + window.Common.renderTabbar('circles');
     }
 
@@ -68,7 +70,11 @@ window.EventView = (function () {
         window.Zuju.remindNonVoters(window.EventView._pid);
     }
 
-    return { render, remind };
+    function shareInvite() {
+        window.Zuju.shareInvite({ proposalId: window.EventView._pid, circleId: null, containerId: 'shareArea' });
+    }
+
+    return { render, remind, shareInvite };
 })();
 (function () {
     const params = new URLSearchParams(window.location.search);

@@ -17,17 +17,19 @@
         .wx-msg-me { align-self: flex-end; background: #95EC69; }
         .wx-msg-meta { font-size: 11px; color: #999; margin-bottom: 2px; }
         .wx-card {
-            max-width: 76%; background: #FBF7F0; border: 1px solid #EDE4D6; border-radius: 12px;
+            max-width: 76%; background: #FBF4E8; border: 1px solid #EFE2CD; border-radius: 12px;
             padding: 12px; display: flex; gap: 10px; align-items: center; cursor: pointer;
         }
         .wx-card-logo {
-            width: 42px; height: 42px; border-radius: 10px; background: #E8965A; color: #fff;
-            display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; flex-shrink: 0;
+            width: 42px; height: 42px; border-radius: 10px; background: linear-gradient(135deg, #E08A3C, #C97226); color: #FFF9F0;
+            display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800; flex-shrink: 0;
         }
-        .wx-card-name { font-size: 14px; font-weight: 700; color: #3D3229; }
-        .wx-card-desc { font-size: 11px; color: #8A7D6F; margin-top: 2px; }
-        .wx-card-mini { font-size: 10px; color: #8A7D6F; border-left: 2px solid #EDE4D6; padding-left: 6px; margin-top: 6px; }
-        .wx-footer { background: #EDEDED; text-align: center; font-size: 11px; color: #8A7D6F; padding: 10px 0 16px; }
+        .wx-card-name { font-size: 14px; font-weight: 800; color: #3B2E22; }
+        .wx-card-desc { font-size: 11px; color: #A58C70; margin-top: 2px; }
+        .wx-card-mini { font-size: 10px; color: #A58C70; border-left: 2px solid #EFE2CD; padding-left: 6px; margin-top: 6px; }
+        .wx-card-title { font-size: 14px; font-weight: 800; color: #3B2E22; }
+        .wx-card-cta { font-size: 11px; color: #C97226; font-weight: 700; margin-top: 6px; }
+        .wx-footer { background: #EDEDED; text-align: center; font-size: 11px; color: #A58C70; padding: 10px 0 16px; }
     </style>
 </head>
 <body class="cj-theme wx">
@@ -36,17 +38,26 @@
 <script src="common.js"></script>
 <script>
 window.WechatView = (function () {
-    function memberCount() {
+    function inviteInfo() {
         const G = window.GlobalData;
-        const c1 = (G.circles || []).find(c => c.id === 'c1');
-        return c1 ? c1.members.length : 0;
+        const p = (G.proposals || []).find(x => x.id === 'p1');
+        const circle = (G.circles || []).find(c => c.id === p.circleId);
+        const project = (G.projects || []).find(x => x.id === p.projectId);
+        return { p, circle, project };
     }
 
-    function enter() {
-        window.location.href = 'index.html';
+    // 路线①：全新用户点开常聚 → 手机号授权 → 注册 → 空态圈子列表
+    function enterNew() {
+        window.location.href = 'auth.html?next=' + encodeURIComponent('index.html?new=1');
+    }
+
+    // 路线②：群内组局邀请 → 手机号授权 → 注册 → 直接参与该局
+    function enterInvite() {
+        window.location.href = 'auth.html?next=' + encodeURIComponent('vote.html?proposal=p1');
     }
 
     function render() {
+        const info = inviteInfo();
         return '<div class="wx-header">微信（模拟）</div>' +
             '<div class="wx-list">' +
                 '<img class="wx-list-avatar" src="images/avatar-2.png" alt="群头像">' +
@@ -54,25 +65,33 @@ window.WechatView = (function () {
                     '<div style="font-size:15px;font-weight:600">周五麻将局</div>' +
                     '<div style="font-size:12px;color:#999">阿Sun：[小程序] 常聚</div>' +
                 '</div>' +
-                '<span class="wx-list-badge">1</span>' +
+                '<span class="wx-list-badge">2</span>' +
             '</div>' +
             '<div class="wx-chat">' +
-                '<div class="wx-msg"><div class="wx-msg-meta">老王</div>上周末那局没过瘾，这周继续？</div>' +
-                '<div class="wx-msg"><div class="wx-msg-meta">小李</div>行啊，老地方走起</div>' +
-                '<div class="wx-msg wx-msg-me"><div class="wx-msg-meta">阿Sun</div>别在群里接龙了，我把局放到常聚上，大家点卡片进</div>' +
-                '<div class="wx-card" onclick="window.WechatView.enter()">' +
+                '<div class="wx-msg"><div class="wx-msg-meta">小李</div>我上周组了个局，用的常聚，你们也试试</div>' +
+                '<div class="wx-card" onclick="window.WechatView.enterNew()">' +
                     '<div class="wx-card-logo">聚</div>' +
                     '<div>' +
                         '<div class="wx-card-name">常聚</div>' +
                         '<div class="wx-card-desc">常聚常伴，圈子不散</div>' +
-                        '<div class="wx-card-mini">小程序 · 群友 ' + memberCount() + ' 人已加入</div>' +
+                        '<div class="wx-card-mini">小程序 · 新人下载使用</div>' +
+                    '</div>' +
+                '</div>' +
+                '<div class="wx-msg wx-msg-me"><div class="wx-msg-meta">阿Sun</div>这周的局我组好了，点下面卡片进来表态</div>' +
+                '<div class="wx-card" onclick="window.WechatView.enterInvite()">' +
+                    '<div class="wx-card-logo">局</div>' +
+                    '<div>' +
+                        '<div class="wx-card-title">' + info.circle.name + ' · 组局邀请</div>' +
+                        '<div class="wx-card-desc">' + (info.project ? info.project.name : '') + ' · ' + info.p.timeCandidates[0].slice(5) + '</div>' +
+                        '<div class="wx-card-mini">组局邀请 · 点击参与表态</div>' +
+                        '<div class="wx-card-cta">点击授权并参与 →</div>' +
                     '</div>' +
                 '</div>' +
             '</div>' +
-            '<div class="wx-footer">模拟微信外壳 · 演示入口</div>';
+            '<div class="wx-footer">模拟微信外壳 · 演示入口（两条路线：新用户 / 被邀请）</div>';
     }
 
-    return { render, enter };
+    return { render, enterNew, enterInvite };
 })();
 document.getElementById('app').innerHTML = window.WechatView.render();
 </script>

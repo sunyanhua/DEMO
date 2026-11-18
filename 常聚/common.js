@@ -171,6 +171,10 @@ window.Demo = (function () {
         try {
             win.localStorage.removeItem(CLOCK_KEY);
             win.localStorage.removeItem('cj.data');
+            win.localStorage.removeItem('cj.user');
+            if (win.sessionStorage) {
+                win.sessionStorage.removeItem('cj_authed');
+            }
         } catch (e) { /* noop */ }
         if (win.location) win.location.reload();
     }

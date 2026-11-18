@@ -52,7 +52,7 @@ window.IndexView = (function () {
 
     function render() {
         const G = window.GlobalData;
-        const circles = G.circles || [];
+        const circles = window.IndexView._newUser ? [] : (G.circles || []);
         const list = circles.map(circleCard).join('');
         const empty = circles.length ? '' : '<div class="cj-empty">还没有圈子，建一个吧<br>常聚常伴，圈子不散</div>';
         return window.Common.renderShell('圈子') +
@@ -65,7 +65,12 @@ window.IndexView = (function () {
 
     return { render };
 })();
-document.getElementById('app').innerHTML = window.IndexView.render();
+window.IndexView._newUser = false;
+(function () {
+    const params = new URLSearchParams(window.location.search);
+    window.IndexView._newUser = params.get('new') === '1';
+    document.getElementById('app').innerHTML = window.IndexView.render();
+})();
 window.Common.initIcons();
 window.Demo.mountFab();
 </script>

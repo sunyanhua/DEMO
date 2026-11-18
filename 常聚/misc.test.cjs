@@ -18,6 +18,12 @@ function makeStorage() {
     };
 }
 
+function makeStorageWith(seed) {
+    const s = makeStorage();
+    Object.keys(seed).forEach(k => s.setItem(k, seed[k]));
+    return s;
+}
+
 function makeDocument() {
     const document = {
         _html: '',
@@ -47,12 +53,14 @@ function makeSandbox() {
         window: { location: { href: '', reload() {} } },
         document,
         localStorage: makeStorage(),
+        sessionStorage: makeStorage(),
         navigator: {},
         URLSearchParams,
         setTimeout, clearTimeout
     };
     sandbox.window.document = document;
     sandbox.window.localStorage = sandbox.localStorage;
+    sandbox.window.sessionStorage = sandbox.sessionStorage;
     vm.createContext(sandbox);
     vm.runInContext(fs.readFileSync(path.join(dir, 'data.js'), 'utf8'), sandbox);
     vm.runInContext(fs.readFileSync(path.join(dir, 'rotation.js'), 'utf8'), sandbox);
@@ -111,7 +119,9 @@ test('demo_panel_actions', () => {
     const s = makeSandbox();
     s.window.Demo.advanceTime(24);
     assert.equal(s.localStorage.getItem('cj.clock'), '24', '虚拟时钟推进 24h');
+    s.sessionStorage.setItem('cj_authed', '1');
     s.window.Demo.reset();
     assert.equal(s.localStorage.getItem('cj.clock'), null, '重置清空时钟');
     assert.equal(s.localStorage.getItem('cj.data'), null, '重置清空数据');
+    assert.equal(s.sessionStorage.getItem('cj_authed'), null, '重置清空授权态');
 });

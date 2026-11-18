@@ -64,6 +64,11 @@ test('schema_refs_resolve', () => {
     }
 });
 
+test('user_has_phone_for_auth', () => {
+    assert.ok(G.user.phone, '用户有手机号（授权注册用）');
+    assert.equal(String(G.user.phone).length, 11, '手机号为 11 位');
+});
+
 test('schema_mock_quota', () => {
     assert.ok(G.circles.length >= 3, '至少 3 个圈子');
     assert.ok(G.venues.length >= 12, '至少 12 个商户');
