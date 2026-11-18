@@ -65,8 +65,11 @@ test('theme_defines_warm_tokens', () => {
     for (const token of ['--cream', '--cream-deep', '--warm', '--warm-deep', '--warm-soft', '--seal', '--line', '--ink', '--caption']) {
         assert.ok(css.includes(token + ':'), `theme.css 定义 ${token}`);
     }
-    for (const cls of ['.cj-pola', '.cj-ticket', '.cj-note', '.cj-host-card', '.cj-pill', '.cj-seal', '.cj-topbar']) {
+    for (const cls of ['.cj-pola', '.cj-ticket', '.cj-note', '.cj-host-card', '.cj-pill', '.cj-seal', '.cj-topbar', '.cj-anim-drop', '.cj-anim-fadeup', '.cj-float']) {
         assert.ok(css.includes(cls), `theme.css 定义 ${cls}`);
+    }
+    for (const kf of ['@keyframes cj-drop', '@keyframes cj-fadeup', '@keyframes cj-float']) {
+        assert.ok(css.includes(kf), `theme.css 定义 ${kf}`);
     }
     assert.ok(!css.includes('cj-statusbar') && !css.includes('cj-capsule'), '无小程序外壳残留');
 });

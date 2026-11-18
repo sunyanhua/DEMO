@@ -213,6 +213,28 @@ body.cj-theme .cj-demo-panel button {
     padding: 8px 10px; font-size: 12px; font-weight: 600; cursor: pointer; text-align: left;
 }
 
+/* 组局引导入场动效（克制：一次入场 + 静置微浮动） */
+@keyframes cj-drop {
+    0% { transform: translateY(-36px) rotate(-9deg); opacity: 0; }
+    60% { transform: translateY(4px) rotate(-2deg); opacity: 1; }
+    100% { transform: translateY(0) rotate(0deg); opacity: 1; }
+}
+@keyframes cj-fadeup {
+    0% { transform: translateY(14px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+}
+@keyframes cj-float {
+    0%, 100% { transform: translateY(0) rotate(-3deg); }
+    50% { transform: translateY(-6px) rotate(-3deg); }
+}
+body.cj-theme .cj-anim-drop { animation: cj-drop 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; }
+body.cj-theme .cj-anim-fadeup { animation: cj-fadeup 0.55s cubic-bezier(0.22, 1, 0.36, 1) both; }
+body.cj-theme .cj-anim-fadeup.d1 { animation-delay: 0.15s; }
+body.cj-theme .cj-anim-fadeup.d2 { animation-delay: 0.3s; }
+body.cj-theme .cj-anim-fadeup.d3 { animation-delay: 0.45s; }
+body.cj-theme .cj-anim-fadeup.d4 { animation-delay: 0.6s; }
+body.cj-theme .cj-float { animation: cj-float 4s ease-in-out 0.8s infinite; }
+
 /* 通用布局 */
 body.cj-theme .cj-px { padding-left: 20px; padding-right: 20px; }
 body.cj-theme .cj-row { display: flex; align-items: center; }

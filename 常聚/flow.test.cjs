@@ -179,6 +179,10 @@ test('flow_new_user_zuju_guide_index', () => {
     assert.ok(guide.includes('width:170px'), '引导拍立得大图 170px');
     assert.ok(guide.includes('font-size:30px'), '引导标题 30px');
     assert.ok(guide.includes('font-size:15px'), '引导文案 15px');
+    // 引导动效：拍立得飘落 + 静置浮动 + 内容逐行浮现
+    assert.ok(guide.includes('cj-anim-drop'), '拍立得入场动效');
+    assert.ok(guide.includes('cj-float'), '拍立得静置浮动');
+    assert.ok((guide.match(/cj-anim-fadeup/g) || []).length >= 3, '标题/文案/按钮逐行浮现');
     // 已注册用户：组局 tab 显示已有圈子可选
     s.window.IndexView._registered = true;
     const reg = s.window.IndexView.render();
