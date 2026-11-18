@@ -62,10 +62,14 @@ window.CreateCircle.pickType = function (key) {
     document.getElementById('circleName').value = t.suggest;
     window.CreateCircle._type = key;
 };
-window.CreateCircle._type = 'mahjong';
+window.CreateCircle._type = null;
 window.CreateCircle._circle = null;
 window.CreateCircle.go = function () {
     const name = document.getElementById('circleName').value;
+    if (!window.CreateCircle._type) {
+        window.Common.showToast('先选一个圈子类型吧');
+        return;
+    }
     const c = window.CreateCircle.submit({ name, type: window.CreateCircle._type, mode: 'template' });
     if (!c) return;
     window.CreateCircle._circle = c;

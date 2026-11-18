@@ -10,14 +10,16 @@ window.Zuju = (function () {
     // 圈子类型 → 项目类别（默认推荐方向）
     const CATEGORY_BY_TYPE = { mahjong: 'mahjong', dinner: 'dinner', ball: 'ball', outdoor: 'outdoor', exhibit: 'exhibit', ktv: 'ktv', classmate: 'dinner', colleague: 'dinner' };
 
-    // 圈子类型（建圈页与组局流程共用）
+    // 圈子类型（建圈页与组局流程共用，通用常见分类）
     const CIRCLE_TYPES = [
-        { key: 'mahjong', label: '麻将', suggest: '周末麻将局' },
         { key: 'dinner', label: '饭局', suggest: '约饭小分队' },
-        { key: 'ball', label: '球局', suggest: '周末球局' },
+        { key: 'sport', label: '运动', suggest: '周末运动局' },
+        { key: 'boardgame', label: '棋牌', suggest: '棋牌桌游局' },
         { key: 'outdoor', label: '户外', suggest: '山野同行' },
         { key: 'classmate', label: '同学', suggest: '老同学' },
-        { key: 'colleague', label: '同事', suggest: '同事食堂搭子' }
+        { key: 'colleague', label: '同事', suggest: '同事搭子' },
+        { key: 'family', label: '家人', suggest: '一家人' },
+        { key: 'hobby', label: '兴趣', suggest: '兴趣小组' }
     ];
 
     // 建圈（组局流程内嵌与建圈页共用）：owner/当值=建圈人；城市=北京

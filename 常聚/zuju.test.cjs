@@ -143,9 +143,20 @@ test('propose_new_user_circle_form', () => {
     assert.ok(html.includes('新建圈子'), '新用户第一步是新建圈子');
     assert.ok(html.includes('圈子叫什么'), '含圈名输入');
     assert.ok(!html.includes('或选择已有圈子'), '新用户不显示已有圈子选择');
+    assert.ok(!html.includes('cj-chip-warm'), '进入时不默认选中任何类型');
+    assert.ok(html.includes('运动') && html.includes('棋牌') && html.includes('家人'), '类型更通用（运动/棋牌/家人等）');
+    assert.ok(!html.includes('>麻将<'), '不再单列麻将类型');
     s.window.ProposeView._newUser = false;
     const picker = s.window.ProposeView.renderNew();
     assert.ok(picker.includes('或选择已有圈子'), '注册用户可选已有圈子');
+});
+
+test('propose_requires_circle_type', () => {
+    const s = makeSandbox();
+    s.window.ProposeView._newUser = true;
+    s.window.ProposeView._circleType = null;
+    const r = s.window.ProposeView.createAndContinue({ name: '无类型圈', type: null });
+    assert.equal(r, null, '未选类型不创建圈子');
 });
 
 test('propose_create_circle_continues_to_zuju', () => {

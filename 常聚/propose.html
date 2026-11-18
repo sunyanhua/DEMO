@@ -17,7 +17,7 @@
 <script src="zuju.js"></script>
 <script>
 window.ProposeView = (function () {
-    const CATEGORY_LABELS = { dinner: '饭局', ball: '球局', mahjong: '麻将', outdoor: '户外', exhibit: '看展', ktv: 'K歌' };
+    const CATEGORY_LABELS = { dinner: '饭局', ball: '运动', mahjong: '棋牌', outdoor: '户外', exhibit: '看展', ktv: 'K歌' };
     const TIER_LABEL = { economy: '经济实惠', mid: '中等档', premium: '中高端' };
     const MAX_VENUES = 3;
 
@@ -103,21 +103,28 @@ window.ProposeView = (function () {
         const t = (window.Zuju.CIRCLE_TYPES || []).find(x => x.key === key);
         const input = document.getElementById('circleName');
         if (input && input.value !== undefined && t) input.value = t.suggest;
-        const chips = document.querySelectorAll('#ct-' + key + ', [id^="ct-"]');
+        const chips = document.querySelectorAll('[id^="ct-"]');
         if (chips && chips.forEach) {
-            chips.forEach(el => { el.className = el.id === 'ct-' + key ? 'cj-chip-warm' : 'cj-chip'; });
+            chips.forEach(el => {
+                el.className = 'cj-chip' + (el.id === 'ct-' + key ? ' cj-chip-warm' : '');
+            });
         }
     }
 
-    // 建圈成功 → 第 2 步选项目（预填默认时间候选与项目类别方向）
+    // 建圈成功 → 第 2 步选项目（预填默认时间候选与项目类别方向）；类型必须由用户选择
     function createAndContinue(opts) {
         const o = opts || {};
         const input = document.getElementById('circleName');
         const name = o.name || (input && input.value ? input.value.trim() : '');
-        const circle = window.Zuju.createCircle({ name, type: o.type || window.ProposeView._circleType || 'dinner' });
+        const type = o.type || window.ProposeView._circleType || null;
+        if (!type) {
+            window.Common.showToast('先选一个圈子类型吧');
+            return null;
+        }
+        const circle = window.Zuju.createCircle({ name, type });
         if (!circle) return null;
         window.ProposeView._circleId = circle.id;
-        window.ProposeView._projCategory = { mahjong: 'mahjong', dinner: 'dinner', ball: 'ball', outdoor: 'outdoor', exhibit: 'exhibit', ktv: 'ktv', classmate: 'dinner', colleague: 'dinner' }[circle.type] || 'dinner';
+        window.ProposeView._projCategory = { boardgame: 'mahjong', sport: 'ball', dinner: 'dinner', ball: 'ball', mahjong: 'mahjong', outdoor: 'outdoor', exhibit: 'exhibit', ktv: 'ktv', classmate: 'dinner', colleague: 'dinner', family: 'dinner', hobby: 'exhibit' }[circle.type] || 'dinner';
         window.ProposeView._times = window.Recommend.suggestTimes({ members: circle.members, count: 3, now: window.Common.fmtDate(window.Demo.getNow()) });
         window.ProposeView.gotoStep(2);
         return circle;
@@ -293,13 +300,14 @@ window.ProposeView = (function () {
 (function () {
     const P = window.ProposeView;
     P._newUser = false;
-    P._circleType = 'mahjong';
+    P._circleType = null;
     P._circleId = null;
     P._projCategory = 'dinner';
     P._projectId = null;
     P._venueIds = [];
     P._times = [];
     P._step = 1;
+    const CATEGORY_OF_TYPE = { boardgame: 'mahjong', sport: 'ball', dinner: 'dinner', ball: 'ball', mahjong: 'mahjong', outdoor: 'outdoor', exhibit: 'exhibit', ktv: 'ktv', classmate: 'dinner', colleague: 'dinner', family: 'dinner', hobby: 'exhibit' };
     const params = new URLSearchParams(window.location.search);
     if (params.get('new') === '1') {
         P._newUser = true;
@@ -310,7 +318,7 @@ window.ProposeView = (function () {
         if (!circle) { document.getElementById('app').innerHTML = window.ProposeView.renderStep(1); }
         else {
             P._circleId = cid;
-            P._projCategory = { mahjong: 'mahjong', dinner: 'dinner', ball: 'ball', outdoor: 'outdoor', exhibit: 'exhibit', ktv: 'ktv', classmate: 'dinner', colleague: 'dinner' }[circle.type] || 'dinner';
+            P._projCategory = CATEGORY_OF_TYPE[circle.type] || 'dinner';
             P._times = window.Recommend.suggestTimes({ members: circle.members, count: 3, now: window.Common.fmtDate(window.Demo.getNow()) });
             document.getElementById('app').innerHTML = window.ProposeView.renderStep(2);
         }

@@ -26,7 +26,7 @@ window.GlobalData = {
         {
             id: 'c1',
             name: '周五麻将局',
-            type: 'mahjong',
+            type: 'boardgame',
             city: '北京',
             createdAt: '2026-09-01',
             ownerId: 'u1',
@@ -63,7 +63,7 @@ window.GlobalData = {
         {
             id: 'c3',
             name: '周末球局',
-            type: 'ball',
+            type: 'sport',
             city: '北京',
             createdAt: '2026-08-20',
             ownerId: 'u1',
@@ -115,7 +115,10 @@ window.GlobalData = {
         { id: 'p11', name: '公园徒步野餐', category: 'outdoor', season: ['spring', 'autumn'], tags: ['野餐', '徒步', '遛娃'] },
         { id: 'p12', name: '美术馆看展', category: 'exhibit', season: [], tags: ['展览', '文艺'] },
         { id: 'p13', name: '博物馆漫游', category: 'exhibit', season: [], tags: ['展览', '历史'] },
-        { id: 'p14', name: 'KTV 欢唱夜', category: 'ktv', season: [], tags: ['唱歌', '欢唱'] }
+        { id: 'p14', name: 'KTV 欢唱夜', category: 'ktv', season: [], tags: ['唱歌', '欢唱'] },
+        { id: 'p15', name: '桌游之夜', category: 'mahjong', season: [], tags: ['桌游', '聚会'] },
+        { id: 'p16', name: '德州扑克', category: 'mahjong', season: [], tags: ['扑克', '竞技'] },
+        { id: 'p17', name: '三国杀', category: 'mahjong', season: [], tags: ['桌游', '角色扮演'] }
     ],
 
     proposals: [

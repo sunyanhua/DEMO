@@ -81,6 +81,9 @@ test('theme_defines_warm_tokens', () => {
     assert.ok(css.includes('animation: cj-drop 1.1s'), '拍立得飘落 1.1s');
     assert.ok(css.includes('animation: cj-fadeup 0.85s'), '逐行浮现 0.85s');
     assert.ok(css.includes('animation: cj-float 6s'), '静置浮动 6s');
+    // 步骤条大字 + 胶囊选中态保持圆角
+    assert.ok(css.includes('.cj-step-label { font-size: 12px'), '步骤标签 12px 大字');
+    assert.ok(/\.cj-chip,\s*[^{}]*\.cj-chip-warm\s*\{[^}]*border-radius: 999px/.test(css), 'cj-chip-warm 与 cj-chip 共享圆角形状');
     assert.ok(!css.includes('cj-statusbar') && !css.includes('cj-capsule'), '无小程序外壳残留');
 });
 
