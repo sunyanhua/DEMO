@@ -158,6 +158,7 @@ test('register_renders_avatar_pool_and_phone', () => {
     assert.ok(s.document._html.includes('男') && s.document._html.includes('女'), '性别单选存在');
     assert.ok(s.document._html.includes('disabled'), '手机号不可修改（与授权一致）');
     assert.ok(s.document._html.includes('不可修改'), 'amber 提示条');
+    assert.ok(s.document._html.indexOf('不可修改') < s.document._html.indexOf('性别'), '提示条在手机号下方（性别之前）');
     assert.ok(s.document._html.includes('cj-steps'), '步骤条（注册→资料完善）');
     assert.ok(s.document._html.includes('基本资料'), '卡标题（他俩能成同款 h3）');
     assert.equal((s.document._html.match(/cj-wiz-card/g) || []).length, 1, '单卡多字段布局（不拆多卡）');

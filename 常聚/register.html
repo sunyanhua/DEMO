@@ -47,6 +47,7 @@ window.RegisterView = (function () {
                 '<div style="margin-bottom:16px">' +
                     '<label class="cj-field-label">手机号</label>' +
                     '<input type="tel" value="' + maskedPhone() + '" disabled class="cj-field-disabled">' +
+                    '<div class="cj-notice" style="margin-top:10px"><i data-lucide="alert-triangle"></i><p>手机号与授权一致，不可修改</p></div>' +
                 '</div>' +
                 '<div style="margin-bottom:16px">' +
                     '<label class="cj-field-label">性别</label>' +
@@ -55,7 +56,6 @@ window.RegisterView = (function () {
                         '<label style="display:flex;align-items:center;gap:8px;cursor:pointer" onclick="window.RegisterView.pickGender(\'female\')"><input type="radio" name="gender" value="female"' + (gender === 'female' ? ' checked' : '') + ' style="width:16px;height:16px;accent-color:#E08A3C"><span>女</span></label>' +
                     '</div>' +
                 '</div>' +
-                '<div class="cj-notice"><i data-lucide="alert-triangle"></i><p>手机号与授权一致，不可修改</p></div>' +
                 '<button class="cj-btn-grad" style="margin-top:16px" onclick="window.RegisterView.submit()">完成注册，继续</button>' +
             '</div>' +
         '</div>';
