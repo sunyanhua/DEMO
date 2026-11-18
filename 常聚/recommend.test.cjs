@@ -123,6 +123,6 @@ test('output_no_member_privacy', () => {
         times: ['2026-11-21 14:00'], proposerId: 'u1'
     }));
     assert.ok(!pr.includes('朝阳') && !pr.includes('premium'), '提案输出不得含成员隐私字段');
-    assert.ok(!pr.includes('m1'), '提案输出不得含成员信息');
+    assert.ok(!pr.includes('"m1"'), '提案输出不得含成员信息（id 随机串可能含 m1 子串，须精确匹配）');
     assert.equal(pr.includes('"status":"open"'), true, '提案初始状态 open');
 });

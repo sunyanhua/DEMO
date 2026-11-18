@@ -6,7 +6,7 @@
     <title>常聚 · 资料完善</title>
     <link rel="stylesheet" href="theme.css">
 </head>
-<body class="cj-theme">
+<body class="cj-theme cj-wizard">
 <div id="app" class="cj-page"></div>
 <script src="vendor/lucide.min.js"></script>
 <script src="data.js"></script>
@@ -20,48 +20,56 @@ window.ProfileView = (function () {
 
     function chips(list, picked, onClick) {
         return '<div style="display:flex;flex-wrap:wrap;gap:8px">' + list.map(k =>
-            '<span class="' + (picked.includes(k) ? 'cj-chip-warm' : 'cj-chip') + '" style="cursor:pointer" onclick="' + onClick + '(\'' + k + '\')">' + k + '</span>').join('') + '</div>';
+            '<span style="display:inline-flex;padding:7px 13px;border-radius:999px;font-size:12px;font-weight:600;cursor:pointer;' +
+            (picked.includes(k) ? 'background:#FFF0E3;color:#C97226;border:1px solid #E08A3C' : 'background:#F9FAFB;color:#6B7280;border:1px solid #E5E7EB') +
+            '" onclick="' + onClick + '(\'' + k + '\')">' + k + '</span>').join('') + '</div>';
     }
 
-    function locCard(label, key, area, onClick) {
-        return '<div class="cj-card">' +
-            '<div class="cj-title" style="font-size:14px;margin-bottom:10px">' + label + ' · 定位到商圈级</div>' +
-            '<div class="cj-row" style="gap:6px;margin-bottom:10px">' +
-                '<span class="cj-pill cj-pill-due" style="cursor:pointer" onclick="' + onClick + '(\'' + area + '\')">📍 重新定位</span>' +
-                '<span class="cj-pill cj-pill-plain">' + area + '</span>' +
-            '</div>' +
-            chips(AREAS, [area], onClick) +
-            '<div class="cj-sub" style="margin-top:8px">只用于组局推荐，不展示具体地址</div>' +
+    function stepsBar() {
+        return '<div class="cj-steps">' +
+            '<div class="cj-step done"><div class="cj-step-dot">✓</div><div class="cj-step-label">注册</div></div>' +
+            '<div class="cj-step-line done"></div>' +
+            '<div class="cj-step active"><div class="cj-step-dot">2</div><div class="cj-step-label">资料完善</div></div>' +
         '</div>';
     }
 
     function render() {
         const s = window.ProfileView;
-        return '<div class="cj-px" style="padding-top:20px">' +
-            '<div class="cj-title" style="font-size:20px">' + (s._edit ? '编辑资料' : '完善资料，让组局更懂你') + '</div>' +
-            '<div class="cj-sub" style="margin-top:8px;margin-bottom:20px">这些信息只用于智能组局推荐，不向圈友展示</div>' +
-            '<div class="cj-card">' +
-                '<div class="cj-title" style="font-size:14px;margin-bottom:10px">出生日期</div>' +
-                '<input type="date" id="birthInput" value="' + s._birth + '" style="width:100%;padding:12px;border:1px solid var(--line);border-radius:14px;font-size:14px;background:var(--cream)">' +
+        return '<div class="cj-wiz-head"><i data-lucide="file-text"></i><span class="cj-wiz-title">' + (s._edit ? '编辑资料' : '完善资料') + '</span></div>' +
+            '<div style="padding:16px 16px 8px">' + stepsBar() +
+            '<div class="cj-wiz-card">' +
+                '<label class="cj-field-label">出生日期</label>' +
+                '<input type="date" id="birthInput" value="' + s._birth + '" class="cj-field-input">' +
             '</div>' +
-            '<div class="cj-card">' +
-                '<div class="cj-title" style="font-size:14px;margin-bottom:10px">个人爱好（可多选）</div>' +
-                chips(HOBBIES, s._hobbies, 'window.ProfileView.toggleHobby') +
+            '<div class="cj-wiz-card">' +
+                '<label class="cj-field-label">个人爱好（可多选）</label>' +
+                '<div style="height:8px"></div>' + chips(HOBBIES, s._hobbies, 'window.ProfileView.toggleHobby') +
             '</div>' +
-            '<div class="cj-card">' +
-                '<div class="cj-title" style="font-size:14px;margin-bottom:10px">MBTI</div>' +
-                chips(MBTI_LIST, [s._mbti], 'window.ProfileView.pickMbti') +
+            '<div class="cj-wiz-card">' +
+                '<label class="cj-field-label">MBTI</label>' +
+                '<div style="height:8px"></div>' + chips(MBTI_LIST, [s._mbti], 'window.ProfileView.pickMbti') +
             '</div>' +
-            '<div class="cj-card">' +
-                '<div class="cj-title" style="font-size:14px;margin-bottom:10px">空闲时间（可多选）</div>' +
-                chips(FREE_TIME, s._freeTime, 'window.ProfileView.toggleFreeTime') +
+            '<div class="cj-wiz-card">' +
+                '<label class="cj-field-label">空闲时间（可多选）</label>' +
+                '<div style="height:8px"></div>' + chips(FREE_TIME, s._freeTime, 'window.ProfileView.toggleFreeTime') +
             '</div>' +
-            locCard('工作地点', 'work', s._workArea, 'window.ProfileView.pickWorkArea') +
-            locCard('住处', 'home', s._homeArea, 'window.ProfileView.pickHomeArea') +
-            '<button class="cj-btn cj-btn-block" onclick="window.ProfileView.submit()">完成</button>' +
-            '<div style="text-align:center;margin-top:14px;padding-bottom:16px">' +
-                '<span class="cj-sub" style="cursor:pointer;text-decoration:underline" onclick="window.ProfileView.skip()">先跳过，以后再完善</span>' +
+            '<div class="cj-wiz-card">' +
+                '<label class="cj-field-label"><i data-lucide="map-pin" style="width:13px;height:13px;display:inline;vertical-align:-1px;color:#E08A3C"></i> 工作地点 · 定位到商圈</label>' +
+                '<select id="workSelect" class="cj-field-select" style="margin-bottom:8px">' +
+                    AREAS.map(a => '<option value="' + a + '"' + (a === s._workArea ? ' selected' : '') + '>' + a + '（商圈）</option>').join('') +
+                '</select>' +
+                '<div style="display:flex;align-items:flex-start;gap:6px"><i data-lucide="eye-off" style="width:12px;height:12px;color:#9CA3AF;margin-top:1px;flex-shrink:0"></i><span style="font-size:11px;color:#9CA3AF">只用于组局推荐，不展示具体地址</span></div>' +
             '</div>' +
+            '<div class="cj-wiz-card">' +
+                '<label class="cj-field-label"><i data-lucide="home" style="width:13px;height:13px;display:inline;vertical-align:-1px;color:#E08A3C"></i> 住处 · 定位到商圈</label>' +
+                '<select id="homeSelect" class="cj-field-select" style="margin-bottom:8px">' +
+                    AREAS.map(a => '<option value="' + a + '"' + (a === s._homeArea ? ' selected' : '') + '>' + a + '（商圈）</option>').join('') +
+                '</select>' +
+                '<div style="display:flex;align-items:flex-start;gap:6px"><i data-lucide="eye-off" style="width:12px;height:12px;color:#9CA3AF;margin-top:1px;flex-shrink:0"></i><span style="font-size:11px;color:#9CA3AF">只用于组局推荐，不展示具体地址</span></div>' +
+            '</div>' +
+            '<div class="cj-notice" style="margin-bottom:12px"><i data-lucide="alert-triangle"></i><p>这些信息只用于智能组局推荐，不向圈友展示，可随时在个人中心修改</p></div>' +
+            '<button class="cj-btn-grad" onclick="window.ProfileView.submit()">完成</button>' +
+            '<button class="cj-btn-gray" style="margin-top:10px" onclick="window.ProfileView.skip()">先跳过，以后再完善</button>' +
         '</div>';
     }
 
@@ -81,8 +89,6 @@ window.ProfileView = (function () {
         else window.ProfileView._freeTime.push(k);
         refresh();
     }
-    function pickWorkArea(k) { window.ProfileView._workArea = k; refresh(); }
-    function pickHomeArea(k) { window.ProfileView._homeArea = k; refresh(); }
 
     function refresh() {
         document.getElementById('app').innerHTML = render();
@@ -93,7 +99,11 @@ window.ProfileView = (function () {
     function submit() {
         const s = window.ProfileView;
         const birthEl = document.getElementById('birthInput');
-        s._birth = birthEl && birthEl.value ? birthEl.value : s._birth;
+        const workEl = document.getElementById('workSelect');
+        const homeEl = document.getElementById('homeSelect');
+        if (birthEl && birthEl.value) s._birth = birthEl.value;
+        if (workEl && workEl.value) s._workArea = workEl.value;
+        if (homeEl && homeEl.value) s._homeArea = homeEl.value;
         try {
             const raw = window.localStorage.getItem('cj.user');
             const base = raw ? JSON.parse(raw) : {};
@@ -116,7 +126,7 @@ window.ProfileView = (function () {
         window.location.href = window.ProfileView._edit ? 'me.html' : (window.ProfileView._next || 'index.html');
     }
 
-    return { render, toggleHobby, pickMbti, toggleFreeTime, pickWorkArea, pickHomeArea, submit, skip };
+    return { render, toggleHobby, pickMbti, toggleFreeTime, submit, skip };
 })();
 (function () {
     const G = window.GlobalData.user;
@@ -124,7 +134,6 @@ window.ProfileView = (function () {
     const P = window.ProfileView;
     P._edit = params.get('edit') === '1';
     P._next = params.get('next') || 'index.html';
-    // 默认值：已注册资料 > 演示用户资料
     let saved = null;
     try { saved = JSON.parse(window.localStorage.getItem('cj.user') || 'null'); } catch (e) { /* noop */ }
     P._birth = (saved && saved.birthDate) || G.birthDate || '1998-06-15';
@@ -134,6 +143,7 @@ window.ProfileView = (function () {
     P._workArea = (saved && saved.workArea) || G.workArea || '国贸';
     P._homeArea = (saved && saved.homeArea) || G.homeArea || '朝阳';
     document.getElementById('app').innerHTML = window.ProfileView.render();
+    window.Common.initIcons();
 })();
 </script>
 </body>

@@ -70,6 +70,8 @@ test('auth_renders_phone_sheet', () => {
     assert.ok(s.document._html.includes('允许'), '有允许按钮');
     assert.ok(s.document._html.includes('不同意'), '有拒绝入口');
     assert.ok(s.document._html.includes('138 **** 8000'), '手机号脱敏展示');
+    assert.ok(s.document._html.includes('隐私协议'), '含隐私协议（他俩能成同款）');
+    assert.ok(s.document._html.includes('cj-popup'), '居中弹窗样式');
 });
 
 test('auth_allow_sets_authed_and_redirects_to_register', () => {
@@ -146,10 +148,13 @@ test('profile_skip_goes_next', () => {
 
 test('register_renders_avatar_pool_and_phone', () => {
     const s = makeSandbox('register.html');
-    assert.ok(s.document._html.includes('完善资料'), '资料页标题');
+    assert.ok(s.document._html.includes('注册常聚'), '注册页标题');
     assert.ok((s.document._html.match(/avatar-\d+\.png/g) || []).length >= 12, '头像池至少 12 个');
     assert.ok(s.document._html.includes('138 **** 8000'), '手机号回显');
     assert.ok(s.document._html.includes('手机号'), '手机号字段');
     assert.ok(s.document._html.includes('男') && s.document._html.includes('女'), '性别单选存在');
     assert.ok(s.document._html.includes('disabled'), '手机号不可修改（与授权一致）');
+    assert.ok(s.document._html.includes('不可修改'), 'amber 提示条');
+    assert.ok(s.document._html.includes('cj-steps'), '步骤条（注册→资料完善）');
+    assert.ok(s.document._html.includes('cj-wiz-card'), '白卡表单样式（他俩能成同款）');
 });
