@@ -71,12 +71,12 @@ test('theme_defines_warm_tokens', () => {
     assert.ok(!css.includes('cj-statusbar') && !css.includes('cj-capsule'), '无小程序外壳残留');
 });
 
-test('outline_buttons_not_full_width', () => {
-    for (const f of htmlFiles) {
-        const text = fs.readFileSync(path.join(dir, f), 'utf8');
-        assert.ok(!text.includes('cj-btn-outline cj-btn-block'), `${f} 描边按钮不得使用通栏块级类`);
-        assert.ok(!/cj-btn-outline"\s+style="width:100%/.test(text), `${f} 描边按钮不得通栏宽度`);
-    }
+test('outline_buttons_span_content_width', () => {
+    // 独立描边按钮（建圈子/去AA账本）与内容区（圈卡列表）同宽，不用自适应小按钮
+    const index = fs.readFileSync(path.join(dir, 'index.html'), 'utf8');
+    assert.ok(/cj-btn-outline"\s+style="width:100%/.test(index), 'index.html 建圈子按钮与内容区同宽');
+    const record = fs.readFileSync(path.join(dir, 'record.html'), 'utf8');
+    assert.ok(/cj-btn-outline"\s+style="width:100%/.test(record), 'record.html 去AA账本按钮与内容区同宽');
 });
 
 test('shell_has_no_miniprogram_chrome', () => {
