@@ -49,17 +49,22 @@ window.Zuju = (function () {
 
     // 手动四步组局：圈子/项目(多选)/时间+地点均由发起人逐项选定（不做智能推荐），
     // 生成提案（status open；写 circle.proposalId；projectId=第一个，projectIds=全部）
-    function buildProposalManual({ circleId, projectIds, venueIds, times }) {
+    function buildProposalManual({ circleId, projectIds, venueIds, times, customVenue }) {
         const circle = circleOf(circleId);
         if (!circle) return null;
-        if (!projectIds || !projectIds.length || !times || !times.length || !venueIds || !venueIds.length) {
-            window.Common.showToast('请完成项目、时间、地点的选择');
+        if (!projectIds || !projectIds.length || !times || !times.length) {
+            window.Common.showToast('请完成项目、时间的选择');
+            return null;
+        }
+        if ((!venueIds || !venueIds.length) && !customVenue) {
+            window.Common.showToast('请完成地点的选择');
             return null;
         }
         const proposal = window.Recommend.buildProposal({
-            circle, projectId: projectIds[0], venues: venueIds, times, proposerId: G().user.id
+            circle, projectId: projectIds[0], venues: venueIds || [], times, proposerId: G().user.id
         });
         proposal.projectIds = projectIds.slice();
+        proposal.customVenue = customVenue || null;
         G().proposals.push(proposal);
         circle.proposalId = proposal.id;
         window.Common.save();
@@ -107,7 +112,8 @@ window.Zuju = (function () {
         const circle = circleOf(p.circleId);
         const timeIdx = sum.bestTime.winnerIndex;
         const venuePick = Object.entries(sum.venueTally).sort((a, b) => b[1] - a[1])[0];
-        const venueId = venuePick ? venuePick[0] : p.venueIds[0];
+        const customVenue = p.customVenue || null;
+        const venueId = customVenue ? null : (venuePick ? venuePick[0] : p.venueIds[0]);
         const projectIds = p.projectIds && p.projectIds.length ? p.projectIds : [p.projectId];
         const attendees = (circle.members || [])
             .filter(m => p.votes.time[m.id] && p.votes.time[m.id][timeIdx])
@@ -122,6 +128,7 @@ window.Zuju = (function () {
             projectId: projectIds[0],
             projectIds,
             venueId,
+            customVenue,
             time: p.timeCandidates[timeIdx],
             attendees,
             photos: [],

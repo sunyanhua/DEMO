@@ -62,7 +62,7 @@ window.RecordView = (function () {
                     '</div>' +
                 '</div>' +
                 '<div class="cj-card">' +
-                    '<div class="cj-sub" style="margin-bottom:6px">' + g.time + ' · ' + (venue ? venue.name + ' · ' + venue.district + venue.businessArea : '') + '</div>' +
+                    '<div class="cj-sub" style="margin-bottom:6px">' + g.time + ' · ' + (g.customVenue ? g.customVenue : (venue ? venue.name + ' · ' + venue.district + venue.businessArea : '')) + '</div>' +
                     (projects.length ? '<span class="cj-pill cj-pill-plain">' + projects.map(x => x.name).join(' + ') + '</span> ' : '') +
                     '<span class="cj-pill cj-pill-plain">出席 ' + (g.attendees || []).length + ' 人</span>' +
                     (g.summary ? '<div style="font-size:14px;line-height:1.9;color:var(--body);margin-top:12px">' + g.summary + '</div>' : '') +

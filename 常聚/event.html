@@ -42,7 +42,7 @@ window.EventView = (function () {
                     '<span class="cj-pill cj-pill-due">' + (p.status === 'decided' ? '已定案' : '表态中') + '</span>' +
                     '<div class="cj-title" style="font-size:20px;margin:12px 0 6px">' + (projects.length ? projects.map(x => x.name).join(' + ') : '聚会') + '</div>' +
                     '<div class="cj-sub">' + timeText + '</div>' +
-                    '<div class="cj-sub" style="margin-top:4px">📍 ' + (venue ? venue.name + ' · ' + venue.district + venue.businessArea : '待定') + '</div>' +
+                    '<div class="cj-sub" style="margin-top:4px">📍 ' + (gathering && gathering.customVenue ? gathering.customVenue : (venue ? venue.name + ' · ' + venue.district + venue.businessArea : '待定')) + '</div>' +
                     '<div class="cj-folks" style="justify-content:center;padding:16px 0 0">' + attendeeHTML + '</div>' +
                     '<div class="cj-sub" style="margin-top:6px">出席 ' + attendeeIds.length + ' 人</div>' +
                 '</div>' +

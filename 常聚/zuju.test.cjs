@@ -195,19 +195,35 @@ test('propose_five_step_flow', () => {
     s.window.ProposeView.toggleProject('p8');
     assert.deepEqual(s.window.ProposeView._projectIds, ['p1', 'p8'], '可重新加回');
     s.window.ProposeView.gotoStep(3);
-    // 第 3 步：时间+地点合并
+    // 第 3 步：时间+地点合并，上下两个明确区域
     html = s.window.ProposeView.renderStep(3);
-    assert.ok(html.includes('什么时候聚'), '合并步含时间区');
-    assert.ok(html.includes('去哪聚'), '合并步含地点区');
+    assert.ok(html.includes('什么时候聚'), '上区：时间');
+    assert.ok(html.includes('去哪聚'), '下区：地点');
+    assert.ok(html.includes('指定时间') && html.includes('时间候选'), '时间两种模式提示');
+    assert.ok(html.includes('指定地点') && html.includes('地点候选'), '地点两种模式提示');
     assert.equal((html.match(/data-time/g) || []).length, 3, '默认 3 个时间候选');
-    assert.ok(html.includes('望京小腰烧烤'), '地点列表存在（按主项目类别过滤：火锅局→餐厅）');
+    assert.ok(html.includes('望京小腰烧烤'), '地点候选按主项目类别过滤（火锅局→餐厅）');
     s.window.ProposeView.toggleVenue('v1');
-    assert.ok(s.window.ProposeView._venueIds.includes('v1'), '地点已选');
+    assert.ok(s.window.ProposeView._venueIds.includes('v1'), '候选地点已选');
+    // 下区模式 1：指定地点——合作地点优先 + 可自己输入
+    s.window.ProposeView.pickVenueMode('fixed');
+    html = s.window.ProposeView.renderStep(3);
+    assert.ok(html.indexOf('西单烤鸭坊') >= 0 && html.indexOf('西单烤鸭坊') < html.indexOf('望京小腰烧烤'), '推荐列表合作地点优先');
+    assert.ok(html.includes('自己输入'), '支持用户自己输入地点');
+    s.window.ProposeView.pickFixedVenue('v6');
+    assert.deepEqual(s.window.ProposeView._venueIds, ['v6'], '指定地点单选');
+    s.window.ProposeView.setCustomVenue('老王家常菜馆');
+    assert.equal(s.window.ProposeView._customVenue, '老王家常菜馆', '自定义地点生效');
+    // 上区模式 1：指定时间——单个输入
+    s.window.ProposeView.pickTimeMode('fixed');
+    html = s.window.ProposeView.renderStep(3);
+    assert.equal((html.match(/data-time/g) || []).length, 1, '指定时间=单个输入');
     // 第 4 步：生成邀请卡片
     s.window.ProposeView.gotoStep(4);
     html = s.window.ProposeView.renderStep(4);
     assert.ok(html.includes('组局邀请卡片'), '邀请卡预览');
     assert.ok(html.includes('血战到底麻将') && html.includes('火锅局'), '卡片含全部项目');
+    assert.ok(html.includes('老王家常菜馆'), '卡片含自定义地点');
     // 发出提案
     s.window.ProposeView.send();
     const c = s.window.GlobalData.circles.find(x => x.name === '周末新局');
@@ -216,7 +232,8 @@ test('propose_five_step_flow', () => {
     assert.equal(p.status, 'open');
     assert.deepEqual(p.projectIds, ['p1', 'p8']);
     assert.equal(p.projectId, 'p1', '主项目=第一个');
-    assert.equal(p.venueIds.length, 1);
+    assert.equal(p.timeCandidates.length, 1, '指定时间=1 个候选');
+    assert.equal(p.customVenue, '老王家常菜馆', '自定义地点写入提案');
 });
 
 test('propose_share_invite_overlay', () => {
