@@ -60,6 +60,12 @@ test('shell_functions_render', () => {
     }
 });
 
+test('theme_has_universal_reset', () => {
+    // 授权/注册向导页不加载 tailwind preflight，需靠 theme.css 全局 reset 消除浏览器默认边距（否则提示条图标与文字错位）
+    const css = fs.readFileSync(path.join(dir, 'theme.css'), 'utf8');
+    assert.ok(/^\*, \*::before, \*::after \{ box-sizing: border-box; margin: 0; padding: 0; \}/m.test(css), '全局 reset（border-box + margin/padding 归零）');
+});
+
 test('theme_defines_warm_tokens', () => {
     const css = fs.readFileSync(path.join(dir, 'theme.css'), 'utf8');
     for (const token of ['--cream', '--cream-deep', '--warm', '--warm-deep', '--warm-soft', '--seal', '--line', '--ink', '--caption']) {

@@ -2,7 +2,7 @@
  * 常聚 · Gatherly 主题：炉边·温润质感（规范见 DESIGN.md）
  * 奶油噪点底 / 暖杏渐变 / 大圆角软阴影 / 拍立得 / 票券 / 便签 / 悬浮药丸 tabbar
  */
-*, *::before, *::after { box-sizing: border-box; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 body.cj-theme {
     --cream: #FBF4E8;
