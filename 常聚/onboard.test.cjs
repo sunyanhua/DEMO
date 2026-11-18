@@ -113,6 +113,10 @@ test('profile_renders_sections', () => {
     for (const label of ['出生日期', '个人爱好', 'MBTI', '空闲时间', '工作地点', '住处']) {
         assert.ok(s.document._html.includes(label), '资料完善含：' + label);
     }
+    assert.ok(s.document._html.includes('id="mbtiSelect"'), 'MBTI 为下拉选项');
+    assert.ok(s.document._html.includes('周末及节假日'), '空闲时间含合并标签');
+    assert.ok(!s.document._html.includes('>周末<'), '不再有单独的周末标签');
+    assert.ok((s.document._html.match(/<select/g) || []).length >= 3, 'MBTI/工作地点/住处共 3 个下拉');
     assert.ok(s.document._html.includes('定位'), '地点为定位式选择');
     assert.ok(s.document._html.includes('商圈'), '地点为商圈级，不需要具体地址');
     assert.ok(s.document._html.includes('跳过'), '可跳过以后完善');

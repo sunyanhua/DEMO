@@ -13,7 +13,7 @@ window.GlobalData = {
         gender: 'male',
         birthDate: '1995-06-15',
         mbti: 'ENFP',
-        freeTime: ['周末', '工作日晚上'],
+        freeTime: ['周末及节假日', '工作日晚上'],
         workArea: '国贸',
         homeArea: '朝阳',
         tags: ['麻将', '羽毛球', '探店'],
