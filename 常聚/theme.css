@@ -46,8 +46,6 @@ body.cj-theme .cj-topbar { display: flex; align-items: center; justify-content: 
 body.cj-theme .cj-wordmark { font-size: 22px; font-weight: 800; color: var(--ink); letter-spacing: 1px; }
 body.cj-theme .cj-wordmark::after { content: '·'; color: var(--warm); margin-left: 4px; }
 body.cj-theme .cj-slogan-chip { font-size: 11px; color: var(--warm-deep); background: var(--warm-soft); border-radius: 999px; padding: 6px 12px; font-weight: 600; }
-body.cj-theme .cj-navbar { padding: 0 20px 12px; }
-body.cj-theme .cj-navbar-title { font-size: 19px; font-weight: 800; color: var(--ink); }
 body.cj-theme .cj-cityline { padding: 0 20px 12px; font-size: 12px; color: var(--caption); font-weight: 600; }
 
 /* 卡片：大圆角白卡 + 暖调软阴影 */

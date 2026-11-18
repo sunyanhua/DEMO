@@ -12,14 +12,13 @@ window.Common = (function () {
         })[c]);
     }
 
-    // 顶栏：品牌词 + slogan 胶囊 + 页面标题（炉边温润质感，见 DESIGN.md）
+    // 顶栏：仅品牌行（词标 + slogan 胶囊），不渲染页面标题
     function renderShell(title) {
         return `<div class="cj-shell">
             <div class="cj-topbar">
                 <span class="cj-wordmark">常聚</span>
                 <span class="cj-slogan-chip">常聚常伴，圈子不散</span>
             </div>
-            <div class="cj-navbar"><span class="cj-navbar-title">${esc(title)}</span></div>
         </div>`;
     }
 

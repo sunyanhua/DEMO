@@ -144,5 +144,6 @@ test('shell_has_no_miniprogram_chrome', () => {
     assert.ok(!html.includes('cj-statusbar'), '外壳不得含模拟状态栏');
     assert.ok(!html.includes('cj-capsule'), '外壳不得含胶囊按钮');
     assert.ok(!html.includes('9:41'), '外壳不得含模拟时间');
-    assert.ok(html.includes('圈子'), '标题保留');
+    assert.ok(!html.includes('cj-navbar'), '外壳不渲染页面标题行');
+    assert.ok(html.includes('常聚常伴，圈子不散'), '品牌行保留');
 });
