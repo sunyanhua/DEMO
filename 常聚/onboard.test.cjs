@@ -96,11 +96,52 @@ test('auth_preauthed_skips', () => {
 test('register_submit_persists_user_and_redirects', () => {
     const s = makeSandbox('register.html');
     s.window.RegisterView._next = 'index.html?new=1';
+    s.window.RegisterView._gender = 'male';
     s.window.RegisterView.submit({ name: '新朋友', avatar: 'images/avatar-5.png' });
     const saved = JSON.parse(s.localStorage.getItem('cj.user'));
     assert.equal(saved.name, '新朋友');
     assert.equal(saved.avatar, 'images/avatar-5.png');
-    assert.equal(s.window.location.href, 'index.html?new=1', '注册完成跳目标页');
+    assert.equal(saved.gender, 'male', '性别随注册保存');
+    assert.equal(saved.phone, '13800138000', '手机号与授权一致');
+    assert.equal(s.window.location.href, 'profile.html?next=index.html%3Fnew%3D1', '注册完成后进入资料完善页');
+});
+
+test('profile_renders_sections', () => {
+    const s = makeSandbox('profile.html');
+    for (const label of ['出生日期', '个人爱好', 'MBTI', '空闲时间', '工作地点', '住处']) {
+        assert.ok(s.document._html.includes(label), '资料完善含：' + label);
+    }
+    assert.ok(s.document._html.includes('定位'), '地点为定位式选择');
+    assert.ok(s.document._html.includes('商圈'), '地点为商圈级，不需要具体地址');
+    assert.ok(s.document._html.includes('跳过'), '可跳过以后完善');
+});
+
+test('profile_submit_persists_and_redirects', () => {
+    const s = makeSandbox('profile.html');
+    s.window.ProfileView._next = 'propose.html?new=1';
+    s.window.ProfileView._birth = '1998-08-08';
+    s.window.ProfileView._hobbies = ['麻将', '羽毛球'];
+    s.window.ProfileView._mbti = 'ENTP';
+    s.window.ProfileView._freeTime = ['周末'];
+    s.window.ProfileView._workArea = '中关村';
+    s.window.ProfileView._homeArea = '望京';
+    s.window.ProfileView.submit();
+    const saved = JSON.parse(s.localStorage.getItem('cj.user'));
+    assert.equal(saved.birthDate, '1998-08-08');
+    assert.equal(saved.mbti, 'ENTP');
+    assert.deepEqual(saved.hobbies, ['麻将', '羽毛球']);
+    assert.deepEqual(saved.freeTime, ['周末']);
+    assert.equal(saved.workArea, '中关村');
+    assert.equal(saved.homeArea, '望京');
+    assert.equal(s.window.location.href, 'propose.html?new=1', '完成后跳最终目标');
+});
+
+test('profile_skip_goes_next', () => {
+    const s = makeSandbox('profile.html');
+    s.window.ProfileView._next = 'vote.html?proposal=p1';
+    s.window.ProfileView.skip();
+    assert.equal(s.window.location.href, 'vote.html?proposal=p1', '跳过直接去目标');
+    assert.equal(s.localStorage.getItem('cj.user'), null, '跳过后资料未落库');
 });
 
 test('register_renders_avatar_pool_and_phone', () => {
@@ -108,4 +149,7 @@ test('register_renders_avatar_pool_and_phone', () => {
     assert.ok(s.document._html.includes('完善资料'), '资料页标题');
     assert.ok((s.document._html.match(/avatar-\d+\.png/g) || []).length >= 12, '头像池至少 12 个');
     assert.ok(s.document._html.includes('138 **** 8000'), '手机号回显');
+    assert.ok(s.document._html.includes('手机号'), '手机号字段');
+    assert.ok(s.document._html.includes('男') && s.document._html.includes('女'), '性别单选存在');
+    assert.ok(s.document._html.includes('disabled'), '手机号不可修改（与授权一致）');
 });

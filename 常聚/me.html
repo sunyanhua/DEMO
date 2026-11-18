@@ -50,16 +50,57 @@ window.MeView = (function () {
         '</div>';
     }
 
+    function savedUser() {
+        try {
+            const raw = window.localStorage.getItem('cj.user');
+            return raw ? JSON.parse(raw) : null;
+        } catch (e) { return null; }
+    }
+
+    function maskedPhone(p) {
+        const s = String(p || '');
+        return s ? s.slice(0, 3) + ' **** ' + s.slice(-4) : '';
+    }
+
+    function profileCard() {
+        const G = window.GlobalData;
+        const base = G.user;
+        const s = savedUser();
+        const name = (s && s.name) || base.name;
+        const avatar = (s && s.avatar) || base.avatarUrl;
+        const gender = (s && s.gender) || base.gender || 'male';
+        const phone = (s && s.phone) || base.phone || '';
+        const mbti = (s && s.mbti) || base.mbti || '';
+        const freeTime = (s && s.freeTime) || base.freeTime || [];
+        const workArea = (s && s.workArea) || base.workArea || '';
+        const homeArea = (s && s.homeArea) || base.homeArea || '';
+        const rows = [
+            ['手机号', maskedPhone(phone)],
+            ['性别', gender === 'male' ? '男' : '女'],
+            ['MBTI', mbti],
+            ['空闲时间', freeTime.join(' · ')],
+            ['工作地点', workArea + '（商圈）'],
+            ['住处', homeArea + '（商圈）']
+        ].map(r => '<div class="cj-row" style="justify-content:space-between;padding:6px 0"><span class="cj-sub">' + r[0] + '</span><span style="font-size:13px;font-weight:700;color:var(--ink)">' + r[1] + '</span></div>').join('');
+        return '<div class="cj-card">' +
+            '<div class="cj-row" style="gap:12px">' +
+                '<img src="' + avatar + '" class="cj-avatar-ring" style="width:56px;height:56px" alt="我">' +
+                '<div style="flex:1">' +
+                    '<div class="cj-title" style="font-size:17px">' + name + '</div>' +
+                    '<div class="cj-slogan" style="margin-top:4px">常聚常伴，圈子不散</div>' +
+                '</div>' +
+                '<a class="cj-pill cj-pill-due" style="text-decoration:none" href="profile.html?edit=1">编辑资料</a>' +
+            '</div>' +
+            '<div class="cj-tear" style="border-top:1.5px dashed #E5D5B8;margin:12px 0 6px"></div>' +
+            rows +
+        '</div>';
+    }
+
     function render() {
         const G = window.GlobalData;
-        const me = G.user;
         return window.Common.renderShell('我的') +
             '<div class="cj-px" style="padding-top:6px">' +
-                '<div class="cj-card" style="text-align:center;padding:20px">' +
-                    '<img src="' + me.avatarUrl + '" class="cj-avatar-ring" style="width:64px;height:64px" alt="我">' +
-                    '<div class="cj-title" style="font-size:17px;margin-top:10px">' + me.name + '</div>' +
-                    '<div class="cj-slogan" style="margin-top:6px">常聚常伴，圈子不散</div>' +
-                '</div>' +
+                profileCard() +
                 '<div class="cj-section-head"><b>我的圈子</b></div>' +
                 (G.circles || []).map(circleBlock).join('') +
                 '<div class="cj-card">' +

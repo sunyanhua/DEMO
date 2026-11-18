@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>常聚 · 完善资料</title>
+    <title>常聚 · 注册</title>
     <link rel="stylesheet" href="theme.css">
 </head>
 <body class="cj-theme">
@@ -22,11 +22,12 @@ window.RegisterView = (function () {
 
     function render() {
         const sel = window.RegisterView._avatar || AVATAR_POOL[4];
+        const gender = window.RegisterView._gender || 'male';
         return '<div class="cj-px" style="padding-top:20px">' +
             '<div class="cj-title" style="font-size:20px">完善资料，开始常聚</div>' +
             '<div class="cj-sub" style="margin-top:8px;margin-bottom:20px">圈友会通过头像和昵称认出你</div>' +
             '<div class="cj-card">' +
-                '<div class="cj-title" style="font-size:14px;margin-bottom:12px">选一个头像</div>' +
+                '<div class="cj-title" style="font-size:14px;margin-bottom:12px">头像</div>' +
                 '<div style="display:flex;flex-wrap:wrap;gap:8px">' +
                     AVATAR_POOL.map(a =>
                         '<img src="' + a + '" data-avatar="' + a + '" style="width:44px;height:44px;border-radius:50%;cursor:pointer;border:2.5px solid ' + (a === sel ? 'var(--warm)' : 'var(--line)') + '" onclick="window.RegisterView.pickAvatar(\'' + a + '\')" alt="头像">').join('') +
@@ -37,13 +38,18 @@ window.RegisterView = (function () {
                 '<input id="nickInput" style="width:100%;padding:12px;border:1px solid var(--line);border-radius:14px;font-size:14px;background:var(--cream)" value="新朋友" placeholder="给自己起个昵称">' +
             '</div>' +
             '<div class="cj-card">' +
-                '<div class="cj-row" style="justify-content:space-between">' +
-                    '<span class="cj-title" style="font-size:14px">手机号</span>' +
-                    '<span class="cj-sub" style="font-size:14px;font-weight:800;color:var(--ink)">' + maskedPhone() + '</span>' +
-                '</div>' +
-                '<div class="cj-sub" style="margin-top:6px">已授权 · 仅用于登录</div>' +
+                '<div class="cj-title" style="font-size:14px;margin-bottom:10px">手机号</div>' +
+                '<input type="tel" value="' + maskedPhone() + '" disabled style="width:100%;padding:12px;border:1px solid var(--line);border-radius:14px;font-size:14px;background:#F3EEE4;color:var(--caption);cursor:not-allowed">' +
+                '<div class="cj-sub" style="margin-top:6px">与授权手机号一致，不可修改</div>' +
             '</div>' +
-            '<button class="cj-btn cj-btn-block" onclick="window.RegisterView.submit()">完成注册，开始常聚</button>' +
+            '<div class="cj-card">' +
+                '<div class="cj-title" style="font-size:14px;margin-bottom:10px">性别</div>' +
+                '<div style="display:flex;gap:12px">' +
+                    '<label class="cj-row" style="gap:6px;cursor:pointer" onclick="window.RegisterView.pickGender(\'male\')"><input type="radio" name="gender" value="male"' + (gender === 'male' ? ' checked' : '') + '><span>男</span></label>' +
+                    '<label class="cj-row" style="gap:6px;cursor:pointer" onclick="window.RegisterView.pickGender(\'female\')"><input type="radio" name="gender" value="female"' + (gender === 'female' ? ' checked' : '') + '><span>女</span></label>' +
+                '</div>' +
+            '</div>' +
+            '<button class="cj-btn cj-btn-block" onclick="window.RegisterView.submit()">完成注册，继续</button>' +
         '</div>';
     }
 
@@ -58,26 +64,37 @@ window.RegisterView = (function () {
         }
     }
 
-    // 注册完成：资料落 localStorage，跳回目标页（next 由授权页带入）
+    function pickGender(g) {
+        window.RegisterView._gender = g;
+        const radios = document.querySelectorAll('input[name="gender"]');
+        if (radios && radios.forEach) {
+            radios.forEach(r => { if (r.checked !== undefined) r.checked = r.value === g; });
+        }
+    }
+
+    // 注册完成：落 localStorage，进入资料完善页（携带最终目标）
     function submit(opts) {
         const o = opts || {};
         const input = document.getElementById('nickInput');
         const name = o.name || (input && input.value ? input.value.trim() : '') || '新朋友';
         const avatar = o.avatar || window.RegisterView._avatar || 'images/avatar-5.png';
+        const gender = o.gender || window.RegisterView._gender || 'male';
+        const phone = String(window.GlobalData.user.phone || '');
         try {
-            window.localStorage.setItem('cj.user', JSON.stringify({ name, avatar }));
+            window.localStorage.setItem('cj.user', JSON.stringify({ name, avatar, gender, phone }));
         } catch (e) { /* noop */ }
-        window.Common.showToast('欢迎加入常聚');
-        window.location.href = window.RegisterView._next || 'index.html';
-        return { name, avatar };
+        window.Common.showToast('注册成功');
+        window.location.href = 'profile.html?next=' + encodeURIComponent(window.RegisterView._next || 'index.html');
+        return { name, avatar, gender, phone };
     }
 
-    return { render, pickAvatar, submit };
+    return { render, pickAvatar, pickGender, submit };
 })();
 (function () {
     const params = new URLSearchParams(window.location.search);
     window.RegisterView._next = params.get('next') || 'index.html';
     window.RegisterView._avatar = 'images/avatar-5.png';
+    window.RegisterView._gender = 'male';
     document.getElementById('app').innerHTML = window.RegisterView.render();
 })();
 </script>

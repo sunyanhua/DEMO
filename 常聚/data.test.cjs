@@ -69,6 +69,13 @@ test('user_has_phone_for_auth', () => {
     assert.equal(String(G.user.phone).length, 11, '手机号为 11 位');
 });
 
+test('user_has_profile_fields', () => {
+    assert.ok(['male', 'female'].includes(G.user.gender), '性别字段合法');
+    assert.ok(G.user.birthDate && G.user.mbti, '生日与 MBTI 存在');
+    assert.ok(Array.isArray(G.user.freeTime) && G.user.freeTime.length >= 1, '空闲时间为数组');
+    assert.ok(G.user.workArea && G.user.homeArea, '工作地点/住处为商圈级定位');
+});
+
 test('schema_mock_quota', () => {
     assert.ok(G.circles.length >= 3, '至少 3 个圈子');
     assert.ok(G.venues.length >= 12, '至少 12 个商户');

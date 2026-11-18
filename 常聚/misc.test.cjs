@@ -105,6 +105,23 @@ test('pass_host_button', () => {
     assert.ok(c2.members.some(m => m.id === c2.hostId), '新当值属于圈友');
 });
 
+test('me_profile_card_shows_and_editable', () => {
+    const s = makeSandbox();
+    s.localStorage.setItem('cj.user', JSON.stringify({
+        name: '新朋友', avatar: 'images/avatar-5.png', gender: 'female', phone: '13800138000',
+        birthDate: '1998-08-08', hobbies: ['麻将'], mbti: 'ENTP', freeTime: ['周末'],
+        workArea: '中关村', homeArea: '望京'
+    }));
+    const html = s.window.MeView.render();
+    assert.ok(html.includes('新朋友'), '显示注册昵称');
+    assert.ok(html.includes('138 **** 8000'), '手机号脱敏');
+    assert.ok(html.includes('女'), '显示性别');
+    assert.ok(html.includes('ENTP'), '显示 MBTI');
+    assert.ok(html.includes('中关村') && html.includes('望京'), '显示工作/住处');
+    assert.ok(html.includes('编辑资料'), '资料可修改入口');
+    assert.ok(html.includes('profile.html?edit=1'), '编辑跳资料完善页');
+});
+
 test('me_onclick_attributes_compile', () => {
     const s = makeSandbox();
     const html = s.window.MeView.render();
