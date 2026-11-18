@@ -66,31 +66,32 @@ function makeSandbox() {
     return sandbox;
 }
 
-test('build_proposal_defaults', () => {
+function manualProposal(s, circleId) {
+    return s.window.Zuju.buildProposalManual({
+        circleId,
+        projectId: 'p5',
+        venueIds: ['v9', 'v10', 'v11'],
+        times: ['2026-11-21 14:00', '2026-11-22 14:00', '2026-11-22 19:00']
+    });
+}
+
+test('build_proposal_manual', () => {
     const s = makeSandbox();
-    const p = s.window.Zuju.buildProposal('c3');
+    const p = manualProposal(s, 'c3');
     assert.ok(p, '生成提案');
-    assert.equal(p.timeCandidates.length, 3, '默认 3 个时间候选');
-    assert.equal(p.venueIds.length, 3, '默认 3 个地点候选');
-    assert.ok(p.projectId, '项目非空');
+    assert.equal(p.timeCandidates.length, 3, '时间候选来自发起人选择');
+    assert.equal(p.venueIds.length, 3, '地点候选来自发起人选择');
+    assert.equal(p.projectId, 'p5', '项目来自发起人选择');
     assert.equal(p.status, 'open');
     const c3 = s.window.GlobalData.circles.find(c => c.id === 'c3');
     assert.equal(c3.proposalId, p.id, '圈子记录进行中提案');
-});
-
-test('build_proposal_respects_circle_category', () => {
-    const s = makeSandbox();
-    const p1 = s.window.Zuju.buildProposal('c1');
-    const proj1 = s.window.GlobalData.projects.find(x => x.id === p1.projectId);
-    assert.equal(proj1.category, 'mahjong', '麻将圈默认推荐麻将类项目');
-    const p3 = s.window.Zuju.buildProposal('c3', { category: 'ball' });
-    const proj3 = s.window.GlobalData.projects.find(x => x.id === p3.projectId);
-    assert.equal(proj3.category, 'ball', '显式指定方向生效');
+    const bad = s.window.Zuju.buildProposalManual({ circleId: 'c3', projectId: null, venueIds: ['v9'], times: ['2026-11-21 14:00'] });
+    assert.equal(bad, null, '缺项目不生成');
 });
 
 test('vote_matrix_and_best_time', () => {
     const s = makeSandbox();
-    const p = s.window.Zuju.buildProposal('c3');
+    const p = manualProposal(s, 'c3');
     s.window.Zuju.submitVotes(p.id, {
         time: { u1: { 0: true }, m1: { 0: true }, m2: { 1: true } },
         venue: { u1: 'v1', m1: 'v1', m2: 'v2' }
@@ -105,7 +106,7 @@ test('vote_matrix_and_best_time', () => {
 
 test('deadline_auto_decide', () => {
     const s = makeSandbox();
-    const p = s.window.Zuju.buildProposal('c3');
+    const p = manualProposal(s, 'c3');
     s.window.Zuju.submitVotes(p.id, {
         time: { u1: { 0: true }, m1: { 0: true }, m2: { 1: true } },
         venue: { u1: 'v1', m1: 'v1' }
@@ -141,10 +142,10 @@ test('propose_new_user_circle_form', () => {
     const html = s.window.ProposeView.renderNew();
     assert.ok(html.includes('新建圈子'), '新用户第一步是新建圈子');
     assert.ok(html.includes('圈子叫什么'), '含圈名输入');
-    assert.ok(!html.includes('选择圈子组局'), '新用户不显示已有圈子选择');
+    assert.ok(!html.includes('或选择已有圈子'), '新用户不显示已有圈子选择');
     s.window.ProposeView._newUser = false;
     const picker = s.window.ProposeView.renderNew();
-    assert.ok(picker.includes('选择圈子组局'), '注册用户可选已有圈子');
+    assert.ok(picker.includes('或选择已有圈子'), '注册用户可选已有圈子');
 });
 
 test('propose_create_circle_continues_to_zuju', () => {
@@ -153,8 +154,42 @@ test('propose_create_circle_continues_to_zuju', () => {
     s.window.ProposeView.createAndContinue({ name: '周末新局', type: 'ball' });
     const c = s.window.GlobalData.circles.find(x => x.name === '周末新局');
     assert.ok(c, '圈子已创建');
-    const html = s.window.ProposeView.render(c.id);
-    assert.ok(html.includes('组局方向'), '创建后进入组局方向选择');
+    const html = s.window.ProposeView.renderStep(2);
+    assert.ok(html.includes('玩什么'), '创建后进入第 2 步选活动项目');
+    assert.equal((html.match(/data-time/g) || []).length, 0, '第 2 步不显示时间');
+});
+
+test('propose_five_step_flow', () => {
+    const s = makeSandbox();
+    s.window.ProposeView._newUser = true;
+    s.window.ProposeView.createAndContinue({ name: '周末新局', type: 'mahjong' });
+    // 第 2 步：选活动项目
+    let html = s.window.ProposeView.renderStep(2);
+    assert.ok(html.includes('饭局') && html.includes('麻将'), '项目类别齐全');
+    s.window.ProposeView.pickProjectCategory('mahjong');
+    s.window.ProposeView.pickProject('p8');
+    // 第 3 步：选时间
+    html = s.window.ProposeView.renderStep(3);
+    assert.ok(html.includes('什么时候聚'), '第 3 步时间标题');
+    assert.equal((html.match(/data-time/g) || []).length, 3, '默认 3 个时间候选');
+    // 第 4 步：选地点
+    html = s.window.ProposeView.renderStep(4);
+    assert.ok(html.includes('去哪聚'), '第 4 步地点标题');
+    assert.ok(html.includes('雀神会所'), '地点列表按项目类别过滤（麻将馆）');
+    s.window.ProposeView.toggleVenue('v1');
+    assert.ok(s.window.ProposeView._venueIds.includes('v1'), '地点已选');
+    // 第 5 步：生成邀请卡片
+    html = s.window.ProposeView.renderStep(5);
+    assert.ok(html.includes('组局邀请卡片'), '第 5 步邀请卡预览');
+    assert.ok(html.includes('血战到底麻将'), '卡片含项目名');
+    // 发出提案
+    s.window.ProposeView.send();
+    const c = s.window.GlobalData.circles.find(x => x.name === '周末新局');
+    assert.ok(c.proposalId, '提案已发出');
+    const p = s.window.GlobalData.proposals.find(x => x.id === c.proposalId);
+    assert.equal(p.status, 'open');
+    assert.equal(p.projectId, 'p8');
+    assert.equal(p.venueIds.length, 1);
 });
 
 test('propose_share_invite_overlay', () => {
@@ -174,7 +209,7 @@ test('event_has_share_button', () => {
 
 test('deadline_all_abstain_stays_open', () => {
     const s = makeSandbox();
-    const p = s.window.Zuju.buildProposal('c3');
+    const p = manualProposal(s, 'c3');
     s.window.Demo.advanceTime(48);
     const now = s.window.Common.fmtDate(s.window.Demo.getNow());
     s.window.Zuju.tryDecide(p.id, now);
@@ -184,7 +219,7 @@ test('deadline_all_abstain_stays_open', () => {
 
 test('remind_non_voters', () => {
     const s = makeSandbox();
-    const p = s.window.Zuju.buildProposal('c3');
+    const p = manualProposal(s, 'c3');
     const before = s.window.GlobalData.notifications.length;
     s.window.Zuju.remindNonVoters(p.id);
     const G = s.window.GlobalData;

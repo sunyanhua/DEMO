@@ -72,7 +72,7 @@ test('save_then_fresh_load_restores_state', () => {
     const sA = makeSandbox(storage);
     const c = sA.window.CreateCircle.submit({ name: '持久化圈', type: 'dinner', mode: 'blank' });
     sA.window.CreateCircle.simulateJoin(c.id);
-    const p = sA.window.Zuju.buildProposal(c.id);
+    const p = sA.window.Zuju.buildProposalManual({ circleId: c.id, projectId: 'p3', venueIds: ['v6', 'v4'], times: ['2026-11-21 14:00', '2026-11-22 14:00', '2026-11-22 19:00'] });
     sA.window.Common.save();
 
     // 第二次"页面"：全新沙箱（重新执行 data.js），只共享 localStorage

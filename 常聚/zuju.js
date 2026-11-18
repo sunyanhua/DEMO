@@ -45,34 +45,15 @@ window.Zuju = (function () {
         return circle;
     }
 
-    // 一键生成智能提案并发出（status open；写 circle.proposalId）；opts.category 显式指定方向
-    function buildProposal(circleId, opts) {
+    // 手动五步组局：圈子/项目/时间/地点均由发起人逐项选定（不做智能推荐），
+    // 生成提案（status open；写 circle.proposalId）
+    function buildProposalManual({ circleId, projectId, venueIds, times }) {
         const circle = circleOf(circleId);
         if (!circle) return null;
-        const members = circle.members || [];
-        const memberTags = [...new Set(members.flatMap(m => m.tags || []))];
-        const circleGatherings = G().gatherings.filter(g => g.circleId === circleId);
-        const lastProjectIds = circleGatherings.map(g => g.projectId);
-        const lastVenueId = circleGatherings.length ? circleGatherings[circleGatherings.length - 1].venueId : null;
-        const category = (opts && opts.category) || CATEGORY_BY_TYPE[circle.type] || null;
-        let ids = window.Recommend.recommendProjects({
-            projects: G().projects, memberTags, lastProjectIds, season: 'autumn', category
-        });
-        if (!ids.length) {
-            ids = window.Recommend.recommendProjects({ projects: G().projects, memberTags, lastProjectIds, season: 'autumn' });
+        if (!projectId || !times || !times.length || !venueIds || !venueIds.length) {
+            window.Common.showToast('请完成项目、时间、地点的选择');
+            return null;
         }
-        const projectId = ids[0];
-        const project = G().projects.find(p => p.id === projectId);
-        let venueIds = window.Recommend.recommendVenues({
-            venues: G().venues, members, project, lastVenueId, category
-        });
-        // 类别内商户不足：放宽到全类别兜底（保持 3 候选承诺）
-        if (!venueIds.length) {
-            venueIds = window.Recommend.recommendVenues({
-                venues: G().venues, members, project: null, lastVenueId
-            });
-        }
-        const times = window.Recommend.suggestTimes({ members, count: 3, now: nowStr() });
         const proposal = window.Recommend.buildProposal({
             circle, projectId, venues: venueIds, times, proposerId: G().user.id
         });
@@ -212,5 +193,5 @@ window.Zuju = (function () {
         window.Common.save();
     }
 
-    return { CIRCLE_TYPES, createCircle, buildProposal, markProjectPending, submitVotes, voteSummary, tryDecide, remindNonVoters, shareInvite, pickShareGroup };
+    return { CIRCLE_TYPES, createCircle, buildProposalManual, markProjectPending, submitVotes, voteSummary, tryDecide, remindNonVoters, shareInvite, pickShareGroup };
 })();
