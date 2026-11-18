@@ -182,15 +182,25 @@ test('propose_five_step_flow', () => {
     s.window.ProposeView.pickProjectCategory('mahjong');
     s.window.ProposeView.toggleProject('p8');
     s.window.ProposeView.pickProjectCategory('dinner');
+    // 切换类别后，已选胶囊仍然可见（跨类别）
+    html = s.window.ProposeView.renderStep(2);
+    assert.ok(html.includes('已选项目'), '已选项目胶囊区');
+    assert.ok(html.includes('血战到底麻将'), '别的类别下也能看到已选项目');
     s.window.ProposeView.toggleProject('p1');
     assert.deepEqual(s.window.ProposeView._projectIds, ['p8', 'p1'], '一次聚会多个项目');
+    html = s.window.ProposeView.renderStep(2);
+    assert.ok(html.includes('血战到底麻将') && html.includes('火锅局'), '胶囊区含全部已选');
+    s.window.ProposeView.toggleProject('p8');
+    assert.deepEqual(s.window.ProposeView._projectIds, ['p1'], '胶囊删除生效');
+    s.window.ProposeView.toggleProject('p8');
+    assert.deepEqual(s.window.ProposeView._projectIds, ['p1', 'p8'], '可重新加回');
     s.window.ProposeView.gotoStep(3);
     // 第 3 步：时间+地点合并
     html = s.window.ProposeView.renderStep(3);
     assert.ok(html.includes('什么时候聚'), '合并步含时间区');
     assert.ok(html.includes('去哪聚'), '合并步含地点区');
     assert.equal((html.match(/data-time/g) || []).length, 3, '默认 3 个时间候选');
-    assert.ok(html.includes('雀神会所'), '地点列表存在（按主项目类别过滤）');
+    assert.ok(html.includes('望京小腰烧烤'), '地点列表存在（按主项目类别过滤：火锅局→餐厅）');
     s.window.ProposeView.toggleVenue('v1');
     assert.ok(s.window.ProposeView._venueIds.includes('v1'), '地点已选');
     // 第 4 步：生成邀请卡片
@@ -204,8 +214,8 @@ test('propose_five_step_flow', () => {
     assert.ok(c.proposalId, '提案已发出');
     const p = s.window.GlobalData.proposals.find(x => x.id === c.proposalId);
     assert.equal(p.status, 'open');
-    assert.deepEqual(p.projectIds, ['p8', 'p1']);
-    assert.equal(p.projectId, 'p8', '主项目=第一个');
+    assert.deepEqual(p.projectIds, ['p1', 'p8']);
+    assert.equal(p.projectId, 'p1', '主项目=第一个');
     assert.equal(p.venueIds.length, 1);
 });
 

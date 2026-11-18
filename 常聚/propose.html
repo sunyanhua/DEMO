@@ -138,17 +138,26 @@ window.ProposeView = (function () {
         if (window.lucide) window.lucide.createIcons();
     }
 
-    // 第 2 步：选活动项目（多选，最多 3 个）
+    // 第 2 步：选活动项目（多选，最多 3 个；已选胶囊跨类别可见可删除）
     function renderStep2() {
         const G = window.GlobalData;
         const circle = G.circles.find(c => c.id === window.ProposeView._circleId);
         const cat = window.ProposeView._projCategory || 'dinner';
         const catChips = Object.keys(CATEGORY_LABELS).map(k =>
             '<span id="pc-' + k + '" class="cj-chip' + (cat === k ? ' cj-chip-warm' : '') + '" style="cursor:pointer;padding:8px 14px;font-size:13px" onclick="window.ProposeView.pickProjectCategory(\'' + k + '\')">' + CATEGORY_LABELS[k] + '</span>').join('');
+        const pickedChips = window.ProposeView._projectIds.map(id => {
+            const p = G.projects.find(x => x.id === id);
+            return p ? '<span class="cj-chip cj-chip-warm" style="padding:6px 12px">' + p.name +
+                '<span style="cursor:pointer;font-weight:800;margin-left:4px" onclick="window.ProposeView.toggleProject(\'' + id + '\')">✕</span></span>' : '';
+        }).join('');
         return window.Common.renderShell('') +
             '<div class="cj-px" style="padding-top:12px">' + stepsBar(2) +
                 '<div class="cj-sub" style="margin-bottom:10px">「' + circle.name + '」这一局，玩什么？</div>' +
                 '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px">' + catChips + '</div>' +
+                (pickedChips
+                    ? '<div class="cj-sub" style="margin-bottom:8px">已选项目（可删除）</div>' +
+                      '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px">' + pickedChips + '</div>'
+                    : '') +
                 '<div class="cj-sub" style="margin-bottom:10px">可多选（最多 ' + MAX_PROJECTS + ' 个）· 已选 ' + window.ProposeView._projectIds.length + '/' + MAX_PROJECTS + '</div>' +
                 projectCards(cat) +
                 '<button class="cj-btn-grad" style="margin-top:4px" onclick="window.ProposeView.gotoStep(3)">下一步：选时间地点</button>' +
