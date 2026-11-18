@@ -175,6 +175,10 @@ test('flow_new_user_zuju_guide_index', () => {
     assert.ok(guide.includes('马上开始组局'), '组局入口按钮');
     assert.ok(guide.includes('auth.html'), '点击先走手机号授权');
     assert.ok(!guide.includes('周五麻将局'), '新用户引导不显示圈子列表');
+    // 引导视觉：大图 + 大字号
+    assert.ok(guide.includes('width:170px'), '引导拍立得大图 170px');
+    assert.ok(guide.includes('font-size:30px'), '引导标题 30px');
+    assert.ok(guide.includes('font-size:15px'), '引导文案 15px');
     // 已注册用户：组局 tab 显示已有圈子可选
     s.window.IndexView._registered = true;
     const reg = s.window.IndexView.render();

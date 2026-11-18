@@ -54,14 +54,14 @@ window.IndexView = (function () {
     function zujuView() {
         const G = window.GlobalData;
         const circles = G.circles || [];
-        const guide = '<div class="cj-host-card" style="text-align:center;padding:28px 24px">' +
-            '<div class="cj-pola" style="width:120px;margin:0 auto 18px;transform:rotate(-3deg)">' +
+        const guide = '<div class="cj-host-card" style="text-align:center;padding:36px 24px 32px">' +
+            '<div class="cj-pola" style="width:170px;margin:0 auto 24px;transform:rotate(-3deg)">' +
                 '<img src="images/moment-2.jpg" alt="合影"><div class="cj-tape"></div>' +
             '</div>' +
-            '<div class="cj-title" style="font-size:24px">多久没聚了？</div>' +
-            '<div class="cj-sub" style="margin-top:10px;line-height:1.9;color:var(--body)">有些圈子，散着散着就远了。<br>组一局，把人聚回来。</div>' +
-            '<a class="cj-btn cj-btn-block" style="margin-top:18px;text-decoration:none" href="auth.html?next=' + encodeURIComponent('propose.html?new=1') + '">马上开始组局</a>' +
-            '<div class="cj-slogan" style="margin-top:12px">常聚常伴，圈子不散</div>' +
+            '<div class="cj-title" style="font-size:30px">多久没聚了？</div>' +
+            '<div style="margin-top:14px;line-height:1.9;color:var(--body);font-size:15px;font-weight:600">有些圈子，散着散着就远了。<br>组一局，把人聚回来。</div>' +
+            '<a class="cj-btn cj-btn-block" style="margin-top:24px;text-decoration:none;font-size:16px;padding:15px 0" href="auth.html?next=' + encodeURIComponent('propose.html?new=1') + '">马上开始组局</a>' +
+            '<div class="cj-slogan" style="margin-top:14px;font-size:13px">常聚常伴，圈子不散</div>' +
         '</div>';
         if (!window.IndexView._registered) {
             return guide;
