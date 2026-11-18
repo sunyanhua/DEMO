@@ -246,12 +246,12 @@ body.cj-theme .cj-wiz-head .cj-wiz-title { font-size: 14px; font-weight: 700; co
 body.cj-theme .cj-wiz-head i { color: #E08A3C; width: 14px; height: 14px; }
 /* 步骤条（横排：圆点 + 两行标签，同他俩能成） */
 body.cj-theme .cj-steps { display: flex; align-items: flex-start; justify-content: center; padding: 0 8px; margin-bottom: 20px; }
-body.cj-theme .cj-step { display: flex; align-items: center; gap: 6px; }
+body.cj-theme .cj-step { display: flex; align-items: flex-start; gap: 6px; }
 body.cj-theme .cj-step-dot { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex-shrink: 0; }
 body.cj-theme .cj-step.active .cj-step-dot { background: #E08A3C; color: #fff; }
 body.cj-theme .cj-step.done .cj-step-dot { background: #E08A3C; color: #fff; }
 body.cj-theme .cj-step.pending .cj-step-dot { background: #E5E5E5; color: #9CA3AF; }
-body.cj-theme .cj-step-label { font-size: 12px; line-height: 1.4; font-weight: 600; }
+body.cj-theme .cj-step-label { font-size: 12px; line-height: 1.4; font-weight: 600; margin-top: 3px; }
 body.cj-theme .cj-step.active .cj-step-label { color: #E08A3C; font-weight: 700; }
 body.cj-theme .cj-step.done .cj-step-label, body.cj-theme .cj-step.pending .cj-step-label { color: #9CA3AF; }
 body.cj-theme .cj-step-line { width: 24px; height: 2px; margin-top: 11px; flex-shrink: 0; margin-left: 2px; margin-right: 2px; background: #E5E5E5; }

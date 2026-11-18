@@ -83,6 +83,8 @@ test('theme_defines_warm_tokens', () => {
     assert.ok(css.includes('animation: cj-float 6s'), '静置浮动 6s');
     // 步骤条大字 + 胶囊选中态保持圆角
     assert.ok(css.includes('.cj-step-label { font-size: 12px'), '步骤标签 12px 大字');
+    assert.ok(/\.cj-step\s*\{[^}]*align-items: flex-start/.test(css), '步骤圆点顶部对齐（与连接线同轴，不受多行标签撑高影响）');
+    assert.ok(/\.cj-step-line\s*\{[^}]*margin-top: 11px/.test(css), '连接线 11px 顶距对齐 24px 圆点中心');
     assert.ok(/\.cj-chip,\s*[^{}]*\.cj-chip-warm\s*\{[^}]*border-radius: 999px/.test(css), 'cj-chip-warm 与 cj-chip 共享圆角形状');
     assert.ok(!css.includes('cj-statusbar') && !css.includes('cj-capsule'), '无小程序外壳残留');
 });
