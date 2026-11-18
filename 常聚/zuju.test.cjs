@@ -195,6 +195,12 @@ test('propose_five_step_flow', () => {
     assert.ok(html.includes('去哪聚'), '下区：地点');
     assert.ok(html.includes('指定时间') && html.includes('时间候选'), '时间两种模式提示');
     assert.ok(html.includes('指定地点') && html.includes('地点候选'), '地点两种模式提示');
+    // 提示语打磨：不暴露内部逻辑，话术通俗
+    assert.ok(!html.includes('合作地点优先'), '不向用户暴露合作优先逻辑');
+    assert.ok(!html.includes('优先推荐'), '不向用户暴露推荐优先级');
+    assert.ok(!html.includes('大家表态选最齐的'), '去除生硬话术');
+    assert.ok(html.includes('人最齐'), '通俗话术：人最齐的自动胜出');
+    assert.equal((html.match(/去哪聚/g) || []).length, 1, '去哪聚标题与操作区同一张卡');
     assert.equal((html.match(/data-time/g) || []).length, 3, '默认 3 个时间候选');
     assert.ok(html.includes('望京小腰烧烤'), '地点候选按项目类别过滤（火锅局→餐厅）');
     s.window.ProposeView.toggleVenue('v1');

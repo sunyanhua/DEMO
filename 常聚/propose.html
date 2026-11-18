@@ -177,19 +177,19 @@ window.ProposeView = (function () {
             ? '<div style="display:flex;gap:8px;align-items:center">' +
                 '<input data-time="0" class="cj-field-input" style="flex:1" value="' + (times[0] || '') + '" placeholder="格式：2026-11-21 14:00">' +
               '</div>' +
-              '<div class="cj-sub" style="margin-top:8px">时间已定，圈友表态能否出席</div>'
+              '<div class="cj-sub" style="margin-top:8px">时间已定，圈友确认能否出席</div>'
             : times.map((t, i) =>
                 '<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">' +
                     '<input data-time="' + i + '" class="cj-field-input" style="flex:1" value="' + t + '" placeholder="格式：2026-11-21 14:00">' +
                     (times.length > 1 ? '<span style="color:#9CA3AF;cursor:pointer" onclick="window.ProposeView.removeTime(' + i + ')">✕</span>' : '') +
                 '</div>').join('') +
                 '<span class="cj-pill cj-pill-due" style="cursor:pointer" onclick="window.ProposeView.addTime()">＋ 添加时间</span>' +
-                '<div class="cj-sub" style="margin-top:8px">给圈友几个候选，大家表态选最齐的</div>';
+                '<div class="cj-sub" style="margin-top:8px">圈友勾选各自方便的时间，人最齐的自动胜出</div>';
         const modePills = ['fixed', 'candidates'].map(m =>
             '<span class="cj-chip' + (P._timeMode === m ? ' cj-chip-warm' : '') + '" style="cursor:pointer;padding:8px 14px;font-size:13px" onclick="window.ProposeView.pickTimeMode(\'' + m + '\')">' + (m === 'fixed' ? '指定时间' : '时间候选') + '</span>').join('');
         return '<div class="cj-wiz-card">' +
             '<h3 class="cj-wiz-h3">什么时候聚？</h3>' +
-            '<div class="cj-sub" style="margin-bottom:12px">可以指定一个时间，或提供几个时间候选让圈友投票</div>' +
+            '<div class="cj-sub" style="margin-bottom:12px">直接定下时间，或者给几个候选，让圈友一起定</div>' +
             '<div style="display:flex;gap:8px;margin-bottom:12px">' + modePills + '</div>' +
             rows +
         '</div>';
@@ -208,7 +208,7 @@ window.ProposeView = (function () {
                 '<div style="display:flex;justify-content:space-between;align-items:center">' +
                     '<div><div style="font-weight:700;color:#111827;font-size:14px">' + v.name + (on ? ' ✓' : '') + '</div>' +
                     '<div style="font-size:12px;color:#9CA3AF;margin-top:4px">' + v.district + v.businessArea + ' · ' + (TIER_LABEL[v.spendTier] || v.spendTier) + ' · ⭐' + v.rating + '</div></div>' +
-                    (v.isPartner ? '<span style="font-size:11px;color:#E08A3C;font-weight:700">合作 · 优先推荐</span>' : '') +
+                    (v.isPartner ? '<span style="font-size:11px;color:#E08A3C;font-weight:700">合作商户</span>' : '') +
                 '</div>' +
             '</div>';
         }).join('');
@@ -221,18 +221,16 @@ window.ProposeView = (function () {
         const modePills = ['fixed', 'candidates'].map(m =>
             '<span class="cj-chip' + (P._venueMode === m ? ' cj-chip-warm' : '') + '" style="cursor:pointer;padding:8px 14px;font-size:13px" onclick="window.ProposeView.pickVenueMode(\'' + m + '\')">' + (m === 'fixed' ? '指定地点' : '地点候选') + '</span>').join('');
         const body = isFixed
-            ? '<div class="cj-sub" style="margin-bottom:10px">我们推荐以下地点（合作地点优先），也可以自己输入</div>' +
+            ? '<div class="cj-sub" style="margin-bottom:10px">为你推荐这些地点，也可以自己输入</div>' +
               fixedVenueCards(P._projectId) +
               '<div style="margin-top:12px">' +
                 '<label class="cj-field-label">自己输入</label>' +
-                '<input id="customVenueInput" class="cj-field-input" value="' + P._customVenue + '" placeholder="如：老王家常菜馆（暂不输入即选推荐地点）">' +
+                '<input id="customVenueInput" class="cj-field-input" value="' + P._customVenue + '" placeholder="如：老王家常菜馆（不输入就选上面推荐的地点）">' +
               '</div>'
-            : '<div class="cj-sub" style="margin-bottom:10px">选几个地点（最多 ' + MAX_VENUES + ' 个）让圈友投票 · 已选 ' + venueCount + '/' + MAX_VENUES + '</div>' +
+            : '<div class="cj-sub" style="margin-bottom:10px">选几个备选地点，圈友投票定最终地点 · 已选 ' + venueCount + '/' + MAX_VENUES + '</div>' +
               venueCards(P._projectId);
-        return '<div class="cj-wiz-card" style="padding:12px">' +
-                '<h3 class="cj-wiz-h3" style="padding:4px">去哪聚？</h3>' +
-            '</div>' +
-            '<div class="cj-wiz-card">' +
+        return '<div class="cj-wiz-card">' +
+                '<h3 class="cj-wiz-h3">去哪聚？</h3>' +
                 '<div style="display:flex;gap:8px;margin-bottom:12px">' + modePills + '</div>' +
                 body +
             '</div>';
