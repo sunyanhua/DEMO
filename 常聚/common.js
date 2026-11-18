@@ -23,9 +23,10 @@ window.Common = (function () {
         </div>`;
     }
 
-    // 悬浮药丸 tabbar
+    // 悬浮药丸 tabbar（组局/圈子/消息/我的）
     function renderTabbar(active) {
         const tabs = [
+            { id: 'zuju', label: '组局', icon: 'sparkles', href: 'index.html?tab=zuju' },
             { id: 'circles', label: '圈子', icon: 'users', href: 'index.html' },
             { id: 'messages', label: '消息', icon: 'bell', href: 'message.html' },
             { id: 'me', label: '我的', icon: 'user', href: 'me.html' }

@@ -10,6 +10,41 @@ window.Zuju = (function () {
     // 圈子类型 → 项目类别（默认推荐方向）
     const CATEGORY_BY_TYPE = { mahjong: 'mahjong', dinner: 'dinner', ball: 'ball', outdoor: 'outdoor', exhibit: 'exhibit', ktv: 'ktv', classmate: 'dinner', colleague: 'dinner' };
 
+    // 圈子类型（建圈页与组局流程共用）
+    const CIRCLE_TYPES = [
+        { key: 'mahjong', label: '麻将', suggest: '周末麻将局' },
+        { key: 'dinner', label: '饭局', suggest: '约饭小分队' },
+        { key: 'ball', label: '球局', suggest: '周末球局' },
+        { key: 'outdoor', label: '户外', suggest: '山野同行' },
+        { key: 'classmate', label: '同学', suggest: '老同学' },
+        { key: 'colleague', label: '同事', suggest: '同事食堂搭子' }
+    ];
+
+    // 建圈（组局流程内嵌与建圈页共用）：owner/当值=建圈人；城市=北京
+    function createCircle({ name, type }) {
+        if (!name || !String(name).trim()) {
+            window.Common.showToast('给圈子起个名字吧');
+            return null;
+        }
+        const u = window.GlobalData.user;
+        const circle = {
+            id: 'c-' + Date.now().toString(36),
+            name: String(name).trim(),
+            type: type || 'dinner',
+            city: '北京',
+            createdAt: window.Common.fmtDate(window.Demo.getNow()).slice(0, 10),
+            ownerId: 'u1',
+            members: [{ id: u.id, name: u.name, avatarUrl: u.avatarUrl, joinOrder: 1, tags: u.tags || [], position: u.position || {}, work: u.work || {}, spendTier: u.spendTier || 'mid' }],
+            hostId: 'u1',
+            rhythm: null,
+            lastGatheringId: null,
+            proposalId: null
+        };
+        window.GlobalData.circles.push(circle);
+        window.Common.save();
+        return circle;
+    }
+
     // 一键生成智能提案并发出（status open；写 circle.proposalId）；opts.category 显式指定方向
     function buildProposal(circleId, opts) {
         const circle = circleOf(circleId);
@@ -177,5 +212,5 @@ window.Zuju = (function () {
         window.Common.save();
     }
 
-    return { buildProposal, markProjectPending, submitVotes, voteSummary, tryDecide, remindNonVoters, shareInvite, pickShareGroup };
+    return { CIRCLE_TYPES, createCircle, buildProposal, markProjectPending, submitVotes, voteSummary, tryDecide, remindNonVoters, shareInvite, pickShareGroup };
 })();

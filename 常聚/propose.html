@@ -59,12 +59,66 @@ window.ProposeView = (function () {
         '</div>';
     }
 
+    // 第一步：选择/新建圈子（新用户只有新建）
+    function renderNew() {
+        const G = window.GlobalData;
+        const circles = G.circles || [];
+        const newUser = window.ProposeView._newUser;
+        const typeChips = (window.Zuju.CIRCLE_TYPES || []).map(t =>
+            '<span id="ct-' + t.key + '" class="' + (window.ProposeView._circleType === t.key ? 'cj-chip-warm' : 'cj-chip') + '" style="cursor:pointer;padding:8px 14px;font-size:13px" onclick="window.ProposeView.pickCircleType(\'' + t.key + '\')">' + t.label + '</span>').join('');
+        const existing = (!newUser && circles.length)
+            ? '<div class="cj-section-head"><b>选择圈子组局</b></div>' +
+              circles.map(c =>
+                '<a class="cj-card" style="display:flex;gap:14px;align-items:center;padding:14px;text-decoration:none" href="propose.html?circle=' + c.id + '">' +
+                    '<img src="' + ((c.members || [])[0] ? c.members[0].avatarUrl : 'images/avatar-1.png') + '" class="cj-avatar-ring" style="width:44px;height:44px" alt="">' +
+                    '<div style="flex:1"><div class="cj-title" style="font-size:15px">在「' + c.name + '」组一局</div>' +
+                    '<div class="cj-sub" style="margin-top:4px">' + (c.members || []).length + ' 位圈友</div></div>' +
+                    '<span class="cj-pill cj-pill-due">去组局 ›</span>' +
+                '</a>').join('')
+            : '';
+        return window.Common.renderShell('组局') +
+            '<div class="cj-px" style="padding-top:6px">' +
+                '<div class="cj-title" style="font-size:15px;margin-bottom:6px">新建圈子</div>' +
+                '<div class="cj-sub" style="margin-bottom:12px">第一次组局，先给你们的圈子起个名</div>' +
+                '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px" id="typeRow">' + typeChips + '</div>' +
+                '<div class="cj-title" style="font-size:14px;margin-bottom:10px">圈子叫什么</div>' +
+                '<input id="circleName" style="width:100%;padding:12px;border:1px solid var(--line);border-radius:14px;font-size:15px;background:var(--cream)" placeholder="给圈子起个名字吧">' +
+                '<button class="cj-btn cj-btn-block" style="margin-top:16px" onclick="window.ProposeView.createAndContinue()">创建圈子，开始组局</button>' +
+            '</div>' +
+            existing +
+            window.Common.renderTabbar('zuju');
+    }
+
+    function pickCircleType(key) {
+        window.ProposeView._circleType = key;
+        const t = (window.Zuju.CIRCLE_TYPES || []).find(x => x.key === key);
+        const input = document.getElementById('circleName');
+        if (input && input.value !== undefined && t) input.value = t.suggest;
+        const chips = document.querySelectorAll('#typeRow span');
+        if (chips && chips.forEach) {
+            chips.forEach(el => { el.className = el.id === 'ct-' + key ? 'cj-chip-warm' : 'cj-chip'; });
+        }
+    }
+
+    // 建圈成功 → 直接进入组局方向选择
+    function createAndContinue(opts) {
+        const o = opts || {};
+        const input = document.getElementById('circleName');
+        const name = o.name || (input && input.value ? input.value.trim() : '');
+        const circle = window.Zuju.createCircle({ name, type: o.type || window.ProposeView._circleType || 'dinner' });
+        if (!circle) return null;
+        circleId = circle.id;
+        document.getElementById('app').innerHTML = render(circle.id);
+        if (window.lucide) window.lucide.createIcons();
+        return circle;
+    }
+
     function render(circleIdArg) {
         circleId = circleIdArg || 'c1';
         const circle = window.GlobalData.circles.find(c => c.id === circleId);
-        if (!circle) return window.Common.renderShell('张罗个局') + '<div class="cj-empty">圈子不存在</div>';
+        if (!circle) return window.Common.renderShell('组局') + '<div class="cj-empty">圈子不存在</div>';
         window.ProposeView._category = CATEGORY_BY_TYPE[circle.type] || null;
-        return window.Common.renderShell('张罗个局') +
+        return window.Common.renderShell('组局') +
             '<div class="cj-px" style="padding-top:6px">' +
                 '<div class="cj-sub" style="margin-bottom:12px">在「' + circle.name + '」组一局，智能提案帮你定项目、地点、时间</div>' +
                 '<div class="cj-title" style="font-size:14px;margin-bottom:10px">组局方向</div>' +
@@ -77,7 +131,7 @@ window.ProposeView = (function () {
                     '<button class="cj-btn cj-btn-block" onclick="window.ProposeView.generate()">一键生成智能提案</button>' +
                 '</div>' +
                 '<div id="shareArea"></div>' +
-            '</div>' + window.Common.renderTabbar('circles');
+            '</div>' + window.Common.renderTabbar('zuju');
     }
 
     function pickCategory(cat) {
@@ -147,11 +201,20 @@ window.ProposeView = (function () {
             '<button class="cj-btn cj-btn-block" style="margin-top:4px" onclick="window.ProposeView.send()">发出提案，请圈友表态</button>';
     }
 
-    return { render, build, generate, send, togglePending, addTime, removeTime, pickCategory, shareInvite, pickShareGroup };
+    return { render, renderNew, pickCircleType, createAndContinue, build, generate, send, togglePending, addTime, removeTime, pickCategory, shareInvite, pickShareGroup };
 })();
 (function () {
+    window.ProposeView._newUser = false;
+    window.ProposeView._circleType = 'mahjong';
     const params = new URLSearchParams(window.location.search);
-    document.getElementById('app').innerHTML = window.ProposeView.render(params.get('circle'));
+    if (params.get('new') === '1') {
+        window.ProposeView._newUser = true;
+        document.getElementById('app').innerHTML = window.ProposeView.renderNew();
+    } else if (params.get('circle')) {
+        document.getElementById('app').innerHTML = window.ProposeView.render(params.get('circle'));
+    } else {
+        document.getElementById('app').innerHTML = window.ProposeView.renderNew();
+    }
 })();
 window.Common.initIcons();
 window.Demo.mountFab();

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>常聚 · 圈子</title>
+    <title>常聚 · 首页</title>
     <link rel="stylesheet" href="tailwind.css">
     <link rel="stylesheet" href="theme.css">
 </head>
@@ -50,25 +50,68 @@ window.IndexView = (function () {
         '</a>';
     }
 
-    function render() {
+    // 组局视图：新用户高格调引导；注册用户 = 引导 + 可选圈子
+    function zujuView() {
         const G = window.GlobalData;
-        const circles = window.IndexView._newUser ? [] : (G.circles || []);
+        const circles = G.circles || [];
+        const guide = '<div class="cj-host-card" style="text-align:center;padding:28px 24px">' +
+            '<div class="cj-pola" style="width:120px;margin:0 auto 18px;transform:rotate(-3deg)">' +
+                '<img src="images/moment-2.jpg" alt="合影"><div class="cj-tape"></div>' +
+            '</div>' +
+            '<div class="cj-title" style="font-size:24px">多久没聚了？</div>' +
+            '<div class="cj-sub" style="margin-top:10px;line-height:1.9;color:var(--body)">有些圈子，散着散着就远了。<br>组一局，把人聚回来。</div>' +
+            '<a class="cj-btn cj-btn-block" style="margin-top:18px;text-decoration:none" href="auth.html?next=' + encodeURIComponent('propose.html?new=1') + '">马上开始组局</a>' +
+            '<div class="cj-slogan" style="margin-top:12px">常聚常伴，圈子不散</div>' +
+        '</div>';
+        if (!window.IndexView._registered) {
+            return guide;
+        }
+        const picks = circles.map(c =>
+            '<a class="cj-card" style="display:flex;gap:14px;align-items:center;padding:14px;text-decoration:none" href="propose.html?circle=' + c.id + '">' +
+                '<img src="' + ((c.members || [])[0] ? (c.members[0].avatarUrl) : 'images/avatar-1.png') + '" class="cj-avatar-ring" style="width:44px;height:44px" alt="">' +
+                '<div style="flex:1">' +
+                    '<div class="cj-title" style="font-size:15px">在「' + c.name + '」组一局</div>' +
+                    '<div class="cj-sub" style="margin-top:4px">' + (c.members || []).length + ' 位圈友 · ' + (TYPE_LABEL[c.type] || c.type) + '</div>' +
+                '</div>' +
+                '<span class="cj-pill cj-pill-due">去组局 ›</span>' +
+            '</a>').join('');
+        return guide +
+            '<div class="cj-section-head"><b>选择圈子组局</b></div>' +
+            picks +
+            '<div class="cj-px" style="text-align:center">' +
+                '<a class="cj-btn-outline" style="width:100%;font-size:14px;padding:11px 0" href="propose.html?new=1">＋ 新建圈子组局</a>' +
+            '</div>';
+    }
+
+    function circlesView() {
+        const G = window.GlobalData;
+        const circles = G.circles || [];
         const list = circles.map(circleCard).join('');
         const empty = circles.length ? '' : '<div class="cj-empty">还没有圈子，建一个吧<br>常聚常伴，圈子不散</div>';
-        return window.Common.renderShell('圈子') +
-            '<div class="cj-cityline"><span style="cursor:pointer" onclick="window.Common.showToast(\'多城市能力预留\')">北京 · ' + circles.length + ' 个圈子</span></div>' +
+        return '<div class="cj-cityline"><span style="cursor:pointer" onclick="window.Common.showToast(\'多城市能力预留\')">北京 · ' + circles.length + ' 个圈子</span></div>' +
             '<div class="cj-px">' + list + empty + '</div>' +
             '<div class="cj-px" style="text-align:center;padding-top:10px;padding-bottom:16px">' +
                 '<a class="cj-btn-outline" style="width:100%;font-size:14px;padding:11px 0" href="create.html">＋ 建圈子</a>' +
-            '</div>' + window.Common.renderTabbar('circles');
+            '</div>';
+    }
+
+    function render() {
+        const isZuju = window.IndexView._tab === 'zuju';
+        const body = isZuju ? zujuView() : circlesView();
+        return window.Common.renderShell(isZuju ? '组局' : '圈子') + body + window.Common.renderTabbar(isZuju ? 'zuju' : 'circles');
     }
 
     return { render };
 })();
-window.IndexView._newUser = false;
+window.IndexView._registered = false;
+window.IndexView._tab = 'circles';
 (function () {
+    try {
+        window.IndexView._registered = !!window.localStorage.getItem('cj.user');
+    } catch (e) { /* noop */ }
     const params = new URLSearchParams(window.location.search);
-    window.IndexView._newUser = params.get('new') === '1';
+    window.IndexView._tab = params.get('tab') === 'zuju' ? 'zuju'
+        : (window.IndexView._registered ? 'circles' : 'zuju');
     document.getElementById('app').innerHTML = window.IndexView.render();
 })();
 window.Common.initIcons();

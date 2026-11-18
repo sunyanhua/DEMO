@@ -89,6 +89,28 @@ test('cjpx_containers_keep_horizontal_padding', () => {
     }
 });
 
+test('tabbar_has_zuju_tab', () => {
+    const sandbox = {
+        window: {},
+        document: {
+            body: { innerHTML: '', appendChild() {} },
+            getElementById() { return null; },
+            createElement() { return { appendChild() {}, remove() {}, style: {}, classList: { add() {} } }; },
+            addEventListener() {}
+        },
+        localStorage: { getItem: () => null, setItem() {}, removeItem() {} },
+        setTimeout, clearTimeout
+    };
+    sandbox.window.document = sandbox.document;
+    sandbox.window.localStorage = sandbox.localStorage;
+    vm.createContext(sandbox);
+    vm.runInContext(fs.readFileSync(path.join(dir, 'common.js'), 'utf8'), sandbox);
+    const html = sandbox.window.Common.renderTabbar('zuju');
+    assert.ok(html.includes('组局'), 'tabbar 含组局页签');
+    assert.ok(html.includes('index.html?tab=zuju'), '组局页签链接首页组局视图');
+    assert.ok(html.includes('cj-tab-active'), '激活态渲染');
+});
+
 test('shell_has_no_miniprogram_chrome', () => {
     const sandbox = {
         window: {},

@@ -165,16 +165,25 @@ test('flow_next_round_rhythm', () => {
     assert.equal(p2.status, 'open', '下一轮提案可发起');
 });
 
-test('flow_new_user_empty_index', () => {
+test('flow_new_user_zuju_guide_index', () => {
     const s = makeSandbox();
-    s.window.IndexView._newUser = true;
-    const html = s.window.IndexView.render();
-    assert.ok(html.includes('还没有圈子'), '新用户看到空态');
-    assert.ok(!html.includes('周五麻将局'), '空态不显示 mock 圈子');
-    assert.ok(html.includes('建圈子'), '空态保留建圈入口');
-    s.window.IndexView._newUser = false;
+    // 新用户：默认组局 tab，高格调引导
+    s.window.IndexView._tab = 'zuju';
+    s.window.IndexView._registered = false;
+    const guide = s.window.IndexView.render();
+    assert.ok(guide.includes('多久没聚'), '组局引导话术');
+    assert.ok(guide.includes('马上开始组局'), '组局入口按钮');
+    assert.ok(guide.includes('auth.html'), '点击先走手机号授权');
+    assert.ok(!guide.includes('周五麻将局'), '新用户引导不显示圈子列表');
+    // 已注册用户：组局 tab 显示已有圈子可选
+    s.window.IndexView._registered = true;
+    const reg = s.window.IndexView.render();
+    assert.ok(reg.includes('周五麻将局'), '注册用户可选已有圈子组局');
+    // 圈子 tab 仍是圈子列表
+    s.window.IndexView._tab = 'circles';
     const normal = s.window.IndexView.render();
-    assert.ok(normal.includes('周五麻将局'), '普通用户看到圈子列表');
+    assert.ok(normal.includes('周五麻将局'), '圈子 tab 显示圈子列表');
+    assert.ok(!normal.includes('多久没聚'), '圈子 tab 不显示组局引导');
 });
 
 test('flow_no_privacy_leak', () => {

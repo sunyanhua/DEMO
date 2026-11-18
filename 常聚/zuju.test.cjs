@@ -122,6 +122,41 @@ test('deadline_auto_decide', () => {
     assert.equal(c3.proposalId, null, '圈子清空进行中提案');
 });
 
+test('create_circle_engine', () => {
+    const s = makeSandbox();
+    const c = s.window.Zuju.createCircle({ name: '组局新圈', type: 'mahjong' });
+    assert.ok(c && c.id, '生成圈子');
+    assert.equal(c.ownerId, 'u1');
+    assert.equal(c.hostId, 'u1', '建圈人首任张罗');
+    assert.equal(c.city, '北京');
+    assert.equal(c.members.length, 1);
+    assert.equal(c.members[0].joinOrder, 1);
+    const bad = s.window.Zuju.createCircle({ name: '  ', type: 'dinner' });
+    assert.equal(bad, null, '空名不创建');
+});
+
+test('propose_new_user_circle_form', () => {
+    const s = makeSandbox();
+    s.window.ProposeView._newUser = true;
+    const html = s.window.ProposeView.renderNew();
+    assert.ok(html.includes('新建圈子'), '新用户第一步是新建圈子');
+    assert.ok(html.includes('圈子叫什么'), '含圈名输入');
+    assert.ok(!html.includes('选择圈子组局'), '新用户不显示已有圈子选择');
+    s.window.ProposeView._newUser = false;
+    const picker = s.window.ProposeView.renderNew();
+    assert.ok(picker.includes('选择圈子组局'), '注册用户可选已有圈子');
+});
+
+test('propose_create_circle_continues_to_zuju', () => {
+    const s = makeSandbox();
+    s.window.ProposeView._newUser = true;
+    s.window.ProposeView.createAndContinue({ name: '周末新局', type: 'ball' });
+    const c = s.window.GlobalData.circles.find(x => x.name === '周末新局');
+    assert.ok(c, '圈子已创建');
+    const html = s.window.ProposeView.render(c.id);
+    assert.ok(html.includes('组局方向'), '创建后进入组局方向选择');
+});
+
 test('propose_share_invite_overlay', () => {
     const s = makeSandbox();
     s.window.ProposeView.shareInvite();

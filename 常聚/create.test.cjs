@@ -55,6 +55,7 @@ function makeSandbox() {
     vm.runInContext(fs.readFileSync(path.join(dir, 'data.js'), 'utf8'), sandbox);
     vm.runInContext(fs.readFileSync(path.join(dir, 'rotation.js'), 'utf8'), sandbox);
     vm.runInContext(fs.readFileSync(path.join(dir, 'common.js'), 'utf8'), sandbox);
+    vm.runInContext(fs.readFileSync(path.join(dir, 'zuju.js'), 'utf8'), sandbox);
     vm.runInContext(inlineScriptOf('create.html'), sandbox);
     return sandbox;
 }

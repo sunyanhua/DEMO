@@ -79,7 +79,7 @@ test('invite_card_renders_with_proposal_info', () => {
 test('enter_new_goes_auth_with_next', () => {
     const s = makeSandbox();
     s.window.WechatView.enterNew();
-    assert.equal(s.window.location.href, 'auth.html?next=index.html%3Fnew%3D1', '新用户先授权再进新圈子列表');
+    assert.equal(s.window.location.href, 'auth.html?next=index.html%3Ftab%3Dzuju', '新用户先授权再进首页组局引导');
 });
 
 test('enter_invite_goes_auth_with_next', () => {

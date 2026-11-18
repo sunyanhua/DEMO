@@ -46,9 +46,9 @@ window.WechatView = (function () {
         return { p, circle, project };
     }
 
-    // 路线①：全新用户点开常聚 → 手机号授权 → 注册 → 空态圈子列表
+    // 路线①：全新用户点开常聚 → 手机号授权 → 注册 → 首页组局引导
     function enterNew() {
-        window.location.href = 'auth.html?next=' + encodeURIComponent('index.html?new=1');
+        window.location.href = 'auth.html?next=' + encodeURIComponent('index.html?tab=zuju');
     }
 
     // 路线②：群内组局邀请 → 手机号授权 → 注册 → 直接参与该局

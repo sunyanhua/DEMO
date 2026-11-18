@@ -13,50 +13,19 @@
 <script src="data.js"></script>
 <script src="rotation.js"></script>
 <script src="common.js"></script>
+<script src="zuju.js"></script>
 <script>
 window.CreateCircle = (function () {
-    const TYPE_LIST = [
-        { key: 'mahjong', label: '麻将', suggest: '周末麻将局' },
-        { key: 'dinner', label: '饭局', suggest: '约饭小分队' },
-        { key: 'ball', label: '球局', suggest: '周末球局' },
-        { key: 'outdoor', label: '户外', suggest: '山野同行' },
-        { key: 'classmate', label: '同学', suggest: '老同学' },
-        { key: 'colleague', label: '同事', suggest: '同事食堂搭子' }
-    ];
+    const TYPE_LIST = window.Zuju.CIRCLE_TYPES;
     const JOINERS = [
         { id: 'n1', name: '圈友·小鹿', avatarUrl: 'images/avatar-3.png', tags: [], position: { district: '朝阳' }, work: { type: '白班', district: '望京' }, spendTier: 'mid' },
         { id: 'n2', name: '圈友·大熊', avatarUrl: 'images/avatar-6.png', tags: [], position: { district: '海淀' }, work: { type: '晚班', district: '中关村' }, spendTier: 'economy' },
         { id: 'n3', name: '圈友·念念', avatarUrl: 'images/avatar-10.png', tags: [], position: { district: '东城' }, work: { type: '自由', district: '东城' }, spendTier: 'mid' }
     ];
 
-    function memberFromUser() {
-        const u = window.GlobalData.user;
-        return { id: u.id, name: u.name, avatarUrl: u.avatarUrl, joinOrder: 1, tags: u.tags || [], position: u.position || {}, work: u.work || {}, spendTier: u.spendTier || 'mid' };
-    }
-
-    // 建圈：校验必填名；owner/当值=建圈人；城市=北京；入圈唯一成员=自己
+    // 建圈：逻辑在 zuju.js（组局流程与建圈页共用）
     function submit({ name, type, mode }) {
-        if (!name || !String(name).trim()) {
-            if (window.Common) window.Common.showToast('给圈子起个名字吧');
-            return null;
-        }
-        const G = window.GlobalData;
-        const circle = {
-            id: 'c-' + Date.now().toString(36),
-            name: String(name).trim(),
-            type: type || 'dinner',
-            city: '北京',
-            createdAt: window.Common ? window.Common.fmtDate(window.Demo.getNow()).slice(0, 10) : '2026-11-17',
-            ownerId: 'u1',
-            members: [memberFromUser()],
-            hostId: window.Rotation ? window.Rotation.initialHost({ ownerId: 'u1' }) : 'u1',
-            rhythm: null,
-            lastGatheringId: null,
-            proposalId: null
-        };
-        G.circles.push(circle);
-        if (window.Common) window.Common.save();
-        return circle;
+        return window.Zuju.createCircle({ name, type });
     }
 
     // 模拟群友点卡入圈（3 位，joinOrder 顺延）
