@@ -201,6 +201,23 @@ window.Zuju = (function () {
         return G().gatherings.find(g => g.proposalId === proposalId);
     }
 
+    // 项目名显示：支持"不限"伪项目（any-<类别>，选地点时再定）
+    const ANY_LABELS = { dinner: '吃饭（随地点定）', ball: '运动（随地点定）', fun: '娱乐（随地点定）', outdoor: '户外（随地点定）' };
+    function projectLabel(projectId) {
+        if (projectId && projectId.indexOf('any-') === 0) {
+            return ANY_LABELS[projectId.slice(4)] || '聚会';
+        }
+        const p = G().projects.find(x => x.id === projectId);
+        return p ? p.name : '聚会';
+    }
+
+    // 项目对应类别：支持 any-<类别>
+    function projectCategoryOf(projectId) {
+        if (projectId && projectId.indexOf('any-') === 0) return projectId.slice(4);
+        const p = G().projects.find(x => x.id === projectId);
+        return p ? p.category : null;
+    }
+
     // 分享组局邀请到微信群（模拟浮层，写入指定容器）
     function shareInvite({ proposalId, circleId, containerId }) {
         const p = proposalOf(proposalId);
@@ -251,5 +268,5 @@ window.Zuju = (function () {
         window.Common.save();
     }
 
-    return { CIRCLE_TYPES, createCircle, buildProposalManual, submitVotes, voteSummary, tryDecide, endVoting, confirmAttend, declineAttend, joinAttend, remindNonVoters, shareInvite, pickShareGroup };
+    return { CIRCLE_TYPES, createCircle, buildProposalManual, submitVotes, voteSummary, tryDecide, endVoting, confirmAttend, declineAttend, joinAttend, projectLabel, projectCategoryOf, remindNonVoters, shareInvite, pickShareGroup };
 })();

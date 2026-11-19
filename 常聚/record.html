@@ -62,7 +62,7 @@ window.RecordView = (function () {
                 '</div>' +
                 '<div class="cj-card">' +
                     '<div class="cj-sub" style="margin-bottom:6px">' + g.time + ' · ' + (g.customVenue ? g.customVenue : (venue ? venue.name + ' · ' + venue.district + venue.businessArea : '')) + '</div>' +
-                    (project ? '<span class="cj-pill cj-pill-plain">' + project.name + '</span> ' : '') +
+                    '<span class="cj-pill cj-pill-plain">' + window.Zuju.projectLabel(g.projectId) + '</span> ' +
                     (g.note ? '<span class="cj-pill cj-pill-plain">' + g.note + '</span> ' : '') +
                     '<span class="cj-pill cj-pill-plain">出席 ' + (g.attendees || []).length + ' 人</span>' +
                     (g.summary ? '<div style="font-size:14px;line-height:1.9;color:var(--body);margin-top:12px">' + g.summary + '</div>' : '') +

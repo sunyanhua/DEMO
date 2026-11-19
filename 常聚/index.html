@@ -97,7 +97,7 @@ window.IndexView = (function () {
                     '<span class="cj-title" style="font-size:15px">' + (circle ? circle.name : '') + '</span>' +
                     '<span class="cj-pill cj-pill-due">' + (isOrganizing ? '组局中' : '进行中') + '</span>' +
                 '</div>' +
-                '<div style="font-size:14px;font-weight:700;color:var(--ink);margin-top:8px">' + (project ? project.name : '聚会') + '</div>' +
+                '<div style="font-size:14px;font-weight:700;color:var(--ink);margin-top:8px">' + window.Zuju.projectLabel(p.projectId) + '</div>' +
                 '<div class="cj-sub" style="margin-top:5px">🕐 ' + timeText + ' · 📍 ' + venue + '</div>' +
                 '<div class="cj-row" style="justify-content:space-between;margin-top:10px">' +
                     '<div class="cj-avatars">' + avatars + '</div>' +

@@ -256,6 +256,11 @@ body.cj-theme .cj-step.active .cj-step-label { color: #E08A3C; font-weight: 700;
 body.cj-theme .cj-step.done .cj-step-label, body.cj-theme .cj-step.pending .cj-step-label { color: #9CA3AF; }
 body.cj-theme .cj-step-line { width: 24px; height: 2px; margin-top: 11px; flex-shrink: 0; margin-left: 2px; margin-right: 2px; background: #E5E5E5; }
 body.cj-theme .cj-step-line.done { background: #E08A3C; }
+/* 分类 TAB（下划线式，非胶囊） */
+body.cj-theme .cj-cat-tabs { display: flex; gap: 22px; margin-bottom: 14px; overflow-x: auto; }
+body.cj-theme .cj-cat-tab { font-size: 14px; font-weight: 600; color: #9CA3AF; padding: 4px 2px 8px; cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; }
+body.cj-theme .cj-cat-tab.cj-cat-tab-active { color: #E08A3C; font-weight: 800; border-bottom-color: #E08A3C; }
+
 /* 表单卡与字段（他俩能成同款） */
 body.cj-theme .cj-wiz-card { background: #fff; border-radius: 16px; box-shadow: 0 1px 2px rgba(0,0,0,0.04); border: 1px solid #F3F4F6; padding: 16px; margin-bottom: 12px; }
 body.cj-theme .cj-wiz-h3 { font-weight: 700; color: #1F2937; font-size: 15px; margin-bottom: 12px; }

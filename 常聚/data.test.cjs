@@ -87,9 +87,12 @@ test('schema_mock_quota', () => {
     assert.ok(byCat.ball >= 8, '运动项目丰富');
     assert.ok(byCat.outdoor >= 6, '户外项目丰富');
     assert.ok(byCat.fun >= 10, '娱乐项目丰富（含棋牌/K歌/桌游/密室）');
-    assert.ok(!byCat.mahjong && !byCat.ktv, '棋牌/K歌 已并入娱乐');
+    assert.ok(!byCat.mahjong && !byCat.ktv && !byCat.exhibit, '棋牌/K歌并入娱乐，看展类别已移除');
     const funNames = G.projects.filter(p => p.category === 'fun').map(p => p.name).join('');
     assert.ok(funNames.includes('桌游') && funNames.includes('密室'), '娱乐含桌游/密室逃脱');
+    assert.ok(funNames.includes('掼蛋'), '娱乐含掼蛋');
+    assert.ok(!funNames.includes('桌游之夜') && !funNames.includes('三国杀'), '相似项目已合并为桌游');
+    assert.equal(funNames.split('麻将').length - 1, 1, '两个麻将合并为一个');
     const venueCats = new Set(G.venues.map(v => v.category));
     assert.ok(!venueCats.has('mahjong'), '商户类别同步迁移（麻将馆→娱乐）');
     assert.ok(G.gatherings.length >= 3, '至少 3 场聚会历史');

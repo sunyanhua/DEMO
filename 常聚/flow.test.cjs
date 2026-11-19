@@ -200,7 +200,7 @@ test('flow_zuju_list_index', () => {
     assert.ok(html.includes('进行中') && html.includes('已完成'), '进行中/已完成分区');
     assert.ok(html.indexOf('进行中') < html.indexOf('已完成'), '进行中在上、已完成在下');
     // 进行中卡：p1 提案（组局内容/时间/圈友）
-    assert.ok(html.includes('血战到底麻将'), '进行中卡含组局内容');
+    assert.ok(html.includes('麻将'), '进行中卡含组局内容');
     assert.ok(html.includes('组局中'), '组局中状态胶囊');
     assert.ok(!html.includes('投票中'), '不暴露投票中状态（投票=加入）');
     assert.ok(html.includes('已表态'), '组局中阶段显示已表态');
