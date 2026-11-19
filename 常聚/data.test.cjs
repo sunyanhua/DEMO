@@ -84,4 +84,5 @@ test('schema_mock_quota', () => {
     assert.ok(G.gatherings.length >= 3, '至少 3 场聚会历史');
     assert.ok(G.proposals.some(p => p.status === 'organizing'), '至少 1 条进行中提案');
     assert.ok(G.gatherings.filter(g => g.done).length >= 6, '至少 6 场已完成聚会（首页列表饱满）');
+    assert.equal(G.circles.filter(c => !c.lastGatheringId).length, 1, '没聚过的圈子恰好一个');
 });

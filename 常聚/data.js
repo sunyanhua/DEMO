@@ -61,6 +61,23 @@ window.GlobalData = {
             proposalId: null
         },
         {
+            id: 'c4',
+            name: '同事搭子',
+            type: 'colleague',
+            city: '北京',
+            createdAt: '2026-11-10',
+            ownerId: 'u1',
+            members: [
+                { id: 'u1', name: '阿Sun', avatarUrl: 'images/avatar-1.png', joinOrder: 1, tags: ['麻将', '羽毛球', '探店'], position: { district: '朝阳' }, work: { type: '白班', district: '国贸' }, spendTier: 'mid' },
+                { id: 'm1', name: '老王', avatarUrl: 'images/avatar-2.png', joinOrder: 2, tags: ['麻将', '钓鱼'], position: { district: '朝阳' }, work: { type: '白班', district: '望京' }, spendTier: 'mid' },
+                { id: 'm2', name: '小李', avatarUrl: 'images/avatar-3.png', joinOrder: 3, tags: ['麻将', '游戏'], position: { district: '海淀' }, work: { type: '晚班', district: '中关村' }, spendTier: 'economy' }
+            ],
+            hostId: 'u1',
+            rhythm: null,
+            lastGatheringId: null,
+            proposalId: null
+        },
+        {
             id: 'c3',
             name: '周末球局',
             type: 'sport',

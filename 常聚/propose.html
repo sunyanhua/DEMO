@@ -72,13 +72,18 @@ window.ProposeView = (function () {
         return '<div class="cj-group-icon" style="width:48px;height:48px;border-radius:10px;overflow:hidden;display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#E5E7EB;flex-shrink:0">' + avs + '</div>';
     }
 
-    function lastGatherText(circle) {
+    function daysSince(circle) {
         const g = window.GlobalData.gatherings.find(x => x.id === circle.lastGatheringId);
         const now = window.Common.fmtDate(window.Demo.getNow());
         const r = window.Rotation.checkRhythm({ circle, lastGatheringTime: g ? g.time : null, now });
-        if (r.daysSince === null || r.daysSince === undefined) return '还没有聚过';
-        if (r.daysSince === 0) return '今天刚聚过';
-        return '上次聚会 ' + r.daysSince + ' 天前';
+        return (r.daysSince === null || r.daysSince === undefined) ? null : r.daysSince;
+    }
+
+    function lastGatherText(circle) {
+        const d = daysSince(circle);
+        if (d === null) return '还没有聚过';
+        if (d === 0) return '今天刚聚过';
+        return '上次聚会 ' + d + ' 天前';
     }
 
     function renderNew() {
@@ -87,10 +92,16 @@ window.ProposeView = (function () {
         const newUser = window.ProposeView._newUser;
         const typeChips = (window.Zuju.CIRCLE_TYPES || []).map(t =>
             '<span id="ct-' + t.key + '" class="cj-chip' + (window.ProposeView._circleType === t.key ? ' cj-chip-warm' : '') + '" style="cursor:pointer;padding:8px 14px;font-size:13px" onclick="window.ProposeView.pickCircleType(\'' + t.key + '\')">' + t.label + '</span>').join('');
+        const sorted = circles.slice().sort((a, b) => {
+            const da = daysSince(a), db = daysSince(b);
+            const va = da === null ? Infinity : da;
+            const vb = db === null ? Infinity : db;
+            return vb - va; // 按上次聚会天数倒序：最久没聚的在前
+        });
         const existing = (!newUser && circles.length)
             ? '<div class="cj-px">' +
                 '<div class="cj-section-head"><b>已有圈子</b></div>' +
-                circles.map(c =>
+                sorted.map(c =>
                     '<a class="cj-card" style="display:flex;gap:12px;align-items:center;padding:12px 14px;text-decoration:none" href="propose.html?circle=' + c.id + '">' +
                         groupIcon(c) +
                         '<div style="flex:1">' +

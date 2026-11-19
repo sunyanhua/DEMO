@@ -156,6 +156,9 @@ test('propose_new_user_circle_form', () => {
     assert.ok(picker.includes('上次聚会'), '圈子卡片含上次聚会天数');
     assert.ok(picker.includes('cj-group-icon'), '微信群式九宫格圈头像');
     assert.ok(picker.indexOf('已有圈子') < picker.indexOf('周五麻将局') && picker.indexOf('周五麻将局') < picker.indexOf('新建圈子'), '已有圈子卡片在新建卡片之前');
+    // 按上次聚会天数倒序：周末球局(约58天) > 周五麻将局(约11天) > 老同学(约4天)
+    assert.ok(picker.indexOf('周末球局') < picker.indexOf('周五麻将局'), '最久没聚的圈子排最前');
+    assert.ok(picker.indexOf('周五麻将局') < picker.indexOf('老同学'), '最近聚过的排最后');
 });
 
 test('propose_requires_circle_type', () => {

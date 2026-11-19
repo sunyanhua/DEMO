@@ -88,7 +88,7 @@ test('save_then_fresh_load_restores_state', () => {
 test('load_without_snapshot_is_noop', () => {
     const s = makeSandbox(makeStorage());
     const baseCircles = s.window.GlobalData.circles.length;
-    assert.equal(baseCircles, 3, '无存储时保留初始数据');
+    assert.equal(baseCircles, 4, '无存储时保留初始数据');
 });
 
 test('load_merges_seed_and_snapshot', () => {
