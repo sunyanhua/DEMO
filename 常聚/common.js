@@ -75,7 +75,15 @@ window.Common = (function () {
             const raw = win.localStorage.getItem(LS_KEY);
             if (!raw) return;
             const snap = JSON.parse(raw);
-            PERSIST_KEYS.forEach(k => { if (snap[k]) win.GlobalData[k] = snap[k]; });
+            // 按 id 合并：快照覆盖同 id 的种子记录，种子新增记录保留（避免旧快照整表覆盖新种子数据）
+            PERSIST_KEYS.forEach(k => {
+                if (!snap[k]) return;
+                const base = win.GlobalData[k] || [];
+                const merged = {};
+                base.forEach(x => { merged[x.id] = x; });
+                snap[k].forEach(x => { merged[x.id] = x; });
+                win.GlobalData[k] = Object.values(merged);
+            });
             (snap.circles || []).forEach(sc => {
                 const c = (win.GlobalData.circles || []).find(x => x.id === sc.id);
                 if (c) Object.assign(c, sc);

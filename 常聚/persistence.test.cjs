@@ -90,3 +90,14 @@ test('load_without_snapshot_is_noop', () => {
     const baseCircles = s.window.GlobalData.circles.length;
     assert.equal(baseCircles, 3, '无存储时保留初始数据');
 });
+
+test('load_merges_seed_and_snapshot', () => {
+    // 快照只含 g1（旧数据）；种子新增 g5——恢复后两者都在（按 id 合并，快照覆盖同 id）
+    const storage = makeStorage({ 'cj.data': JSON.stringify({ gatherings: [{ id: 'g1', title: '快照版标题', photos: [], done: true }], circles: [], proposals: [], bills: [], notifications: [] }) });
+    const s = makeSandbox(storage);
+    const G = s.window.GlobalData;
+    const g1 = G.gatherings.find(g => g.id === 'g1');
+    const g5 = G.gatherings.find(g => g.id === 'g5');
+    assert.ok(g1 && g1.title === '快照版标题', '同 id 快照覆盖种子');
+    assert.ok(g5, '种子新增聚会保留（快照不整表覆盖）');
+});
