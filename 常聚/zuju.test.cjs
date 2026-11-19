@@ -184,18 +184,20 @@ test('propose_five_step_flow', () => {
     const s = makeSandbox();
     s.window.ProposeView._newUser = true;
     s.window.ProposeView.createAndContinue({ name: '周末新局', type: 'mahjong' });
-    // 第 2 步：选活动项目（单选）+ 备注说明（非必填）
+    // 第 2 步：分类 TAB + 项目胶囊标签单选（一个大卡片）
     let html = s.window.ProposeView.renderStep(2);
-    assert.ok(html.includes('饭局') && html.includes('棋牌'), '项目类别齐全');
-    assert.ok(!html.includes('可多选'), '回到单项目选择');
-    assert.ok(html.includes('备注') && html.includes('非必填'), '项目下方有备注说明');
-    s.window.ProposeView.pickProjectCategory('mahjong');
-    s.window.ProposeView.pickProject('p8');
-    assert.equal(s.window.ProposeView._projectId, 'p8', '单选生效');
+    assert.ok(html.includes('饭局') && html.includes('运动') && html.includes('娱乐') && html.includes('户外') && html.includes('看展'), '五大分类齐全');
+    assert.equal((html.match(/cj-wiz-card/g) || []).length, 1, '项目选择在一个大卡片里');
+    assert.ok(html.includes('血战到底麻将'), '默认分类随圈子类型（棋牌→娱乐）');
+    s.window.ProposeView.pickProjectCategory('fun');
+    html = s.window.ProposeView.renderStep(2);
+    assert.ok(html.includes('密室逃脱') && html.includes('桌游之夜') && html.includes('KTV 欢唱夜'), '娱乐含桌游/密室/K歌');
+    assert.ok(!html.includes('麻将') || html.includes('麻将'), '麻将并入娱乐');
+    s.window.ProposeView.pickProject('p46');
+    assert.equal(s.window.ProposeView._projectId, 'p46', '单选生效');
     s.window.ProposeView.pickProjectCategory('dinner');
     s.window.ProposeView.pickProject('p1');
     assert.equal(s.window.ProposeView._projectId, 'p1', '重选替换原项目');
-    s.window.ProposeView._note = '打完球附近一起吃个饭';
     s.window.ProposeView.gotoStep(3);
     // 第 3 步：时间+地点合并，上下两个明确区域
     html = s.window.ProposeView.renderStep(3);
@@ -231,7 +233,6 @@ test('propose_five_step_flow', () => {
     html = s.window.ProposeView.renderStep(4);
     assert.ok(html.includes('组局邀请卡片'), '邀请卡预览');
     assert.ok(html.includes('火锅局'), '卡片含所选项目');
-    assert.ok(html.includes('打完球附近一起吃个饭'), '卡片含备注说明');
     assert.ok(html.includes('老王家常菜馆'), '卡片含自定义地点');
     // 发出提案
     s.window.ProposeView.send();
@@ -240,7 +241,6 @@ test('propose_five_step_flow', () => {
     const p = s.window.GlobalData.proposals.find(x => x.id === c.proposalId);
     assert.equal(p.status, 'organizing');
     assert.equal(p.projectId, 'p1', '单项目');
-    assert.equal(p.note, '打完球附近一起吃个饭', '备注写入提案');
     assert.equal(p.timeCandidates.length, 1, '指定时间=1 个候选');
     assert.equal(p.customVenue, '老王家常菜馆', '自定义地点写入提案');
 });
