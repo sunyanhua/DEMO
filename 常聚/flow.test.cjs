@@ -201,7 +201,9 @@ test('flow_zuju_list_index', () => {
     assert.ok(html.indexOf('进行中') < html.indexOf('已完成'), '进行中在上、已完成在下');
     // 进行中卡：p1 提案（组局内容/时间/圈友）
     assert.ok(html.includes('血战到底麻将'), '进行中卡含组局内容');
-    assert.ok(html.includes('投票中'), '进行中卡含状态');
+    assert.ok(html.includes('组局中'), '进行中卡统一组局中状态');
+    assert.ok(!html.includes('投票中'), '不暴露投票中状态（投票=加入）');
+    assert.ok(html.includes('已加入'), '显示已加入名单');
     // 已完成卡：聚会记录
     assert.ok(html.includes('老王手气爆棚之夜'), '已完成卡含聚会记录');
     // 无组局时回到引导

@@ -84,7 +84,7 @@ window.IndexView = (function () {
             const sum = window.Zuju.voteSummary(p.id);
             const timeText = gathering ? gathering.time
                 : (sum.bestTime.winnerIndex !== null ? p.timeCandidates[sum.bestTime.winnerIndex] : (p.timeCandidates[0] || '时间待定'));
-            const venue = gathering ? (gathering.customVenue || (G.venues.find(v => v.id === gathering.venueId) || {}).name || '') : '地点投票中';
+            const venue = gathering ? (gathering.customVenue || (G.venues.find(v => v.id === gathering.venueId) || {}).name || '') : '地点待定';
             const voters = Object.keys(p.votes.time);
             const avatars = voters.map(id => {
                 const m = (circle && circle.members || []).find(x => x.id === id);
@@ -94,13 +94,13 @@ window.IndexView = (function () {
             return '<a class="cj-card" style="display:block;text-decoration:none" href="' + href + '">' +
                 '<div class="cj-row" style="justify-content:space-between">' +
                     '<span class="cj-title" style="font-size:15px">' + (circle ? circle.name : '') + '</span>' +
-                    '<span class="cj-pill ' + (decided ? 'cj-pill-due' : 'cj-pill-plain') + '">' + (decided ? '已定案' : '投票中') + '</span>' +
+                    '<span class="cj-pill cj-pill-due">组局中</span>' +
                 '</div>' +
                 '<div style="font-size:14px;font-weight:700;color:var(--ink);margin-top:8px">' + (project ? project.name : '聚会') + '</div>' +
                 '<div class="cj-sub" style="margin-top:5px">🕐 ' + timeText + ' · 📍 ' + venue + '</div>' +
                 '<div class="cj-row" style="justify-content:space-between;margin-top:10px">' +
                     '<div class="cj-avatars">' + avatars + '</div>' +
-                    '<span class="cj-sub">' + voters.length + ' 位圈友表态</span>' +
+                    '<span class="cj-sub">已加入 ' + voters.length + ' 人</span>' +
                 '</div>' +
             '</a>';
         }).join('');

@@ -163,6 +163,34 @@ window.GlobalData = {
             attendees: ['u1', 'm1', 'm2', 'm3', 'm4'],
             photos: ['images/moment-6.jpg'], done: true,
             buyMode: 'random', payerId: 'm4', billId: null
+        },
+        {
+            id: 'g5', circleId: 'c1', title: '老王的生日局', summary: '蛋糕藏到最后一刻',
+            projectId: 'p8', venueId: 'v3', time: '2026-09-06 18:30',
+            attendees: ['u1', 'm1', 'm2', 'm3', 'm4'],
+            photos: ['images/moment-7.jpg'], done: true,
+            buyMode: 'host', payerId: 'm1', billId: null
+        },
+        {
+            id: 'g6', circleId: 'c2', title: '五一同学会', summary: '十年不见，还是老样子',
+            projectId: 'p1', venueId: 'v5', time: '2026-05-02 12:00',
+            attendees: ['u1', 'm5', 'm6', 'm7'],
+            photos: ['images/moment-8.jpg'], done: true,
+            buyMode: 'aa', payerId: null, billId: null
+        },
+        {
+            id: 'g7', circleId: 'c3', title: '春季羽毛球局', summary: '开春第一拍',
+            projectId: 'p5', venueId: 'v11', time: '2026-08-15 10:00',
+            attendees: ['u1', 'm1', 'm2', 'm8', 'm9'],
+            photos: ['images/moment-5.jpg'], done: true,
+            buyMode: 'aa', payerId: null, billId: null
+        },
+        {
+            id: 'g8', circleId: 'c1', title: '跨年麻将夜', summary: '从去年打到今年',
+            projectId: 'p9', venueId: 'v1', time: '2026-01-01 20:00',
+            attendees: ['u1', 'm1', 'm3', 'm4'],
+            photos: ['images/moment-4.jpg'], done: true,
+            buyMode: 'random', payerId: 'm3', billId: null
         }
     ],
 
