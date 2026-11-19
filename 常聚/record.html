@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>常聚 · 聚会记录</title>
+    <link rel="stylesheet" href="tailwind.css">
+    <link rel="stylesheet" href="theme.css">
+</head>
+<body class="cj-theme">
+<div id="app" class="cj-page"></div>
+<script src="vendor/lucide.min.js"></script>
+<script src="data.js"></script>
+<script src="rotation.js"></script>
+<script src="common.js"></script>
+<script>
+window.RecordView = (function () {
+    const BUYMODE_BADGE = {
+        aa: 'AA 制',
+        random: '随机买单',
+        host: '有人请客'
+    };
+
+    function memberName(circle, id) {
+        const m = (circle.members || []).find(x => x.id === id);
+        return m ? m.name : '圈友';
+    }
+
+    function buyModeBadge(g, circle) {
+        const label = BUYMODE_BADGE[g.buyMode] || g.buyMode;
+        if (g.buyMode === 'random' && g.payerId) return '<span class="cj-pill cj-pill-due">' + label + ' · 本局由 ' + memberName(circle, g.payerId) + ' 买单</span>';
+        if (g.buyMode === 'host' && g.payerId) return '<span class="cj-pill cj-pill-due">' + memberName(circle, g.payerId) + ' 请客</span>';
+        return '<span class="cj-pill cj-pill-plain">' + label + '</span>';
+    }
+
+    function render(gatheringId) {
+        const G = window.GlobalData;
+        const g = G.gatherings.find(x => x.id === gatheringId);
+        if (!g) return window.Common.renderShell('聚会记录') + '<div class="cj-empty">记录不存在</div>';
+        const circle = G.circles.find(c => c.id === g.circleId);
+        const venue = G.venues.find(v => v.id === g.venueId);
+        const project = G.projects.find(p => p.id === g.projectId);
+        const hero = g.photos && g.photos[0] ? g.photos[0] : 'images/cover-1.png';
+        const photos = (g.photos || []).slice(1).map(p =>
+            '<img src="' + p + '" style="width:31%;aspect-ratio:4/3;border-radius:10px;object-fit:cover" alt="合影">').join('');
+        const attendees = (g.attendees || []).map(id => {
+            const m = (circle.members || []).find(x => x.id === id);
+            return m ? '<div class="cj-folk"><img src="' + m.avatarUrl + '" alt="' + m.name + '"><div class="cj-folk-name">' + m.name + '</div></div>' : '';
+        }).join('');
+        const comments = [
+            { name: '老王', text: '下次还来，手气不散！' },
+            { name: '小李', text: '已把照片存进相册，一年后回来看' }
+        ];
+        return window.Common.renderShell('聚会记录') +
+            '<div class="cj-px" style="padding-top:6px">' +
+                '<div class="cj-card" style="padding:10px 10px 0;overflow:hidden">' +
+                    '<img src="' + hero + '" style="width:100%;aspect-ratio:4/3;border-radius:12px;object-fit:cover" alt="合影">' +
+                    '<div class="cj-row" style="justify-content:space-between;padding:12px 6px 10px">' +
+                        '<div class="cj-title" style="font-size:18px">' + g.title + '</div>' +
+                        buyModeBadge(g, circle) +
+                    '</div>' +
+                '</div>' +
+                '<div class="cj-card">' +
+                    '<div class="cj-sub" style="margin-bottom:6px">' + g.time + ' · ' + (g.customVenue ? g.customVenue : (venue ? venue.name + ' · ' + venue.district + venue.businessArea : '')) + '</div>' +
+                    (project ? '<span class="cj-pill cj-pill-plain">' + project.name + '</span> ' : '') +
+                    (g.note ? '<span class="cj-pill cj-pill-plain">' + g.note + '</span> ' : '') +
+                    '<span class="cj-pill cj-pill-plain">出席 ' + (g.attendees || []).length + ' 人</span>' +
+                    (g.summary ? '<div style="font-size:14px;line-height:1.9;color:var(--body);margin-top:12px">' + g.summary + '</div>' : '') +
+                    '<div class="cj-folks" style="padding:14px 0 0">' + attendees + '</div>' +
+                '</div>' +
+                (photos ? '<div class="cj-card"><div class="cj-title" style="font-size:14px;margin-bottom:10px">更多合影</div><div style="display:flex;flex-wrap:wrap;gap:5px">' + photos + '</div></div>' : '') +
+                '<div class="cj-card">' +
+                    '<div class="cj-title" style="font-size:14px;margin-bottom:10px">留言</div>' +
+                    comments.map(c => '<div class="cj-note"><p>「' + c.text + '」</p><div class="cj-note-name">' + c.name + '</div></div>').join('') +
+                    '<div class="cj-row" style="gap:8px;margin-top:10px">' +
+                        '<input id="commentInput" style="flex:1;padding:10px;border:1px solid var(--line);border-radius:999px;font-size:13px;background:var(--cream)" placeholder="说点什么…">' +
+                        '<button class="cj-btn" style="padding:10px 16px" onclick="window.RecordView.comment()">留言</button>' +
+                    '</div>' +
+                '</div>' +
+                '<a class="cj-btn-outline" style="width:100%;padding:12px 0;text-decoration:none" href="ledger.html?gathering=' + g.id + '">去 AA 账本</a>' +
+                '<a class="cj-sub" style="display:block;text-align:center;margin-top:14px" href="circle.html?id=' + circle.id + '">回圈子 →</a>' +
+            '</div>' + window.Common.renderTabbar('circles');
+    }
+
+    function addPhoto() {
+        const g = window.GlobalData.gatherings.find(x => x.id === window.RecordView._gid);
+        if (!g) return;
+        g.photos = g.photos || [];
+        const next = 'images/moment-' + ((g.photos.length % 8) + 1) + '.jpg';
+        if (!g.photos.includes(next)) g.photos.push(next);
+        window.Common.save();
+        refresh();
+    }
+
+    function comment(text) {
+        const g = window.GlobalData.gatherings.find(x => x.id === window.RecordView._gid);
+        if (!g) return;
+        const input = document.getElementById('commentInput');
+        const t = text || (input && input.value) || '';
+        if (!t.trim()) { window.Common.showToast('写点什么吧'); return; }
+        g.comments = g.comments || [];
+        g.comments.push({ name: window.GlobalData.user.name, text: t.trim() });
+        window.Common.save();
+        window.Common.showToast('留言已记下');
+        refresh();
+    }
+
+    function refresh() {
+        document.getElementById('app').innerHTML = render(window.RecordView._gid);
+        if (window.lucide) window.lucide.createIcons();
+    }
+
+    return { render, addPhoto, comment };
+})();
+(function () {
+    const params = new URLSearchParams(window.location.search);
+    window.RecordView._gid = params.get('id') || 'g1';
+    document.getElementById('app').innerHTML = window.RecordView.render(window.RecordView._gid);
+})();
+window.Common.initIcons();
+window.Demo.mountFab();
+</script>
+</body>
+</html>

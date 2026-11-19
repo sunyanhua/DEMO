@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>常聚 · 表态</title>
+    <link rel="stylesheet" href="tailwind.css">
+    <link rel="stylesheet" href="theme.css">
+</head>
+<body class="cj-theme">
+<div id="app" class="cj-page"></div>
+<script src="vendor/lucide.min.js"></script>
+<script src="data.js"></script>
+<script src="rotation.js"></script>
+<script src="recommend.js"></script>
+<script src="common.js"></script>
+<script src="zuju.js"></script>
+<script>
+window.VoteView = (function () {
+    function proposalOf(id) {
+        return window.GlobalData.proposals.find(p => p.id === id);
+    }
+
+    function bestTimeBanner(p) {
+        const sum = window.Zuju.voteSummary(p.id);
+        if (sum.bestTime.winnerIndex === null) return '';
+        const n = sum.bestTime.attendance[sum.bestTime.winnerIndex];
+        return '<div class="cj-host-card" style="margin:4px 0 14px">' +
+            '<span class="cj-pill cj-pill-due">最齐时间</span> ' +
+            '<span style="font-weight:800;color:var(--ink)">' + p.timeCandidates[sum.bestTime.winnerIndex] + '</span>' +
+            '<span class="cj-sub"> · 已可出席 ' + n + ' 人</span></div>';
+    }
+
+    function render(proposalId) {
+        const p = proposalOf(proposalId);
+        if (!p) return window.Common.renderShell('表态') + '<div class="cj-empty">提案不存在</div>';
+        const G = window.GlobalData;
+        const circle = G.circles.find(c => c.id === p.circleId);
+        const sum = window.Zuju.voteSummary(p.id);
+        const timeMatrix = (circle.members || []).map(m => {
+            const cells = p.timeCandidates.map((t, i) => {
+                const v = p.votes.time[m.id] && p.votes.time[m.id][i];
+                if (m.id === 'u1') {
+                    const ok = v ? true : false;
+                    return '<span class="' + (ok ? 'cj-chip-warm' : 'cj-chip') + '" style="cursor:pointer" onclick="window.VoteView.toggleTime(' + i + ')">' + (ok ? '我可' : '我不行') + '</span>';
+                }
+                return '<span class="' + (v ? 'cj-chip-warm' : 'cj-chip') + '">' + (v ? '我可' : v === undefined ? '未表态' : '我不行') + '</span>';
+            }).join('');
+            return '<div class="cj-row" style="gap:6px;margin-bottom:8px">' +
+                '<img src="' + m.avatarUrl + '" style="width:26px;height:26px;border-radius:50%" alt="' + m.name + '">' +
+                '<span class="cj-sub" style="width:52px">' + m.name + '</span><span style="flex:1;display:flex;gap:6px;flex-wrap:wrap">' + cells + '</span>' +
+            '</div>';
+        }).join('');
+        const venues = p.venueIds.map(id => {
+            const v = G.venues.find(x => x.id === id);
+            const count = (sum.venueTally[id] || 0);
+            const mine = p.votes.venue['u1'] === id;
+            return '<span class="' + (mine ? 'cj-chip-warm' : 'cj-chip') + '" style="cursor:pointer" onclick="window.VoteView.voteVenue(\'' + id + '\')">' +
+                (v ? v.name : id) + ' · ' + count + ' 票' + (mine ? ' ✓' : '') + '</span>';
+        }).join('');
+        const projectPart = p.projectId === 'pending'
+            ? '<div class="cj-card"><div class="cj-title" style="font-size:14px;margin-bottom:10px">项目（待定，投票决定）</div>' +
+                G.projects.slice(0, 5).map(x =>
+                    '<span class="cj-chip" style="cursor:pointer;margin:0 6px 6px 0" onclick="window.VoteView.voteProject(\'' + x.id + '\')">' + x.name + '</span>').join('') +
+                '</div>'
+            : '';
+        return window.Common.renderShell('表态') +
+            '<div class="cj-px" style="padding-top:6px">' +
+                '<div class="cj-sub" style="margin-bottom:10px">「' + circle.name + '」的组局提案</div>' +
+                bestTimeBanner(p) +
+                '<div class="cj-card">' +
+                    '<div class="cj-title" style="font-size:14px;margin-bottom:12px">时间 · 点你行的时间</div>' +
+                    '<div class="cj-row" style="gap:6px;margin-bottom:8px"><span class="cj-sub" style="width:84px">候选</span>' +
+                        p.timeCandidates.map((t, i) => '<span class="cj-sub" style="flex:1">' + t.slice(5) + '</span>').join('') + '</div>' +
+                    timeMatrix +
+                '</div>' +
+                '<div class="cj-card">' +
+                    '<div class="cj-title" style="font-size:14px;margin-bottom:10px">地点 · 投一票</div>' +
+                    '<div style="display:flex;flex-wrap:wrap;gap:8px">' + venues + '</div>' +
+                    '<div class="cj-sub" style="margin-top:12px;cursor:pointer;text-decoration:underline" onclick="window.VoteView.follow()">随大流（跟多数）</div>' +
+                '</div>' +
+                projectPart +
+                '<button class="cj-btn cj-btn-block" onclick="window.VoteView.submit()">提交表态</button>' +
+                '<a class="cj-sub" style="display:block;text-align:center;margin-top:12px" href="event.html?proposal=' + p.id + '">看局详情 →</a>' +
+            '</div>' + window.Common.renderTabbar('zuju');
+    }
+
+    function curId() { return window.VoteView._pid; }
+    function toggleTime(i) {
+        const p = proposalOf(curId());
+        if (!p) return;
+        p.votes.time['u1'] = p.votes.time['u1'] || {};
+        p.votes.time['u1'][i] = !p.votes.time['u1'][i];
+        window.Common.save();
+        refresh();
+    }
+    function voteVenue(id) {
+        const p = proposalOf(curId());
+        if (!p) return;
+        p.votes.venue['u1'] = id;
+        window.Common.save();
+        refresh();
+    }
+    function voteProject(id) {
+        const p = proposalOf(curId());
+        if (!p) return;
+        p.votes.project = p.votes.project || {};
+        p.votes.project['u1'] = id;
+        window.Common.save();
+        refresh();
+    }
+    function follow() {
+        const p = proposalOf(curId());
+        if (!p) return;
+        const sum = window.Zuju.voteSummary(p.id);
+        if (sum.bestTime.winnerIndex !== null) {
+            p.votes.time['u1'] = { [sum.bestTime.winnerIndex]: true };
+        }
+        const top = Object.entries(sum.venueTally).sort((a, b) => b[1] - a[1])[0];
+        if (top) p.votes.venue['u1'] = top[0];
+        window.Common.save();
+        window.Common.showToast('已跟上大家的脚步');
+        refresh();
+    }
+    function submit(proposalId, votes) {
+        const id = proposalId || curId();
+        if (votes) window.Zuju.submitVotes(id, votes);
+        window.Common.showToast('表态已提交');
+        return window.GlobalData.proposals.find(p => p.id === id);
+    }
+    function refresh() {
+        document.getElementById('app').innerHTML = render(curId());
+        if (window.lucide) window.lucide.createIcons();
+    }
+
+    return { render, submit, toggleTime, voteVenue, voteProject, follow };
+})();
+(function () {
+    const params = new URLSearchParams(window.location.search);
+    window.VoteView._pid = params.get('proposal') || 'p1';
+    document.getElementById('app').innerHTML = window.VoteView.render(window.VoteView._pid);
+})();
+window.Common.initIcons();
+window.Demo.mountFab();
+</script>
+</body>
+</html>

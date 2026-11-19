@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>常聚 · 年度回顾</title>
+    <link rel="stylesheet" href="tailwind.css">
+    <link rel="stylesheet" href="theme.css">
+</head>
+<body class="cj-theme">
+<div id="app" class="cj-page"></div>
+<script src="vendor/lucide.min.js"></script>
+<script src="data.js"></script>
+<script src="rotation.js"></script>
+<script src="common.js"></script>
+<script>
+window.MemoryView = (function () {
+    function memberName(circle, id) {
+        const m = (circle.members || []).find(x => x.id === id);
+        return m ? m.name : '圈友';
+    }
+
+    // 年度统计
+    function stats(circleId) {
+        const G = window.GlobalData;
+        const circle = G.circles.find(c => c.id === circleId);
+        if (!circle) return null;
+        const list = (G.gatherings || [])
+            .filter(g => g.circleId === circleId)
+            .sort((a, b) => (a.time < b.time ? -1 : 1));
+        const venues = new Set(list.map(g => g.venueId));
+        const payCount = {};
+        (G.bills || []).forEach(b => {
+            if (!list.some(g => g.id === b.gatheringId)) return;
+            (b.entries || []).forEach(e => { payCount[e.payerId] = (payCount[e.payerId] || 0) + 1; });
+        });
+        let king = null;
+        Object.entries(payCount).forEach(([id, n]) => {
+            if (!king || n > king.count) king = { id, count: n };
+        });
+        const luckyG = [...list].reverse().find(g => g.buyMode === 'random' && g.payerId);
+        const photos = list.flatMap(g => g.photos || []);
+        return {
+            circle,
+            list,
+            count: list.length,
+            venueCount: venues.size,
+            first: list[0] || null,
+            last: list[list.length - 1] || null,
+            payKing: king ? { name: memberName(circle, king.id), count: king.count } : null,
+            lucky: luckyG ? memberName(circle, luckyG.payerId) : null,
+            photos
+        };
+    }
+
+    function statCard(label, big, sub) {
+        return '<div class="cj-card" style="text-align:center;padding:20px">' +
+            '<div class="cj-sub">' + label + '</div>' +
+            '<div style="font-size:34px;font-weight:800;color:var(--warm-deep);margin:8px 0 4px">' + big + '</div>' +
+            '<div class="cj-sub">' + sub + '</div></div>';
+    }
+
+    function render(circleId) {
+        const st = stats(circleId);
+        if (!st || !st.circle) return window.Common.renderShell('年度回顾') + '<div class="cj-empty">圈子不存在</div>';
+        const c = st.circle;
+        const cover = '<div style="text-align:center;padding:32px 16px 20px">' +
+            '<div class="cj-sub" style="letter-spacing:4px">常聚 · 年度回顾</div>' +
+            '<div class="cj-title" style="font-size:24px;margin:12px 0 8px">「' + c.name + '」</div>' +
+            '<div class="cj-slogan">常聚常伴，圈子不散</div>' +
+        '</div>';
+        if (st.count === 0) {
+            return window.Common.renderShell('年度回顾') + cover +
+                '<div class="cj-empty">还没有聚会记录<br>去组一局吧，明年的回顾从这里开始</div>' +
+                '<div class="cj-px" style="text-align:center"><a class="cj-btn" style="text-decoration:none" href="circle.html?id=' + c.id + '">去组一局</a></div>' +
+                window.Common.renderTabbar('circles');
+        }
+        const wall = st.photos.map((p, i) =>
+            '<div class="cj-pola ' + (i % 2 === 0 ? 'cj-pola-r1' : 'cj-pola-r2') + '" style="margin:0 4px 14px;width:46%">' +
+                '<img src="' + p + '" alt="合影"><div class="cj-tape"></div>' +
+            '</div>').join('');
+        const cards =
+            '<div class="cj-px" style="padding-top:6px">' +
+                statCard('这一年', st.count + ' 次', '我们聚了 ' + st.count + ' 次') +
+                statCard('一起走过', st.venueCount + ' 个', '老地方') +
+                '<div class="cj-card"><div class="cj-sub">第一场</div><div class="cj-title" style="margin-top:6px">' + st.first.title + '</div><div class="cj-sub" style="margin-top:6px">' + st.first.time + '</div></div>' +
+                '<div class="cj-card"><div class="cj-sub">最后一场</div><div class="cj-title" style="margin-top:6px">' + st.last.title + '</div><div class="cj-sub" style="margin-top:6px">' + st.last.time + '</div></div>' +
+                (st.payKing ? '<div class="cj-card"><div class="cj-sub">垫付之王</div><div class="cj-title" style="margin-top:6px">' + st.payKing.name + '</div><div class="cj-sub" style="margin-top:6px">垫付 ' + st.payKing.count + ' 次，都是爱</div></div>' : '') +
+                (st.lucky ? '<div class="cj-card"><div class="cj-sub">随机买单幸运儿</div><div class="cj-title" style="margin-top:6px">' + st.lucky + '</div><div class="cj-sub" style="margin-top:6px">转盘选中，缘分买单</div></div>' : '') +
+                '<div class="cj-section-head"><b>我们的合影</b></div>' +
+                '<div style="display:flex;flex-wrap:wrap;justify-content:space-between">' + wall + '</div>' +
+                '<div style="text-align:center;padding:6px 0 20px">' +
+                    '<button class="cj-btn" onclick="window.Common.showToast(\'明年，常聚常伴\')">明年常聚</button>' +
+                '</div>' +
+            '</div>';
+        return window.Common.renderShell('年度回顾') + cover + cards + window.Common.renderTabbar('circles');
+    }
+
+    return { render, stats };
+})();
+(function () {
+    const params = new URLSearchParams(window.location.search);
+    document.getElementById('app').innerHTML = window.MemoryView.render(params.get('circle') || 'c1');
+})();
+window.Common.initIcons();
+window.Demo.mountFab();
+</script>
+</body>
+</html>

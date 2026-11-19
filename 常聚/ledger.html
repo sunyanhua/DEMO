@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>常聚 · AA 账本</title>
+    <link rel="stylesheet" href="tailwind.css">
+    <link rel="stylesheet" href="theme.css">
+</head>
+<body class="cj-theme">
+<div id="app" class="cj-page"></div>
+<script src="vendor/lucide.min.js"></script>
+<script src="data.js"></script>
+<script src="rotation.js"></script>
+<script src="settle.js"></script>
+<script src="common.js"></script>
+<script>
+window.LedgerView = (function () {
+    function gatheringOf(id) { return window.GlobalData.gatherings.find(g => g.id === id); }
+
+    // 账单：有则取，无则懒建
+    function getBill(gatheringId) {
+        const G = window.GlobalData;
+        const g = gatheringOf(gatheringId);
+        if (!g) return null;
+        let bill = G.bills.find(b => b.id === g.billId);
+        if (!bill) {
+            bill = { id: 'b-' + Date.now().toString(36), gatheringId, entries: [], settled: {} };
+            G.bills.push(bill);
+            g.billId = bill.id;
+            window.Common.save();
+        }
+        return bill;
+    }
+
+    function memberName(circle, id) {
+        const m = (circle.members || []).find(x => x.id === id);
+        return m ? m.name : '圈友';
+    }
+
+    function addEntry(gatheringId, entry) {
+        const bill = getBill(gatheringId);
+        if (!bill) return null;
+        const next = window.Settle.addEntry(bill, entry);
+        Object.assign(bill, next);
+        window.Common.save();
+        return bill;
+    }
+
+    // 买单方式：aa / random（转盘，rng 可注入）/ host（指定请客）
+    function setBuyMode(gatheringId, mode, opts) {
+        const G = window.GlobalData;
+        const g = gatheringOf(gatheringId);
+        if (!g) return;
+        const circle = G.circles.find(c => c.id === g.circleId);
+        const memberIds = (circle.members || []).map(m => m.id);
+        g.buyMode = mode;
+        if (mode === 'random') {
+            g.payerId = window.Settle.drawPayer({ memberIds, rng: (opts && opts.rng) || Math.random });
+        } else if (mode === 'host') {
+            g.payerId = (opts && opts.payerId) || 'u1';
+        } else {
+            g.payerId = null;
+        }
+        window.Common.save();
+        return g;
+    }
+
+    function markSettled(gatheringId, userId) {
+        const bill = getBill(gatheringId);
+        if (!bill) return;
+        bill.settled = { ...(bill.settled || {}), [userId]: true };
+        window.Common.save();
+    }
+
+    function wheelSVG(circle) {
+        const names = (circle.members || []).map(m => m.name);
+        const n = names.length;
+        const colors = ['#E08A3C', '#F9EBD8', '#E08A3C', '#F9EBD8', '#E08A3C', '#F9EBD8'];
+        let segs = '';
+        for (let i = 0; i < n; i++) {
+            const a0 = (i / n) * 2 * Math.PI - Math.PI / 2;
+            const a1 = ((i + 1) / n) * 2 * Math.PI - Math.PI / 2;
+            const x0 = 60 + 56 * Math.cos(a0), y0 = 60 + 56 * Math.sin(a0);
+            const x1 = 60 + 56 * Math.cos(a1), y1 = 60 + 56 * Math.sin(a1);
+            segs += '<path d="M60 60 L' + x0 + ' ' + y0 + ' A56 56 0 0 1 ' + x1 + ' ' + y1 + ' Z" fill="' + colors[i % colors.length] + '"></path>';
+        }
+        return '<svg viewBox="0 0 120 120" style="width:120px;height:120px" id="wheelSvg">' +
+            segs +
+            '<circle cx="60" cy="60" r="8" fill="#3B2E22"></circle>' +
+            '<path d="M60 2 L64 14 L56 14 Z" fill="#3B2E22"></path>' +
+        '</svg>';
+    }
+
+    function stateBadge(bill) {
+        const state = window.Settle.billState({ bill, settled: bill.settled });
+        const total = Object.keys(bill.settled || {}).length;
+        if (state === 'settled') return '<span class="cj-pill cj-pill-plain">已结清 ✓</span>';
+        const members = new Set();
+        (bill.entries || []).forEach(e => (e.participants || []).forEach(p => members.add(p)));
+        const left = Math.max(0, members.size - total);
+        return '<span class="cj-pill cj-pill-due">还有 ' + left + ' 笔没结清，不着急，记得就行</span>';
+    }
+
+    function render(gatheringId) {
+        const G = window.GlobalData;
+        const g = gatheringOf(gatheringId);
+        if (!g) return window.Common.renderShell('AA 账本') + '<div class="cj-empty">聚会不存在</div>';
+        const circle = G.circles.find(c => c.id === g.circleId);
+        const bill = getBill(gatheringId);
+        const memberIds = (circle.members || []).map(m => m.id);
+        const shares = window.Settle.computeShares({ entries: bill.entries, memberIds });
+        const transfers = window.Settle.consolidate(shares);
+        const entriesHTML = (bill.entries || []).map(e =>
+            '<div class="cj-ticket">' +
+                '<div class="cj-row" style="justify-content:space-between">' +
+                    '<div><div class="cj-title" style="font-size:13px">' + e.title + '</div>' +
+                    '<div class="cj-sub" style="margin-top:3px">' + memberName(circle, e.payerId) + ' 垫付 · ' + (e.participants || []).length + ' 人摊</div></div>' +
+                    '<div style="font-size:18px;font-weight:800;color:var(--warm-deep)">¥' + e.amount + '</div>' +
+                '</div>' +
+                '<div class="cj-tear"></div>' +
+                '<div class="cj-row" style="justify-content:space-between">' +
+                    '<span class="cj-sub">人均</span>' +
+                    '<span style="font-weight:800;color:var(--warm-deep)">¥' + Math.round(e.amount / (e.participants || []).length * 100) / 100 + '</span>' +
+                '</div>' +
+            '</div>').join('') || '<div class="cj-sub" style="padding:8px 0">还没有账单，记下第一笔吧</div>';
+        const transferHTML = transfers.map(t =>
+            '<div class="cj-row cj-transfer" style="justify-content:space-between;padding:6px 0">' +
+                '<span class="cj-sub">' + memberName(circle, t.from) + ' → ' + memberName(circle, t.to) + '</span>' +
+                '<span style="font-weight:800">¥' + t.amount + '</span></div>').join('');
+        const host = (circle.members || []).find(m => m.id === g.payerId);
+        const buyLabel = g.buyMode === 'random' ? '随机买单 · ' + (host ? host.name + ' 中奖' : '') :
+            g.buyMode === 'host' ? (host ? host.name + ' 请客' : '指定买单') : 'AA 均摊';
+        return window.Common.renderShell('AA 账本') +
+            '<div class="cj-px" style="padding-top:6px">' +
+                '<div class="cj-card">' +
+                    '<div class="cj-row" style="justify-content:space-between">' +
+                        '<div class="cj-title" style="font-size:16px">' + g.title + '</div>' + stateBadge(bill) +
+                    '</div>' +
+                    '<div class="cj-sub" style="margin-top:8px">买单方式：' + buyLabel + '</div>' +
+                    '<div class="cj-row" style="gap:8px;margin-top:10px;flex-wrap:wrap">' +
+                        '<span class="' + (g.buyMode === 'aa' ? 'cj-chip-warm' : 'cj-chip') + '" style="cursor:pointer" onclick="window.LedgerView.setBuyMode(\'' + g.id + '\',\'aa\')">均摊 AA</span>' +
+                        '<span class="' + (g.buyMode === 'random' ? 'cj-chip-warm' : 'cj-chip') + '" style="cursor:pointer" onclick="window.LedgerView.spinWheel()">🎡 随机买单</span>' +
+                        '<span class="' + (g.buyMode === 'host' ? 'cj-chip-warm' : 'cj-chip') + '" style="cursor:pointer" onclick="window.LedgerView.setBuyMode(\'' + g.id + '\',\'host\',{payerId:\'u1\'})">请客</span>' +
+                    '</div>' +
+                    '<div id="wheelArea" style="text-align:center;margin-top:10px">' + (g.buyMode === 'random' ? wheelSVG(circle) : '') + '</div>' +
+                '</div>' +
+                '<div class="cj-section-head"><b>账单</b></div>' +
+                entriesHTML +
+                '<div class="cj-card" style="margin-top:4px">' +
+                    '<div class="cj-row" style="gap:8px">' +
+                        '<input id="entryTitle" style="flex:1;padding:10px;border:1px solid var(--line);border-radius:999px;font-size:13px;background:var(--cream)" placeholder="记一笔（如：酒水）">' +
+                        '<input id="entryAmount" style="width:76px;padding:10px;border:1px solid var(--line);border-radius:999px;font-size:13px;background:var(--cream)" placeholder="金额">' +
+                        '<button class="cj-btn" style="padding:10px 14px" onclick="window.LedgerView.submitEntry()">记一笔</button>' +
+                    '</div>' +
+                '</div>' +
+                '<div class="cj-card">' +
+                    '<div class="cj-title" style="font-size:14px;margin-bottom:8px">结算清单（最少转账）</div>' +
+                    transferHTML || '<div class="cj-sub">账目已平，没有待结清的</div>' +
+                    '<div class="cj-sub" style="margin-top:8px">转账走微信，转完回来点"已转账"</div>' +
+                    '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px">' +
+                        memberIds.map(id =>
+                            '<span class="' + (bill.settled[id] ? 'cj-chip' : 'cj-chip-warm') + '" style="cursor:pointer" onclick="window.LedgerView.markSettled(\'' + g.id + '\',\'' + id + '\')">' +
+                            memberName(circle, id) + (bill.settled[id] ? ' 已转账 ✓' : ' 点我=已转账') + '</span>').join('') +
+                    '</div>' +
+                '</div>' +
+                '<a class="cj-sub" style="display:block;text-align:center;margin-top:14px" href="record.html?id=' + g.id + '">回聚会记录 →</a>' +
+            '</div>' + window.Common.renderTabbar('circles');
+    }
+
+    function spinWheel() {
+        const g = gatheringOf(window.LedgerView._gid);
+        if (!g) return;
+        setBuyMode(g.id, 'random', {});
+        window.Common.showToast('转盘已停：' + memberName(window.GlobalData.circles.find(c => c.id === g.circleId), g.payerId) + ' 买单');
+        refresh();
+    }
+
+    function submitEntry() {
+        const g = gatheringOf(window.LedgerView._gid);
+        if (!g) return;
+        const titleEl = document.getElementById('entryTitle');
+        const amountEl = document.getElementById('entryAmount');
+        const circle = window.GlobalData.circles.find(c => c.id === g.circleId);
+        const memberIds = (circle.members || []).map(m => m.id);
+        const title = titleEl && titleEl.value ? titleEl.value.trim() : '';
+        const amount = Number(amountEl && amountEl.value);
+        if (!title) { window.Common.showToast('写个名目吧'); return; }
+        if (!amount || amount <= 0) { window.Common.showToast('金额要大于 0'); return; }
+        addEntry(g.id, { title, amount, payerId: 'u1', participants: memberIds });
+        refresh();
+    }
+
+    function refresh() {
+        document.getElementById('app').innerHTML = render(window.LedgerView._gid);
+        if (window.lucide) window.lucide.createIcons();
+    }
+
+    return { render, getBill, addEntry, setBuyMode, markSettled, spinWheel, submitEntry };
+})();
+(function () {
+    const params = new URLSearchParams(window.location.search);
+    window.LedgerView._gid = params.get('gathering') || 'g2';
+    document.getElementById('app').innerHTML = window.LedgerView.render(window.LedgerView._gid);
+})();
+window.Common.initIcons();
+window.Demo.mountFab();
+</script>
+</body>
+</html>

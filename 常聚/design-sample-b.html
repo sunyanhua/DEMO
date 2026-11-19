@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>常聚 · 方案B样张（炉边·温润质感）</title>
+<style>
+/* ============ 方案 B · 炉边温润质感 — 设计令牌 ============ */
+:root {
+    --cream: #FBF4E8;      /* 奶油底 */
+    --cream-deep: #F6E8D4; /* 暖杏（渐变尾） */
+    --card: #FFFFFF;
+    --ink: #3B2E22;       /* 墨棕 */
+    --body: #6B5A48;
+    --caption: #A58C70;
+    --line: #EFE2CD;
+    --warm: #E08A3C;      /* 焦糖橙主色 */
+    --warm-deep: #C97226;
+    --warm-soft: #F9EBD8;
+    --seal: #C4502A;      /* 印章红 */
+    --radius: 20px;
+    --shadow: 0 10px 28px -12px rgba(107, 76, 41, 0.28);
+    --sans: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    background: #EDE4D5;
+    font-family: var(--sans);
+    color: var(--body);
+    padding: 32px 0 64px;
+}
+.sheet-label {
+    text-align: center; font-size: 13px; color: #7A7163;
+    letter-spacing: 4px; margin: 44px 0 14px;
+}
+.sheet-label:first-of-type { margin-top: 0; }
+/* 手机屏：奶油→暖杏的极淡渐变 + 噪点 */
+.screen {
+    width: 375px; margin: 0 auto; position: relative; overflow: hidden;
+    background: linear-gradient(180deg, var(--cream) 0%, var(--cream-deep) 130%);
+    border: 1px solid var(--line); border-radius: 28px;
+    box-shadow: 0 28px 56px -28px rgba(59,46,34,0.35);
+}
+.screen::before {  /* 细噪点 */
+    content: ''; position: absolute; inset: 0; pointer-events: none; opacity: 0.35; mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/><feColorMatrix type='saturate' values='0'/></filter><rect width='120' height='120' filter='url(%23n)' opacity='0.05'/></svg>");
+}
+.screen > * { position: relative; }
+.pad { padding: 0 20px; }
+
+/* 顶栏 */
+.topbar { display: flex; align-items: center; justify-content: space-between; padding: 24px 20px 14px; }
+.wordmark { font-size: 22px; font-weight: 800; color: var(--ink); letter-spacing: 1px; }
+.wordmark::after { content: '·'; color: var(--warm); margin-left: 4px; }
+.slogan-chip { font-size: 11px; color: var(--warm-deep); background: var(--warm-soft);
+    border-radius: 999px; padding: 6px 12px; font-weight: 600; }
+.cityline { padding: 0 20px 12px; font-size: 12px; color: var(--caption); font-weight: 600; }
+
+/* 圈子卡 */
+.circle-card { display: flex; gap: 14px; align-items: center; background: var(--card);
+    border-radius: var(--radius); padding: 14px; margin-bottom: 12px;
+    box-shadow: var(--shadow); border: 1px solid rgba(239,226,205,0.7); }
+.circle-card img { width: 58px; height: 58px; border-radius: 14px; object-fit: cover; }
+.circle-name { font-size: 16px; font-weight: 800; color: var(--ink); margin-bottom: 5px; }
+.pill { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600;
+    border-radius: 999px; padding: 4px 10px; }
+.pill.due { background: var(--warm-soft); color: var(--warm-deep); }
+.pill.plain { background: #F6F1E8; color: var(--caption); }
+.chevron { color: var(--caption); font-size: 15px; margin-left: auto; }
+
+/* 当值张罗卡（渐变 + 进度） */
+.host-card { margin: 4px 20px 14px; border-radius: var(--radius); padding: 16px;
+    background: linear-gradient(135deg, #FBE7CD 0%, #F6D9B6 100%);
+    box-shadow: var(--shadow); border: 1px solid #F0D3A8; }
+.host-row { display: flex; align-items: center; gap: 12px; }
+.host-card img { width: 46px; height: 46px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 4px 10px -4px rgba(107,76,41,0.4); }
+.host-label { font-size: 11px; color: #9A6B32; font-weight: 700; letter-spacing: 2px; }
+.host-name { font-size: 16px; font-weight: 800; color: var(--ink); margin-top: 2px; }
+.host-days { margin-left: auto; text-align: right; }
+.host-days b { font-size: 20px; color: var(--warm-deep); display: block; }
+.host-days span { font-size: 11px; color: #9A6B32; }
+.progress { height: 6px; background: rgba(255,255,255,0.7); border-radius: 999px; margin-top: 12px; overflow: hidden; }
+.progress i { display: block; height: 100%; width: 64%; border-radius: 999px;
+    background: linear-gradient(90deg, var(--warm), var(--warm-deep)); }
+
+/* 拍立得时间轴 */
+.section-head { display: flex; align-items: center; gap: 10px; padding: 6px 20px 12px; }
+.section-head b { font-size: 15px; color: var(--ink); font-weight: 800; }
+.section-head::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+.pola { background: var(--card); padding: 10px 10px 0; border-radius: 10px;
+    box-shadow: var(--shadow); margin: 0 8px 18px; }
+.pola.r1 { transform: rotate(-1.6deg); }
+.pola.r2 { transform: rotate(1.4deg); }
+.pola img { width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: 6px; display: block; }
+.pola .tape { width: 56px; height: 14px; background: rgba(224,138,60,0.5); border-radius: 2px; margin: -7px auto 0; position: relative; }
+.pola .pola-cap { padding: 10px 6px 12px; text-align: left; }
+.pola .pola-date { font-size: 10px; color: var(--caption); font-weight: 600; letter-spacing: 1px; }
+.pola .pola-title { font-size: 14px; font-weight: 800; color: var(--ink); margin-top: 3px; }
+
+/* 圈友 */
+.folks { display: flex; gap: 14px; padding: 2px 20px 4px; }
+.folk { text-align: center; }
+.folk img { width: 46px; height: 46px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 4px 10px -4px rgba(107,76,41,0.35); }
+.folk .fname { font-size: 11px; color: var(--body); font-weight: 600; margin-top: 5px; }
+
+/* 按钮 */
+.btn { display: flex; align-items: center; justify-content: center; width: 100%; border: none;
+    background: linear-gradient(135deg, var(--warm) 0%, var(--warm-deep) 100%);
+    color: #FFF9F0; border-radius: 999px; font-size: 15px; font-weight: 800; letter-spacing: 2px;
+    padding: 15px 0; cursor: pointer; box-shadow: 0 12px 24px -10px rgba(201,114,38,0.55); }
+.btn-outline { background: var(--card); color: var(--warm-deep); border: 1.5px solid var(--warm);
+    box-shadow: var(--shadow); }
+.cta-zone { padding: 20px 20px 24px; }
+
+/* 悬浮药丸 tabbar */
+.tabbar-wrap { position: relative; padding: 0 20px 22px; }
+.tabbar { display: flex; background: #FFFDF8; border-radius: 999px; padding: 6px;
+    box-shadow: var(--shadow); border: 1px solid var(--line); }
+.tab { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
+    padding: 9px 0; font-size: 10px; color: var(--caption); font-weight: 600; border-radius: 999px; }
+.tab i { width: 18px; height: 18px; }
+.tab.active { color: var(--warm-deep); background: var(--warm-soft); font-weight: 800; }
+
+/* 记录页 */
+.hero-photo { margin: 4px 20px 0; border-radius: var(--radius); overflow: hidden;
+    box-shadow: var(--shadow); }
+.hero-photo img { width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; }
+.record-title { font-size: 22px; font-weight: 800; color: var(--ink); padding: 16px 20px 0; }
+.record-meta { padding: 6px 20px 0; font-size: 12px; color: var(--caption); font-weight: 600; }
+.badges { display: flex; gap: 8px; padding: 12px 20px 0; }
+.badge { font-size: 11px; font-weight: 700; padding: 5px 12px; border-radius: 999px; }
+.badge.accent { background: var(--warm-soft); color: var(--warm-deep); }
+.badge.plain { background: #F6F1E8; color: var(--caption); }
+.record-sum { padding: 12px 20px 0; font-size: 14px; line-height: 1.9; color: var(--body); }
+
+/* 票券（AA） */
+.ticket { position: relative; margin: 14px 20px 0; background: var(--card);
+    border-radius: 16px; box-shadow: var(--shadow); padding: 14px 16px;
+    border: 1px solid var(--line); overflow: hidden; }
+.ticket::before, .ticket::after {  /* 撕票缺口圆 */
+    content: ''; position: absolute; width: 20px; height: 20px; border-radius: 50%;
+    background: var(--cream-deep); border: 1px solid var(--line); top: 50%; transform: translateY(-50%); }
+.ticket::before { left: -11px; } .ticket::after { right: -11px; }
+.ticket .tk-row { display: flex; align-items: center; justify-content: space-between; }
+.ticket .tk-title { font-size: 13px; font-weight: 800; color: var(--ink); }
+.ticket .tk-sub { font-size: 11px; color: var(--caption); font-weight: 600; margin-top: 3px; }
+.ticket .tk-amt { font-size: 18px; font-weight: 800; color: var(--warm-deep); }
+.ticket .tear { border-top: 1.5px dashed #E5D5B8; margin: 12px 0 10px; }
+/* 印章 */
+.seal { display: inline-block; font-size: 11px; font-weight: 800; color: var(--seal);
+    border: 2px solid var(--seal); border-radius: 6px; padding: 3px 8px; letter-spacing: 2px;
+    transform: rotate(-6deg); opacity: 0.9; }
+
+/* 便签留言 */
+.notes { padding: 4px 20px 0; }
+.note { background: #FDF3D8; border-radius: 12px 12px 12px 2px; padding: 12px 14px;
+    margin-bottom: 12px; box-shadow: 0 6px 14px -8px rgba(107,76,41,0.3); position: relative; }
+.note p { font-size: 13px; color: var(--ink); font-weight: 600; line-height: 1.6; }
+.note .nname { font-size: 11px; color: #A58C70; margin-top: 6px; }
+</style>
+</head>
+<body>
+
+<div class="sheet-label">屏幕 1 · 圈子列表</div>
+<div class="screen">
+    <div class="topbar">
+        <span class="wordmark">常聚</span>
+        <span class="slogan-chip">常聚常伴，圈子不散</span>
+    </div>
+    <div class="cityline">北京 · 3 个圈子</div>
+    <div class="pad">
+        <div class="circle-card">
+            <img src="images/moment-2.jpg" alt="">
+            <div>
+                <div class="circle-name">周五麻将局</div>
+                <span class="pill plain">麻将 · 5 位圈友</span>&nbsp;<span class="pill due">提案进行中</span>
+            </div>
+            <span class="chevron">›</span>
+        </div>
+        <div class="circle-card">
+            <img src="images/moment-3.jpg" alt="">
+            <div>
+                <div class="circle-name">老同学</div>
+                <span class="pill plain">饭局 · 4 位圈友</span>&nbsp;<span class="pill plain">11月15日刚聚过</span>
+            </div>
+            <span class="chevron">›</span>
+        </div>
+        <div class="circle-card">
+            <img src="images/moment-5.jpg" alt="">
+            <div>
+                <div class="circle-name">周末球局</div>
+                <span class="pill plain">球局 · 5 位圈友</span>&nbsp;<span class="pill due">58 天没聚，该张罗啦</span>
+            </div>
+            <span class="chevron">›</span>
+        </div>
+    </div>
+    <div class="tabbar-wrap"><div class="tabbar">
+        <div class="tab active"><i data-lucide="users"></i>圈子</div>
+        <div class="tab"><i data-lucide="bell"></i>消息</div>
+        <div class="tab"><i data-lucide="user"></i>我的</div>
+    </div></div>
+</div>
+
+<div class="sheet-label">屏幕 2 · 圈子主页</div>
+<div class="screen">
+    <div class="topbar">
+        <span class="wordmark" style="font-size:19px">周五麻将局</span>
+        <span class="slogan-chip">5 位圈友</span>
+    </div>
+    <div class="host-card">
+        <div class="host-row">
+            <img src="images/avatar-2.png" alt="">
+            <div>
+                <div class="host-label">当值张罗</div>
+                <div class="host-name">老王</div>
+            </div>
+            <div class="host-days"><b>5 天</b><span>距下次相聚</span></div>
+        </div>
+        <div class="progress"><i></i></div>
+    </div>
+    <div class="section-head"><b>记忆时间轴</b></div>
+    <div class="pola r1">
+        <img src="images/moment-2.jpg" alt=""><div class="tape"></div>
+        <div class="pola-cap">
+            <div class="pola-date">11月8日 · 上一次聚会</div>
+            <div class="pola-title">老王手气爆棚之夜</div>
+        </div>
+    </div>
+    <div class="pola r2">
+        <img src="images/moment-1.jpg" alt=""><div class="tape"></div>
+        <div class="pola-cap">
+            <div class="pola-date">10月11日</div>
+            <div class="pola-title">第一次麻将局 · 三缺一开局</div>
+        </div>
+    </div>
+    <div class="section-head"><b>圈友</b></div>
+    <div class="folks">
+        <div class="folk"><img src="images/avatar-1.png" alt=""><div class="fname">阿Sun</div></div>
+        <div class="folk"><img src="images/avatar-2.png" alt=""><div class="fname">老王</div></div>
+        <div class="folk"><img src="images/avatar-3.png" alt=""><div class="fname">小李</div></div>
+        <div class="folk"><img src="images/avatar-4.png" alt=""><div class="fname">大周</div></div>
+        <div class="folk"><img src="images/avatar-5.png" alt=""><div class="fname">阿婷</div></div>
+    </div>
+    <div class="cta-zone"><button class="btn">张罗个局</button></div>
+    <div class="tabbar-wrap"><div class="tabbar">
+        <div class="tab active"><i data-lucide="users"></i>圈子</div>
+        <div class="tab"><i data-lucide="bell"></i>消息</div>
+        <div class="tab"><i data-lucide="user"></i>我的</div>
+    </div></div>
+</div>
+
+<div class="sheet-label">屏幕 3 · 聚会记录</div>
+<div class="screen">
+    <div class="topbar">
+        <span class="wordmark" style="font-size:19px">聚会记录</span>
+        <span class="slogan-chip">老同学</span>
+    </div>
+    <div class="hero-photo"><img src="images/moment-3.jpg" alt=""></div>
+    <div class="record-title">毕业十年，一个没少</div>
+    <div class="record-meta">2026年11月15日 · 西单烤鸭坊</div>
+    <div class="badges">
+        <span class="badge accent">AA 制</span>
+        <span class="badge plain">烤鸭宴</span>
+        <span class="badge plain">出席 4 人</span>
+    </div>
+    <div class="record-sum">十年之约，下次还聚。散场时大家说好：下一场，一个都不能少。</div>
+    <div class="ticket">
+        <div class="tk-row">
+            <div>
+                <div class="tk-title">烤鸭宴餐费</div>
+                <div class="tk-sub">老赵 垫付 · 4 人摊</div>
+            </div>
+            <div class="tk-amt">¥680</div>
+        </div>
+        <div class="tear"></div>
+        <div class="tk-row">
+            <div><span class="tk-title">人均</span> <span class="tk-sub">AA 均摊</span></div>
+            <div><span class="tk-amt">¥170</span> <span class="seal">已结清</span></div>
+        </div>
+    </div>
+    <div class="section-head" style="margin-top:16px"><b>留言</b></div>
+    <div class="notes">
+        <div class="note"><p>「下次还来，手气不散！」</p><div class="nname">老王 · 11月15日</div></div>
+        <div class="note"><p>「已把照片存进相册，一年后回来看。」</p><div class="nname">小李 · 11月15日</div></div>
+    </div>
+    <div class="cta-zone"><button class="btn btn-outline">去 AA 账本</button></div>
+    <div class="tabbar-wrap"><div class="tabbar">
+        <div class="tab active"><i data-lucide="users"></i>圈子</div>
+        <div class="tab"><i data-lucide="bell"></i>消息</div>
+        <div class="tab"><i data-lucide="user"></i>我的</div>
+    </div></div>
+</div>
+
+<div class="sheet-label">设计令牌 · 方案B（节选）</div>
+<div class="screen" style="padding:26px 20px;font-size:13px;line-height:2.1">
+    <b style="color:var(--ink)">色彩</b>：奶油 #FBF4E8→暖杏渐变 + 噪点 · 焦糖橙 #E08A3C 主色 · 墨棕 #3B2E22 · 印章红 #C4502A<br>
+    <b style="color:var(--ink)">卡片语言</b>：大圆角白卡 + 暖调软阴影；拍立得时间轴（微旋转+胶带）；票券式 AA（撕边虚线+缺口+印章）；便签留言<br>
+    <b style="color:var(--ink)">组件</b>：悬浮药丸 tabbar（icon+标签）；渐变进度条；胶囊徽章<br>
+    <b style="color:var(--ink)">动画记忆点</b>：散场抽签木签筒 · 入圈头像依次点亮 · 转盘（已有）
+</div>
+
+<script src="vendor/lucide.min.js"></script>
+<script>if (window.lucide) lucide.createIcons();</script>
+</body>
+</html>

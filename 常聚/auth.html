@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>常聚 · 手机号授权</title>
+    <link rel="stylesheet" href="theme.css">
+</head>
+<body class="cj-theme cj-wizard">
+<div id="app" class="cj-page"></div>
+<script src="vendor/lucide.min.js"></script>
+<script src="data.js"></script>
+<script src="common.js"></script>
+<script>
+window.AuthView = (function () {
+    function maskedPhone() {
+        const p = String(window.GlobalData.user.phone || '');
+        return p ? p.slice(0, 3) + ' **** ' + p.slice(-4) : '';
+    }
+
+    function render() {
+        return '<div class="cj-popup-mask">' +
+            '<div class="cj-popup" onclick="event.stopPropagation()">' +
+                '<div style="width:48px;height:48px;margin:0 auto 12px;border-radius:12px;background:linear-gradient(135deg,#E08A3C,#C97226);color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800">聚</div>' +
+                '<h3 class="cj-popup-title">申请获取你的手机号</h3>' +
+                '<div style="font-size:12px;color:#4B5563;line-height:1.7;text-align:center">常聚需要获取你的手机号，用于注册账号和圈友身份识别。手机号仅用于本平台登录，请放心授权。</div>' +
+                '<div style="margin:14px auto 0;padding:12px 20px;background:#F9FAFB;border:1px solid #E5E7EB;border-radius:12px;display:inline-block;font-size:17px;font-weight:700;color:#111827;letter-spacing:1px">' + maskedPhone() + '</div>' +
+                '<div style="margin-top:16px">' +
+                    '<button class="cj-btn-grad" onclick="window.AuthView.allow()">允许</button>' +
+                '</div>' +
+                '<div style="text-align:center;margin-top:12px"><span style="font-size:13px;color:#9CA3AF;cursor:pointer" onclick="window.AuthView.deny()">不同意</span></div>' +
+                '<div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-top:14px">' +
+                    '<input type="checkbox" id="privacy-agree" style="width:14px;height:14px;accent-color:#E08A3C">' +
+                    '<span style="font-size:12px;color:#4B5563">我已阅读并同意<span style="color:#E08A3C;text-decoration:underline;cursor:pointer" onclick="window.AuthView.showPrivacy()">《隐私协议》</span></span>' +
+                '</div>' +
+            '</div>' +
+            '<div id="privacyBox"></div>' +
+        '</div>';
+    }
+
+    // 隐私协议弹窗（他俩能成同款）
+    function showPrivacy() {
+        const el = document.getElementById('privacyBox');
+        if (!el || el.innerHTML === undefined) return;
+        el.innerHTML = '<div class="cj-popup-mask" onclick="window.AuthView.closePrivacy()">' +
+            '<div class="cj-popup" style="max-height:80vh;overflow-y:auto" onclick="event.stopPropagation()">' +
+                '<h3 class="cj-popup-title">隐私协议</h3>' +
+                '<div style="font-size:12px;color:#4B5563;line-height:1.7">' +
+                    '<p><b>一、信息收集</b><br/>我们仅收集为您提供组局服务所必需的基本信息，包括昵称、手机号、性别、出生日期等。</p>' +
+                    '<p><b>二、信息使用</b><br/>您的位置与消费档位仅用于智能组局推荐，<b>不会向其他圈友展示</b>。</p>' +
+                    '<p><b>三、信息安全</b><br/>我们采用加密存储和传输技术保护您的个人信息安全，未经您授权不会向第三方提供。</p>' +
+                    '<p><b>四、用户权利</b><br/>您有权随时在个人中心查看、修改或删除您的资料。</p>' +
+                '</div>' +
+                '<div style="margin-top:16px"><button class="cj-btn-grad" onclick="window.AuthView.closePrivacy()">我知道了</button></div>' +
+            '</div>' +
+        '</div>';
+    }
+
+    function closePrivacy() {
+        const el = document.getElementById('privacyBox');
+        if (el && el.innerHTML !== undefined) el.innerHTML = '';
+    }
+
+    // 已授权（同会话）直接跳目标页
+    function skipIfAuthed() {
+        try {
+            if (window.sessionStorage.getItem('cj_authed') === '1' && window.AuthView._next) {
+                window.location.href = window.AuthView._next;
+                return true;
+            }
+        } catch (e) { /* noop */ }
+        return false;
+    }
+
+    function allow() {
+        try { window.sessionStorage.setItem('cj_authed', '1'); } catch (e) { /* noop */ }
+        const next = window.AuthView._next || 'index.html';
+        window.location.href = 'register.html?next=' + encodeURIComponent(next);
+    }
+
+    function deny() {
+        window.Common.showToast('未授权手机号，无法继续使用常聚');
+    }
+
+    return { render, allow, deny, skipIfAuthed, showPrivacy, closePrivacy };
+})();
+(function () {
+    const params = new URLSearchParams(window.location.search);
+    window.AuthView._next = params.get('next') || 'index.html';
+    if (!window.AuthView.skipIfAuthed()) {
+        document.getElementById('app').innerHTML = window.AuthView.render();
+    }
+})();
+</script>
+</body>
+</html>

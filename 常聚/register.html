@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>常聚 · 注册</title>
+    <link rel="stylesheet" href="theme.css">
+</head>
+<body class="cj-theme cj-wizard">
+<div id="app" class="cj-page"></div>
+<script src="vendor/lucide.min.js"></script>
+<script src="data.js"></script>
+<script src="common.js"></script>
+<script>
+window.RegisterView = (function () {
+    const AVATAR_POOL = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(i => 'images/avatar-' + i + '.png');
+
+    function maskedPhone() {
+        const p = String(window.GlobalData.user.phone || '');
+        return p ? p.slice(0, 3) + ' **** ' + p.slice(-4) : '';
+    }
+
+    function stepsBar() {
+        return '<div class="cj-steps">' +
+            '<div class="cj-step active"><div class="cj-step-dot">1</div><div class="cj-step-label">注册</div></div>' +
+            '<div class="cj-step-line"></div>' +
+            '<div class="cj-step pending"><div class="cj-step-dot">2</div><div class="cj-step-label">资料<br>完善</div></div>' +
+        '</div>';
+    }
+
+    function render() {
+        const sel = window.RegisterView._avatar || AVATAR_POOL[4];
+        const gender = window.RegisterView._gender || 'male';
+        return '<div class="cj-wiz-head"><i data-lucide="user-plus"></i><span class="cj-wiz-title">注册常聚</span></div>' +
+            '<div style="padding:16px 16px 8px">' + stepsBar() +
+            '<div class="cj-wiz-card">' +
+                '<h3 class="cj-wiz-h3">基本资料</h3>' +
+                '<div style="margin-bottom:16px;display:flex;align-items:center;gap:12px;cursor:pointer" onclick="window.RegisterView.openAvatarPicker()">' +
+                    '<img id="avatar-preview" src="' + sel + '" style="width:64px;height:64px;border-radius:50%;border:2px solid #E5E7EB;object-fit:cover;background:#F3F4F6" alt="头像">' +
+                    '<div><div style="font-weight:700;color:#111827;font-size:14px">头像</div><div style="font-size:12px;color:#9CA3AF">点击更换头像</div></div>' +
+                '</div>' +
+                '<div id="avatarPickerBox"></div>' +
+                '<div style="margin-bottom:16px">' +
+                    '<label class="cj-field-label">昵称</label>' +
+                    '<input id="nickInput" class="cj-field-input" value="新朋友" placeholder="给自己起个昵称">' +
+                '</div>' +
+                '<div style="margin-bottom:16px">' +
+                    '<label class="cj-field-label">手机号</label>' +
+                    '<input type="tel" value="' + maskedPhone() + '" disabled class="cj-field-disabled">' +
+                    '<div class="cj-notice" style="margin-top:10px"><i data-lucide="alert-triangle"></i><p>手机号与授权一致，不可修改</p></div>' +
+                '</div>' +
+                '<div style="margin-bottom:16px">' +
+                    '<label class="cj-field-label">性别</label>' +
+                    '<div style="display:flex;gap:16px">' +
+                        '<label style="display:flex;align-items:center;gap:8px;cursor:pointer" onclick="window.RegisterView.pickGender(\'male\')"><input type="radio" name="gender" value="male"' + (gender === 'male' ? ' checked' : '') + ' style="width:16px;height:16px;accent-color:#E08A3C"><span>男</span></label>' +
+                        '<label style="display:flex;align-items:center;gap:8px;cursor:pointer" onclick="window.RegisterView.pickGender(\'female\')"><input type="radio" name="gender" value="female"' + (gender === 'female' ? ' checked' : '') + ' style="width:16px;height:16px;accent-color:#E08A3C"><span>女</span></label>' +
+                    '</div>' +
+                '</div>' +
+                '<button class="cj-btn-grad" style="margin-top:16px" onclick="window.RegisterView.submit()">完成注册，继续</button>' +
+            '</div>' +
+        '</div>';
+    }
+
+    // 头像选择：居中弹窗 + 头像池（点击头像入口打开）
+    function openAvatarPicker() {
+        const el = document.getElementById('avatarPickerBox');
+        if (!el || el.innerHTML === undefined) return;
+        el.innerHTML = '<div class="cj-popup-mask" onclick="window.RegisterView.closeAvatarPicker()">' +
+            '<div class="cj-popup" onclick="event.stopPropagation()">' +
+                '<h3 class="cj-popup-title">选择头像</h3>' +
+                '<div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center">' +
+                    AVATAR_POOL.map(a =>
+                        '<img src="' + a + '" data-avatar="' + a + '" style="width:52px;height:52px;border-radius:50%;cursor:pointer;border:2.5px solid ' + (a === window.RegisterView._avatar ? '#E08A3C' : '#E5E7EB') + '" onclick="window.RegisterView.pickAvatar(\'' + a + '\')" alt="头像">').join('') +
+                '</div>' +
+                '<div style="margin-top:16px"><button class="cj-btn-grad" onclick="window.RegisterView.closeAvatarPicker()">确定</button></div>' +
+            '</div>' +
+        '</div>';
+    }
+
+    function closeAvatarPicker() {
+        const el = document.getElementById('avatarPickerBox');
+        if (el && el.innerHTML !== undefined) el.innerHTML = '';
+    }
+
+    function pickAvatar(a) {
+        window.RegisterView._avatar = a;
+        const preview = document.getElementById('avatar-preview');
+        if (preview && preview.src !== undefined) preview.src = a;
+        const imgs = document.querySelectorAll('img[data-avatar]');
+        if (imgs && imgs.forEach) {
+            imgs.forEach(img => {
+                img.style.border = img.getAttribute('data-avatar') === a
+                    ? '2.5px solid #E08A3C' : '2.5px solid #E5E7EB';
+            });
+        }
+    }
+
+    function pickGender(g) {
+        window.RegisterView._gender = g;
+        const radios = document.querySelectorAll('input[name="gender"]');
+        if (radios && radios.forEach) {
+            radios.forEach(r => { if (r.checked !== undefined) r.checked = r.value === g; });
+        }
+    }
+
+    // 注册完成：落 localStorage，进入资料完善页（携带最终目标）
+    function submit(opts) {
+        const o = opts || {};
+        const input = document.getElementById('nickInput');
+        const name = o.name || (input && input.value ? input.value.trim() : '') || '新朋友';
+        const avatar = o.avatar || window.RegisterView._avatar || 'images/avatar-5.png';
+        const gender = o.gender || window.RegisterView._gender || 'male';
+        const phone = String(window.GlobalData.user.phone || '');
+        try {
+            window.localStorage.setItem('cj.user', JSON.stringify({ name, avatar, gender, phone }));
+        } catch (e) { /* noop */ }
+        window.Common.showToast('注册成功');
+        window.location.href = 'profile.html?next=' + encodeURIComponent(window.RegisterView._next || 'index.html');
+        return { name, avatar, gender, phone };
+    }
+
+    return { render, openAvatarPicker, closeAvatarPicker, pickAvatar, pickGender, submit };
+})();
+(function () {
+    const params = new URLSearchParams(window.location.search);
+    window.RegisterView._next = params.get('next') || 'index.html';
+    window.RegisterView._avatar = 'images/avatar-5.png';
+    window.RegisterView._gender = 'male';
+    document.getElementById('app').innerHTML = window.RegisterView.render();
+    window.Common.initIcons();
+})();
+</script>
+</body>
+</html>

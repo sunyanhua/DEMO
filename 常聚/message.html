@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>常聚 · 消息</title>
+    <link rel="stylesheet" href="tailwind.css">
+    <link rel="stylesheet" href="theme.css">
+</head>
+<body class="cj-theme">
+<div id="app" class="cj-page"></div>
+<script src="vendor/lucide.min.js"></script>
+<script src="data.js"></script>
+<script src="rotation.js"></script>
+<script src="common.js"></script>
+<script>
+window.MessageView = (function () {
+    const GROUPS = [
+        { type: 'rhythm', label: '该张罗啦' },
+        { type: 'respond', label: '等你表态' },
+        { type: 'miss', label: '想念大家了' }
+    ];
+
+    function groupHTML(group, items) {
+        const list = items.map(n => {
+            const circle = window.GlobalData.circles.find(c => c.id === n.circleId);
+            const g = circle && window.GlobalData.gatherings.find(x => x.id === circle.lastGatheringId);
+            const photo = (n.type === 'rhythm' && g && g.photos && g.photos[0])
+                ? '<img src="' + g.photos[0] + '" style="width:48px;height:48px;border-radius:12px;object-fit:cover" alt="合影">' : '';
+            return '<div class="cj-card" style="padding:12px;display:flex;gap:10px;align-items:center">' +
+                photo +
+                '<div style="flex:1">' +
+                    '<div class="cj-sub" style="font-weight:800">' + (circle ? circle.name : '') + '</div>' +
+                    '<div style="font-size:13px;margin-top:3px;color:var(--body)">' + n.text + '</div>' +
+                '</div>' +
+                (n.read
+                    ? '<span class="cj-sub">已读</span>'
+                    : '<span class="cj-pill cj-pill-due" style="cursor:pointer" onclick="window.MessageView.markRead(\'' + n.id + '\')">标已读</span>') +
+            '</div>';
+        }).join('');
+        return items.length
+            ? '<div class="cj-section-head"><b>' + group.label + '</b></div>' + list
+            : '';
+    }
+
+    function render() {
+        const list = window.GlobalData.notifications || [];
+        const body = GROUPS.map(g => groupHTML(g, list.filter(n => n.type === g.type))).join('');
+        return window.Common.renderShell('消息') +
+            '<div class="cj-px" style="padding-top:6px">' +
+                (body || '<div class="cj-empty">没有新消息<br>圈子安静的时候，就是想聚的时候</div>') +
+            '</div>' + window.Common.renderTabbar('messages');
+    }
+
+    function markRead(id) {
+        const n = (window.GlobalData.notifications || []).find(x => x.id === id);
+        if (!n) return;
+        n.read = true;
+        window.Common.save();
+        refresh();
+    }
+
+    function refresh() {
+        document.getElementById('app').innerHTML = render();
+        if (window.lucide) window.lucide.createIcons();
+    }
+
+    return { render, markRead };
+})();
+(function () {
+    document.getElementById('app').innerHTML = window.MessageView.render();
+})();
+window.Common.initIcons();
+window.Demo.mountFab();
+</script>
+</body>
+</html>

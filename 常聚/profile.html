@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>常聚 · 资料完善</title>
+    <link rel="stylesheet" href="theme.css">
+</head>
+<body class="cj-theme cj-wizard">
+<div id="app" class="cj-page"></div>
+<script src="vendor/lucide.min.js"></script>
+<script src="data.js"></script>
+<script src="common.js"></script>
+<script>
+window.ProfileView = (function () {
+    const HOBBIES = ['摄影', '飞盘', '探店', '麻将', '羽毛球', '游戏', '旅行', '音乐', '读书', '烘焙', '电影', '爬山'];
+    const MBTI_LIST = ['ENFP', 'INFP', 'ENFJ', 'INFJ', 'ENTP', 'INTP', 'ENTJ', 'INTJ', 'ESFP', 'ISFP', 'ESTP', 'ISTP', 'ESFJ', 'ISFJ', 'ESTJ', 'ISTJ'];
+    const FREE_TIME = ['随时有空', '工作日晚上', '周末及节假日'];
+    const AREAS = ['国贸', '中关村', '望京', '西单', '三里屯', '亚运村', '五道口', '簋街'];
+
+    function chips(list, picked, onClick) {
+        return '<div style="display:flex;flex-wrap:wrap;gap:8px">' + list.map(k =>
+            '<span style="display:inline-flex;padding:7px 13px;border-radius:999px;font-size:12px;font-weight:600;cursor:pointer;' +
+            (picked.includes(k) ? 'background:#FFF0E3;color:#C97226;border:1px solid #E08A3C' : 'background:#F9FAFB;color:#6B7280;border:1px solid #E5E7EB') +
+            '" onclick="' + onClick + '(\'' + k + '\')">' + k + '</span>').join('') + '</div>';
+    }
+
+    function stepsBar() {
+        return '<div class="cj-steps">' +
+            '<div class="cj-step done"><div class="cj-step-dot">✓</div><div class="cj-step-label">注册</div></div>' +
+            '<div class="cj-step-line done"></div>' +
+            '<div class="cj-step active"><div class="cj-step-dot">2</div><div class="cj-step-label">资料<br>完善</div></div>' +
+        '</div>';
+    }
+
+    function locField(icon, label, selectId, area) {
+        return '<div style="margin-bottom:16px">' +
+            '<label class="cj-field-label"><i data-lucide="' + icon + '" style="width:13px;height:13px;display:inline;vertical-align:-1px;color:#E08A3C"></i> ' + label + ' · 定位到商圈</label>' +
+            '<select id="' + selectId + '" class="cj-field-select">' +
+                AREAS.map(a => '<option value="' + a + '"' + (a === area ? ' selected' : '') + '>' + a + '（商圈）</option>').join('') +
+            '</select>' +
+            '<div style="display:flex;align-items:flex-start;gap:6px;margin-top:6px"><i data-lucide="eye-off" style="width:12px;height:12px;color:#9CA3AF;margin-top:1px;flex-shrink:0"></i><span style="font-size:11px;color:#9CA3AF">只用于组局推荐，不展示具体地址</span></div>' +
+        '</div>';
+    }
+
+    function render() {
+        const s = window.ProfileView;
+        return '<div class="cj-wiz-head"><i data-lucide="file-text"></i><span class="cj-wiz-title">' + (s._edit ? '编辑资料' : '完善资料') + '</span></div>' +
+            '<div style="padding:16px 16px 8px">' + stepsBar() +
+            '<div class="cj-wiz-card">' +
+                '<h3 class="cj-wiz-h3">' + (s._edit ? '我的资料' : '资料完善') + '</h3>' +
+                '<div style="margin-bottom:16px">' +
+                    '<label class="cj-field-label">出生日期</label>' +
+                    '<input type="date" id="birthInput" value="' + s._birth + '" class="cj-field-input">' +
+                '</div>' +
+                '<div style="margin-bottom:16px">' +
+                    '<label class="cj-field-label">个人爱好（可多选）</label>' +
+                    '<div style="height:8px"></div>' + chips(HOBBIES, s._hobbies, 'window.ProfileView.toggleHobby') +
+                '</div>' +
+                '<div style="margin-bottom:16px">' +
+                    '<label class="cj-field-label">MBTI</label>' +
+                    '<select id="mbtiSelect" class="cj-field-select">' +
+                        MBTI_LIST.map(m => '<option value="' + m + '"' + (m === s._mbti ? ' selected' : '') + '>' + m + '</option>').join('') +
+                    '</select>' +
+                '</div>' +
+                '<div style="margin-bottom:16px">' +
+                    '<label class="cj-field-label">空闲时间（可多选）</label>' +
+                    '<div style="height:8px"></div>' + chips(FREE_TIME, s._freeTime, 'window.ProfileView.toggleFreeTime') +
+                '</div>' +
+                locField('map-pin', '工作地点', 'workSelect', s._workArea) +
+                locField('home', '住处', 'homeSelect', s._homeArea) +
+                '<div class="cj-notice"><i data-lucide="alert-triangle"></i><p>这些信息只用于智能组局推荐，不向圈友展示，可随时在个人中心修改</p></div>' +
+                '<button class="cj-btn-grad" style="margin-top:16px" onclick="window.ProfileView.submit()">完成</button>' +
+                '<button class="cj-btn-gray" style="margin-top:10px" onclick="window.ProfileView.skip()">先跳过，以后再完善</button>' +
+            '</div>' +
+        '</div>';
+    }
+
+    function toggleHobby(k) {
+        const i = window.ProfileView._hobbies.indexOf(k);
+        if (i >= 0) window.ProfileView._hobbies.splice(i, 1);
+        else window.ProfileView._hobbies.push(k);
+        refresh();
+    }
+    function toggleFreeTime(k) {
+        const i = window.ProfileView._freeTime.indexOf(k);
+        if (i >= 0) window.ProfileView._freeTime.splice(i, 1);
+        else window.ProfileView._freeTime.push(k);
+        refresh();
+    }
+
+    function refresh() {
+        document.getElementById('app').innerHTML = render();
+        if (window.lucide) window.lucide.createIcons();
+    }
+
+    // 完成：资料并入 cj.user，跳最终目标
+    function submit() {
+        const s = window.ProfileView;
+        const birthEl = document.getElementById('birthInput');
+        const workEl = document.getElementById('workSelect');
+        const homeEl = document.getElementById('homeSelect');
+        const mbtiEl = document.getElementById('mbtiSelect');
+        if (birthEl && birthEl.value) s._birth = birthEl.value;
+        if (workEl && workEl.value) s._workArea = workEl.value;
+        if (homeEl && homeEl.value) s._homeArea = homeEl.value;
+        if (mbtiEl && mbtiEl.value) s._mbti = mbtiEl.value;
+        try {
+            const raw = window.localStorage.getItem('cj.user');
+            const base = raw ? JSON.parse(raw) : {};
+            window.localStorage.setItem('cj.user', JSON.stringify({
+                ...base,
+                birthDate: s._birth,
+                hobbies: s._hobbies.slice(),
+                mbti: s._mbti,
+                freeTime: s._freeTime.slice(),
+                workArea: s._workArea,
+                homeArea: s._homeArea
+            }));
+        } catch (e) { /* noop */ }
+        window.Common.showToast(s._edit ? '资料已更新' : '资料已完善，开始常聚');
+        window.location.href = s._edit ? 'me.html' : (s._next || 'index.html');
+    }
+
+    function skip() {
+        window.Common.showToast('已跳过，以后可以在个人中心完善');
+        window.location.href = window.ProfileView._edit ? 'me.html' : (window.ProfileView._next || 'index.html');
+    }
+
+    return { render, toggleHobby, toggleFreeTime, submit, skip };
+})();
+(function () {
+    const G = window.GlobalData.user;
+    const params = new URLSearchParams(window.location.search);
+    const P = window.ProfileView;
+    P._edit = params.get('edit') === '1';
+    P._next = params.get('next') || 'index.html';
+    let saved = null;
+    try { saved = JSON.parse(window.localStorage.getItem('cj.user') || 'null'); } catch (e) { /* noop */ }
+    P._birth = (saved && saved.birthDate) || G.birthDate || '1998-06-15';
+    P._hobbies = (saved && saved.hobbies) || G.tags || [];
+    P._mbti = (saved && saved.mbti) || G.mbti || 'ENFP';
+    P._freeTime = (saved && saved.freeTime) || G.freeTime || ['周末'];
+    P._workArea = (saved && saved.workArea) || G.workArea || '国贸';
+    P._homeArea = (saved && saved.homeArea) || G.homeArea || '朝阳';
+    document.getElementById('app').innerHTML = window.ProfileView.render();
+    window.Common.initIcons();
+})();
+</script>
+</body>
+</html>

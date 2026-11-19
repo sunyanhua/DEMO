@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>常聚 · 首页</title>
+    <link rel="stylesheet" href="tailwind.css">
+    <link rel="stylesheet" href="theme.css">
+</head>
+<body class="cj-theme">
+<div id="app" class="cj-page"></div>
+<script src="vendor/lucide.min.js"></script>
+<script src="data.js"></script>
+<script src="rotation.js"></script>
+<script src="recommend.js"></script>
+<script src="zuju.js"></script>
+<script src="common.js"></script>
+<script>
+window.IndexView = (function () {
+    const TYPE_LABEL = { dinner: '饭局', sport: '运动', boardgame: '棋牌', outdoor: '户外', classmate: '同学', colleague: '同事', family: '家人', hobby: '兴趣', mahjong: '麻将', ball: '球局', exhibit: '看展', ktv: 'K歌' };
+
+    function statusLine(circle) {
+        const G = window.GlobalData;
+        if (circle.proposalId) {
+            const p = (G.proposals || []).find(x => x.id === circle.proposalId);
+            if (p && p.status === 'organizing') return '<span class="cj-pill cj-pill-due">提案进行中</span>';
+        }
+        const g = (G.gatherings || []).find(x => x.id === circle.lastGatheringId);
+        const now = window.Common.fmtDate(window.Demo.getNow());
+        const r = window.Rotation.checkRhythm({ circle, lastGatheringTime: g ? g.time : null, now });
+        if (r.due) return '<span class="cj-pill cj-pill-due">已 ' + r.daysSince + ' 天没聚，该张罗啦</span>';
+        if (circle.rhythm && g && r.daysSince !== null) {
+            const days = circle.rhythm.unit === 'week' ? circle.rhythm.n * 7 : circle.rhythm.n * 30;
+            return '<span class="cj-pill cj-pill-plain">距下次相聚还有 ' + (days - r.daysSince) + ' 天</span>';
+        }
+        return '<span class="cj-pill cj-pill-plain">随心而聚</span>';
+    }
+
+    function circleCard(c) {
+        const members = c.members || [];
+        const host = members.find(m => m.id === c.hostId);
+        const lastG = window.GlobalData.gatherings.find(g => g.id === c.lastGatheringId);
+        const thumb = lastG && lastG.photos && lastG.photos[0] ? lastG.photos[0]
+            : (c.cover || 'images/cover-1.png');
+        return '<a class="cj-card" style="display:flex;gap:14px;align-items:center;padding:14px;text-decoration:none" href="circle.html?id=' + c.id + '">' +
+            '<img src="' + thumb + '" style="width:58px;height:58px;border-radius:14px;object-fit:cover" alt="上次合影">' +
+            '<div style="flex:1">' +
+                '<div class="cj-title" style="font-size:16px;margin-bottom:6px">' + c.name + '</div>' +
+                '<span class="cj-pill cj-pill-plain">' + (TYPE_LABEL[c.type] || c.type) + ' · ' + members.length + ' 位圈友</span> ' + statusLine(c) +
+            '</div>' +
+            (host ? '<img src="' + host.avatarUrl + '" class="cj-avatar-ring" style="width:36px;height:36px;flex-shrink:0" alt="当值">' : '') +
+        '</a>';
+    }
+
+    // 组局视图：无组局→高格调引导；有组局→列表（进行中在上，已完成在下）
+    function zujuView() {
+        const G = window.GlobalData;
+        const guide = '<div class="cj-host-card" style="text-align:center;padding:36px 24px 32px">' +
+            '<div class="cj-anim-drop" style="margin-bottom:24px">' +
+                '<div class="cj-pola cj-float" style="width:170px;margin:0 auto;transform:rotate(-3deg)">' +
+                    '<img src="images/moment-2.jpg" alt="合影"><div class="cj-tape"></div>' +
+                '</div>' +
+            '</div>' +
+            '<div class="cj-anim-fadeup d1"><div class="cj-title" style="font-size:30px">多久没聚了？</div></div>' +
+            '<div class="cj-anim-fadeup d2"><div style="margin-top:14px;line-height:1.9;color:var(--body);font-size:15px;font-weight:600">有些圈子，散着散着就远了。<br>组一局，把人聚回来。</div></div>' +
+            '<div class="cj-anim-fadeup d3"><a class="cj-btn cj-btn-block" style="margin-top:24px;text-decoration:none;font-size:16px;padding:15px 0" href="auth.html?next=' + encodeURIComponent('propose.html?new=1') + '">马上开始组局</a></div>' +
+            '<div class="cj-anim-fadeup d4"><div class="cj-slogan" style="margin-top:14px;font-size:13px">常聚常伴，圈子不散</div></div>' +
+        '</div>';
+        const active = (G.proposals || []).filter(p => p.status === 'organizing' || p.status === 'progress');
+        const done = (G.gatherings || []).filter(g => g.done).sort((a, b) => (a.time < b.time ? 1 : -1));
+        if (!window.IndexView._registered || (!active.length && !done.length)) {
+            return guide;
+        }
+        return zujuList(active, done);
+    }
+
+    function zujuList(active, done) {
+        const G = window.GlobalData;
+        const activeCards = active.map(p => {
+            const circle = G.circles.find(c => c.id === p.circleId);
+            const project = G.projects.find(x => x.id === p.projectId);
+            const isOrganizing = p.status === 'organizing';
+            const gathering = G.gatherings.find(g => g.proposalId === p.id);
+            const sum = window.Zuju.voteSummary(p.id);
+            const timeText = gathering ? gathering.time
+                : (p.timeCandidates.length === 1 ? p.timeCandidates[0] : '待定');
+            const venueName = p.customVenue || (p.venueIds.length === 1 ? ((G.venues.find(v => v.id === p.venueIds[0]) || {}).name || '') : '');
+            const venue = gathering ? (gathering.customVenue || (G.venues.find(v => v.id === gathering.venueId) || {}).name || '') : (venueName || '待定');
+            const voters = Object.keys(p.votes.time);
+            const avatars = voters.map(id => {
+                const m = (circle && circle.members || []).find(x => x.id === id);
+                return m ? '<img src="' + m.avatarUrl + '" alt="' + m.name + '">' : '';
+            }).join('');
+            const href = isOrganizing ? 'vote.html?proposal=' + p.id : 'event.html?proposal=' + p.id;
+            return '<a class="cj-card" style="display:block;text-decoration:none" href="' + href + '">' +
+                '<div class="cj-row" style="justify-content:space-between">' +
+                    '<span class="cj-title" style="font-size:15px">' + (circle ? circle.name : '') + '</span>' +
+                    '<span class="cj-pill cj-pill-due">' + (isOrganizing ? '组局中' : '进行中') + '</span>' +
+                '</div>' +
+                '<div style="font-size:14px;font-weight:700;color:var(--ink);margin-top:8px">' + (project ? project.name : '聚会') + '</div>' +
+                '<div class="cj-sub" style="margin-top:5px">🕐 ' + timeText + ' · 📍 ' + venue + '</div>' +
+                '<div class="cj-row" style="justify-content:space-between;margin-top:10px">' +
+                    '<div class="cj-avatars">' + avatars + '</div>' +
+                    '<span class="cj-sub">' + (isOrganizing ? ('已表态 ' + voters.length + ' 人') : ('已加入 ' + voters.length + ' 人')) + '</span>' +
+                '</div>' +
+            '</a>';
+        }).join('');
+        const doneCards = done.map(g => {
+            const circle = G.circles.find(c => c.id === g.circleId);
+            const photo = g.photos && g.photos[0];
+            const avatars = (g.attendees || []).map(id => {
+                const m = (circle && circle.members || []).find(x => x.id === id);
+                return m ? '<img src="' + m.avatarUrl + '" alt="' + m.name + '">' : '';
+            }).join('');
+            return '<a class="cj-card" style="display:block;text-decoration:none" href="record.html?id=' + g.id + '">' +
+                '<div class="cj-row" style="justify-content:space-between">' +
+                    '<span class="cj-title" style="font-size:15px">' + g.title + '</span>' +
+                    '<span class="cj-pill cj-pill-plain">已聚</span>' +
+                '</div>' +
+                '<div class="cj-row" style="gap:12px;margin-top:8px">' +
+                    (photo ? '<img src="' + photo + '" style="width:56px;height:56px;border-radius:12px;object-fit:cover" alt="合影">' : '') +
+                    '<div style="flex:1">' +
+                        '<div class="cj-sub">' + (circle ? circle.name : '') + ' · ' + g.time + '</div>' +
+                        '<div class="cj-row" style="justify-content:space-between;margin-top:6px">' +
+                            '<div class="cj-avatars">' + avatars + '</div>' +
+                            '<span class="cj-sub">' + (g.attendees || []).length + ' 人</span>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>' +
+            '</a>';
+        }).join('');
+        return '<div class="cj-px" style="padding-top:12px">' +
+            '<div class="cj-row" style="justify-content:space-between;margin-bottom:4px">' +
+                '<span class="cj-sub">' + active.length + ' 个进行中 · ' + done.length + ' 个已完成</span>' +
+                '<a class="cj-pill cj-pill-due" style="text-decoration:none" href="propose.html">＋ 发起组局</a>' +
+            '</div>' +
+            (activeCards
+                ? '<div class="cj-section-head"><b>进行中</b></div>' + activeCards
+                : '<div class="cj-empty">暂无进行中的组局</div>') +
+            (doneCards
+                ? '<div class="cj-section-head"><b>已完成</b></div>' + doneCards
+                : '') +
+        '</div>';
+    }
+
+    function circlesView() {
+        const G = window.GlobalData;
+        const circles = G.circles || [];
+        const list = circles.map(circleCard).join('');
+        const empty = circles.length ? '' : '<div class="cj-empty">还没有圈子，建一个吧<br>常聚常伴，圈子不散</div>';
+        return '<div class="cj-cityline"><span style="cursor:pointer" onclick="window.Common.showToast(\'多城市能力预留\')">北京 · ' + circles.length + ' 个圈子</span></div>' +
+            '<div class="cj-px">' + list + empty + '</div>' +
+            '<div class="cj-px" style="text-align:center;padding-top:10px;padding-bottom:16px">' +
+                '<a class="cj-btn-outline" style="width:100%;font-size:14px;padding:11px 0" href="create.html">＋ 建圈子</a>' +
+            '</div>';
+    }
+
+    function render() {
+        const isZuju = window.IndexView._tab === 'zuju';
+        const body = isZuju ? zujuView() : circlesView();
+        return window.Common.renderShell(isZuju ? '组局' : '圈子') + body + window.Common.renderTabbar(isZuju ? 'zuju' : 'circles');
+    }
+
+    return { render };
+})();
+window.IndexView._registered = false;
+window.IndexView._tab = 'circles';
+(function () {
+    try {
+        window.IndexView._registered = !!window.localStorage.getItem('cj.user');
+    } catch (e) { /* noop */ }
+    const params = new URLSearchParams(window.location.search);
+    window.IndexView._tab = params.get('tab') === 'zuju' ? 'zuju'
+        : (window.IndexView._registered ? 'circles' : 'zuju');
+    document.getElementById('app').innerHTML = window.IndexView.render();
+})();
+window.Common.initIcons();
+window.Demo.mountFab();
+</script>
+</body>
+</html>
