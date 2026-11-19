@@ -84,7 +84,7 @@ test('build_proposal_manual', () => {
     assert.equal(p.venueIds.length, 3, '地点候选来自发起人选择');
     assert.equal(p.projectId, 'p5', '单项目来自发起人选择');
     assert.equal(p.note, '打完球附近一起吃个饭', '备注写入提案');
-    assert.equal(p.status, 'open');
+    assert.equal(p.status, 'organizing');
     const c3 = s.window.GlobalData.circles.find(c => c.id === 'c3');
     assert.equal(c3.proposalId, p.id, '圈子记录进行中提案');
     const bad = s.window.Zuju.buildProposalManual({ circleId: 'c3', projectId: null, venueIds: ['v9'], times: ['2026-11-21 14:00'] });
@@ -116,7 +116,7 @@ test('deadline_auto_decide', () => {
     s.window.Demo.advanceTime(48);
     const now = s.window.Common.fmtDate(s.window.Demo.getNow());
     s.window.Zuju.tryDecide(p.id, now);
-    assert.equal(p.status, 'decided', '超截止自动定案');
+    assert.equal(p.status, 'progress', '超截止自动定案');
     const g = s.window.GlobalData.gatherings.find(x => x.proposalId === p.id);
     assert.ok(g, '定案生成聚会记录');
     assert.ok(g.attendees.includes('u1') && g.attendees.includes('m1'), '出席者与时间表态一致');
@@ -230,7 +230,7 @@ test('propose_five_step_flow', () => {
     const c = s.window.GlobalData.circles.find(x => x.name === '周末新局');
     assert.ok(c.proposalId, '提案已发出');
     const p = s.window.GlobalData.proposals.find(x => x.id === c.proposalId);
-    assert.equal(p.status, 'open');
+    assert.equal(p.status, 'organizing');
     assert.equal(p.projectId, 'p1', '单项目');
     assert.equal(p.note, '打完球附近一起吃个饭', '备注写入提案');
     assert.equal(p.timeCandidates.length, 1, '指定时间=1 个候选');
@@ -249,7 +249,96 @@ test('propose_share_invite_overlay', () => {
 test('event_has_share_button', () => {
     const s = makeSandbox();
     const html = s.window.EventView.render('p1');
-    assert.ok(html.includes('分享邀请到群'), '局详情页有分享入口');
+    assert.ok(html.includes('结束投票'), '组局中阶段可手动结束投票');
+    assert.ok(html.includes('组局中'), '组局中状态胶囊');
+});
+
+test('event_progress_ui', () => {
+    const s = makeSandbox();
+    // 场景1：mock 圈友待确认 → 名单区展示，由演示面板模拟确认
+    const p = manualProposal(s, 'c3');
+    s.window.Zuju.submitVotes(p.id, {
+        time: { u1: { 0: true }, m2: { 1: true } },
+        venue: { u1: 'v1' }
+    });
+    s.window.Zuju.endVoting(p.id);
+    let html = s.window.EventView.render(p.id);
+    assert.ok(html.includes('进行中'), '进行中状态胶囊');
+    assert.ok(html.includes('已参加'), '已参加名单区');
+    assert.ok(html.includes('待确认'), '待确认名单区');
+    assert.ok(html.includes('等他们确认'), 'mock 圈友待确认提示（演示面板模拟）');
+    assert.ok(html.includes('结束组局'), '发起人可结束组局');
+    // 场景2：我待确认 → 显示确认按钮
+    const p2 = manualProposal(s, 'c3');
+    s.window.Zuju.submitVotes(p2.id, {
+        time: { u1: { 1: true }, m1: { 0: true } },
+        venue: { u1: 'v1' }
+    });
+    s.window.Zuju.endVoting(p2.id);
+    html = s.window.EventView.render(p2.id);
+    assert.ok(html.includes('我可以参加'), '待确认的我可确认');
+    s.window.EventView._pid = p2.id;
+    s.window.EventView.confirmMe();
+    const g2 = s.window.GlobalData.gatherings.find(x => x.proposalId === p2.id);
+    assert.ok(g2.attendees.includes('u1'), '确认后加入名单');
+    assert.equal(g2.pendingConfirm.length, 0);
+});
+
+test('propose_deadline_hours', () => {
+    const s = makeSandbox();
+    const p = s.window.Zuju.buildProposalManual({
+        circleId: 'c3', projectId: 'p5', venueIds: ['v9'], times: ['2026-11-21 14:00'],
+        deadlineHours: 24
+    });
+    const now = s.window.Demo.getNow().getTime();
+    const dl = new Date(p.deadline.replace(' ', 'T')).getTime();
+    const h = (dl - now) / 3600000;
+    assert.ok(h > 23.9 && h < 24.1, '截止时间为所选 24 小时');
+});
+
+test('decide_splits_attendees_and_pending', () => {
+    const s = makeSandbox();
+    const p = manualProposal(s, 'c3');
+    s.window.Zuju.submitVotes(p.id, {
+        time: { u1: { 0: true }, m1: { 0: true }, m2: { 1: true }, m8: { 0: true } },
+        venue: { u1: 'v1', m1: 'v1' }
+    });
+    s.window.Zuju.tryDecide(p.id, '2099-01-01 00:00');
+    assert.equal(p.status, 'progress', '定案进入进行中');
+    const g = s.window.GlobalData.gatherings.find(x => x.proposalId === p.id);
+    assert.deepEqual(g.attendees.sort(), ['m1', 'm8', 'u1'].sort(), '投胜出时间者自动加入');
+    assert.deepEqual(g.pendingConfirm, ['m2'], '投其他时间者待确认');
+});
+
+test('end_voting_manual', () => {
+    const s = makeSandbox();
+    const p = manualProposal(s, 'c3');
+    s.window.Zuju.submitVotes(p.id, {
+        time: { u1: { 0: true }, m1: { 0: true } },
+        venue: { u1: 'v1' }
+    });
+    // 不推进时间，发起人手动结束投票
+    s.window.Zuju.endVoting(p.id);
+    assert.equal(p.status, 'progress', '手动结束投票立即定案');
+});
+
+test('confirm_decline_join', () => {
+    const s = makeSandbox();
+    const p = manualProposal(s, 'c3');
+    s.window.Zuju.submitVotes(p.id, {
+        time: { u1: { 0: true }, m2: { 1: true } },
+        venue: { u1: 'v1' }
+    });
+    s.window.Zuju.tryDecide(p.id, '2099-01-01 00:00');
+    const g = s.window.GlobalData.gatherings.find(x => x.proposalId === p.id);
+    assert.deepEqual(g.pendingConfirm, ['m2']);
+    s.window.Zuju.confirmAttend(p.id, 'm2');
+    assert.ok(g.attendees.includes('m2'), '待确认者确认后加入');
+    assert.equal(g.pendingConfirm.length, 0);
+    s.window.Zuju.declineAttend(p.id, 'm9');
+    assert.ok(!g.pendingConfirm.includes('m9'));
+    s.window.Zuju.joinAttend(p.id, 'm9');
+    assert.ok(g.attendees.includes('m9'), '未表态者可主动加入');
 });
 
 test('deadline_all_abstain_stays_open', () => {
@@ -258,7 +347,7 @@ test('deadline_all_abstain_stays_open', () => {
     s.window.Demo.advanceTime(48);
     const now = s.window.Common.fmtDate(s.window.Demo.getNow());
     s.window.Zuju.tryDecide(p.id, now);
-    assert.equal(p.status, 'open', '全部未表态不自动定案');
+    assert.equal(p.status, 'organizing', '全部未表态不自动定案');
     assert.equal(s.window.GlobalData.gatherings.some(g => g.proposalId === p.id), false, '不生成空聚会');
 });
 

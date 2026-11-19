@@ -55,7 +55,7 @@ test('shell_functions_render', () => {
     for (const fn of ['renderShell', 'renderTabbar', 'showToast', 'showWechatNotice', 'save', 'load']) {
         assert.equal(typeof C[fn], 'function', `Common.${fn} 应为函数`);
     }
-    for (const fn of ['toggle', 'advanceTime', 'simulateVotes', 'reset', 'getNow']) {
+    for (const fn of ['toggle', 'advanceTime', 'simulateVotes', 'simulateConfirms', 'reset', 'getNow']) {
         assert.equal(typeof D[fn], 'function', `Demo.${fn} 应为函数`);
     }
 });

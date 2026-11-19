@@ -50,6 +50,8 @@ window.EndView = (function () {
                     '<input id="summaryInput" style="width:100%;padding:10px;border:1px solid var(--line);border-radius:12px;font-size:13px;margin-top:8px;background:var(--cream)" placeholder="写点什么（可选）">' +
                     '<button class="cj-btn cj-btn-block" style="margin-top:14px" onclick="window.EndView.finish()">完成 · 生成记录卡</button>' +
                 '</div>' +
+                '<div class="cj-notice" style="margin-bottom:12px"><i data-lucide="calculator"></i><p>别忘了算账：' +
+                    '<a href="ledger.html?gathering=' + g.id + '" style="color:#B45309;font-weight:700">去 AA 账本，把今晚的账单结一结 →</a></p></div>' +
             '</div>' + window.Common.renderTabbar('circles');
     }
 

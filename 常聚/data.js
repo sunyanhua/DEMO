@@ -130,7 +130,7 @@ window.GlobalData = {
             venueIds: ['v1', 'v2', 'v3'],
             timeCandidates: ['2026-11-21 14:00', '2026-11-22 14:00', '2026-11-22 19:00'],
             votes: { time: {}, venue: {} },
-            status: 'open',
+            status: 'organizing',
             deadline: '2026-11-19 12:00'
         }
     ],

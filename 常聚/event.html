@@ -17,53 +17,84 @@
 <script src="zuju.js"></script>
 <script>
 window.EventView = (function () {
+    function folk(id, circle, extra) {
+        const m = (circle.members || []).find(x => x.id === id);
+        return m ? '<div class="cj-folk"><img src="' + m.avatarUrl + '" alt="' + m.name + '"><div class="cj-folk-name">' + m.name + (extra || '') + '</div></div>' : '';
+    }
+
     function render(proposalId) {
         const G = window.GlobalData;
         let p = G.proposals.find(x => x.id === proposalId);
-        if (!p) return window.Common.renderShell('局详情') + '<div class="cj-empty">提案不存在</div>';
+        if (!p) return window.Common.renderShell('') + '<div class="cj-empty">提案不存在</div>';
         // 截止自动定案
         window.Zuju.tryDecide(p.id, window.Common.fmtDate(window.Demo.getNow()));
+        p = G.proposals.find(x => x.id === proposalId);
         const circle = G.circles.find(c => c.id === p.circleId);
         const gathering = G.gatherings.find(g => g.proposalId === p.id);
+        const isOrganizing = p.status === 'organizing';
         const sum = window.Zuju.voteSummary(p.id);
         const timeText = gathering ? gathering.time : (sum.bestTime.winnerIndex !== null ? p.timeCandidates[sum.bestTime.winnerIndex] : '待定');
         const venue = G.venues.find(v => v.id === (gathering ? gathering.venueId : p.venueIds[0]));
+        const venueText = (gathering && gathering.customVenue) ? gathering.customVenue
+            : (venue ? venue.name + ' · ' + venue.district + venue.businessArea : '待定');
         const project = G.projects.find(x => x.id === (gathering ? gathering.projectId : p.projectId));
         const nonVoters = (circle.members || []).filter(m => !p.votes.time[m.id]);
-        const attendeeIds = gathering ? gathering.attendees : Object.keys(p.votes.time);
-        const attendeeHTML = attendeeIds.map(id => {
-            const m = (circle.members || []).find(x => x.id === id);
-            return m ? '<div class="cj-folk"><img src="' + m.avatarUrl + '" alt="' + m.name + '"><div class="cj-folk-name">' + m.name + '</div></div>' : '';
-        }).join('');
-        return window.Common.renderShell('局详情') +
-            '<div class="cj-px" style="padding-top:6px">' +
+        const attendeeIds = gathering ? gathering.attendees : Object.keys(p.votes.time).filter(id => p.votes.time[id] && Object.values(p.votes.time[id]).some(Boolean));
+        const pendingIds = gathering ? (gathering.pendingConfirm || []) : [];
+        const joinableIds = gathering ? (circle.members || []).map(m => m.id).filter(id => !attendeeIds.includes(id) && !pendingIds.includes(id)) : [];
+
+        const attendeeHTML = attendeeIds.map(id => folk(id, circle)).join('');
+        const pendingHTML = pendingIds.map(id => folk(id, circle,
+            id === 'u1' ? '<span class="cj-sub" style="cursor:pointer;display:block;margin-top:2px" onclick="window.EventView.confirmMe()">我可以参加 ✓</span>' : '')).join('');
+        const joinableHTML = joinableIds.map(id => folk(id, circle,
+            id === 'u1' ? '<span class="cj-sub" style="cursor:pointer;display:block;margin-top:2px" onclick="window.EventView.joinMe()">我要参加</span>' : '')).join('');
+
+        return window.Common.renderShell('') +
+            '<div class="cj-px" style="padding-top:12px">' +
                 '<div class="cj-card" style="text-align:center;padding:20px">' +
-                    '<span class="cj-pill cj-pill-due">' + (p.status === 'decided' ? '已定案' : '表态中') + '</span>' +
+                    '<span class="cj-pill cj-pill-due">' + (isOrganizing ? '组局中' : '进行中') + '</span>' +
                     '<div class="cj-title" style="font-size:20px;margin:12px 0 6px">' + (project ? project.name : '聚会') + '</div>' +
-                    ((gathering && gathering.note) ? '<div class="cj-sub" style="margin-top:4px">' + gathering.note + '</div>' : (p.note ? '<div class="cj-sub" style="margin-top:4px">' + p.note + '</div>' : '')) +
-                    '<div class="cj-sub">' + timeText + '</div>' +
-                    '<div class="cj-sub" style="margin-top:4px">📍 ' + (gathering && gathering.customVenue ? gathering.customVenue : (venue ? venue.name + ' · ' + venue.district + venue.businessArea : '待定')) + '</div>' +
-                    '<div class="cj-folks" style="justify-content:center;padding:16px 0 0">' + attendeeHTML + '</div>' +
-                    '<div class="cj-sub" style="margin-top:6px">出席 ' + attendeeIds.length + ' 人</div>' +
+                    (p.note ? '<div class="cj-sub" style="margin-top:4px">' + p.note + '</div>' : '') +
+                    '<div class="cj-sub" style="margin-top:6px">🕐 ' + timeText + '</div>' +
+                    '<div class="cj-sub" style="margin-top:4px">📍 ' + venueText + '</div>' +
                 '</div>' +
-                (nonVoters.length
-                    ? '<div class="cj-card"><div class="cj-row" style="justify-content:space-between">' +
-                        '<span class="cj-sub">' + nonVoters.map(m => m.name).join('、') + ' 还没表态</span>' +
-                        '<span class="cj-pill cj-pill-due" style="cursor:pointer" onclick="window.EventView.remind()">提醒一下</span>' +
-                      '</div></div>'
+                (isOrganizing
+                    ? '<div class="cj-card">' +
+                        '<div class="cj-sub" style="margin-bottom:10px">大家正在选时间地点，选完定案（截止：' + p.deadline + '）</div>' +
+                        '<a class="cj-btn-outline" style="width:100%;justify-content:center;text-decoration:none" href="vote.html?proposal=' + p.id + '">去选时间地点</a>' +
+                        '<button class="cj-btn" style="width:100%;margin-top:10px" onclick="window.EventView.endVoting()">结束投票，现在定案</button>' +
+                      '</div>' +
+                      (nonVoters.length
+                        ? '<div class="cj-card"><div class="cj-row" style="justify-content:space-between">' +
+                            '<span class="cj-sub">' + nonVoters.map(m => m.name).join('、') + ' 还没选</span>' +
+                            '<span class="cj-pill cj-pill-due" style="cursor:pointer" onclick="window.EventView.remind()">提醒一下</span>' +
+                          '</div></div>'
+                        : '')
+                    : '<div class="cj-card">' +
+                        '<div class="cj-title" style="font-size:14px;margin-bottom:8px">已参加（' + attendeeIds.length + ' 人）</div>' +
+                        '<div class="cj-folks" style="padding:0">' + attendeeHTML + '</div>' +
+                        (pendingIds.length
+                            ? '<div class="cj-tear" style="border-top:1.5px dashed #E5D5B8;margin:12px 0 8px"></div>' +
+                              '<div class="cj-title" style="font-size:14px;margin-bottom:8px">待确认（' + pendingIds.length + ' 人）</div>' +
+                              '<div class="cj-folks" style="padding:0">' + pendingHTML + '</div>' +
+                              '<div class="cj-sub" style="margin-top:8px">定案时间与他们的选择不同，等他们确认能否参加</div>'
+                            : '') +
+                        (joinableIds.length
+                            ? '<div class="cj-tear" style="border-top:1.5px dashed #E5D5B8;margin:12px 0 8px"></div>' +
+                              '<div class="cj-title" style="font-size:14px;margin-bottom:8px">还没加入</div>' +
+                              '<div class="cj-folks" style="padding:0">' + joinableHTML + '</div>'
+                            : '') +
+                      '</div>') +
+                (gathering
+                    ? '<button class="cj-btn" style="width:100%;margin-top:10px" onclick="window.EventView.endGathering()">结束组局</button>'
                     : '') +
-                '<div style="display:flex;gap:10px">' +
+                '<div style="display:flex;gap:10px;margin-top:12px">' +
                     '<button class="cj-btn-outline" style="flex:1;justify-content:center" onclick="window.Common.showToast(\'模拟导航：已打开地图\')">导航</button>' +
                     '<a class="cj-btn" style="flex:1;justify-content:center;text-decoration:none" href="game-liushang.html">聚会中 · 玩一局</a>' +
                 '</div>' +
-                '<button class="cj-btn-outline" style="width:100%;margin-top:12px;justify-content:center" onclick="window.EventView.shareInvite()">分享邀请到群</button>' +
-                '<div style="text-align:center;margin-top:14px">' +
-                    (gathering
-                        ? '<a class="cj-btn cj-btn-block" style="text-decoration:none" href="end-event.html?id=' + gathering.id + '">散场 · 记录这次聚会</a>'
-                        : '<span class="cj-sub">定案后可散场记录</span>') +
-                '</div>' +
-                '<a class="cj-sub" style="display:block;text-align:center;margin-top:14px" href="vote.html?proposal=' + p.id + '">回表态页 →</a>' +
+                '<a class="cj-sub" style="display:block;text-align:center;margin-top:14px" href="vote.html?proposal=' + p.id + '">回选择页 →</a>' +
                 '<div id="shareArea"></div>' +
+                '<div id="endBox"></div>' +
             '</div>' + window.Common.renderTabbar('zuju');
     }
 
@@ -75,7 +106,63 @@ window.EventView = (function () {
         window.Zuju.shareInvite({ proposalId: window.EventView._pid, circleId: null, containerId: 'shareArea' });
     }
 
-    return { render, remind, shareInvite };
+    // 发起人手动结束投票 → 立即定案
+    function endVoting() {
+        window.Zuju.endVoting(window.EventView._pid);
+        window.Common.showToast('投票已结束，自动定案');
+        refresh();
+    }
+
+    // 待确认的我 → 确认参加
+    function confirmMe() {
+        window.Zuju.confirmAttend(window.EventView._pid, 'u1');
+        window.Common.showToast('已确认参加');
+        refresh();
+    }
+
+    // 未加入的我 → 主动加入
+    function joinMe() {
+        window.Zuju.joinAttend(window.EventView._pid, 'u1');
+        window.Common.showToast('已加入');
+        refresh();
+    }
+
+    // 发起人结束组局：确认弹窗（提醒合照/账本/下次组局人）→ 散场仪式
+    function endGathering() {
+        const G = window.GlobalData;
+        const gathering = G.gatherings.find(g => g.proposalId === window.EventView._pid);
+        if (!gathering) return;
+        const el = document.getElementById('endBox');
+        if (!el || el.innerHTML === undefined) return;
+        el.innerHTML = '<div class="cj-popup-mask" onclick="window.EventView.closeEnd()">' +
+            '<div class="cj-popup" onclick="event.stopPropagation()">' +
+                '<h3 class="cj-popup-title">结束这场组局？</h3>' +
+                '<div style="font-size:13px;color:#4B5563;line-height:1.9">结束前别忘了三件事：<br>① 上传合照，留住今晚<br>② 算一下账（AA 账单）<br>③ 指定下次的张罗人</div>' +
+                '<div style="margin-top:14px">' +
+                    '<button class="cj-btn-grad" onclick="window.EventView.goEnd()">去结束组局</button>' +
+                '</div>' +
+                '<div style="text-align:center;margin-top:10px"><span style="font-size:13px;color:#9CA3AF;cursor:pointer" onclick="window.EventView.closeEnd()">再想想</span></div>' +
+            '</div>' +
+        '</div>';
+    }
+
+    function closeEnd() {
+        const el = document.getElementById('endBox');
+        if (el && el.innerHTML !== undefined) el.innerHTML = '';
+    }
+
+    function goEnd() {
+        const G = window.GlobalData;
+        const gathering = G.gatherings.find(g => g.proposalId === window.EventView._pid);
+        window.location.href = 'end-event.html?id=' + gathering.id;
+    }
+
+    function refresh() {
+        document.getElementById('app').innerHTML = render(window.EventView._pid);
+        if (window.lucide) window.lucide.createIcons();
+    }
+
+    return { render, remind, shareInvite, endVoting, confirmMe, joinMe, endGathering, closeEnd, goEnd };
 })();
 (function () {
     const params = new URLSearchParams(window.location.search);

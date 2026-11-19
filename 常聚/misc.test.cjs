@@ -65,6 +65,8 @@ function makeSandbox() {
     vm.runInContext(fs.readFileSync(path.join(dir, 'data.js'), 'utf8'), sandbox);
     vm.runInContext(fs.readFileSync(path.join(dir, 'rotation.js'), 'utf8'), sandbox);
     vm.runInContext(fs.readFileSync(path.join(dir, 'common.js'), 'utf8'), sandbox);
+    vm.runInContext(fs.readFileSync(path.join(dir, 'recommend.js'), 'utf8'), sandbox);
+    vm.runInContext(fs.readFileSync(path.join(dir, 'zuju.js'), 'utf8'), sandbox);
     vm.runInContext(inlineScriptOf('message.html'), sandbox);
     vm.runInContext(inlineScriptOf('me.html'), sandbox);
     return sandbox;
@@ -120,6 +122,20 @@ test('me_profile_card_shows_and_editable', () => {
     assert.ok(html.includes('中关村') && html.includes('望京'), '显示工作/住处');
     assert.ok(html.includes('编辑资料'), '资料可修改入口');
     assert.ok(html.includes('profile.html?edit=1'), '编辑跳资料完善页');
+});
+
+test('demo_simulate_confirms', () => {
+    const s = makeSandbox();
+    const p = s.window.Zuju.buildProposalManual({
+        circleId: 'c3', projectId: 'p5', venueIds: ['v9'], times: ['2026-11-21 14:00']
+    });
+    s.window.Zuju.submitVotes(p.id, { time: { u1: { 0: true }, m2: { 1: true } }, venue: { u1: 'v9' } });
+    s.window.Zuju.endVoting(p.id);
+    const g = s.window.GlobalData.gatherings.find(x => x.proposalId === p.id);
+    assert.deepEqual(g.pendingConfirm, ['m2'], '有待确认圈友');
+    s.window.Demo.simulateConfirms(p.id);
+    assert.ok(g.attendees.includes('m2'), '模拟确认后加入');
+    assert.equal(g.pendingConfirm.length, 0);
 });
 
 test('me_onclick_attributes_compile', () => {

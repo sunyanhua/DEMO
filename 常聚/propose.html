@@ -245,6 +245,11 @@ window.ProposeView = (function () {
             '</div>' + window.Common.renderTabbar('zuju');
     }
 
+    function pickDeadline(h) {
+        window.ProposeView._deadlineHours = h;
+        gotoStep(4);
+    }
+
     function pickTimeMode(m) {
         window.ProposeView._timeMode = m;
         if (m === 'fixed') {
@@ -323,6 +328,14 @@ window.ProposeView = (function () {
                     '<div style="font-size:12px;color:#9CA3AF;margin-top:10px">地点</div>' +
                     '<div style="margin-top:4px">' + venueChips + '</div>' +
                 '</div>' +
+                '<div class="cj-wiz-card">' +
+                    '<label class="cj-field-label">投票截止时间（到点自动定案）</label>' +
+                    '<div style="display:flex;gap:8px;margin-top:4px">' +
+                        [24, 48, 72].map(h =>
+                            '<span class="cj-chip' + (window.ProposeView._deadlineHours === h ? ' cj-chip-warm' : '') + '" style="cursor:pointer;padding:8px 14px;font-size:13px" onclick="window.ProposeView.pickDeadline(' + h + ')">' + h + ' 小时</span>').join('') +
+                    '</div>' +
+                    '<div class="cj-sub" style="margin-top:8px">也可在局详情页手动结束投票</div>' +
+                '</div>' +
                 '<button class="cj-btn-grad" onclick="window.ProposeView.send()">发出提案，请圈友表态</button>' +
                 '<div id="shareArea"></div>' +
             '</div>' + window.Common.renderTabbar('zuju');
@@ -349,7 +362,8 @@ window.ProposeView = (function () {
             note: window.ProposeView._note || null,
             times: window.ProposeView._times,
             venueIds: window.ProposeView._venueIds,
-            customVenue: window.ProposeView._customVenue || null
+            customVenue: window.ProposeView._customVenue || null,
+            deadlineHours: window.ProposeView._deadlineHours || 48
         });
         if (!p) return;
         window.Common.showToast('提案已发出，等圈友表态');
@@ -385,7 +399,7 @@ window.ProposeView = (function () {
         window.Zuju.pickShareGroup(groupName, 'shareArea');
     }
 
-    return { render, renderNew, pickCircleType, createAndContinue, gotoStep, renderStep, pickProjectCategory, pickProject, addTime, removeTime, toggleVenue, pickTimeMode, pickVenueMode, pickFixedVenue, setCustomVenue, send, shareInvite, pickShareGroup };
+    return { render, renderNew, pickCircleType, createAndContinue, gotoStep, renderStep, pickProjectCategory, pickProject, addTime, removeTime, toggleVenue, pickTimeMode, pickVenueMode, pickFixedVenue, setCustomVenue, pickDeadline, send, shareInvite, pickShareGroup };
 })();
 (function () {
     const P = window.ProposeView;
@@ -400,6 +414,7 @@ window.ProposeView = (function () {
     P._timeMode = 'candidates';
     P._venueMode = 'candidates';
     P._customVenue = '';
+    P._deadlineHours = 48;
     P._step = 1;
     const CATEGORY_OF_TYPE = { boardgame: 'mahjong', sport: 'ball', dinner: 'dinner', ball: 'ball', mahjong: 'mahjong', outdoor: 'outdoor', exhibit: 'exhibit', ktv: 'ktv', classmate: 'dinner', colleague: 'dinner', family: 'dinner', hobby: 'exhibit' };
     const params = new URLSearchParams(window.location.search);

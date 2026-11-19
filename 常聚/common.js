@@ -129,6 +129,18 @@ window.Demo = (function () {
         if (win.Common) win.Common.showToast(`演示时间已推进 ${hours} 小时`);
     }
 
+    // mock 待确认圈友全部确认参加
+    function simulateConfirms(proposalId) {
+        const G = win.GlobalData;
+        if (!G || !win.Zuju) return;
+        const g = (G.gatherings || []).find(x => x.proposalId === proposalId);
+        if (!g) return;
+        (g.pendingConfirm || []).slice().forEach(id => {
+            win.Zuju.confirmAttend(proposalId, id);
+        });
+        if (win.Common) { win.Common.save(); win.Common.showToast('待确认的圈友都已确认参加'); }
+    }
+
     // mock 圈友按预置规则表态（排除"我"；时间选一个可出席、地点投一票）
     function simulateVotes(proposalId) {
         const G = win.GlobalData;
@@ -156,16 +168,22 @@ window.Demo = (function () {
         panel.className = 'cj-demo-panel';
         panel.innerHTML = `
             <div class="cj-sub" style="font-weight:700">演示控制</div>
-            <button data-demo="votes">模拟圈友表态（当前提案）</button>
+            <button data-demo="votes">模拟圈友表态（当前组局）</button>
+            <button data-demo="confirms">模拟待确认圈友确认参加</button>
             <button data-demo="advance">推进时间 +24 小时</button>
             <button data-demo="reset">重置演示数据</button>`;
         panel.addEventListener('click', e => {
             const act = e.target && e.target.getAttribute('data-demo');
             if (act === 'votes') {
                 const G = win.GlobalData;
-                const open = G && (G.proposals || []).find(p => p.status === 'open');
+                const open = G && (G.proposals || []).find(p => p.status === 'organizing');
                 if (open) win.Demo.simulateVotes(open.id);
-                else if (win.Common) win.Common.showToast('当前没有进行中的提案');
+                else if (win.Common) win.Common.showToast('当前没有组局中的提案');
+            } else if (act === 'confirms') {
+                const G = win.GlobalData;
+                const g = G && (G.gatherings || []).find(x => (x.pendingConfirm || []).length);
+                if (g) win.Demo.simulateConfirms(g.proposalId);
+                else if (win.Common) win.Common.showToast('当前没有待确认的圈友');
             } else if (act === 'advance') {
                 win.Demo.advanceTime(24);
             } else if (act === 'reset') {
@@ -198,5 +216,5 @@ window.Demo = (function () {
         win.document.body.appendChild(btn);
     }
 
-    return { getNow, advanceTime, simulateVotes, toggle, reset, mountFab };
+    return { getNow, advanceTime, simulateVotes, simulateConfirms, toggle, reset, mountFab };
 })();

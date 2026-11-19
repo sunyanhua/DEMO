@@ -23,7 +23,7 @@ window.IndexView = (function () {
         const G = window.GlobalData;
         if (circle.proposalId) {
             const p = (G.proposals || []).find(x => x.id === circle.proposalId);
-            if (p && p.status === 'open') return '<span class="cj-pill cj-pill-due">提案进行中</span>';
+            if (p && p.status === 'organizing') return '<span class="cj-pill cj-pill-due">提案进行中</span>';
         }
         const g = (G.gatherings || []).find(x => x.id === circle.lastGatheringId);
         const now = window.Common.fmtDate(window.Demo.getNow());
@@ -66,7 +66,7 @@ window.IndexView = (function () {
             '<div class="cj-anim-fadeup d3"><a class="cj-btn cj-btn-block" style="margin-top:24px;text-decoration:none;font-size:16px;padding:15px 0" href="auth.html?next=' + encodeURIComponent('propose.html?new=1') + '">马上开始组局</a></div>' +
             '<div class="cj-anim-fadeup d4"><div class="cj-slogan" style="margin-top:14px;font-size:13px">常聚常伴，圈子不散</div></div>' +
         '</div>';
-        const active = (G.proposals || []).filter(p => p.status === 'open' || p.status === 'decided');
+        const active = (G.proposals || []).filter(p => p.status === 'organizing' || p.status === 'progress');
         const done = (G.gatherings || []).filter(g => g.done).sort((a, b) => (a.time < b.time ? 1 : -1));
         if (!window.IndexView._registered || (!active.length && !done.length)) {
             return guide;
@@ -79,28 +79,29 @@ window.IndexView = (function () {
         const activeCards = active.map(p => {
             const circle = G.circles.find(c => c.id === p.circleId);
             const project = G.projects.find(x => x.id === p.projectId);
-            const decided = p.status === 'decided';
+            const isOrganizing = p.status === 'organizing';
             const gathering = G.gatherings.find(g => g.proposalId === p.id);
             const sum = window.Zuju.voteSummary(p.id);
             const timeText = gathering ? gathering.time
-                : (sum.bestTime.winnerIndex !== null ? p.timeCandidates[sum.bestTime.winnerIndex] : (p.timeCandidates[0] || '时间待定'));
-            const venue = gathering ? (gathering.customVenue || (G.venues.find(v => v.id === gathering.venueId) || {}).name || '') : '地点待定';
+                : (p.timeCandidates.length === 1 ? p.timeCandidates[0] : '待定');
+            const venueName = p.customVenue || (p.venueIds.length === 1 ? ((G.venues.find(v => v.id === p.venueIds[0]) || {}).name || '') : '');
+            const venue = gathering ? (gathering.customVenue || (G.venues.find(v => v.id === gathering.venueId) || {}).name || '') : (venueName || '待定');
             const voters = Object.keys(p.votes.time);
             const avatars = voters.map(id => {
                 const m = (circle && circle.members || []).find(x => x.id === id);
                 return m ? '<img src="' + m.avatarUrl + '" alt="' + m.name + '">' : '';
             }).join('');
-            const href = decided ? 'event.html?proposal=' + p.id : 'vote.html?proposal=' + p.id;
+            const href = isOrganizing ? 'vote.html?proposal=' + p.id : 'event.html?proposal=' + p.id;
             return '<a class="cj-card" style="display:block;text-decoration:none" href="' + href + '">' +
                 '<div class="cj-row" style="justify-content:space-between">' +
                     '<span class="cj-title" style="font-size:15px">' + (circle ? circle.name : '') + '</span>' +
-                    '<span class="cj-pill cj-pill-due">组局中</span>' +
+                    '<span class="cj-pill cj-pill-due">' + (isOrganizing ? '组局中' : '进行中') + '</span>' +
                 '</div>' +
                 '<div style="font-size:14px;font-weight:700;color:var(--ink);margin-top:8px">' + (project ? project.name : '聚会') + '</div>' +
                 '<div class="cj-sub" style="margin-top:5px">🕐 ' + timeText + ' · 📍 ' + venue + '</div>' +
                 '<div class="cj-row" style="justify-content:space-between;margin-top:10px">' +
                     '<div class="cj-avatars">' + avatars + '</div>' +
-                    '<span class="cj-sub">已加入 ' + voters.length + ' 人</span>' +
+                    '<span class="cj-sub">' + (isOrganizing ? ('已表态 ' + voters.length + ' 人') : ('已加入 ' + voters.length + ' 人')) + '</span>' +
                 '</div>' +
             '</a>';
         }).join('');

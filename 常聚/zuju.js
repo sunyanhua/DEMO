@@ -49,7 +49,7 @@ window.Zuju = (function () {
 
     // 手动四步组局：圈子/单项目(+备注)/时间+地点均由发起人逐项选定（不做智能推荐），
     // 生成提案（status open；写 circle.proposalId）
-    function buildProposalManual({ circleId, projectId, venueIds, times, customVenue, note }) {
+    function buildProposalManual({ circleId, projectId, venueIds, times, customVenue, note, deadlineHours }) {
         const circle = circleOf(circleId);
         if (!circle) return null;
         if (!projectId || !times || !times.length) {
@@ -63,8 +63,14 @@ window.Zuju = (function () {
         const proposal = window.Recommend.buildProposal({
             circle, projectId, venues: venueIds || [], times, proposerId: G().user.id
         });
+        proposal.status = 'organizing';
         proposal.customVenue = customVenue || null;
         proposal.note = note || null;
+        // 投票截止时间（默认 48 小时）
+        const hours = deadlineHours || 48;
+        const d = window.Demo.getNow();
+        const dl = new Date(d.getTime() + hours * 3600 * 1000);
+        proposal.deadline = window.Common.fmtDate(dl);
         G().proposals.push(proposal);
         circle.proposalId = proposal.id;
         window.Common.save();
@@ -98,24 +104,26 @@ window.Zuju = (function () {
         return { bestTime, venueTally, projectTally };
     }
 
-    // 截止定案：open + 超过 deadline → decided + 生成聚会记录
-    function tryDecide(proposalId, now) {
+    // 定案：organizing → progress，生成聚会记录
+    // 符合投票条件（投了胜出时间）→ 自动加入 attendees；投了其他时间 → pendingConfirm 待确认
+    function decide(proposalId) {
         const p = proposalOf(proposalId);
-        if (!p || p.status !== 'open') return p;
-        const nowTime = new Date(now.replace(' ', 'T'));
-        const deadline = new Date(p.deadline.replace(' ', 'T'));
-        if (nowTime < deadline) return p;
+        if (!p || p.status !== 'organizing') return p;
         const sum = voteSummary(proposalId);
-        // 全部未表态：保持待定，不生成空聚会
+        // 全部未表态：保持组局中，不生成空聚会
         if (sum.bestTime.winnerIndex === null) return p;
-        p.status = 'decided';
+        p.status = 'progress';
         const circle = circleOf(p.circleId);
         const timeIdx = sum.bestTime.winnerIndex;
         const venuePick = Object.entries(sum.venueTally).sort((a, b) => b[1] - a[1])[0];
         const customVenue = p.customVenue || null;
         const venueId = customVenue ? null : (venuePick ? venuePick[0] : p.venueIds[0]);
-        const attendees = (circle.members || [])
+        const members = circle.members || [];
+        const attendees = members
             .filter(m => p.votes.time[m.id] && p.votes.time[m.id][timeIdx])
+            .map(m => m.id);
+        const pendingConfirm = members
+            .filter(m => p.votes.time[m.id] && !p.votes.time[m.id][timeIdx])
             .map(m => m.id);
         const count = G().gatherings.filter(g => g.circleId === p.circleId).length + 1;
         const gathering = {
@@ -130,6 +138,7 @@ window.Zuju = (function () {
             customVenue,
             time: p.timeCandidates[timeIdx],
             attendees,
+            pendingConfirm,
             photos: [],
             buyMode: 'aa',
             payerId: null,
@@ -139,6 +148,55 @@ window.Zuju = (function () {
         circle.proposalId = null;
         window.Common.save();
         return p;
+    }
+
+    // 截止自动定案：organizing + 超过 deadline → decide
+    function tryDecide(proposalId, now) {
+        const p = proposalOf(proposalId);
+        if (!p || p.status !== 'organizing') return p;
+        const nowTime = new Date(now.replace(' ', 'T'));
+        const deadline = new Date(p.deadline.replace(' ', 'T'));
+        if (nowTime < deadline) return p;
+        return decide(proposalId);
+    }
+
+    // 发起人手动结束投票 → 立即定案
+    function endVoting(proposalId) {
+        const p = proposalOf(proposalId);
+        if (!p || p.status !== 'organizing') return p;
+        return decide(proposalId);
+    }
+
+    // 待确认/可加入操作（progress 阶段）
+    function confirmAttend(proposalId, memberId) {
+        const g = gatheringByProposal(proposalId);
+        if (!g) return null;
+        const pi = (g.pendingConfirm || []).indexOf(memberId);
+        if (pi >= 0) g.pendingConfirm.splice(pi, 1);
+        if (!g.attendees.includes(memberId)) g.attendees.push(memberId);
+        window.Common.save();
+        return g;
+    }
+
+    function declineAttend(proposalId, memberId) {
+        const g = gatheringByProposal(proposalId);
+        if (!g) return null;
+        g.pendingConfirm = (g.pendingConfirm || []).filter(id => id !== memberId);
+        window.Common.save();
+        return g;
+    }
+
+    function joinAttend(proposalId, memberId) {
+        const g = gatheringByProposal(proposalId);
+        if (!g) return null;
+        if (!g.attendees.includes(memberId)) g.attendees.push(memberId);
+        g.pendingConfirm = (g.pendingConfirm || []).filter(id => id !== memberId);
+        window.Common.save();
+        return g;
+    }
+
+    function gatheringByProposal(proposalId) {
+        return G().gatherings.find(g => g.proposalId === proposalId);
     }
 
     // 分享组局邀请到微信群（模拟浮层，写入指定容器）
@@ -191,5 +249,5 @@ window.Zuju = (function () {
         window.Common.save();
     }
 
-    return { CIRCLE_TYPES, createCircle, buildProposalManual, submitVotes, voteSummary, tryDecide, remindNonVoters, shareInvite, pickShareGroup };
+    return { CIRCLE_TYPES, createCircle, buildProposalManual, submitVotes, voteSummary, tryDecide, endVoting, confirmAttend, declineAttend, joinAttend, remindNonVoters, shareInvite, pickShareGroup };
 })();

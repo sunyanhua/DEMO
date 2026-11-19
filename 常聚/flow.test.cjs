@@ -82,7 +82,7 @@ test('flow_build_proposal', () => {
     const c = s.window.CreateCircle.submit({ name: '流程测试圈', type: 'dinner', mode: 'blank' });
     s.window.CreateCircle.simulateJoin(c.id);
     const p = s.window.Zuju.buildProposalManual({ circleId: c.id, projectId: 'p3', venueIds: ['v6', 'v4', 'v7'], times: ['2026-11-21 14:00', '2026-11-22 14:00', '2026-11-22 19:00'] });
-    assert.equal(p.status, 'open');
+    assert.equal(p.status, 'organizing');
     assert.equal(p.timeCandidates.length, 3);
     assert.equal(p.venueIds.length, 3);
 });
@@ -108,7 +108,7 @@ test('flow_decide_after_deadline', () => {
     s.window.Demo.simulateVotes(p.id);
     s.window.Demo.advanceTime(48);
     s.window.Zuju.tryDecide(p.id, s.window.Common.fmtDate(s.window.Demo.getNow()));
-    assert.equal(p.status, 'decided');
+    assert.equal(p.status, 'progress');
     const g = s.window.GlobalData.gatherings.find(x => x.proposalId === p.id);
     assert.ok(g, '定案生成聚会');
     assert.ok(g.attendees.length >= 1, '有出席者');
@@ -162,7 +162,7 @@ test('flow_next_round_rhythm', () => {
     const r = s.window.Rotation.checkRhythm({ circle: c, lastGatheringTime: g.time, now: g.time });
     assert.equal(r.due, false, '刚聚完不触发提醒');
     const p2 = s.window.Zuju.buildProposalManual({ circleId: c.id, projectId: 'p3', venueIds: ['v6', 'v4', 'v7'], times: ['2026-11-21 14:00', '2026-11-22 14:00', '2026-11-22 19:00'] });
-    assert.equal(p2.status, 'open', '下一轮提案可发起');
+    assert.equal(p2.status, 'organizing', '下一轮提案可发起');
 });
 
 test('flow_new_user_zuju_guide_index', () => {
@@ -201,9 +201,18 @@ test('flow_zuju_list_index', () => {
     assert.ok(html.indexOf('进行中') < html.indexOf('已完成'), '进行中在上、已完成在下');
     // 进行中卡：p1 提案（组局内容/时间/圈友）
     assert.ok(html.includes('血战到底麻将'), '进行中卡含组局内容');
-    assert.ok(html.includes('组局中'), '进行中卡统一组局中状态');
+    assert.ok(html.includes('组局中'), '组局中状态胶囊');
     assert.ok(!html.includes('投票中'), '不暴露投票中状态（投票=加入）');
-    assert.ok(html.includes('已加入'), '显示已加入名单');
+    assert.ok(html.includes('已表态'), '组局中阶段显示已表态');
+    // 定案后 → 进行中胶囊 + 已加入
+    s.window.Zuju.submitVotes('p1', {
+        time: { u1: { 0: true }, m1: { 0: true }, m2: { 1: true } },
+        venue: { u1: 'v1', m1: 'v1' }
+    });
+    s.window.Zuju.endVoting('p1');
+    const progressed = s.window.IndexView.render();
+    assert.ok(progressed.includes('进行中'), '定案后显示进行中胶囊');
+    assert.ok(progressed.includes('已加入'), '进行中显示已加入名单');
     // 已完成卡：聚会记录
     assert.ok(html.includes('老王手气爆棚之夜'), '已完成卡含聚会记录');
     // 无组局时回到引导
