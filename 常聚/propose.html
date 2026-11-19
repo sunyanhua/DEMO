@@ -65,7 +65,22 @@ window.ProposeView = (function () {
             }).join('');
     }
 
-    // 第 1 步：建圈子或选择已有圈子
+    // 第 1 步：已有圈子在上（微信群式九宫格头像+圈名+上次聚会天数），新建圈子在下
+    function groupIcon(circle) {
+        const avs = (circle.members || []).slice(0, 4).map(m =>
+            '<img src="' + m.avatarUrl + '" alt="" style="width:100%;height:100%;object-fit:cover">').join('');
+        return '<div class="cj-group-icon" style="width:48px;height:48px;border-radius:10px;overflow:hidden;display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#E5E7EB;flex-shrink:0">' + avs + '</div>';
+    }
+
+    function lastGatherText(circle) {
+        const g = window.GlobalData.gatherings.find(x => x.id === circle.lastGatheringId);
+        const now = window.Common.fmtDate(window.Demo.getNow());
+        const r = window.Rotation.checkRhythm({ circle, lastGatheringTime: g ? g.time : null, now });
+        if (r.daysSince === null || r.daysSince === undefined) return '还没有聚过';
+        if (r.daysSince === 0) return '今天刚聚过';
+        return '上次聚会 ' + r.daysSince + ' 天前';
+    }
+
     function renderNew() {
         const G = window.GlobalData;
         const circles = G.circles || [];
@@ -73,17 +88,23 @@ window.ProposeView = (function () {
         const typeChips = (window.Zuju.CIRCLE_TYPES || []).map(t =>
             '<span id="ct-' + t.key + '" class="cj-chip' + (window.ProposeView._circleType === t.key ? ' cj-chip-warm' : '') + '" style="cursor:pointer;padding:8px 14px;font-size:13px" onclick="window.ProposeView.pickCircleType(\'' + t.key + '\')">' + t.label + '</span>').join('');
         const existing = (!newUser && circles.length)
-            ? '<div class="cj-section-head"><b>或选择已有圈子</b></div>' +
-              circles.map(c =>
-                '<a class="cj-card" style="display:flex;gap:14px;align-items:center;padding:14px;text-decoration:none" href="propose.html?circle=' + c.id + '">' +
-                    '<img src="' + ((c.members || [])[0] ? c.members[0].avatarUrl : 'images/avatar-1.png') + '" class="cj-avatar-ring" style="width:44px;height:44px" alt="">' +
-                    '<div style="flex:1"><div class="cj-title" style="font-size:15px">在「' + c.name + '」组一局</div>' +
-                    '<div class="cj-sub" style="margin-top:4px">' + (c.members || []).length + ' 位圈友</div></div>' +
-                    '<span class="cj-pill cj-pill-due">去组局 ›</span>' +
-                '</a>').join('')
+            ? '<div class="cj-px">' +
+                '<div class="cj-section-head"><b>已有圈子</b></div>' +
+                circles.map(c =>
+                    '<a class="cj-card" style="display:flex;gap:12px;align-items:center;padding:12px 14px;text-decoration:none" href="propose.html?circle=' + c.id + '">' +
+                        groupIcon(c) +
+                        '<div style="flex:1">' +
+                            '<div class="cj-title" style="font-size:15px">' + c.name + '</div>' +
+                            '<div class="cj-sub" style="margin-top:4px">' + lastGatherText(c) + '</div>' +
+                        '</div>' +
+                        '<span class="cj-pill cj-pill-due">去组局 ›</span>' +
+                    '</a>').join('') +
+              '</div>'
             : '';
         return window.Common.renderShell('') +
-            '<div class="cj-px" style="padding-top:12px">' + stepsBar(1) +
+            '<div class="cj-px" style="padding-top:12px">' + stepsBar(1) + '</div>' +
+            existing +
+            '<div class="cj-px">' +
                 '<div class="cj-wiz-card">' +
                     '<h3 class="cj-wiz-h3">新建圈子</h3>' +
                     '<div style="margin-bottom:16px">' +
@@ -96,7 +117,7 @@ window.ProposeView = (function () {
                     '</div>' +
                     '<button class="cj-btn-grad" style="margin-top:12px" onclick="window.ProposeView.createAndContinue()">创建圈子，继续组局</button>' +
                 '</div>' +
-            '</div>' + existing +
+            '</div>' +
             window.Common.renderTabbar('zuju');
     }
 

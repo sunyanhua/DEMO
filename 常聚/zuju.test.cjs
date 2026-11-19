@@ -144,13 +144,18 @@ test('propose_new_user_circle_form', () => {
     const html = s.window.ProposeView.renderNew();
     assert.ok(html.includes('新建圈子'), '新用户第一步是新建圈子');
     assert.ok(html.includes('圈子叫什么'), '含圈名输入');
-    assert.ok(!html.includes('或选择已有圈子'), '新用户不显示已有圈子选择');
+    assert.ok(!html.includes('已有圈子'), '新用户不显示已有圈子选择');
     assert.ok(!html.includes('cj-chip-warm'), '进入时不默认选中任何类型');
     assert.ok(html.includes('运动') && html.includes('棋牌') && html.includes('家人'), '类型更通用（运动/棋牌/家人等）');
     assert.ok(!html.includes('>麻将<'), '不再单列麻将类型');
     s.window.ProposeView._newUser = false;
     const picker = s.window.ProposeView.renderNew();
-    assert.ok(picker.includes('或选择已有圈子'), '注册用户可选已有圈子');
+    assert.ok(picker.includes('已有圈子'), '已有圈子区块存在');
+    assert.ok(picker.indexOf('已有圈子') < picker.indexOf('新建圈子'), '已有圈子在上、新建圈子在下');
+    assert.ok(picker.includes('周五麻将局'), '圈子卡片显示圈名');
+    assert.ok(picker.includes('上次聚会'), '圈子卡片含上次聚会天数');
+    assert.ok(picker.includes('cj-group-icon'), '微信群式九宫格圈头像');
+    assert.ok(picker.indexOf('已有圈子') < picker.indexOf('周五麻将局') && picker.indexOf('周五麻将局') < picker.indexOf('新建圈子'), '已有圈子卡片在新建卡片之前');
 });
 
 test('propose_requires_circle_type', () => {

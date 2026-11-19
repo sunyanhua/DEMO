@@ -63,6 +63,8 @@ window.Zuju = (function () {
         const proposal = window.Recommend.buildProposal({
             circle, projectId, venues: venueIds || [], times, proposerId: G().user.id
         });
+        // 同毫秒创建多个提案时 Date.now() 会碰撞，补序号保证唯一
+        proposal.id = proposal.id + '-' + G().proposals.length;
         proposal.status = 'organizing';
         proposal.customVenue = customVenue || null;
         proposal.note = note || null;
