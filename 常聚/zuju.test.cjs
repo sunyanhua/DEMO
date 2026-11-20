@@ -208,35 +208,29 @@ test('propose_five_step_flow', () => {
     assert.equal(s.window.ProposeView._projectId, 'p1', '重选替换原项目');
     s.window.ProposeView._note = '打完球附近一起吃个饭';
     s.window.ProposeView.gotoStep(3);
-    // 第 3 步：时间+地点合并，上下两个明确区域
+    // 第 3 步：时间+地点合并，默认=指定时间+指定地点
     html = s.window.ProposeView.renderStep(3);
     assert.ok(html.includes('什么时候聚'), '上区：时间');
     assert.ok(html.includes('去哪聚'), '下区：地点');
-    assert.ok(html.includes('指定时间') && html.includes('时间候选'), '时间两种模式提示');
-    assert.ok(html.includes('指定地点') && html.includes('地点候选'), '地点两种模式提示');
-    // 提示语打磨：不暴露内部逻辑，话术通俗
-    assert.ok(!html.includes('合作地点优先'), '不向用户暴露合作优先逻辑');
-    assert.ok(!html.includes('优先推荐'), '不向用户暴露推荐优先级');
-    assert.ok(!html.includes('大家表态选最齐的'), '去除生硬话术');
-    assert.ok(html.includes('人最齐'), '通俗话术：人最齐的自动胜出');
+    assert.ok(html.includes('指定时间') && html.includes('时间候选'), '时间两种模式');
+    assert.ok(html.includes('指定地点') && html.includes('地点候选'), '地点两种模式');
+    assert.equal((html.match(/data-time/g) || []).length, 1, '默认指定时间=单个输入');
+    assert.ok(html.includes('推荐地点'), '指定地点默认展示推荐地点区');
+    assert.ok(html.includes('直接定下地点，或者给几个候选，让圈友一起定'), '地点主提示');
+    assert.ok(!html.includes('人最齐'), '模式切换不再有底部文字提示');
+    assert.ok(!html.includes('确认能否出席'), '无模式底部提示');
+    assert.ok(!html.includes('合作地点优先'), '不暴露合作优先逻辑');
+    assert.ok(!html.includes('优先推荐'), '不暴露推荐优先级');
     assert.equal((html.match(/去哪聚/g) || []).length, 1, '去哪聚标题与操作区同一张卡');
-    assert.equal((html.match(/data-time/g) || []).length, 3, '默认 3 个时间候选');
-    assert.ok(html.includes('望京小腰烧烤'), '地点候选按项目类别过滤（火锅局→餐厅）');
-    s.window.ProposeView.toggleVenue('v1');
-    assert.ok(s.window.ProposeView._venueIds.includes('v1'), '候选地点已选');
-    // 下区模式 1：指定地点——合作地点优先 + 可自己输入
-    s.window.ProposeView.pickVenueMode('fixed');
-    html = s.window.ProposeView.renderStep(3);
+    // 指定地点：输入框在上，点推荐地点自动填入并高亮
+    assert.ok(html.indexOf('customVenueInput') < html.indexOf('推荐地点'), '输入框在推荐列表上方');
     assert.ok(html.indexOf('西单烤鸭坊') >= 0 && html.indexOf('西单烤鸭坊') < html.indexOf('望京小腰烧烤'), '推荐列表合作地点优先');
-    assert.ok(html.includes('自己输入'), '支持用户自己输入地点');
     s.window.ProposeView.pickFixedVenue('v6');
-    assert.deepEqual(s.window.ProposeView._venueIds, ['v6'], '指定地点单选');
-    s.window.ProposeView.setCustomVenue('老王家常菜馆');
-    assert.equal(s.window.ProposeView._customVenue, '老王家常菜馆', '自定义地点生效');
-    // 上区模式 1：指定时间——单个输入
-    s.window.ProposeView.pickTimeMode('fixed');
+    assert.equal(s.window.ProposeView._customVenue, '西单烤鸭坊', '点击推荐地点自动填入');
     html = s.window.ProposeView.renderStep(3);
-    assert.equal((html.match(/data-time/g) || []).length, 1, '指定时间=单个输入');
+    assert.ok(html.indexOf('西单烤鸭坊') < html.indexOf('推荐地点') || html.includes('value="西单烤鸭坊"'), '输入框已填入地点名');
+    s.window.ProposeView.setCustomVenue('老王家常菜馆');
+    assert.equal(s.window.ProposeView._customVenue, '老王家常菜馆', '自定义输入覆盖推荐');
     // 第 4 步：生成邀请卡片
     s.window.ProposeView.gotoStep(4);
     html = s.window.ProposeView.renderStep(4);
