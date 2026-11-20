@@ -84,8 +84,8 @@ test('theme_defines_warm_tokens', () => {
     // 步骤条大字 + 胶囊选中态保持圆角
     assert.ok(css.includes('.cj-step-label { font-size: 12px'), '步骤标签 12px 大字');
     assert.ok(/\.cj-step\s*\{[^}]*align-items: flex-start/.test(css), '步骤圆点顶部对齐（与连接线同轴，不受多行标签撑高影响）');
-    assert.ok(/\.cj-step-line\s*\{[^}]*margin-top: 11px/.test(css), '连接线 11px 顶距对齐 24px 圆点中心');
-    assert.ok(/\.cj-step-label\s*\{[^}]*(?<!min-)height: 24px/.test(css), '标签容器固定 24px 高（文字中心恒与圆点中心同轴）');
+    assert.ok(/\.cj-step-line\s*\{[^}]*margin-top: 12px/.test(css), '连接线 11px 顶距对齐 24px 圆点中心');
+    assert.ok(/\.cj-step-label\s*\{[^}]*(?<!min-)height: 26px/.test(css), '标签容器固定 24px 高（文字中心恒与圆点中心同轴）');
     assert.ok(/\.cj-step-label\s*\{[^}]*align-items: center/.test(css), '两行标签上下居中对齐');
     assert.ok(/\.cj-chip,\s*[^{}]*\.cj-chip-warm\s*\{[^}]*border-radius: 999px/.test(css), 'cj-chip-warm 与 cj-chip 共享圆角形状');
     assert.ok(!css.includes('cj-statusbar') && !css.includes('cj-capsule'), '无小程序外壳残留');

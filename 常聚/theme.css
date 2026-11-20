@@ -247,15 +247,16 @@ body.cj-theme .cj-wiz-head i { color: #E08A3C; width: 14px; height: 14px; }
 /* 步骤条（横排：圆点 + 两行标签，同他俩能成） */
 body.cj-theme .cj-steps { display: flex; align-items: flex-start; justify-content: center; padding: 0 8px; margin-bottom: 20px; }
 body.cj-theme .cj-step { display: flex; align-items: flex-start; gap: 6px; }
-body.cj-theme .cj-step-dot { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex-shrink: 0; }
-body.cj-theme .cj-step.active .cj-step-dot { background: #E08A3C; color: #fff; }
-body.cj-theme .cj-step.done .cj-step-dot { background: #E08A3C; color: #fff; }
-body.cj-theme .cj-step.pending .cj-step-dot { background: #E5E5E5; color: #9CA3AF; }
-body.cj-theme .cj-step-label { font-size: 12px; line-height: 1.4; font-weight: 600; height: 24px; display: flex; align-items: center; }
-body.cj-theme .cj-step.active .cj-step-label { color: #E08A3C; font-weight: 700; }
-body.cj-theme .cj-step.done .cj-step-label, body.cj-theme .cj-step.pending .cj-step-label { color: #9CA3AF; }
-body.cj-theme .cj-step-line { width: 24px; height: 2px; margin-top: 11px; flex-shrink: 0; margin-left: 2px; margin-right: 2px; background: #E5E5E5; }
-body.cj-theme .cj-step-line.done { background: #E08A3C; }
+body.cj-theme .cj-step-dot { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; flex-shrink: 0; background: #FBF6EC; color: #C9BFAE; border: 2px solid #EFE7D8; }
+body.cj-theme .cj-step.active .cj-step-dot { background: linear-gradient(135deg, #E08A3C 0%, #C97226 100%); color: #fff; border-color: transparent; box-shadow: 0 6px 14px -6px rgba(201, 114, 38, 0.55); }
+body.cj-theme .cj-step.done .cj-step-dot { background: #F9EBD8; color: #C97226; border-color: #E08A3C; }
+body.cj-theme .cj-step.pending .cj-step-dot { background: #FBF6EC; color: #C9BFAE; border: 2px solid #EFE7D8; }
+body.cj-theme .cj-step-label { font-size: 12px; line-height: 1.4; font-weight: 600; height: 26px; display: flex; align-items: center; }
+body.cj-theme .cj-step.active .cj-step-label { color: #C97226; font-weight: 800; }
+body.cj-theme .cj-step.done .cj-step-label { color: #A58C70; }
+body.cj-theme .cj-step.pending .cj-step-label { color: #C9BFAE; }
+body.cj-theme .cj-step-line { width: 28px; height: 2px; margin-top: 12px; flex-shrink: 0; margin-left: 2px; margin-right: 2px; background: #EFE7D8; border-radius: 2px; }
+body.cj-theme .cj-step-line.done { background: linear-gradient(90deg, #E08A3C 0%, #C97226 100%); }
 /* 分类 TAB（下划线式，非胶囊） */
 body.cj-theme .cj-cat-tabs { display: flex; gap: 22px; margin-bottom: 14px; overflow-x: auto; }
 body.cj-theme .cj-cat-tab { font-size: 14px; font-weight: 600; color: #9CA3AF; padding: 4px 2px 8px; cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; }

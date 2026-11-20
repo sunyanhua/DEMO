@@ -147,7 +147,7 @@ window.ProposeView = (function () {
         if (!circle) return null;
         window.ProposeView._circleId = circle.id;
         window.ProposeView._projCategory = { boardgame: 'fun', sport: 'ball', dinner: 'dinner', ball: 'ball', mahjong: 'fun', outdoor: 'outdoor', exhibit: 'exhibit', ktv: 'fun', classmate: 'dinner', colleague: 'dinner', family: 'dinner', hobby: 'fun' }[circle.type] || 'dinner';
-        window.ProposeView._times = window.Recommend.suggestTimes({ members: circle.members, count: 3, now: window.Common.fmtDate(window.Demo.getNow()) });
+        window.ProposeView._times = window.Recommend.suggestTimes({ members: circle.members, count: 1, now: window.Common.fmtDate(window.Demo.getNow()) });
         window.ProposeView.gotoStep(2);
         return circle;
     }
@@ -196,70 +196,152 @@ window.ProposeView = (function () {
         gotoStep(2);
     }
 
-    // 第 3 步：上区=时间（指定/候选投票），下区=地点（指定推荐/候选投票）
+    // 第 3 步：时间（1个=指定/多个=候选投票）+ 地点（1个=指定/多个=候选投票）
+    const TIME_SLOTS = ['12:00', '14:00', '16:00', '18:00', '19:00', '20:00'];
+
+    function weekdayCN(d) {
+        return '周' + '日一二三四五六'[d.getDay()];
+    }
+
+    function timeDisplay(t) {
+        if (!t) return '';
+        const d = new Date(t.replace(' ', 'T'));
+        return (d.getMonth() + 1) + '月' + d.getDate() + '日 ' + weekdayCN(d) + ' ' + t.slice(11);
+    }
+
+    function timeOptions() {
+        const base = window.Demo.getNow();
+        const opts = [];
+        for (let i = 1; i <= 5; i++) {
+            const d = new Date(base.getTime() + i * 24 * 3600 * 1000);
+            const ds = window.Common.fmtDate(d).slice(0, 10);
+            TIME_SLOTS.forEach(sl => opts.push(ds + ' ' + sl));
+        }
+        return opts;
+    }
+
     function timeSection() {
         const P = window.ProposeView;
-        const times = P._times;
-        const isFixed = P._timeMode === 'fixed';
-        const rows = isFixed
-            ? '<div style="display:flex;gap:8px;align-items:center">' +
-                '<input data-time="0" class="cj-field-input" style="flex:1" value="' + (times[0] || '') + '" placeholder="格式：2026-11-21 14:00">' +
-              '</div>'
-            : times.map((t, i) =>
-                '<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">' +
-                    '<input data-time="' + i + '" class="cj-field-input" style="flex:1" value="' + t + '" placeholder="格式：2026-11-21 14:00">' +
-                    (times.length > 1 ? '<span style="color:#9CA3AF;cursor:pointer" onclick="window.ProposeView.removeTime(' + i + ')">✕</span>' : '') +
-                '</div>').join('') +
-                '<span class="cj-pill cj-pill-due" style="cursor:pointer" onclick="window.ProposeView.addTime()">＋ 添加时间</span>';
-        const modePills = ['fixed', 'candidates'].map(m =>
-            '<span class="cj-chip' + (P._timeMode === m ? ' cj-chip-warm' : '') + '" style="cursor:pointer;padding:8px 14px;font-size:13px" onclick="window.ProposeView.pickTimeMode(\'' + m + '\')">' + (m === 'fixed' ? '指定时间' : '时间候选') + '</span>').join('');
+        const rows = P._times.map((t, i) =>
+            '<div style="margin-bottom:10px">' +
+                '<div style="position:relative">' +
+                    '<input data-time="' + i + '" readonly class="cj-field-input" style="cursor:pointer" value="' + timeDisplay(t) + '" placeholder="点击选择时间" onclick="window.ProposeView.openTimePicker(' + i + ')">' +
+                    '<span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);color:#9CA3AF;pointer-events:none">▾</span>' +
+                '</div>' +
+                (P._timePickerOpen === i
+                    ? '<div class="cj-wiz-card" style="padding:10px;max-height:220px;overflow-y:auto;margin-top:6px">' +
+                        timeOptions().map(opt =>
+                            '<div data-topt="' + opt + '" style="padding:8px 10px;border-radius:8px;font-size:13px;color:#374151;cursor:pointer' + (P._times[i] === opt ? ';background:#FFF0E3;color:#C97226;font-weight:700' : '') + '" onclick="window.ProposeView.pickTimeOption(' + i + ', \'' + opt + '\')">' + timeDisplay(opt) + '</div>').join('') +
+                      '</div>'
+                    : '') +
+                (P._times.length > 1
+                    ? '<span style="position:absolute;right:-4px;top:-8px;color:#9CA3AF;cursor:pointer;font-size:12px" onclick="window.ProposeView.removeTime(' + i + ')">✕</span>'
+                    : '') +
+            '</div>').join('');
         return '<div class="cj-wiz-card">' +
             '<h3 class="cj-wiz-h3">什么时候聚？</h3>' +
-            '<div class="cj-sub" style="margin-bottom:12px">直接定下时间，或者给几个候选，让圈友一起定</div>' +
-            '<div style="display:flex;gap:8px;margin-bottom:12px">' + modePills + '</div>' +
             rows +
+            '<span class="cj-pill cj-pill-due" style="cursor:pointer" onclick="window.ProposeView.addTime()">＋ 添加更多候选，由圈友投票决定</span>' +
         '</div>';
     }
 
-    function fixedVenueCards(projectId) {
+    function openTimePicker(i) {
+        window.ProposeView._timePickerOpen = (window.ProposeView._timePickerOpen === i ? -1 : i);
+        gotoStep(3);
+    }
+
+    function pickTimeOption(i, val) {
+        window.ProposeView._times[i] = val;
+        window.ProposeView._timePickerOpen = -1;
+        gotoStep(3);
+    }
+
+    function addTime() {
+        if (window.ProposeView._times.length >= 3) {
+            window.Common.showToast('最多 3 个时间候选');
+            return;
+        }
+        window.ProposeView._times.push('');
+        window.ProposeView._timePickerOpen = window.ProposeView._times.length - 1;
+        gotoStep(3);
+    }
+
+    function removeTime(i) {
+        if (window.ProposeView._times.length <= 1) {
+            window.Common.showToast('至少保留一个时间');
+            return;
+        }
+        window.ProposeView._times.splice(i, 1);
+        window.ProposeView._timePickerOpen = -1;
+        gotoStep(3);
+    }
+
+    function venueSuggestions() {
         const G = window.GlobalData;
-        const catOf = window.Zuju.projectCategoryOf(projectId);
+        const catOf = window.Zuju.projectCategoryOf(window.ProposeView._projectId);
         let pool = catOf ? (G.venues || []).filter(v => v.category === catOf) : (G.venues || []);
         if (!pool.length) pool = G.venues || [];
-        // 合作地点优先（稳定排序）
-        const sorted = pool.slice().sort((a, b) => (b.isPartner ? 1 : 0) - (a.isPartner ? 1 : 0));
-        return sorted.map(v => {
-            const on = window.ProposeView._customVenue === v.name;
-            return '<div class="cj-wiz-card" style="cursor:pointer;padding:12px 16px;border:1.5px solid ' + (on ? '#E08A3C' : '#E5E7EB') + '" onclick="window.ProposeView.pickFixedVenue(\'' + v.id + '\')">' +
-                '<div style="display:flex;justify-content:space-between;align-items:center">' +
-                    '<div><div style="font-weight:700;color:#111827;font-size:14px">' + v.name + (on ? ' ✓' : '') + '</div>' +
-                    '<div style="font-size:12px;color:#9CA3AF;margin-top:4px">' + v.district + v.businessArea + ' · ' + (TIER_LABEL[v.spendTier] || v.spendTier) + ' · ⭐' + v.rating + '</div></div>' +
-                    (v.isPartner ? '<span style="font-size:11px;color:#E08A3C;font-weight:700">合作商户</span>' : '') +
-                    '<span style="font-size:11px;color:#9CA3AF;margin-left:8px;cursor:pointer" onclick="window.ProposeView.pickFixedVenue(\'' + v.id + '\')">选择</span>' +
-                '</div>' +
-            '</div>';
-        }).join('');
+        return pool.slice().sort((a, b) => (b.isPartner ? 1 : 0) - (a.isPartner ? 1 : 0));
     }
 
     function venueSection() {
         const P = window.ProposeView;
-        const isFixed = P._venueMode === 'fixed';
-        const venueCount = P._venueIds.length;
-        const modePills = ['fixed', 'candidates'].map(m =>
-            '<span class="cj-chip' + (P._venueMode === m ? ' cj-chip-warm' : '') + '" style="cursor:pointer;padding:8px 14px;font-size:13px" onclick="window.ProposeView.pickVenueMode(\'' + m + '\')">' + (m === 'fixed' ? '指定地点' : '地点候选') + '</span>').join('');
-        const body = isFixed
-            ? '<div class="cj-sub" style="margin-bottom:10px">直接定下地点，或者给几个候选，让圈友一起定</div>' +
-              '<input id="customVenueInput" class="cj-field-input" value="' + P._customVenue + '" placeholder="输入地点名称">' +
-              '<div class="cj-title" style="font-size:13px;font-weight:700;color:#1F2937;margin:16px 0 10px">推荐地点</div>' +
-              fixedVenueCards(P._projectId)
-            : '<div class="cj-sub" style="margin-bottom:10px">直接定下地点，或者给几个候选，让圈友一起定</div>' +
-              '<div class="cj-sub" style="margin-bottom:10px">选几个备选地点，圈友投票定最终地点 · 已选 ' + venueCount + '/' + MAX_VENUES + '</div>' +
-              venueCards(P._projectId);
+        const rows = P._venueInputs.map((v, i) =>
+            '<div style="margin-bottom:10px;position:relative">' +
+                '<input data-venue="' + i + '" class="cj-field-input" value="' + v + '" placeholder="点击输入地点，或从推荐中选择" onclick="window.ProposeView.openVenueSuggestions(' + i + ')" oninput="window.ProposeView.setVenueInput(' + i + ', this.value)">' +
+                (P._venueSuggestOpen === i
+                    ? '<div class="cj-wiz-card" style="padding:10px;max-height:220px;overflow-y:auto;margin-top:6px">' +
+                        '<div class="cj-title" style="font-size:13px;margin-bottom:6px">推荐地点</div>' +
+                        venueSuggestions().map(x =>
+                            '<div data-vopt="' + x.id + '" style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-radius:8px;font-size:13px;color:#374151;cursor:pointer' + (P._venueInputs[i] === x.name ? ';background:#FFF0E3;color:#C97226;font-weight:700' : '') + '" onclick="window.ProposeView.pickVenueSuggestion(' + i + ', \'' + x.id + '\')">' +
+                                '<span>' + x.name + '</span><span style="font-size:11px;color:#9CA3AF">' + x.district + x.businessArea + (x.isPartner ? ' · 合作商户' : '') + '</span>' +
+                            '</div>').join('') +
+                      '</div>'
+                    : '') +
+                (P._venueInputs.length > 1
+                    ? '<span style="position:absolute;right:-4px;top:-8px;color:#9CA3AF;cursor:pointer;font-size:12px" onclick="window.ProposeView.removeVenueInput(' + i + ')">✕</span>'
+                    : '') +
+            '</div>').join('');
         return '<div class="cj-wiz-card">' +
-                '<h3 class="cj-wiz-h3">去哪聚？</h3>' +
-                '<div style="display:flex;gap:8px;margin-bottom:12px">' + modePills + '</div>' +
-                body +
-            '</div>';
+            '<h3 class="cj-wiz-h3">去哪聚？</h3>' +
+            rows +
+            '<span class="cj-pill cj-pill-due" style="cursor:pointer" onclick="window.ProposeView.addVenueInput()">＋ 添加更多地点，由圈友投票决定</span>' +
+        '</div>';
+    }
+
+    function openVenueSuggestions(i) {
+        window.ProposeView._venueSuggestOpen = (window.ProposeView._venueSuggestOpen === i ? -1 : i);
+        gotoStep(3);
+    }
+
+    function pickVenueSuggestion(i, venueId) {
+        const v = window.GlobalData.venues.find(x => x.id === venueId);
+        if (v) window.ProposeView._venueInputs[i] = v.name;
+        window.ProposeView._venueSuggestOpen = -1;
+        gotoStep(3);
+    }
+
+    function setVenueInput(i, text) {
+        window.ProposeView._venueInputs[i] = text || '';
+    }
+
+    function addVenueInput() {
+        if (window.ProposeView._venueInputs.length >= 3) {
+            window.Common.showToast('最多 3 个地点候选');
+            return;
+        }
+        window.ProposeView._venueInputs.push('');
+        gotoStep(3);
+    }
+
+    function removeVenueInput(i) {
+        if (window.ProposeView._venueInputs.length <= 1) {
+            window.Common.showToast('至少保留一个地点');
+            return;
+        }
+        window.ProposeView._venueInputs.splice(i, 1);
+        window.ProposeView._venueSuggestOpen = -1;
+        gotoStep(3);
     }
 
     function renderStep3() {
@@ -276,82 +358,21 @@ window.ProposeView = (function () {
         gotoStep(4);
     }
 
-    function pickTimeMode(m) {
-        window.ProposeView._timeMode = m;
-        if (m === 'fixed') {
-            window.ProposeView._times = [window.ProposeView._times[0] || window.Common.fmtDate(window.Demo.getNow()).slice(0, 10) + ' 14:00'];
-        } else {
-            while (window.ProposeView._times.length < 3) {
-                window.ProposeView._times.push(window.Common.fmtDate(window.Demo.getNow()).slice(0, 10) + ' 14:00');
-            }
-        }
-        gotoStep(3);
-    }
-
-    function pickVenueMode(m) {
-        window.ProposeView._venueMode = m;
-        gotoStep(3);
-    }
-
-    function pickFixedVenue(id) {
-        const v = window.GlobalData.venues.find(x => x.id === id);
-        window.ProposeView._customVenue = v ? v.name : '';
-        window.ProposeView._venueIds = [];
-        gotoStep(3);
-    }
-
-    function setCustomVenue(text) {
-        window.ProposeView._customVenue = text || '';
-        if (text) window.ProposeView._venueIds = [];
-        gotoStep(3);
-    }
-
-    function addTime() {
-        const d = window.Demo.getNow();
-        const nd = new Date(d.getTime() + (window.ProposeView._times.length + 3) * 24 * 3600 * 1000);
-        window.ProposeView._times.push(window.Common.fmtDate(nd).slice(0, 10) + ' 14:00');
-        gotoStep(3);
-    }
-
-    function removeTime(i) {
-        if (window.ProposeView._times.length <= 1) {
-            window.Common.showToast('至少保留一个时间候选');
-            return;
-        }
-        window.ProposeView._times.splice(i, 1);
-        gotoStep(3);
-    }
-
-    function toggleVenue(id) {
-        const i = window.ProposeView._venueIds.indexOf(id);
-        if (i >= 0) {
-            window.ProposeView._venueIds.splice(i, 1);
-        } else if (window.ProposeView._venueIds.length < MAX_VENUES) {
-            window.ProposeView._venueIds.push(id);
-        } else {
-            window.Common.showToast('最多选 ' + MAX_VENUES + ' 个地点候选');
-            return;
-        }
-        gotoStep(3);
-    }
-
     // 第 4 步：生成邀请卡片
     function renderStep4() {
         const G = window.GlobalData;
         const circle = G.circles.find(c => c.id === window.ProposeView._circleId);
         const projectLabel = window.Zuju.projectLabel(window.ProposeView._projectId);
-        const venues = window.ProposeView._venueIds.map(id => G.venues.find(v => v.id === id)).filter(Boolean);
-        const venueChips = window.ProposeView._customVenue
-            ? '<span style="display:inline-block;margin:3px;padding:4px 10px;border-radius:999px;background:#FFF0E3;border:1px solid #E08A3C;font-size:12px;color:#C97226">' + window.ProposeView._customVenue + '</span>'
-            : venues.map(v => '<span style="display:inline-block;margin:3px;padding:4px 10px;border-radius:999px;background:#FFF0E3;border:1px solid #E08A3C;font-size:12px;color:#C97226">' + v.name + '</span>').join('');
+        const venueChips = window.ProposeView._venueInputs.filter(t => t && t.trim()).map(t =>
+            '<span style="display:inline-block;margin:3px;padding:4px 10px;border-radius:999px;background:#FFF0E3;border:1px solid #E08A3C;font-size:12px;color:#C97226">' + t.trim() + '</span>').join('');
         return window.Common.renderShell('') +
             '<div class="cj-px" style="padding-top:12px">' + stepsBar(4) +
                 '<div class="cj-wiz-card" style="text-align:center;padding:24px 16px">' +
                     '<div style="font-size:11px;color:#9CA3AF;letter-spacing:2px">组局邀请卡片</div>' +
                     '<div style="font-size:20px;font-weight:800;color:#111827;margin:10px 0 6px">' + circle.name + '</div>' +
                     '<div style="font-size:13px;color:#374151;font-weight:600">' + projectLabel + '</div>' + (window.ProposeView._note ? '<div style="font-size:12px;color:#9CA3AF;margin-top:6px">' + window.ProposeView._note + '</div>' : '') +
-                    '<div style="font-size:12px;color:#9CA3AF;margin-top:10px">时间候选</div>' +
-                    '<div style="margin-top:4px">' + window.ProposeView._times.map(t => '<span style="display:inline-block;margin:3px;padding:4px 10px;border-radius:999px;background:#F9FAFB;border:1px solid #E5E7EB;font-size:12px;color:#374151">' + t + '</span>').join('') + '</div>' +
+                    '<div style="font-size:12px;color:#9CA3AF;margin-top:10px">时间</div>' +
+                    '<div style="margin-top:4px">' + window.ProposeView._times.filter(t => t).map(t => '<span style="display:inline-block;margin:3px;padding:4px 10px;border-radius:999px;background:#F9FAFB;border:1px solid #E5E7EB;font-size:12px;color:#374151">' + window.ProposeView.timeDisplay(t) + '</span>').join('') + '</div>' +
                     '<div style="font-size:12px;color:#9CA3AF;margin-top:10px">地点</div>' +
                     '<div style="margin-top:4px">' + venueChips + '</div>' +
                 '</div>' +
@@ -369,19 +390,35 @@ window.ProposeView = (function () {
     }
 
     function send() {
-        // 读回时间输入（可编辑）
-        const inputs = document.querySelectorAll('input[data-time]');
-        if (inputs && inputs.forEach) {
-            inputs.forEach(inp => {
-                const i = Number(inp.getAttribute('data-time'));
-                if (inp.value && inp.value.trim()) window.ProposeView._times[i] = inp.value.trim();
-            });
-        }
         const noteInput = document.getElementById('noteInput');
         if (noteInput && noteInput.value !== undefined) window.ProposeView._note = noteInput.value.trim();
-        if (window.ProposeView._timeMode === 'fixed') {
-            window.ProposeView._times = window.ProposeView._times.slice(0, 1);
+        // 地点：读输入框，匹配商户名→venueIds，未匹配文本→customVenue
+        const vInputs = document.querySelectorAll('input[data-venue]');
+        if (vInputs && vInputs.forEach) {
+            vInputs.forEach(inp => {
+                const i = Number(inp.getAttribute('data-venue'));
+                window.ProposeView._venueInputs[i] = inp.value || '';
+            });
         }
+        const venueIds = [];
+        const customs = [];
+        window.ProposeView._venueInputs.forEach(t => {
+            if (!t || !t.trim()) return;
+            const v = window.GlobalData.venues.find(x => x.name === t.trim());
+            if (v) venueIds.push(v.id);
+            else customs.push(t.trim());
+        });
+        const customVenue = customs.length ? customs.join('、') : null;
+        const times = window.ProposeView._times.filter(t => t && t.trim());
+        if (!times.length) {
+            window.Common.showToast('请先选择时间');
+            return;
+        }
+        if (!venueIds.length && !customVenue) {
+            window.Common.showToast('请先输入地点');
+            return;
+        }
+        window.ProposeView._times = times;
         if (!window.ProposeView._projectId) {
             window.Common.showToast('请先选择活动项目');
             return;
@@ -389,9 +426,9 @@ window.ProposeView = (function () {
         const p = window.Zuju.buildProposalManual({
             circleId: window.ProposeView._circleId,
             projectId: window.ProposeView._projectId,
-            times: window.ProposeView._times,
-            venueIds: window.ProposeView._venueIds,
-            customVenue: window.ProposeView._customVenue || null,
+            times: times,
+            venueIds: venueIds,
+            customVenue: customVenue,
             note: window.ProposeView._note || null,
             deadlineHours: window.ProposeView._deadlineHours || 48
         });
@@ -429,7 +466,7 @@ window.ProposeView = (function () {
         window.Zuju.pickShareGroup(groupName, 'shareArea');
     }
 
-    return { render, renderNew, pickCircleType, createAndContinue, gotoStep, renderStep, pickProjectCategory, pickProject, addTime, removeTime, toggleVenue, pickTimeMode, pickVenueMode, pickFixedVenue, setCustomVenue, pickDeadline, send, shareInvite, pickShareGroup };
+    return { render, renderNew, pickCircleType, createAndContinue, gotoStep, renderStep, pickProjectCategory, pickProject, timeDisplay, openTimePicker, pickTimeOption, addTime, removeTime, openVenueSuggestions, pickVenueSuggestion, setVenueInput, addVenueInput, removeVenueInput, pickDeadline, send, shareInvite, pickShareGroup };
 })();
 (function () {
     const P = window.ProposeView;
@@ -438,15 +475,14 @@ window.ProposeView = (function () {
     P._circleId = null;
     P._projCategory = 'dinner';
     P._projectId = null;
-    P._venueIds = [];
+    P._venueInputs = [''];
     P._times = [];
-    P._timeMode = 'fixed';
-    P._venueMode = 'fixed';
-    P._customVenue = '';
+    P._timePickerOpen = -1;
+    P._venueSuggestOpen = -1;
     P._note = '';
     P._deadlineHours = 48;
     P._step = 1;
-    const CATEGORY_OF_TYPE = { boardgame: 'fun', sport: 'ball', dinner: 'dinner', ball: 'ball', mahjong: 'fun', outdoor: 'outdoor', exhibit: 'exhibit', ktv: 'fun', classmate: 'dinner', colleague: 'dinner', family: 'dinner', hobby: 'fun' };
+    const CATEGORY_OF_TYPE = { boardgame: 'fun', sport: 'ball', dinner: 'dinner', ball: 'ball', mahjong: 'fun', outdoor: 'outdoor', ktv: 'fun', classmate: 'dinner', colleague: 'dinner', family: 'dinner', hobby: 'fun' };
     const params = new URLSearchParams(window.location.search);
     if (params.get('new') === '1') {
         P._newUser = true;
@@ -458,7 +494,7 @@ window.ProposeView = (function () {
         else {
             P._circleId = cid;
             P._projCategory = CATEGORY_OF_TYPE[circle.type] || 'dinner';
-            P._times = window.Recommend.suggestTimes({ members: circle.members, count: 3, now: window.Common.fmtDate(window.Demo.getNow()) });
+            P._times = window.Recommend.suggestTimes({ members: circle.members, count: 1, now: window.Common.fmtDate(window.Demo.getNow()) });
             document.getElementById('app').innerHTML = window.ProposeView.renderStep(2);
         }
     } else {
