@@ -230,8 +230,12 @@ test('propose_five_step_flow', () => {
     assert.equal(s.window.ProposeView._times.length, 1, '可删除回到指定');
     // 地点：输入框点击下拉出推荐地点
     assert.equal((html.match(/data-venue/g) || []).length, 1, '默认一个地点输入');
+    const venueInputTag = html.match(/<input data-venue="0"[^>]*>/);
+    assert.ok(venueInputTag && !venueInputTag[0].includes('readonly'), '地点输入框可自由输入（非只读）');
     assert.ok(html.includes('添加更多地点'), '地点有添加更多按钮');
+    html = s.window.ProposeView.renderStep(3);
     s.window.ProposeView.openVenueSuggestions(0);
+    assert.equal(s.document._html, html, '打开下拉不重渲染（保住输入焦点）');
     html = s.window.ProposeView.renderStep(3);
     assert.ok(html.includes('推荐地点') && html.includes('西单烤鸭坊'), '下拉出推荐地点');
     assert.ok(html.indexOf('西单烤鸭坊') < html.indexOf('望京小腰烧烤'), '推荐合作优先');
