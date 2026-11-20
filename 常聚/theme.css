@@ -257,6 +257,9 @@ body.cj-theme .cj-step.done .cj-step-label { color: #A58C70; }
 body.cj-theme .cj-step.pending .cj-step-label { color: #C9BFAE; }
 body.cj-theme .cj-step-line { width: 28px; height: 2px; margin-top: 12px; flex-shrink: 0; margin-left: 2px; margin-right: 2px; background: #EFE7D8; border-radius: 2px; }
 body.cj-theme .cj-step-line.done { background: linear-gradient(90deg, #E08A3C 0%, #C97226 100%); }
+/* 删除按钮（输入行右上角圆底 ✕） */
+body.cj-theme .cj-remove-btn { position: absolute; right: -6px; top: -9px; width: 20px; height: 20px; border-radius: 50%; background: #F3F4F6; border: 1px solid #E5E7EB; color: #9CA3AF; font-size: 11px; line-height: 1; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 2; }
+
 /* 分类 TAB（下划线式，非胶囊） */
 body.cj-theme .cj-cat-tabs { display: flex; gap: 22px; margin-bottom: 14px; overflow-x: auto; }
 body.cj-theme .cj-cat-tab { font-size: 14px; font-weight: 600; color: #9CA3AF; padding: 4px 2px 8px; cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; }

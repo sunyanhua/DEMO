@@ -226,8 +226,12 @@ test('propose_five_step_flow', () => {
     // 添加更多候选 → 多个=投票
     s.window.ProposeView.addTime();
     assert.equal(s.window.ProposeView._times.length, 2, '两个时间=候选投票');
+    html = s.window.ProposeView.renderStep(3);
+    assert.ok(html.includes('cj-remove-btn'), '时间有删除按钮（圆底样式）');
     s.window.ProposeView.removeTime(1);
     assert.equal(s.window.ProposeView._times.length, 1, '可删除回到指定');
+    html = s.window.ProposeView.renderStep(3);
+    assert.ok(!html.includes('cj-remove-btn'), '单行时间不显示删除按钮');
     // 地点：输入框点击下拉出推荐地点
     assert.equal((html.match(/data-venue/g) || []).length, 1, '默认一个地点输入');
     const venueInputTag = html.match(/<input data-venue="0"[^>]*>/);

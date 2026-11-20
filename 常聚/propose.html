@@ -223,7 +223,7 @@ window.ProposeView = (function () {
     function timeSection() {
         const P = window.ProposeView;
         const rows = P._times.map((t, i) =>
-            '<div style="margin-bottom:10px">' +
+            '<div style="margin-bottom:10px;position:relative">' +
                 '<div style="position:relative">' +
                     '<input data-time="' + i + '" readonly class="cj-field-input" style="cursor:pointer" value="' + timeDisplay(t) + '" placeholder="点击选择时间" onclick="window.ProposeView.openTimePicker(' + i + ')">' +
                     '<span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);color:#9CA3AF;pointer-events:none">▾</span>' +
@@ -235,7 +235,7 @@ window.ProposeView = (function () {
                       '</div>'
                     : '') +
                 (P._times.length > 1
-                    ? '<span style="position:absolute;right:-4px;top:-8px;color:#9CA3AF;cursor:pointer;font-size:12px" onclick="window.ProposeView.removeTime(' + i + ')">✕</span>'
+                    ? '<span class="cj-remove-btn" onclick="window.ProposeView.removeTime(' + i + ')">✕</span>'
                     : '') +
             '</div>').join('');
         return '<div class="cj-wiz-card">' +
@@ -297,7 +297,7 @@ window.ProposeView = (function () {
                         '</div>').join('') +
                 '</div>' +
                 (P._venueInputs.length > 1
-                    ? '<span style="position:absolute;right:-4px;top:-8px;color:#9CA3AF;cursor:pointer;font-size:12px" onclick="window.ProposeView.removeVenueInput(' + i + ')">✕</span>'
+                    ? '<span class="cj-remove-btn" onclick="window.ProposeView.removeVenueInput(' + i + ')">✕</span>'
                     : '') +
             '</div>').join('');
         return '<div class="cj-wiz-card">' +
